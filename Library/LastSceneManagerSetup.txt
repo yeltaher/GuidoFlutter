@@ -1,0 +1,6 @@
+sceneSetups:
+- path: C:/Users/y.el.taher/Desktop/Yehia/Privato/CodePulse/Progetti/CP26-14 - Guido/1.Materiale/GuidoVR/GuidoVR/Assets/Esperienze
+    Guido/Scene/Meditazioni/Procedimento acqua.unity
+  isLoaded: 1
+  isActive: 1
+  isSubScene: 0

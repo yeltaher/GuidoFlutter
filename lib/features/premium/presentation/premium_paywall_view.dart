@@ -1,0 +1,353 @@
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/database/settings_provider.dart';
+import '../../../core/theme/custom_button_widget.dart';
+
+class PremiumPaywallView extends ConsumerStatefulWidget {
+  const PremiumPaywallView({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<PremiumPaywallView> createState() => _PremiumPaywallViewState();
+}
+
+class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
+  int _selectedTier = 1; // 0 = 1 Mese, 1 = 1 Anno, 2 = A Vita
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = ref.watch(settingsProvider);
+    final isDark = settings.isDarkTheme;
+    final accentColor = AppColors.getActiveAccentColor(isDark);
+    final textColor = AppColors.getTextColor(isDark);
+    final subTextColor = AppColors.getSubTextColor(isDark);
+
+    return Scaffold(
+      backgroundColor: AppColors.getBgColor(isDark),
+      body: Stack(
+        children: [
+          // Sfondo Gradiente Animato
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.goldAccent.withOpacity(isDark ? 0.15 : 0.25),
+                    AppColors.getBgColor(isDark),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ),
+          
+          // Pattern in background (opzionale)
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.03,
+              child: Image.asset(
+                'assets/images/noise.png', // Assuming a noise texture, fallback to container if missing
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Column(
+              children: [
+                // Header (Close button)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isDark ? Colors.white10 : Colors.black12,
+                          ),
+                          child: Icon(Icons.close_rounded, color: subTextColor, size: 24),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Icona Premium
+                        Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.goldAccent.withOpacity(0.12),
+                            border: Border.all(color: AppColors.goldAccent.withOpacity(0.3), width: 1.5),
+                          ),
+                          child: const Icon(
+                            Icons.stars_rounded,
+                            color: AppColors.goldAccent,
+                            size: 64,
+                          ),
+                        ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
+                        
+                        const SizedBox(height: 24),
+
+                        // Titolo
+                        Text(
+                          settings.language == 0 ? "Sblocca Guido Premium" : "Unlock Guido Premium",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: textColor,
+                            letterSpacing: -0.5,
+                          ),
+                        ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0, duration: 400.ms),
+
+                        const SizedBox(height: 12),
+
+                        // Sottotitolo
+                        Text(
+                          settings.language == 0 
+                              ? "L'esperienza definitiva. Accedi a tutte le meditazioni guidate, esercizi di respirazione e audio spaziale 3D binaurale."
+                              : "The ultimate experience. Access all guided meditations, breathing exercises, and binaural 3D spatial audio.",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            color: subTextColor,
+                            height: 1.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1, end: 0, duration: 400.ms),
+
+                        const SizedBox(height: 36),
+
+                        // Opzioni di Abbonamento
+                        _buildSubscriptionCard(
+                          index: 0,
+                          title: settings.language == 0 ? "1 Mese" : "1 Month",
+                          price: "9,99€",
+                          period: settings.language == 0 ? "/mese" : "/month",
+                          isDark: isDark,
+                          textColor: textColor,
+                          subTextColor: subTextColor,
+                        ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1, end: 0),
+                        
+                        const SizedBox(height: 12),
+                        
+                        _buildSubscriptionCard(
+                          index: 1,
+                          title: settings.language == 0 ? "1 Anno" : "1 Year",
+                          price: "49,99€",
+                          period: settings.language == 0 ? "/anno" : "/year",
+                          badgeText: settings.language == 0 ? "CONSIGLIATO" : "RECOMMENDED",
+                          discountText: settings.language == 0 ? "Risparmi il 58%" : "Save 58%",
+                          isDark: isDark,
+                          textColor: textColor,
+                          subTextColor: subTextColor,
+                        ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1, end: 0),
+                        
+                        const SizedBox(height: 12),
+
+                        _buildSubscriptionCard(
+                          index: 2,
+                          title: settings.language == 0 ? "A Vita" : "Lifetime",
+                          price: "149,99€",
+                          period: settings.language == 0 ? " una tantum" : " one-time",
+                          isDark: isDark,
+                          textColor: textColor,
+                          subTextColor: subTextColor,
+                        ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1, end: 0),
+
+                        const SizedBox(height: 40),
+
+                        // Pulsante di Checkout
+                        CustomUnityButton(
+                          text: settings.language == 0 ? "ATTIVA ORA (GRATIS)" : "ACTIVATE NOW (FREE)",
+                          onTap: () {
+                            ref.read(settingsProvider.notifier).unlockPremium();
+                            Navigator.of(context).pop();
+                          },
+                          accentColor: AppColors.successAccent,
+                          width: double.infinity,
+                        ).animate().fadeIn(delay: 700.ms).scale(begin: const Offset(0.95, 0.95)),
+
+                        const SizedBox(height: 16),
+                        
+                        Text(
+                          settings.language == 0 
+                            ? "Annulla in qualsiasi momento dalle impostazioni del tuo account."
+                            : "Cancel anytime from your account settings.",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            color: subTextColor.withOpacity(0.6),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ).animate().fadeIn(delay: 800.ms),
+
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubscriptionCard({
+    required int index,
+    required String title,
+    required String price,
+    required String period,
+    String? badgeText,
+    String? discountText,
+    required bool isDark,
+    required Color textColor,
+    required Color subTextColor,
+  }) {
+    final isSelected = _selectedTier == index;
+    final cardColor = isSelected 
+        ? AppColors.goldAccent.withOpacity(0.15) 
+        : (isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.03));
+    final borderColor = isSelected 
+        ? AppColors.goldAccent 
+        : (isDark ? Colors.white12 : Colors.black12);
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedTier = index;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutQuad,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: borderColor, width: isSelected ? 2.0 : 1.0),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: AppColors.goldAccent.withOpacity(0.1),
+              blurRadius: 10,
+              spreadRadius: 2,
+            )
+          ] : [],
+        ),
+        child: Row(
+          children: [
+            // Radio button custom
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? AppColors.goldAccent : Colors.transparent,
+                border: Border.all(
+                  color: isSelected ? AppColors.goldAccent : (isDark ? Colors.white30 : Colors.black26),
+                  width: 2,
+                ),
+              ),
+              child: isSelected ? const Icon(Icons.check_rounded, size: 16, color: Colors.black87) : null,
+            ),
+            const SizedBox(width: 16),
+            
+            // Dettagli piano
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: textColor,
+                        ),
+                      ),
+                      if (badgeText != null) ...[
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.goldAccent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            badgeText,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.black87,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ]
+                    ],
+                  ),
+                  if (discountText != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      discountText,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.successAccent,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Prezzo
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  price,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: textColor,
+                  ),
+                ),
+                Text(
+                  period,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: subTextColor,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
