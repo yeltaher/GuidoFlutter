@@ -126,7 +126,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
 
   void _startExperience() {
     final audioService = ref.read(audioServiceProvider);
-    audioService.playEffect(widget.audioPath, loop: true); // Audio infinito come richiesto per non fermare il video
+    audioService.playEffect(widget.audioPath, loop: false); // L'audio detta la durata della sessione
     _updatePhase();
     
     if (_videoController != null) {
