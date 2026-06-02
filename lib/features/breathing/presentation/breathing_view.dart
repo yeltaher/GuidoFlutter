@@ -12,7 +12,9 @@ import '../../../core/vr/flat_video_widget.dart';
 import '../../../core/theme/vr_gaze_button.dart';
 import '../../../core/vr/vr_host_screen.dart';
 import '../../../core/vr/vr_orientation_service.dart';
+import '../../../core/vr/shared_sbs_video_widget.dart';
 import '../../../core/database/settings_provider.dart';
+import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../meditation/presentation/remove_vr_headset_view.dart';
@@ -51,6 +53,8 @@ class _BreathingViewState extends ConsumerState<BreathingView>
   Timer? _countdownTimer;
   bool _showExitConfirm = false;
 
+  VideoPlayerController? _videoController;
+
   @override
   void initState() {
     super.initState();
@@ -79,6 +83,27 @@ class _BreathingViewState extends ConsumerState<BreathingView>
       _showCountdown = true;
       _startCountdownTimer();
     }
+
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    final settings = ref.read(settingsProvider);
+    final bool isWater = widget.title.toLowerCase().contains('acqua') || widget.title.toLowerCase().contains('water');
+    if (isWater) {
+      final assetPath = settings.isVrMode 
+          ? 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_SBS.mp4'
+          : 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Mono.mp4';
+      _videoController = VideoPlayerController.asset(assetPath);
+      await _videoController!.initialize();
+      _videoController!.setVolume(0.0);
+      _videoController!.setLooping(true); // LOOP INIFINITO
+      if (mounted) {
+        setState(() {
+          _isVrVideoReady = true;
+        });
+      }
+    }
   }
 
   void _startCountdownTimer() {
@@ -101,8 +126,12 @@ class _BreathingViewState extends ConsumerState<BreathingView>
 
   void _startExperience() {
     final audioService = ref.read(audioServiceProvider);
-    audioService.playEffect(widget.audioPath, loop: false);
+    audioService.playEffect(widget.audioPath, loop: true); // Audio infinito come richiesto per non fermare il video
     _updatePhase();
+    
+    if (_videoController != null) {
+      _videoController!.play();
+    }
 
     _audioStateSub = audioService.effectsPlayerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
@@ -145,9 +174,11 @@ class _BreathingViewState extends ConsumerState<BreathingView>
       if (_isPlaying) {
         audioService.resumeAll();
         _pulseController.repeat(reverse: true);
+        _videoController?.play();
       } else {
         audioService.pauseAll();
         _pulseController.stop();
+        _videoController?.pause();
       }
     });
   }
@@ -187,6 +218,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
 
   @override
   void dispose() {
+    _videoController?.dispose();
     _audioStateSub?.cancel();
     _timer?.cancel();
     _countdownTimer?.cancel();
@@ -216,30 +248,27 @@ class _BreathingViewState extends ConsumerState<BreathingView>
         final host = VrHostScreen(
           gazeController: ctrl,
           backgroundColor: isWater ? Colors.transparent : Colors.black,
-          eyeBuilder: (ctx, isLeft) => _buildSingleEyeView(
-            context,
-            isLeft: isLeft,
-            isActiveEye: isLeft,
-            isWater: isWater,
+          eyeBuilder: (ctx, isLeft) => Stack(
+            children: [
+              if (isWater && _isVrVideoReady && _videoController != null)
+                Positioned.fill(
+                  child: SharedSbsVideoWidget(
+                    controller: _videoController!,
+                    isLeftEye: isLeft,
+                    gazeController: ctrl,
+                  ),
+                ),
+              _buildSingleEyeView(
+                context,
+                isLeft: isLeft,
+                isActiveEye: isLeft,
+                isWater: isWater,
+              ),
+            ],
           ),
         );
 
-        if (isWater) {
-          content = Stack(
-            children: [
-              if (_isVrVideoReady)
-                Positioned.fill(
-                  child: Vr360VideoWidget(
-                    assetPath: 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Mono.mp4',
-                    isVrMode: isVr,
-                  ),
-                ),
-              Positioned.fill(child: host),
-            ],
-          );
-        } else {
-          content = host;
-        }
+        content = host;
       }
     } else {
       final uiOverlay = _showCountdown 
@@ -267,10 +296,15 @@ class _BreathingViewState extends ConsumerState<BreathingView>
               : Stack(
                   key: const ValueKey('experience_stack'),
                   children: [
-                    if (isWater)
+                    if (isWater && _isVrVideoReady && _videoController != null)
                       Positioned.fill(
-                        child: FlatVideoWidget(
-                          assetPath: 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Mono.mp4',
+                        child: FittedBox(
+                          fit: BoxFit.cover,
+                          child: SizedBox(
+                            width: _videoController!.value.size.width,
+                            height: _videoController!.value.size.height,
+                            child: VideoPlayer(_videoController!),
+                          ),
                         ),
                       ),
                     Positioned.fill(
