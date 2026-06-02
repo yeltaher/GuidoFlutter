@@ -96,40 +96,15 @@ class _FlatVideoWidgetState extends State<FlatVideoWidget> {
         : 16 / 9;
 
     return Container(
-      color: Colors.transparent,
-      alignment: Alignment.center,
-      child: FractionallySizedBox(
-        widthFactor: 0.88,
-        child: AspectRatio(
-          aspectRatio: aspectRatio,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.white.withOpacity(0.15),
-                  blurRadius: 40,
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: const Color(0xFF6B9AC4).withOpacity(0.1),
-                  blurRadius: 80,
-                  spreadRadius: 10,
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24.0),
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: videoWidth,
-                  height: videoHeight,
-                  child: VideoPlayer(_controller!),
-                ),
-              ),
-            ),
-          ),
+      color: Colors.black,
+      width: double.infinity,
+      height: double.infinity,
+      child: FittedBox(
+        fit: BoxFit.cover,
+        child: SizedBox(
+          width: videoWidth,
+          height: videoHeight,
+          child: VideoPlayer(_controller!),
         ),
       ),
     );

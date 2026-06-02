@@ -11,6 +11,7 @@ import '../../../core/vr/vr_360_video_widget.dart';
 import '../../../core/vr/flat_video_widget.dart';
 import '../../../core/theme/vr_gaze_button.dart';
 import '../../../core/vr/vr_host_screen.dart';
+import '../../../core/vr/vr_orientation_service.dart';
 import '../../../core/database/settings_provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:just_audio/just_audio.dart';
@@ -74,6 +75,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     if (settings.isVrMode) {
       _startExperience();
     } else {
+      VrOrientationService.enterVr();
       _showCountdown = true;
       _startCountdownTimer();
     }
@@ -191,8 +193,10 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     _pulseController.dispose();
     _gazeController?.dispose();
     WakelockPlus.disable();
-    // VrHostScreen chiama già VrOrientationService.exitVr() nel suo dispose.
     // Qui non servono chiamate dirette ad AppOrientation.
+    if (!ref.read(settingsProvider).isVrMode) {
+      VrOrientationService.exitVr();
+    }
     super.dispose();
   }
 
@@ -225,9 +229,8 @@ class _BreathingViewState extends ConsumerState<BreathingView>
             children: [
               if (_isVrVideoReady)
                 Positioned.fill(
-                  child: Vr360VideoWidget(
+                  child: FlatVideoWidget(
                     assetPath: 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_SBS.mp4',
-                    isVrMode: isVr,
                   ),
                 ),
               Positioned.fill(child: host),
