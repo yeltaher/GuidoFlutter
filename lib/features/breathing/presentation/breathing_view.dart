@@ -229,8 +229,9 @@ class _BreathingViewState extends ConsumerState<BreathingView>
             children: [
               if (_isVrVideoReady)
                 Positioned.fill(
-                  child: FlatVideoWidget(
-                    assetPath: 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_SBS.mp4',
+                  child: Vr360VideoWidget(
+                    assetPath: 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Mono.mp4',
+                    isVrMode: isVr,
                   ),
                 ),
               Positioned.fill(child: host),
