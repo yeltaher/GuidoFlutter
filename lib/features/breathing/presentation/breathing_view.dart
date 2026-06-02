@@ -102,6 +102,10 @@ class _BreathingViewState extends ConsumerState<BreathingView>
         setState(() {
           _isVrVideoReady = true;
         });
+        // In VR l'esperienza parte subito, quindi il video va avviato appena è pronto
+        if (settings.isVrMode && _isPlaying) {
+          _videoController!.play();
+        }
       }
     }
   }
