@@ -66,7 +66,8 @@ flutter:
     - assets/audio/real/Respirazioni/Fuoco/
     - assets/audio/real/Respirazioni/Terra/
     - "assets/Esperienze_Guido/Video/"
-    - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/"
+    - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Mono.mp4"
+    - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_SBS.mp4"
   fonts:
     - family: Oswald
       fonts:

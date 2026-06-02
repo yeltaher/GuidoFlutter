@@ -693,16 +693,14 @@ class _MenuViewState extends ConsumerState<MenuView> {
                 isVr: isVr,
                 isDark: isDark,
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => MeditationView(
-                        title: texts[15],
-                        voicePath: settings.language == 0
-                            ? 'assets/audio/voci/it/meditazione_percorso_acqua_procedimento_it.m4a'
-                            : 'assets/audio/voci/en/meditazione_generale.m4a',
-                        ambientPath: 'assets/audio/ambient/musica_eterea.m4a',
-                      ),
-                    ),
+                  launchZenSession(
+                    context: context,
+                    ref: ref,
+                    title: texts[15],
+                    voicePath: settings.language == 0
+                        ? 'assets/audio/voci/it/meditazione_percorso_acqua_procedimento_it.m4a'
+                        : 'assets/audio/voci/en/meditazione_generale.m4a',
+                    ambientPath: 'assets/audio/ambient/musica_eterea.m4a',
                   );
                 },
               ),
@@ -737,14 +735,12 @@ class _MenuViewState extends ConsumerState<MenuView> {
                           : 'assets/audio/voci/en/sera.m4a';
                     }
 
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => MeditationView(
-                          title: texts[16],
-                          voicePath: voiceAsset,
-                          ambientPath: 'assets/audio/ambient/acqua.mp3',
-                        ),
-                      ),
+                    launchZenSession(
+                      context: context,
+                      ref: ref,
+                      title: texts[16],
+                      voicePath: voiceAsset,
+                      ambientPath: 'assets/audio/ambient/acqua.mp3',
                     );
                   } else {
                     _setUnlockPanelVisible(true);
@@ -779,13 +775,11 @@ class _MenuViewState extends ConsumerState<MenuView> {
                 isVr: isVr,
                 isDark: isDark,
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => BreathingView(
-                        title: texts[17],
-                        audioPath: 'assets/audio/respirazioni/vento.m4a',
-                      ),
-                    ),
+                  launchZenSession(
+                    context: context,
+                    ref: ref,
+                    title: texts[17],
+                    breathingAudioPath: 'assets/audio/respirazioni/vento.m4a',
                   );
                 },
               ),
@@ -800,13 +794,11 @@ class _MenuViewState extends ConsumerState<MenuView> {
                 isDark: isDark,
                 onTap: () {
                   if (settings.isUnlocked) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => BreathingView(
-                          title: texts[18],
-                          audioPath: 'assets/audio/respirazioni/cuore.m4a',
-                        ),
-                      ),
+                    launchZenSession(
+                      context: context,
+                      ref: ref,
+                      title: texts[18],
+                      breathingAudioPath: 'assets/audio/respirazioni/cuore.m4a',
                     );
                   } else {
                     _setUnlockPanelVisible(true);
