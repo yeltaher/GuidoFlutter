@@ -69,6 +69,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
       vsync: this,
       duration: const Duration(seconds: 4),
     );
+    _pulseController.repeat(reverse: true);
 
     if (settings.isVrMode) {
       _startExperience();
@@ -97,8 +98,6 @@ class _BreathingViewState extends ConsumerState<BreathingView>
   }
 
   void _startExperience() {
-    _pulseController.repeat(reverse: true);
-    
     final audioService = ref.read(audioServiceProvider);
     audioService.playEffect(widget.audioPath, loop: false);
     _updatePhase();
@@ -227,7 +226,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
               if (_isVrVideoReady)
                 Positioned.fill(
                   child: Vr360VideoWidget(
-                    assetPath: 'assets/Esperienze Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_SBS.mp4',
+                    assetPath: 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_SBS.mp4',
                     isVrMode: isVr,
                   ),
                 ),
@@ -250,18 +249,31 @@ class _BreathingViewState extends ConsumerState<BreathingView>
 
       content = Scaffold(
         backgroundColor: isWater ? Colors.transparent : Colors.black,
-        body: Stack(
-          children: [
-            if (isWater && !_showCountdown)
-              Positioned.fill(
-                child: FlatVideoWidget(
-                  assetPath: 'assets/Esperienze Guido/Video/Respirazioni/Acqua/Respirazione_Mono.mp4',
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 1200),
+          switchInCurve: Curves.easeInOutCubic,
+          switchOutCurve: Curves.easeInOutCubic,
+          child: _showCountdown
+              ? Stack(
+                  key: const ValueKey('countdown_stack'),
+                  children: [
+                    Positioned.fill(child: uiOverlay),
+                  ],
+                )
+              : Stack(
+                  key: const ValueKey('experience_stack'),
+                  children: [
+                    if (isWater)
+                      Positioned.fill(
+                        child: FlatVideoWidget(
+                          assetPath: 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Mono.mp4',
+                        ),
+                      ),
+                    Positioned.fill(
+                      child: uiOverlay,
+                    ),
+                  ],
                 ),
-              ),
-            Positioned.fill(
-              child: uiOverlay,
-            ),
-          ],
         ),
       );
     }
@@ -282,6 +294,8 @@ class _BreathingViewState extends ConsumerState<BreathingView>
 
   Widget _buildCountdownOverlay(BuildContext context) {
     final isDark = ref.watch(settingsProvider).isDarkTheme;
+    final accentColor = AppColors.getActiveAccentColor(isDark);
+    
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -290,18 +304,51 @@ class _BreathingViewState extends ConsumerState<BreathingView>
           end: Alignment.bottomCenter,
         ),
       ),
-      child: Center(
-        child: Text(
-          '$_countdown',
-          style: GoogleFonts.inter(
-            fontSize: 100,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Effetto magico: bagliore pulsante al centro
+          AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: 1.0 + (_pulseController.value * 0.25),
+                child: Container(
+                  width: 280,
+                  height: 280,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accentColor.withOpacity(isDark ? 0.15 : 0.25),
+                  ),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                    child: const SizedBox.shrink(),
+                  ),
+                ),
+              );
+            },
           ),
-        ).animate(key: ValueKey(_countdown))
-         .fadeIn(duration: 400.ms)
-         .scale(begin: const Offset(0.5, 0.5), end: const Offset(1.2, 1.2), duration: 800.ms, curve: Curves.easeOutBack)
-         .fadeOut(delay: 600.ms, duration: 400.ms),
+          
+          // Testo del conto alla rovescia animato fluidamente
+          Text(
+            '$_countdown',
+            style: GoogleFonts.outfit(
+              fontSize: 140,
+              fontWeight: FontWeight.w300,
+              color: Colors.white.withOpacity(0.9),
+              shadows: [
+                Shadow(
+                  color: accentColor.withOpacity(0.6),
+                  blurRadius: 40,
+                  offset: const Offset(0, 0),
+                )
+              ],
+            ),
+          ).animate(key: ValueKey(_countdown))
+           .fadeIn(duration: 400.ms, curve: Curves.easeOut)
+           .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.1, 1.1), duration: 900.ms, curve: Curves.easeOutCubic)
+           .fadeOut(delay: 700.ms, duration: 300.ms, curve: Curves.easeIn),
+        ],
       ),
     );
   }
