@@ -32,11 +32,16 @@ class _Vr360VideoWidgetState extends State<Vr360VideoWidget> {
   Future<void> _prepareVideoFile() async {
     try {
       final byteData = await rootBundle.load(widget.assetPath);
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/${widget.assetPath.split('/').last}');
-      await tempFile.writeAsBytes(
-          byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
-          flush: true);
+      // Usiamo ApplicationDocumentsDirectory invece di TemporaryDirectory su iOS per evitare restrizioni di lettura
+      final dir = await getApplicationDocumentsDirectory();
+      final String safeName = widget.assetPath.split('/').last.replaceAll(' ', '_');
+      final tempFile = File('${dir.path}/$safeName');
+      
+      if (!await tempFile.exists()) {
+        await tempFile.writeAsBytes(
+            byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
+            flush: true);
+      }
 
       setState(() {
         _localPath = tempFile.path;

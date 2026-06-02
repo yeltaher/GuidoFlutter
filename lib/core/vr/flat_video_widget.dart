@@ -32,22 +32,10 @@ class _FlatVideoWidgetState extends State<FlatVideoWidget> {
 
   Future<void> _prepareAndPlayVideo() async {
     try {
-      // Copy asset to a temp file with a safe name (no spaces)
-      final ByteData data = await rootBundle.load(widget.assetPath);
-      final Directory tempDir = await getTemporaryDirectory();
-      final String safeName = widget.assetPath.split('/').last.replaceAll(' ', '_');
-      final File tempFile = File('${tempDir.path}/$safeName');
-      
-      if (!await tempFile.exists()) {
-        await tempFile.writeAsBytes(
-          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
-          flush: true,
-        );
-      }
-      
       if (!mounted) return;
       
-      _controller = VideoPlayerController.file(tempFile);
+      // Usa .asset invece di rootBundle.load per evitare problemi di memoria su iOS
+      _controller = VideoPlayerController.asset(widget.assetPath);
       await _controller!.initialize();
       
       if (!mounted) return;
@@ -101,16 +89,46 @@ class _FlatVideoWidgetState extends State<FlatVideoWidget> {
       return const Center(child: CircularProgressIndicator(color: Colors.white));
     }
     
-    return SizedBox.expand(
-      child: Transform.scale(
-        scale: 0.85,
-        child: FittedBox(
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-          child: SizedBox(
-            width: _controller!.value.size.width,
-            height: _controller!.value.size.height,
-            child: VideoPlayer(_controller!),
+    final videoWidth = _controller!.value.size.width;
+    final videoHeight = _controller!.value.size.height;
+    final aspectRatio = videoWidth > 0 && videoHeight > 0 
+        ? videoWidth / videoHeight 
+        : 16 / 9;
+
+    return Container(
+      color: Colors.transparent,
+      alignment: Alignment.center,
+      child: FractionallySizedBox(
+        widthFactor: 0.88,
+        child: AspectRatio(
+          aspectRatio: aspectRatio,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.white.withOpacity(0.15),
+                  blurRadius: 40,
+                  spreadRadius: 2,
+                ),
+                BoxShadow(
+                  color: const Color(0xFF6B9AC4).withOpacity(0.1),
+                  blurRadius: 80,
+                  spreadRadius: 10,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24.0),
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: videoWidth,
+                  height: videoHeight,
+                  child: VideoPlayer(_controller!),
+                ),
+              ),
+            ),
           ),
         ),
       ),

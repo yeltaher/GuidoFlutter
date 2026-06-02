@@ -53,6 +53,7 @@ class SessionLaunchDialog extends ConsumerWidget {
   }) : super(key: key);
 
   void _startFlatSession(BuildContext context, WidgetRef ref) {
+    ref.read(settingsProvider.notifier).toggleVrMode(false);
     Navigator.of(context).pop();
     if (breathingAudioPath != null) {
       Navigator.of(context).push(
