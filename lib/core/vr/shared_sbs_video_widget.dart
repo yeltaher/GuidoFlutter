@@ -31,20 +31,17 @@ class SharedSbsVideoWidget extends StatelessWidget {
             final double width = constraints.maxWidth;
             final double height = constraints.maxHeight;
             
-            // Aumentiamo lo zoom al 160% (1.6) per avere un grande margine di esplorazione
-            const double scale = 1.6;
+            // Aumentiamo notevolmente lo zoom (2.2) per avvicinare il soggetto ("molto lontano")
+            // e avere tantissimo margine di esplorazione VR
+            const double scale = 2.2;
 
-            // Calcolo matematico del limite massimo di traslazione prima di vedere i bordi neri
+            // Calcolo matematico del limite massimo di traslazione per non mostrare mai bordi neri
             final double maxPanX = (width * (scale - 1)) / (2 * scale);
             final double maxPanY = (height * (scale - 1)) / (2 * scale);
 
-            // Il reticleOffset aumenta quando si guarda in una direzione.
-            // Se guardiamo a DESTRA (dx positivo), l'ambiente deve scorrere a SINISTRA (dx negativo).
-            // Moltiplicatore abbassato a 0.5 per un movimento morbido che non sbatte subito sui bordi
-            double panX = -gazeController.reticleOffset.dx * 0.5;
-            double panY = -gazeController.reticleOffset.dy * 0.5;
+            double panX = -gazeController.reticleOffset.dx * 0.7;
+            double panY = -gazeController.reticleOffset.dy * 0.7;
 
-            // Limitiamo la traslazione ai limiti matematici di sicurezza
             panX = panX.clamp(-maxPanX, maxPanX);
             panY = panY.clamp(-maxPanY, maxPanY);
 
@@ -57,15 +54,25 @@ class SharedSbsVideoWidget extends StatelessWidget {
                   scale: scale, 
                   child: Transform.translate(
                     offset: Offset(panX, panY),
-                    child: FractionallySizedBox(
-                      widthFactor: 2.0, // SBS: il video totale è largo il doppio della singola lente
-                      alignment: isLeftEye ? Alignment.centerLeft : Alignment.centerRight,
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: videoWidth,
-                          height: videoHeight,
-                          child: VideoPlayer(controller),
+                    // FittedBox ESTERNO: scala la metà perfetta del video per coprire lo schermo
+                    child: FittedBox(
+                      fit: BoxFit.cover,
+                      // SizedBox pari all'esatta metà della risoluzione nativa del video
+                      child: SizedBox(
+                        width: videoWidth / 2.0,
+                        height: videoHeight,
+                        child: ClipRect(
+                          child: OverflowBox(
+                            maxWidth: videoWidth,
+                            maxHeight: videoHeight,
+                            // Allineiamo il video intero a sinistra o a destra per inquadrare la giusta metà
+                            alignment: isLeftEye ? Alignment.centerLeft : Alignment.centerRight,
+                            child: SizedBox(
+                              width: videoWidth,
+                              height: videoHeight,
+                              child: VideoPlayer(controller),
+                            ),
+                          ),
                         ),
                       ),
                     ),
