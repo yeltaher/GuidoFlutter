@@ -302,12 +302,15 @@ class _BreathingViewState extends ConsumerState<BreathingView>
                   children: [
                     if (isWater && _isVrVideoReady && _videoController != null)
                       Positioned.fill(
-                        child: FittedBox(
-                          fit: BoxFit.cover,
-                          child: SizedBox(
-                            width: _videoController!.value.size.width,
-                            height: _videoController!.value.size.height,
-                            child: VideoPlayer(_videoController!),
+                        child: Container(
+                          color: Colors.black,
+                          child: FittedBox(
+                            fit: BoxFit.contain,
+                            child: SizedBox(
+                              width: _videoController!.value.size.width,
+                              height: _videoController!.value.size.height,
+                              child: VideoPlayer(_videoController!),
+                            ),
                           ),
                         ),
                       ),
