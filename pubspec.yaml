@@ -26,6 +26,7 @@ dependencies:
   vr_player: ^0.3.0
   path_provider: ^2.1.5
   video_player: ^2.11.1
+  animated_text_kit: ^4.3.0
 
 
 dev_dependencies:
@@ -66,8 +67,8 @@ flutter:
     - assets/audio/real/Respirazioni/Fuoco/
     - assets/audio/real/Respirazioni/Terra/
     - "assets/Esperienze_Guido/Video/"
-    - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Mono.mp4"
-    - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_SBS.mp4"
+    - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_4K_Mono.mp4"
+    - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_VR360_SBS.mp4"
   fonts:
     - family: Oswald
       fonts:

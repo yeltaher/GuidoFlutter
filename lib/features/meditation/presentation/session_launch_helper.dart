@@ -11,6 +11,8 @@ import 'meditation_view.dart';
 import '../../breathing/presentation/breathing_view.dart';
 import 'vr_calibration_screen.dart';
 
+import 'explanation_screen.dart';
+
 /// Funzione globale di utilità per avviare qualsiasi sessione di meditazione o respirazione
 /// chiedendo prima l'esperienza Flat vs VR ed effettuando la conferma del visore.
 void launchZenSession({
@@ -21,15 +23,14 @@ void launchZenSession({
   String ambientPath = '',
   String? breathingAudioPath,
 }) {
-  showDialog(
-    context: context,
-    barrierColor: Colors.black.withOpacity(0.4),
-    barrierDismissible: true,
-    builder: (context) => SessionLaunchDialog(
-      title: title,
-      voicePath: voicePath,
-      ambientPath: ambientPath,
-      breathingAudioPath: breathingAudioPath,
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => ExplanationScreen(
+        title: title,
+        voicePath: voicePath,
+        ambientPath: ambientPath,
+        breathingAudioPath: breathingAudioPath,
+      ),
     ),
   );
 }

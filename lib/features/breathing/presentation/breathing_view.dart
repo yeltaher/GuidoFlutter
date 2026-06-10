@@ -92,8 +92,8 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     final bool isWater = widget.title.toLowerCase().contains('acqua') || widget.title.toLowerCase().contains('water');
     if (isWater) {
       final assetPath = settings.isVrMode 
-          ? 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_SBS.mp4'
-          : 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Mono.mp4';
+          ? 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_VR360_SBS.mp4'
+          : 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_4K_Mono.mp4';
       _videoController = VideoPlayerController.asset(assetPath);
       await _videoController!.initialize();
       _videoController!.setVolume(0.0);
