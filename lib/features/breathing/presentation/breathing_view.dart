@@ -305,7 +305,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
                         child: Container(
                           color: Colors.black,
                           child: FittedBox(
-                            fit: BoxFit.contain,
+                            fit: BoxFit.fill,
                             child: SizedBox(
                               width: _videoController!.value.size.width,
                               height: _videoController!.value.size.height,
