@@ -77,7 +77,7 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
     final textColor = AppColors.getTextColor(isDark);
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
