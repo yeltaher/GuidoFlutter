@@ -7,11 +7,12 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    let success = super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    
     if let controller = window?.rootViewController as? FlutterViewController {
       let orientationChannel = FlutterMethodChannel(name: "com.codepulse.guido/orientation",
                                                     binaryMessenger: controller.binaryMessenger)
-      orientationChannel.setMethodCallHandler({
-        (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+      orientationChannel.setMethodCallHandler { call, result in
         if call.method == "forceLandscape" {
           result(nil)
         } else if call.method == "forcePortrait" {
@@ -19,10 +20,10 @@ import UIKit
         } else {
           result(FlutterMethodNotImplemented)
         }
-      })
+      }
     }
-    GeneratedPluginRegistrant.register(with: self)
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    
+    return success
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
