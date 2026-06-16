@@ -64,30 +64,32 @@ class SettingsState {
 }
 
 /// Gestisce lo stato e la persistenza offline delle preferenze
-class SettingsNotifier extends StateNotifier<SettingsState> {
-  final SharedPreferences _prefs;
-  final GuidoAudioService _audioService;
+class SettingsNotifier extends Notifier<SettingsState> {
+  late final SharedPreferences _prefs;
+  late final GuidoAudioService _audioService;
 
-  SettingsNotifier(this._prefs, this._audioService)
-      : super(const SettingsState(
-          musicVolume: 3,
-          effectsVolume: 3,
-          voiceVolume: 3,
-          isVoiceMuted: false,
-          voiceSex: 0,
-          language: 0,
-          isUnlocked: false,
-          isVrMode: false,
-          isDarkTheme: true, // Default a tema Japandi Dark per la meditazione
-          vrCalibrated: false,
-          vrBiasX: 0.0,
-          vrBiasZ: 0.0,
-        )) {
-    _loadFromPrefs();
-  }
-
-  /// Carica le impostazioni da SharedPreferences e inizializza il servizio audio
-  void _loadFromPrefs() {
+  @override
+  SettingsState build() {
+    _prefs = ref.watch(sharedPrefsProvider);
+    _audioService = ref.watch(audioServiceProvider).valueOrNull ?? GuidoAudioService();
+    
+    // Default state
+    final defaultState = const SettingsState(
+      musicVolume: 3,
+      effectsVolume: 3,
+      voiceVolume: 3,
+      isVoiceMuted: false,
+      voiceSex: 0,
+      language: 0,
+      isUnlocked: false,
+      isVrMode: false,
+      isDarkTheme: true,
+      vrCalibrated: false,
+      vrBiasX: 0.0,
+      vrBiasZ: 0.0,
+    );
+    
+    // Initialize from prefs
     final music = _prefs.getInt("Music") ?? 3;
     final effects = _prefs.getInt("Effects") ?? 3;
     final voice = _prefs.getInt("Voice") ?? 3;
@@ -95,13 +97,17 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     final sex = _prefs.getInt("VoiceSex") ?? 0;
     final lang = _prefs.getInt("Lang") ?? 0;
     final unlocked = _prefs.getBool("IsUnlocked") ?? false;
-    final vrMode = false; // VR è una scelta per-sessione, non viene mai persistita tra le sessioni
     final darkTheme = _prefs.getBool("IsDarkTheme") ?? true;
     final vrCalibrated = _prefs.getBool("VrCalibrated") ?? false;
     final vrBiasX = _prefs.getDouble("VrBiasX") ?? 0.0;
     final vrBiasZ = _prefs.getDouble("VrBiasZ") ?? 0.0;
 
-    state = SettingsState(
+    _audioService.setAmbientVolume(music);
+    _audioService.setEffectsVolume(effects);
+    _audioService.setVoiceVolume(voice);
+    _audioService.setVoiceMute(muteVoice);
+
+    return SettingsState(
       musicVolume: music,
       effectsVolume: effects,
       voiceVolume: voice,
@@ -109,19 +115,14 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       voiceSex: sex,
       language: lang,
       isUnlocked: unlocked,
-      isVrMode: vrMode,
+      isVrMode: false,
       isDarkTheme: darkTheme,
       vrCalibrated: vrCalibrated,
       vrBiasX: vrBiasX,
       vrBiasZ: vrBiasZ,
     );
-
-    // Inizializza i volumi reali nel servizio audio in base a quanto caricato
-    _audioService.setAmbientVolume(music);
-    _audioService.setEffectsVolume(effects);
-    _audioService.setVoiceVolume(voice);
-    _audioService.setVoiceMute(muteVoice);
   }
+
 
   /// Modifica il volume della musica e lo salva offline
   Future<void> changeMusicVolume(int volume) async {
@@ -214,18 +215,16 @@ final sharedPrefsProvider = Provider<SharedPreferences>((ref) {
 });
 
 /// Provider globale per GuidoAudioService (inizializzato a inizio app)
-final audioServiceProvider = Provider<GuidoAudioService>((ref) {
+final audioServiceProvider = FutureProvider<GuidoAudioService>((ref) async {
   final service = GuidoAudioService();
-  service.initSession(); // Inizializza asincrono in background
+  await service.initSession(); // Inizializza asincrono properly awaited
   ref.onDispose(() => service.dispose()); // Previene memory leaks
   return service;
 });
 
 /// Provider globale dello stato delle impostazioni dell'app
-final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>((ref) {
-  final prefs = ref.watch(sharedPrefsProvider);
-  final audio = ref.watch(audioServiceProvider);
-  return SettingsNotifier(prefs, audio);
+final settingsProvider = NotifierProvider<SettingsNotifier, SettingsState>(() {
+  return SettingsNotifier();
 });
 
 /// Provider globale per controllare l'indice del tab attivo da qualsiasi schermata

@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -121,7 +122,7 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
 
   void _finishCalibration() {
     if (widget.isFromSettings) {
-      Navigator.of(context).pop();
+      context.pop();
     } else {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
@@ -237,8 +238,8 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
+          Semantics(button: true, label: "Interactive element", child: GestureDetector(
+            onTap: () => context.pop(),
             child: Text(
               isIt ? 'ANNULLA' : 'CANCEL',
               style: GoogleFonts.plusJakartaSans(
@@ -248,7 +249,7 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
                 letterSpacing: 1.5,
               ),
             ),
-          ),
+          )),
         ],
       ),
     );
@@ -324,7 +325,7 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
           ),
 
           const SizedBox(height: 14),
-          GestureDetector(
+          Semantics(button: true, label: "Interactive element", child: GestureDetector(
             onTap: () {
               _gazeController.recenter();
               _startDriftCalibration();
@@ -338,7 +339,7 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
                 letterSpacing: 1.0,
               ),
             ),
-          ),
+          )),
         ],
       ),
     );

@@ -1,14 +1,15 @@
+import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:guido/core/vr/vr_host_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/vr_gaze_button.dart';
-import '../../../core/vr/vr_host_screen.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../../core/database/user_stats_helper.dart';
+import '../../../core/database/repositories/user_repository.dart';
 import 'meditation_view.dart';
-import '../../breathing/presentation/breathing_view.dart';
+import '../../breathing/breathing_feature.dart';
 import 'vr_calibration_screen.dart';
 
 import 'explanation_screen.dart';
@@ -55,26 +56,16 @@ class SessionLaunchDialog extends ConsumerWidget {
 
   void _startFlatSession(BuildContext context, WidgetRef ref) {
     ref.read(settingsProvider.notifier).toggleVrMode(false);
-    Navigator.of(context).pop();
+    context.pop();
     if (breathingAudioPath != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) =>
-              BreathingView(title: title, audioPath: breathingAudioPath!),
-        ),
-      );
+      context.push('/breathing', extra: {'title': title, 'audioPath': breathingAudioPath!});
     } else {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => MeditationView(
-              title: title, voicePath: voicePath, ambientPath: ambientPath),
-        ),
-      );
+      context.push('/meditation', extra: {'title': title, 'voicePath': voicePath, 'ambientPath': ambientPath});
     }
   }
 
   void _goToVrConfirm(BuildContext context, WidgetRef ref) {
-    Navigator.of(context).pop();
+    context.pop();
 
     final settings = ref.read(settingsProvider);
 
@@ -199,7 +190,7 @@ class SessionLaunchDialog extends ConsumerWidget {
               const SizedBox(height: 20),
 
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => context.pop(),
                 child: Text(
                   isIt ? 'ANNULLA' : 'CANCEL',
                   style: GoogleFonts.plusJakartaSans(
@@ -351,7 +342,7 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
       ref.read(settingsProvider.notifier).toggleVrMode(false);
       final prefs = ref.read(sharedPrefsProvider);
       final sessionType = widget.breathingAudioPath != null ? "Respirazione" : "Meditazione";
-      await UserStatsHelper.recordSession(prefs, widget.title, sessionType);
+      await ref.read(userRepositoryProvider).recordSession(widget.title, sessionType);
     });
   }
 
@@ -430,8 +421,8 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
 
           const SizedBox(height: 22),
 
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
+          Semantics(button: true, label: "Interactive element", child: GestureDetector(
+            onTap: () => context.pop(),
             child: Text(
               isIt ? 'ANNULLA' : 'CANCEL',
               style: GoogleFonts.plusJakartaSans(
@@ -441,7 +432,7 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
                 letterSpacing: 1.5,
               ),
             ),
-          ),
+          )),
         ],
       ),
     );
@@ -492,7 +483,7 @@ class _SpringAnimationWrapperState extends State<_SpringAnimationWrapper>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTapDown: (_) => _controller.animateTo(1.0,
           duration: const Duration(milliseconds: 80), curve: Curves.easeOut),
       onTapUp: (_) {
@@ -504,6 +495,6 @@ class _SpringAnimationWrapperState extends State<_SpringAnimationWrapper>
       onTapCancel: () => _controller.animateTo(0.0,
           duration: const Duration(milliseconds: 150), curve: Curves.easeOut),
       child: ScaleTransition(scale: _scaleAnimation, child: widget.child),
-    );
+    ));
   }
 }

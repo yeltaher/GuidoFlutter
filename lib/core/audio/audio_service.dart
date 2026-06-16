@@ -1,4 +1,5 @@
 import 'package:just_audio/just_audio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:audio_session/audio_session.dart';
 
 /// Servizio audio multitraccia enterprise-grade per gestire riproduzioni simultanee
@@ -87,7 +88,7 @@ class GuidoAudioService {
       _voicePlayer.setVolume(_isVoiceMuted ? 0.0 : _voiceVolume);
       await _voicePlayer.play();
     } catch (e) {
-      print("[AudioService ERR] Errore riproduzione voce: $e");
+      debugPrint("[AudioService ERR] Errore riproduzione voce: $e");
     }
   }
 
@@ -99,7 +100,7 @@ class GuidoAudioService {
       _ambientPlayer.setVolume(_ambientVolume);
       await _ambientPlayer.play();
     } catch (e) {
-      print("[AudioService ERR] Errore riproduzione ambient: $e");
+      debugPrint("[AudioService ERR] Errore riproduzione ambient: $e");
     }
   }
 
@@ -115,7 +116,7 @@ class GuidoAudioService {
       _effectsPlayer.setVolume(_effectsVolume);
       await _effectsPlayer.play();
     } catch (e) {
-      print("[AudioService ERR] Errore riproduzione effetto: $e");
+      debugPrint("[AudioService ERR] Errore riproduzione effetto: $e");
     }
   }
 

@@ -81,7 +81,7 @@ class _CustomUnityButtonState extends State<CustomUnityButton> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,
       onTapCancel: _onTapCancel,
@@ -165,6 +165,6 @@ class _CustomUnityButtonState extends State<CustomUnityButton> with SingleTicker
           ),
         ),
       ),
-    );
+    ));
   }
 }

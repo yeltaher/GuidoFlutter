@@ -1,43 +1,18 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:guido/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../menu/presentation/home_container_view.dart';
 import '../../onboarding/presentation/onboarding_wizard_view.dart';
 
-class SplashView extends ConsumerStatefulWidget {
+class SplashView extends ConsumerWidget {
   const SplashView({Key? key}) : super(key: key);
 
-  @override
-  ConsumerState<SplashView> createState() => _SplashViewState();
-}
-
-class _SplashViewState extends ConsumerState<SplashView> with SingleTickerProviderStateMixin {
-  bool _isSignUpMode = false;
-  bool _acceptTerms = false;
-  bool _showPassword = false;
-
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-
-  final _formKey = GlobalKey<FormState>();
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  void _routeToHome() {
+  void _routeToHome(BuildContext context, WidgetRef ref) {
     final prefs = ref.read(sharedPrefsProvider);
     final isOnboarded = prefs.getBool("IsOnboarded") ?? false;
 
@@ -49,46 +24,215 @@ class _SplashViewState extends ConsumerState<SplashView> with SingleTickerProvid
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 600),
       ),
     );
   }
 
-  void _submitForm() {
-    // Validazione dei campi per Login/Registrazione reale
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    final isDark = settings.isDarkTheme;
+    final accentColor = AppColors.getActiveAccentColor(isDark);
+    final textColor = AppColors.getTextColor(isDark);
+    final subTextColor = AppColors.getSubTextColor(isDark);
+    final loc = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 600;
+          final double horizontalPadding = isWide ? constraints.maxWidth * 0.2 : 24.0;
+
+          return Stack(
+            children: [
+              // Sfondo a gradiente Japandi dinamico
+              RepaintBoundary(
+                child: Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: AppColors.getGradientByTime(isDark),
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Luce d'atmosfera Japandi soffusa
+              Positioned(
+                top: -80,
+                right: -80,
+                child: RepaintBoundary(
+                  child: Container(
+                    key: const ValueKey('login_glow'),
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: accentColor.withOpacity(isDark ? 0.05 : 0.08),
+                    ),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                      child: const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Contenuto scorrevole
+              SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Brand Logo
+                        Image.asset(
+                          'assets/images/logo_transparent.png',
+                          height: 120,
+                        ).animate().fadeIn(duration: 600.ms).scale(begin: const Offset(0.8, 0.8)),
+                        const SizedBox(height: 12),
+                        Text(
+                          loc.splashTitle,
+                          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: textColor,
+                            letterSpacing: 10.0,
+                          ),
+                        ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.1, end: 0),
+                        const SizedBox(height: 8),
+                        Text(
+                          loc.splashSubtitle,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: subTextColor,
+                            letterSpacing: 0.2,
+                          ),
+                        ).animate().fadeIn(delay: 150.ms, duration: 500.ms),
+                        
+                        const SizedBox(height: 24),
+
+                        // Auth Switch Tab Card estrapolata in widget stateful
+                        AuthFormCard(
+                          isDark: isDark, 
+                          accentColor: accentColor, 
+                          textColor: textColor, 
+                          subTextColor: subTextColor,
+                          onLoginSuccess: () => _routeToHome(context, ref),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // TASTO ACCEDI COME OSPITE
+                        Semantics(button: true, label: "Interactive element", child: GestureDetector(
+                          onTap: () => _routeToHome(context, ref),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.04),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark ? Colors.white10 : Colors.black12,
+                                width: 1.0,
+                              ),
+                            ),
+                            child: Text(
+                              loc.splashGuestLogin,
+                              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: accentColor,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        )).animate().fadeIn(delay: 450.ms, duration: 500.ms),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+  }
+}
+
+class AuthFormCard extends ConsumerStatefulWidget {
+  final bool isDark;
+  final Color accentColor;
+  final Color textColor;
+  final Color subTextColor;
+  final VoidCallback onLoginSuccess;
+
+  const AuthFormCard({
+    Key? key,
+    required this.isDark,
+    required this.accentColor,
+    required this.textColor,
+    required this.subTextColor,
+    required this.onLoginSuccess,
+  }) : super(key: key);
+
+  @override
+  ConsumerState<AuthFormCard> createState() => _AuthFormCardState();
+}
+
+class _AuthFormCardState extends ConsumerState<AuthFormCard> {
+  bool _isSignUpMode = false;
+  bool _acceptTerms = false;
+  bool _showPassword = false;
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  void _submitForm(AppLocalizations loc) {
     if (_isSignUpMode) {
       if (_nameController.text.trim().isEmpty ||
           _emailController.text.trim().isEmpty ||
           _passwordController.text.trim().isEmpty) {
-        _showErrorSnackbar("Compila tutti i campi obbligatori!");
+        _showErrorSnackbar(loc.splashErrorFillFields);
         return;
       }
       if (_passwordController.text != _confirmPasswordController.text) {
-        _showErrorSnackbar("Le password non coincidono!");
+        _showErrorSnackbar(loc.splashErrorPasswordMismatch);
         return;
       }
       if (!_acceptTerms) {
-        _showErrorSnackbar("Devi accettare i termini di servizio!");
+        _showErrorSnackbar(loc.splashErrorAcceptTerms);
         return;
       }
-      
-      // Salva il nome inserito in registrazione come predefinito
       final prefs = ref.read(sharedPrefsProvider);
       prefs.setString("ProfileName", _nameController.text.trim());
     } else {
       if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
-        _showErrorSnackbar("Inserisci email e password!");
+        _showErrorSnackbar(loc.splashErrorEmailPassword);
         return;
       }
     }
-
-    // Login avvenuto con successo (simulato per consentire l'accesso immediato)
-    _routeToHome();
+    widget.onLoginSuccess();
   }
 
   void _showErrorSnackbar(String msg) {
@@ -99,7 +243,7 @@ class _SplashViewState extends ConsumerState<SplashView> with SingleTickerProvid
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         content: Text(
           msg,
-          style: GoogleFonts.plusJakartaSans(
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -110,270 +254,131 @@ class _SplashViewState extends ConsumerState<SplashView> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final settings = ref.watch(settingsProvider);
-    final isDark = settings.isDarkTheme;
-    final accentColor = AppColors.getActiveAccentColor(isDark);
-    final textColor = AppColors.getTextColor(isDark);
-    final subTextColor = AppColors.getSubTextColor(isDark);
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          // 1. Sfondo a gradiente Japandi dinamico
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: AppColors.getGradientByTime(isDark),
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
+    final loc = AppLocalizations.of(context)!;
+    return RepaintBoundary(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(22),
+            decoration: AppColors.japandiCardDecoration(
+              widget.isDark,
+              borderRadius: 28,
+              opacity: 0.38,
             ),
-          ),
-
-          // Luce d'atmosfera Japandi soffusa sullo sfondo
-          Positioned(
-            top: -80,
-            right: -80,
-            child: Container(
-              key: const ValueKey('login_glow'),
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: accentColor.withOpacity(isDark ? 0.05 : 0.08),
-              ),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-                child: const SizedBox.shrink(),
-              ),
-            ),
-          ),
-
-          // 2. Contenuto scorrevole
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Brand Logo
-                    Image.asset(
-                      'assets/images/logo_transparent.png',
-                      height: 120,
-                    ).animate().fadeIn(duration: 600.ms).scale(begin: const Offset(0.8, 0.8)),
-                    const SizedBox(height: 12),
-                    Text(
-                      "GUIDO",
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w900,
-                        color: textColor,
-                        letterSpacing: 10.0,
-                      ),
-                    ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.1, end: 0),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Il tuo compagno per la meditazione ed il respiro",
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                        color: subTextColor,
-                        letterSpacing: 0.2,
-                      ),
-                    ).animate().fadeIn(delay: 150.ms, duration: 500.ms),
-                    
-                    const SizedBox(height: 24),
-
-                    // Auth Switch Tab Card (Claymorphic)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(28),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(22),
-                          decoration: AppColors.japandiCardDecoration(
-                            isDark,
-                            borderRadius: 28,
-                            opacity: 0.38,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: widget.isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.03),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _buildAuthTabButton(
+                            label: loc.splashTabLogin,
+                            isSelected: !_isSignUpMode,
+                            onTap: () => setState(() => _isSignUpMode = false),
                           ),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Form Tab Switcher (Accedi / Registrati)
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.03),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildAuthTabButton(
-                                          label: "ACCEDI",
-                                          isSelected: !_isSignUpMode,
-                                          onTap: () => setState(() => _isSignUpMode = false),
-                                          isDark: isDark,
-                                          accentColor: accentColor,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: _buildAuthTabButton(
-                                          label: "REGISTRATI",
-                                          isSelected: _isSignUpMode,
-                                          onTap: () => setState(() => _isSignUpMode = true),
-                                          isDark: isDark,
-                                          accentColor: accentColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 22),
+                        ),
+                        Expanded(
+                          child: _buildAuthTabButton(
+                            label: loc.splashTabRegister,
+                            isSelected: _isSignUpMode,
+                            onTap: () => setState(() => _isSignUpMode = true),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 22),
 
-                                // 1. NOME (Solo in modalità Sign Up)
-                                if (_isSignUpMode) ...[
-                                  _buildInputField(
-                                    controller: _nameController,
-                                    hint: "Nome completo",
-                                    icon: Icons.person_outline_rounded,
-                                    isDark: isDark,
-                                    textColor: textColor,
-                                    subTextColor: subTextColor,
-                                  ).animate().fadeIn(duration: 300.ms),
-                                  const SizedBox(height: 14),
-                                ],
+                  if (_isSignUpMode) ...[
+                    _buildInputField(
+                      controller: _nameController,
+                      hint: loc.splashNameHint,
+                      icon: Icons.person_outline_rounded,
+                    ).animate().fadeIn(duration: 300.ms),
+                    const SizedBox(height: 14),
+                  ],
 
-                                // 2. EMAIL
-                                _buildInputField(
-                                  controller: _emailController,
-                                  hint: "Indirizzo Email",
-                                  icon: Icons.email_outlined,
-                                  isDark: isDark,
-                                  textColor: textColor,
-                                  subTextColor: subTextColor,
-                                  keyboardType: TextInputType.emailAddress,
-                                ),
-                                const SizedBox(height: 14),
+                  _buildInputField(
+                    controller: _emailController,
+                    hint: loc.splashEmailHint,
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 14),
 
-                                // 3. PASSWORD
-                                _buildInputField(
-                                  controller: _passwordController,
-                                  hint: "Password",
-                                  icon: Icons.lock_outline_rounded,
-                                  isDark: isDark,
-                                  textColor: textColor,
-                                  subTextColor: subTextColor,
-                                  obscure: !_showPassword,
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _showPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                      color: subTextColor.withOpacity(0.7),
-                                      size: 18,
-                                    ),
-                                    onPressed: () => setState(() => _showPassword = !_showPassword),
-                                  ),
-                                ),
-                                const SizedBox(height: 14),
+                  _buildInputField(
+                    controller: _passwordController,
+                    hint: loc.splashPasswordHint,
+                    icon: Icons.lock_outline_rounded,
+                    obscure: !_showPassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _showPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        color: widget.subTextColor.withOpacity(0.7),
+                        size: 18,
+                      ),
+                      onPressed: () => setState(() => _showPassword = !_showPassword),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
 
-                                // 4. CONFERMA PASSWORD (Solo in modalità Sign Up)
-                                if (_isSignUpMode) ...[
-                                  _buildInputField(
-                                    controller: _confirmPasswordController,
-                                    hint: "Conferma Password",
-                                    icon: Icons.lock_reset_rounded,
-                                    isDark: isDark,
-                                    textColor: textColor,
-                                    subTextColor: subTextColor,
-                                    obscure: true,
-                                  ).animate().fadeIn(duration: 300.ms),
-                                  const SizedBox(height: 14),
-                                ],
-
-                                // Accettazione Termini (Solo in modalità Sign Up)
-                                if (_isSignUpMode) ...[
-                                  GestureDetector(
-                                    onTap: () => setState(() => _acceptTerms = !_acceptTerms),
-                                    child: Row(
-                                      children: [
-                                        Checkbox(
-                                          value: _acceptTerms,
-                                          activeColor: accentColor,
-                                          checkColor: isDark ? Colors.black : Colors.white,
-                                          onChanged: (val) => setState(() => _acceptTerms = val ?? false),
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            "Accetto Termini e Condizioni e Privacy Policy",
-                                            style: GoogleFonts.plusJakartaSans(
-                                              fontSize: 10.5,
-                                              fontWeight: FontWeight.w600,
-                                              color: subTextColor,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ).animate().fadeIn(duration: 350.ms),
-                                  const SizedBox(height: 16),
-                                ],
-
-                                // Pulsante di autenticazione principale
-                                CustomUnityButton(
-                                  text: _isSignUpMode ? "REGISTRATI" : "ACCEDI",
-                                  onTap: _submitForm,
-                                  accentColor: AppColors.successAccent,
-                                  width: double.infinity,
-                                ),
-                              ],
+                  if (_isSignUpMode) ...[
+                    _buildInputField(
+                      controller: _confirmPasswordController,
+                      hint: loc.splashConfirmPasswordHint,
+                      icon: Icons.lock_reset_rounded,
+                      obscure: true,
+                    ).animate().fadeIn(duration: 300.ms),
+                    const SizedBox(height: 14),
+                    
+                    Semantics(button: true, label: "Interactive element", child: GestureDetector(
+                      onTap: () => setState(() => _acceptTerms = !_acceptTerms),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _acceptTerms,
+                            activeColor: widget.accentColor,
+                            checkColor: widget.isDark ? Colors.black : Colors.white,
+                            onChanged: (val) => setState(() => _acceptTerms = val ?? false),
+                          ),
+                          Expanded(
+                            child: Text(
+                              loc.splashAcceptTerms,
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: widget.subTextColor,
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                    ).animate().fadeIn(delay: 250.ms, duration: 600.ms).scale(begin: const Offset(0.97, 0.97), end: const Offset(1, 1), curve: Curves.easeOutBack),
-
-                    const SizedBox(height: 20),
-
-                    // TASTO ACCEDI COME OSPITE (ACCESSIBILITÀ DIRETTA)
-                    GestureDetector(
-                      onTap: _routeToHome,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.04),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isDark ? Colors.white10 : Colors.black12,
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Text(
-                          "ENTRA COME OSPITE",
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w800,
-                            color: accentColor,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ).animate().fadeIn(delay: 450.ms, duration: 500.ms),
-                    const SizedBox(height: 10),
+                    )).animate().fadeIn(duration: 350.ms),
+                    const SizedBox(height: 16),
                   ],
-                ),
+
+                  CustomUnityButton(
+                    text: _isSignUpMode ? loc.splashTabRegister : loc.splashTabLogin,
+                    onTap: () => _submitForm(loc),
+                    accentColor: AppColors.successAccent,
+                    width: double.infinity,
+                  ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ).animate().fadeIn(delay: 250.ms, duration: 600.ms).scale(begin: const Offset(0.97, 0.97), end: const Offset(1, 1), curve: Curves.easeOutBack),
     );
   }
 
@@ -381,52 +386,46 @@ class _SplashViewState extends ConsumerState<SplashView> with SingleTickerProvid
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
-    required bool isDark,
-    required Color accentColor,
   }) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? accentColor : Colors.transparent,
+          color: isSelected ? widget.accentColor : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
           child: Text(
             label,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 11,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.w800,
               color: isSelected 
-                  ? (isDark ? Colors.black : Colors.white) 
-                  : AppColors.getSubTextColor(isDark).withOpacity(0.8),
+                  ? (widget.isDark ? Colors.black : Colors.white) 
+                  : widget.subTextColor.withOpacity(0.8),
               letterSpacing: 0.5,
             ),
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildInputField({
     required TextEditingController controller,
     required String hint,
     required IconData icon,
-    required bool isDark,
-    required Color textColor,
-    required Color subTextColor,
     bool obscure = false,
     Widget? suffixIcon,
     TextInputType keyboardType = TextInputType.text,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.03),
+        color: widget.isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.03),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.06),
+          color: widget.isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.06),
           width: 1.0,
         ),
       ),
@@ -435,11 +434,11 @@ class _SplashViewState extends ConsumerState<SplashView> with SingleTickerProvid
         controller: controller,
         obscureText: obscure,
         keyboardType: keyboardType,
-        style: GoogleFonts.plusJakartaSans(fontSize: 13.5, color: textColor),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: widget.textColor),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: subTextColor.withOpacity(0.6)),
-          icon: Icon(icon, color: subTextColor.withOpacity(0.7), size: 18),
+          hintStyle: Theme.of(context).textTheme.labelMedium?.copyWith(color: widget.subTextColor.withOpacity(0.6)),
+          icon: Icon(icon, color: widget.subTextColor.withOpacity(0.7), size: 18),
           suffixIcon: suffixIcon,
           border: InputBorder.none,
         ),

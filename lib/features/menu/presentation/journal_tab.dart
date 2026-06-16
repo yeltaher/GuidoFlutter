@@ -156,7 +156,7 @@ class _JournalTabState extends ConsumerState<JournalTab> {
                   final icon = m['icon'] as IconData;
                   final isSelected = _selectedMood == name;
 
-                  return GestureDetector(
+                  return Semantics(button: true, label: "Interactive element", child: GestureDetector(
                     onTap: () {
                       setState(() {
                         _selectedMood = name;
@@ -188,7 +188,7 @@ class _JournalTabState extends ConsumerState<JournalTab> {
                         ],
                       ),
                     ),
-                  );
+                  ));
                 }).toList(),
               ),
 
@@ -228,7 +228,7 @@ class _JournalTabState extends ConsumerState<JournalTab> {
               const SizedBox(height: 16),
 
               // Save Button (Pill shape)
-              GestureDetector(
+              Semantics(button: true, label: "Interactive element", child: GestureDetector(
                 onTap: _saveEntry,
                 child: Container(
                   width: double.infinity,
@@ -256,7 +256,7 @@ class _JournalTabState extends ConsumerState<JournalTab> {
                     ),
                   ),
                 ),
-              ),
+              )),
 
               const SizedBox(height: 32),
 
@@ -317,10 +317,10 @@ class _JournalTabState extends ConsumerState<JournalTab> {
                                     style: GoogleFonts.plusJakartaSans(fontSize: 10.5, color: subTextColor),
                                   ),
                                   const SizedBox(width: 8),
-                                  GestureDetector(
+                                  Semantics(button: true, label: "Interactive element", child: GestureDetector(
                                     onTap: () => _deleteEntry(index),
                                     child: Icon(Icons.close_rounded, size: 14, color: AppColors.dangerAccent.withOpacity(0.7)),
-                                  ),
+                                  )),
                                 ],
                               ),
                             ],

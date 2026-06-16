@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -170,7 +171,7 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
                       IconButton(
                         icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                         color: textColor,
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () => context.pop(),
                       ),
                       Text(
                         settings.language == 0 ? "MIXER DI SUONI" : "SOUND MIXER",
@@ -300,10 +301,10 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
                   const SizedBox(height: 30),
 
                   // Tasto Esci con click elastico
-                  GestureDetector(
+                  Semantics(button: true, label: "Interactive element", child: GestureDetector(
                     onTapDown: (_) {},
                     child: OnboardingSpringButton(
-                      onTap: () => Navigator.of(context).pop(),
+                      onTap: () => context.pop(),
                       child: Container(
                         width: double.infinity,
                         height: 52,
@@ -328,7 +329,7 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
                         ),
                       ),
                     ),
-                  ).animate().fadeIn(delay: 450.ms),
+                  )).animate().fadeIn(delay: 450.ms),
 
                   const SizedBox(height: 10),
                 ],
@@ -461,7 +462,7 @@ class _OnboardingSpringButtonState extends State<OnboardingSpringButton> with Si
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTapDown: (_) => _controller.animateTo(1.0, duration: const Duration(milliseconds: 80), curve: Curves.easeOut),
       onTapUp: (_) {
         _controller.animateTo(0.0, duration: const Duration(milliseconds: 300), curve: Curves.elasticOut);
@@ -472,6 +473,6 @@ class _OnboardingSpringButtonState extends State<OnboardingSpringButton> with Si
         scale: _scaleAnimation,
         child: widget.child,
       ),
-    );
+    ));
   }
 }

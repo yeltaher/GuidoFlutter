@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -62,9 +63,11 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final audioService = ref.read(audioServiceProvider);
-      audioService.playAmbient(widget.ambientPath);
-      audioService.playVoice(widget.voicePath);
+      final audioServiceAsync = ref.read(audioServiceProvider);
+      if (audioServiceAsync is AsyncData) {
+        audioServiceAsync.value!.playAmbient(widget.ambientPath);
+        audioServiceAsync.value!.playVoice(widget.voicePath);
+      }
       _startTypewriter();
     });
   }
@@ -91,11 +94,13 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
   }
 
   void _togglePlay() {
-    final audioService = ref.read(audioServiceProvider);
-    if (_isPlaying) {
-      audioService.pauseAll();
-    } else {
-      audioService.resumeAll();
+    final audioServiceAsync = ref.read(audioServiceProvider);
+    if (audioServiceAsync is AsyncData) {
+      if (_isPlaying) {
+        audioServiceAsync.value!.pauseAll();
+      } else {
+        audioServiceAsync.value!.resumeAll();
+      }
     }
     setState(() => _isPlaying = !_isPlaying);
   }
@@ -114,14 +119,17 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
 
   void _confirmExit() {
     _typewriterTimer?.cancel();
-    ref.read(audioServiceProvider).stopAll();
+    final audioServiceAsync = ref.read(audioServiceProvider);
+    if (audioServiceAsync is AsyncData) {
+      audioServiceAsync.value!.stopAll();
+    }
     final isVr = ref.read(settingsProvider).isVrMode;
     if (isVr) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const RemoveVrHeadsetView()),
       );
     } else {
-      Navigator.of(context).pop();
+      context.pop();
     }
   }
 

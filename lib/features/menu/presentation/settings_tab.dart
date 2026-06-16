@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,9 +9,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../meditation/presentation/vr_calibration_screen.dart';
-import '../../splash/presentation/splash_view.dart';
-import '../../premium/presentation/premium_paywall_view.dart';
+import '../../meditation/meditation_feature.dart';
+import '../../splash/splash_feature.dart';
+import '../../premium/premium_feature.dart';
 
 class SettingsTab extends ConsumerStatefulWidget {
   const SettingsTab({Key? key}) : super(key: key);
@@ -296,7 +297,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
         const SizedBox(height: 4),
         Row(
           children: [
-            GestureDetector(
+            Semantics(button: true, label: "Interactive element", child: GestureDetector(
               onTap: onMuteToggle,
               child: Container(
                 padding: const EdgeInsets.all(6),
@@ -312,7 +313,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                   size: 20,
                 ),
               ),
-            ),
+            )),
             const SizedBox(width: 8),
             Expanded(
               child: SliderTheme(
@@ -407,7 +408,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     bool isDark,
   ) {
     final accentColor = AppColors.getActiveAccentColor(isDark);
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -440,7 +441,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildCalibrationSetting({
@@ -494,7 +495,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                   ),
                 ],
               ),
-              GestureDetector(
+              Semantics(button: true, label: "Interactive element", child: GestureDetector(
                 onTap: onCalibrateTap,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -512,7 +513,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                     ),
                   ),
                 ),
-              ),
+              )),
             ],
           ),
         ),
@@ -531,11 +532,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           label: isUnlocked ? "SBLOCCATO" : "SBLOCCA PREMIUM",
           onTap: () {
             if (!isUnlocked) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const PremiumPaywallView(),
-                ),
-              );
+              context.push('/premium');
             }
           },
           isDark: isDark,
@@ -578,7 +575,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     required Color accentColor,
     bool isFilled = false,
   }) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -610,6 +607,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
+

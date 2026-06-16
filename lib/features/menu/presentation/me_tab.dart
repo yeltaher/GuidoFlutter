@@ -7,6 +7,8 @@ import 'dart:convert';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 
+import 'me_tab_provider.dart';
+
 class MeTab extends ConsumerWidget {
   final bool isActive;
   const MeTab({Key? key, this.isActive = true}) : super(key: key);
@@ -19,105 +21,84 @@ class MeTab extends ConsumerWidget {
     final textColor = AppColors.getTextColor(isDark);
     final subTextColor = AppColors.getSubTextColor(isDark);
 
-    // Leggi i dati di Onboarding da SharedPreferences
-    final prefs = ref.watch(sharedPrefsProvider);
-    final String userName = prefs.getString("ProfileName") ?? "Ospite Zen";
-    final List<String> quizProblems = prefs.getStringList("QuizProblems") ?? [];
-    final List<String> quizGoals = prefs.getStringList("QuizGoals") ?? [];
-    final List<String> quizStrengths =
-        prefs.getStringList("QuizStrengths") ?? [];
-    final List<String> quizWeaknesses =
-        prefs.getStringList("QuizWeaknesses") ?? [];
+    final dataAsync = ref.watch(meTabDataProvider);
+    
+    return dataAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Errore: $err')),
+      data: (data) {
+        final userName = data.userName;
+        final quizProblems = data.quizProblems;
+        final quizGoals = data.quizGoals;
+        final quizStrengths = data.quizStrengths;
+        final quizWeaknesses = data.quizWeaknesses;
+        
+        final List<String> styleNames = [
+          "🎙️ Voce Guida",
+          "🎵 Solo Musica",
+          "🤫 Silenzio Zen",
+          "🫁 Respirazione",
+        ];
+        final String chosenStyle = styleNames[data.profileStyle];
 
-    final int profileStyle = prefs.getInt("ProfileStyle") ?? 0;
-    final List<String> styleNames = [
-      "🎙️ Voce Guida",
-      "🎵 Solo Musica",
-      "🤫 Silenzio Zen",
-      "🫁 Respirazione",
-    ];
-    final String chosenStyle = styleNames[profileStyle];
-
-    // Calcola le iniziali dell'avatar
-    String avatarInitials = "OZ";
-    if (userName.trim().isNotEmpty) {
-      final parts = userName.trim().split(RegExp(r'\s+'));
-      if (parts.length >= 2) {
-        avatarInitials = (parts[0][0] + parts[1][0]).toUpperCase();
-      } else if (parts[0].length >= 2) {
-        avatarInitials = parts[0].substring(0, 2).toUpperCase();
-      } else if (parts[0].isNotEmpty) {
-        avatarInitials = parts[0][0].toUpperCase();
-      }
-    }
-
-    // Dati statistici realistici basati sullo stato dell'app
-    final int minutesMeditated = prefs.getInt("total_minutes") ?? 0;
-    final int sessionsCompleted = prefs.getInt("total_sessions") ?? 0;
-    final int currentStreak = prefs.getInt("current_streak") ?? 0;
-    final int currentXp = prefs.getInt("profile_xp") ?? 0;
-
-    final int currentLevel = (currentXp ~/ 600) + 1;
-    final int xpInLevel = currentXp % 600;
-    final List<String> levelTitles = [
-      "Novizio",
-      "Viaggiatore",
-      "Cercatore",
-      "Custode del Silenzio",
-      "Maestro Zen",
-    ];
-    final String levelTitle = currentLevel <= levelTitles.length
-        ? levelTitles[currentLevel - 1]
-        : "Maestro Asceso";
-
-    // Calcolo Coerenza Zen e Calendario
-    final historyStr = prefs.getStringList("timeline_history") ?? [];
-    Set<int> meditatedDays = {};
-    int currentMonth = DateTime.now().month;
-    int currentYear = DateTime.now().year;
-    int currentDay = DateTime.now().day;
-
-    for (var record in historyStr) {
-      try {
-        final Map<String, dynamic> data = jsonDecode(record);
-        final ts = DateTime.fromMillisecondsSinceEpoch(data["timestamp"]);
-        if (ts.month == currentMonth && ts.year == currentYear) {
-          meditatedDays.add(ts.day);
+        // Calcola le iniziali dell'avatar
+        String avatarInitials = "OZ";
+        if (userName.trim().isNotEmpty) {
+          final parts = userName.trim().split(RegExp(r'\s+'));
+          if (parts.length >= 2) {
+            avatarInitials = (parts[0][0] + parts[1][0]).toUpperCase();
+          } else if (parts[0].length >= 2) {
+            avatarInitials = parts[0].substring(0, 2).toUpperCase();
+          } else if (parts[0].isNotEmpty) {
+            avatarInitials = parts[0][0].toUpperCase();
+          }
         }
-      } catch (e) {
-        // ignore invalid
-      }
-    }
 
-    int totalMeditatedDaysCurrentMonth = meditatedDays.length;
-    final int daysPassed = currentDay > 0 ? currentDay : 1;
-    final int coerenzaZen =
-        ((totalMeditatedDaysCurrentMonth / daysPassed) * 100)
-            .clamp(0, 100)
-            .toInt();
+        final stats = data.stats;
+        final int minutesMeditated = stats?.totalMinutes ?? 0;
+        final int sessionsCompleted = stats?.totalSessions ?? 0;
+        final int currentStreak = stats?.currentStreak ?? 0;
+        final int currentXp = stats?.profileXp ?? 0;
 
-    // Mesi in italiano
-    final List<String> mesiItaliani = [
-      "Gennaio",
-      "Febbraio",
-      "Marzo",
-      "Aprile",
-      "Maggio",
-      "Giugno",
-      "Luglio",
-      "Agosto",
-      "Settembre",
-      "Ottobre",
-      "Novembre",
-      "Dicembre",
-    ];
-    final String meseCorrenteText =
-        "${mesiItaliani[currentMonth - 1]} $currentYear";
+        final int currentLevel = (currentXp ~/ 600) + 1;
+        final int xpInLevel = currentXp % 600;
+        final List<String> levelTitles = [
+          "Novizio",
+          "Viaggiatore",
+          "Cercatore",
+          "Custode del Silenzio",
+          "Maestro Zen",
+        ];
+        final String levelTitle = currentLevel <= levelTitles.length
+            ? levelTitles[currentLevel - 1]
+            : "Maestro Asceso";
 
-    // Quanti giorni ci sono nel mese corrente?
-    final int daysInMonth = DateTime(currentYear, currentMonth + 1, 0).day;
+        Set<int> meditatedDays = {};
+        int currentMonth = DateTime.now().month;
+        int currentYear = DateTime.now().year;
+        int currentDay = DateTime.now().day;
 
-    return Container(
+        for (var record in data.timeline) {
+          final ts = DateTime.fromMillisecondsSinceEpoch(record.timestamp);
+          if (ts.month == currentMonth && ts.year == currentYear) {
+            meditatedDays.add(ts.day);
+          }
+        }
+
+        int totalMeditatedDaysCurrentMonth = meditatedDays.length;
+        final int daysPassed = currentDay > 0 ? currentDay : 1;
+        final int coerenzaZen =
+            ((totalMeditatedDaysCurrentMonth / daysPassed) * 100).clamp(0, 100).toInt();
+
+        final List<String> mesiItaliani = [
+          "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+          "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre",
+        ];
+        final String meseCorrenteText = "${mesiItaliani[currentMonth - 1]} $currentYear";
+
+        final int daysInMonth = DateTime(currentYear, currentMonth + 1, 0).day;
+
+        return Container(
       color: Colors
           .transparent, // Tab al 100% trasparente, eredita lo sfondo gradiente globale
       child: SafeArea(
@@ -632,7 +613,7 @@ class MeTab extends ConsumerWidget {
                           child: Builder(
                             builder: (context) {
                               final historyStr =
-                                  prefs.getStringList("timeline_history") ?? [];
+                                  ref.read(sharedPrefsProvider).getStringList("timeline_history") ?? [];
                               if (historyStr.isEmpty) {
                                 return Text(
                                   "Nessuna sessione completata. Inizia a meditare!",
@@ -891,6 +872,7 @@ class MeTab extends ConsumerWidget {
         ),
       ),
     );
+    });
   }
 
   Widget _buildMetricCard({

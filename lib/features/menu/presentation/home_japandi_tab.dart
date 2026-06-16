@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../../core/constants/daily_quotes.dart';
-import '../../meditation/presentation/session_launch_helper.dart';
+import '../../meditation/meditation_feature.dart';
 import 'zen_sound_mixer_view.dart';
 
 class HomeJapandiTab extends ConsumerWidget {
@@ -191,7 +191,7 @@ class HomeJapandiTab extends ConsumerWidget {
                         // 4. DAILY HERO CARD: RITUALE DEL MATTINO (con Loop di Respiro Polmonare) (Padded)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: GestureDetector(
+                          child: Semantics(button: true, label: "Interactive element", child: GestureDetector(
                             onTap: () {
                               launchZenSession(
                                 context: context,
@@ -375,7 +375,7 @@ class HomeJapandiTab extends ConsumerWidget {
                                 ],
                               ),
                             ),
-                          ),
+                          )),
                         ),
 
                         const SizedBox(height: 24),
@@ -670,7 +670,7 @@ class HomeJapandiTab extends ConsumerWidget {
     required Color textColor,
     required Color subTextColor,
   }) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: () {
         launchZenSession(
           context: context,
@@ -783,7 +783,7 @@ class HomeJapandiTab extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -827,7 +827,7 @@ class _OnboardingSpringButtonState extends State<OnboardingSpringButton>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTapDown: (_) => _controller.animateTo(
         1.0,
         duration: const Duration(milliseconds: 80),
@@ -847,6 +847,6 @@ class _OnboardingSpringButtonState extends State<OnboardingSpringButton>
         curve: Curves.easeOut,
       ),
       child: ScaleTransition(scale: _scaleAnimation, child: widget.child),
-    );
+    ));
   }
 }

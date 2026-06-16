@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -17,7 +18,7 @@ import '../../../core/database/settings_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:just_audio/just_audio.dart';
-import '../../meditation/presentation/remove_vr_headset_view.dart';
+import '../../meditation/meditation_feature.dart';
 
 class BreathingView extends ConsumerStatefulWidget {
   final String title;
@@ -129,7 +130,9 @@ class _BreathingViewState extends ConsumerState<BreathingView>
   }
 
   void _startExperience() {
-    final audioService = ref.read(audioServiceProvider);
+    final audioServiceAsync = ref.read(audioServiceProvider);
+    if (audioServiceAsync is! AsyncData) return;
+    final audioService = audioServiceAsync.value!;
     audioService.playEffect(widget.audioPath, loop: false); // L'audio detta la durata della sessione
     _updatePhase();
     
@@ -167,12 +170,16 @@ class _BreathingViewState extends ConsumerState<BreathingView>
       _updatePhase();
       _pulseController.repeat(reverse: true);
     });
-    final audioService = ref.read(audioServiceProvider);
-    audioService.playEffect(widget.audioPath, loop: false);
+    final audioServiceAsync = ref.read(audioServiceProvider);
+    if (audioServiceAsync is AsyncData) {
+      audioServiceAsync.value!.playEffect(widget.audioPath, loop: false);
+    }
   }
 
   void _togglePlay() {
-    final audioService = ref.read(audioServiceProvider);
+    final audioServiceAsync = ref.read(audioServiceProvider);
+    if (audioServiceAsync is! AsyncData) return;
+    final audioService = audioServiceAsync.value!;
     setState(() {
       _isPlaying = !_isPlaying;
       if (_isPlaying) {
@@ -210,13 +217,16 @@ class _BreathingViewState extends ConsumerState<BreathingView>
 
   void _confirmExit() {
     final isVr = ref.read(settingsProvider).isVrMode;
-    ref.read(audioServiceProvider).stopAll();
+    final audioServiceAsync = ref.read(audioServiceProvider);
+    if (audioServiceAsync is AsyncData) {
+      audioServiceAsync.value!.stopAll();
+    }
     if (isVr) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const RemoveVrHeadsetView()),
       );
     } else {
-      Navigator.of(context).pop();
+      context.pop();
     }
   }
 
@@ -777,7 +787,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     double size = 60,
   }) {
     final isDark = ref.watch(settingsProvider).isDarkTheme;
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -822,6 +832,6 @@ class _BreathingViewState extends ConsumerState<BreathingView>
           ],
         ],
       ),
-    );
+    ));
   }
 }

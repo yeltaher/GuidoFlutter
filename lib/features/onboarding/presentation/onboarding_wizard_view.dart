@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../menu/presentation/home_container_view.dart';
+import '../../menu/menu_feature.dart';
 
 class OnboardingWizardView extends ConsumerStatefulWidget {
   const OnboardingWizardView({Key? key}) : super(key: key);
@@ -917,7 +918,7 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
               const SizedBox(height: 30),
 
               // Bottone Finale di Completamento
-              GestureDetector(
+              Semantics(button: true, label: "Interactive element", child: GestureDetector(
                 onTap: _completeOnboarding,
                 child: Container(
                   width: double.infinity,
@@ -952,7 +953,7 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                     ),
                   ),
                 ),
-              ).animate().fadeIn(delay: 500.ms),
+              )).animate().fadeIn(delay: 500.ms),
               const SizedBox(height: 20),
             ],
           ),
@@ -1100,7 +1101,7 @@ class _OnboardingChoiceCardState extends State<OnboardingChoiceCard> with Single
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTapDown: (_) => _controller.animateTo(1.0, duration: const Duration(milliseconds: 80), curve: Curves.easeOut),
       onTapUp: (_) {
         _controller.animateTo(0.0, duration: const Duration(milliseconds: 350), curve: Curves.elasticOut);
@@ -1175,7 +1176,7 @@ class _OnboardingChoiceCardState extends State<OnboardingChoiceCard> with Single
           ),
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -1217,7 +1218,7 @@ class _OnboardingSpringButtonState extends State<OnboardingSpringButton> with Si
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTapDown: (_) => _controller.animateTo(1.0, duration: const Duration(milliseconds: 80), curve: Curves.easeOut),
       onTapUp: (_) {
         _controller.animateTo(0.0, duration: const Duration(milliseconds: 300), curve: Curves.elasticOut);
@@ -1228,6 +1229,6 @@ class _OnboardingSpringButtonState extends State<OnboardingSpringButton> with Si
         scale: _scaleAnimation,
         child: widget.child,
       ),
-    );
+    ));
   }
 }

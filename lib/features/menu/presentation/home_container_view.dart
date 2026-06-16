@@ -201,7 +201,7 @@ class _HomeContainerViewState extends ConsumerState<HomeContainerView> {
     final currentIndex = ref.watch(activeTabProvider);
     final isSelected = currentIndex == index;
 
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: () {
         if (currentIndex != index) {
           ref.read(activeTabProvider.notifier).state = index;
@@ -251,7 +251,7 @@ class _HomeContainerViewState extends ConsumerState<HomeContainerView> {
           ),
         ],
       ),
-    );
+    ));
   }
 
 }

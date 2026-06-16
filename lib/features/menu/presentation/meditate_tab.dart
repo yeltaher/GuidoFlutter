@@ -1,11 +1,12 @@
+import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../meditation/presentation/session_launch_helper.dart';
-import '../../premium/presentation/premium_paywall_view.dart';
+import '../../meditation/meditation_feature.dart';
+import '../../premium/premium_feature.dart';
 
 class MeditateTab extends ConsumerStatefulWidget {
   const MeditateTab({Key? key}) : super(key: key);
@@ -257,7 +258,7 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
 
   Widget _buildCategoryPill(String label, int index, bool isDark, Color accentColor) {
     final isSelected = _selectedCategory == index;
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: () {
         setState(() {
           _selectedCategory = index;
@@ -283,7 +284,7 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildSectionHeader(String title, bool isDark) {
@@ -314,7 +315,7 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
     required Color subTextColor,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
@@ -375,7 +376,7 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   void _showPurchaseDialog(BuildContext context) {

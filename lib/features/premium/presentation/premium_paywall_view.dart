@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../../core/theme/custom_button_widget.dart';
+import 'package:guido/l10n/app_localizations.dart';
 
 class PremiumPaywallView extends ConsumerStatefulWidget {
   const PremiumPaywallView({Key? key}) : super(key: key);
@@ -30,29 +32,33 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
       body: Stack(
         children: [
           // Sfondo Gradiente Animato
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.goldAccent.withOpacity(isDark ? 0.15 : 0.25),
-                    AppColors.getBgColor(isDark),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+          RepaintBoundary(
+            child: Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.goldAccent.withOpacity(isDark ? 0.15 : 0.25),
+                      AppColors.getBgColor(isDark),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
                 ),
               ),
             ),
           ),
           
           // Pattern in background (opzionale)
-          Positioned.fill(
-            child: Opacity(
-              opacity: 0.03,
-              child: Image.asset(
-                'assets/images/noise.png', // Assuming a noise texture, fallback to container if missing
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+          RepaintBoundary(
+            child: Positioned.fill(
+              child: Opacity(
+                opacity: 0.03,
+                child: Image.asset(
+                  'assets/images/noise.png', // Assuming a noise texture, fallback to container if missing
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                ),
               ),
             ),
           ),
@@ -66,8 +72,8 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pop(),
+                      Semantics(button: true, label: "Interactive element", child: GestureDetector(
+                        onTap: () => context.pop(),
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
@@ -76,7 +82,7 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                           ),
                           child: Icon(Icons.close_rounded, color: subTextColor, size: 24),
                         ),
-                      ),
+                      )),
                     ],
                   ),
                 ),
@@ -107,10 +113,9 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
 
                         // Titolo
                         Text(
-                          settings.language == 0 ? "Sblocca Guido Premium" : "Unlock Guido Premium",
+                          AppLocalizations.of(context)!.premiumTitle,
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 28,
+                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                             fontWeight: FontWeight.w900,
                             color: textColor,
                             letterSpacing: -0.5,
@@ -121,12 +126,9 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
 
                         // Sottotitolo
                         Text(
-                          settings.language == 0 
-                              ? "L'esperienza definitiva. Accedi a tutte le meditazioni guidate, esercizi di respirazione e audio spaziale 3D binaurale."
-                              : "The ultimate experience. Access all guided meditations, breathing exercises, and binaural 3D spatial audio.",
+                          AppLocalizations.of(context)!.premiumSubtitle,
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: subTextColor,
                             height: 1.5,
                             fontWeight: FontWeight.w500,
@@ -138,9 +140,9 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                         // Opzioni di Abbonamento
                         _buildSubscriptionCard(
                           index: 0,
-                          title: settings.language == 0 ? "1 Mese" : "1 Month",
+                          title: AppLocalizations.of(context)!.premium1Month,
                           price: "9,99€",
-                          period: settings.language == 0 ? "/mese" : "/month",
+                          period: AppLocalizations.of(context)!.premiumPerMonth,
                           isDark: isDark,
                           textColor: textColor,
                           subTextColor: subTextColor,
@@ -150,11 +152,11 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                         
                         _buildSubscriptionCard(
                           index: 1,
-                          title: settings.language == 0 ? "1 Anno" : "1 Year",
+                          title: AppLocalizations.of(context)!.premium1Year,
                           price: "49,99€",
-                          period: settings.language == 0 ? "/anno" : "/year",
-                          badgeText: settings.language == 0 ? "CONSIGLIATO" : "RECOMMENDED",
-                          discountText: settings.language == 0 ? "Risparmi il 58%" : "Save 58%",
+                          period: AppLocalizations.of(context)!.premiumPerYear,
+                          badgeText: AppLocalizations.of(context)!.premiumRecommended,
+                          discountText: AppLocalizations.of(context)!.premiumSave58,
                           isDark: isDark,
                           textColor: textColor,
                           subTextColor: subTextColor,
@@ -164,9 +166,9 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
 
                         _buildSubscriptionCard(
                           index: 2,
-                          title: settings.language == 0 ? "A Vita" : "Lifetime",
+                          title: AppLocalizations.of(context)!.premiumLifetime,
                           price: "149,99€",
-                          period: settings.language == 0 ? " una tantum" : " one-time",
+                          period: AppLocalizations.of(context)!.premiumOneTime,
                           isDark: isDark,
                           textColor: textColor,
                           subTextColor: subTextColor,
@@ -176,7 +178,7 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
 
                         // Pulsante di Checkout
                         CustomUnityButton(
-                          text: settings.language == 0 ? "ATTIVA ORA (GRATIS)" : "ACTIVATE NOW (FREE)",
+                          text: AppLocalizations.of(context)!.premiumActivateNow,
                           onTap: () {
                             ref.read(settingsProvider.notifier).unlockPremium();
                             Navigator.of(context).pop();
@@ -188,12 +190,9 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                         const SizedBox(height: 16),
                         
                         Text(
-                          settings.language == 0 
-                            ? "Annulla in qualsiasi momento dalle impostazioni del tuo account."
-                            : "Cancel anytime from your account settings.",
+                          AppLocalizations.of(context)!.premiumCancelAnytime,
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             color: subTextColor.withOpacity(0.6),
                             fontWeight: FontWeight.w600,
                           ),
@@ -231,7 +230,7 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
         ? AppColors.goldAccent 
         : (isDark ? Colors.white12 : Colors.black12);
 
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: () {
         setState(() {
           _selectedTier = index;
@@ -281,8 +280,7 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w800,
                           color: textColor,
                         ),
@@ -297,8 +295,7 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                           ),
                           child: Text(
                             badgeText,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 9,
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               fontWeight: FontWeight.w900,
                               color: Colors.black87,
                               letterSpacing: 0.5,
@@ -312,8 +309,7 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                     const SizedBox(height: 4),
                     Text(
                       discountText,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.successAccent,
                       ),
@@ -329,16 +325,14 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
               children: [
                 Text(
                   price,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 18,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w900,
                     color: textColor,
                   ),
                 ),
                 Text(
                   period,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: subTextColor,
                   ),
@@ -348,6 +342,6 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

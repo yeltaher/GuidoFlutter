@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -56,7 +57,7 @@ class RemoveVrHeadsetView extends ConsumerWidget {
                 CustomUnityButton(
                   text: isIt ? 'FATTO' : 'DONE',
                   onTap: () {
-                    Navigator.of(context).pop();
+                    context.pop();
                   },
                   accentColor: AppColors.sageAccent,
                   width: 250,

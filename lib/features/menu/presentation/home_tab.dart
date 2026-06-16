@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../meditation/presentation/session_launch_helper.dart';
+import '../../meditation/meditation_feature.dart';
 
 class HomeTab extends ConsumerWidget {
   final bool isActive;
@@ -100,7 +100,7 @@ class HomeTab extends ConsumerWidget {
               const SizedBox(height: 12),
               
               // 4. LARGE FEATURED CARD WITH SAGE HAND-DRAWN CONTOUR WAVES
-              GestureDetector(
+              Semantics(button: true, label: "Interactive element", child: GestureDetector(
                 onTap: () {
                   launchZenSession(
                     context: context,
@@ -191,7 +191,7 @@ class HomeTab extends ConsumerWidget {
                     ],
                   ),
                 ),
-              ).animate(target: isActive ? 1.0 : 0.0).fadeIn(delay: 450.ms, duration: 600.ms).scale(begin: const Offset(0.97, 0.97), end: const Offset(1, 1), curve: Curves.easeOutCubic),
+              )).animate(target: isActive ? 1.0 : 0.0).fadeIn(delay: 450.ms, duration: 600.ms).scale(begin: const Offset(0.97, 0.97), end: const Offset(1, 1), curve: Curves.easeOutCubic),
               
               const SizedBox(height: 26),
               
@@ -259,7 +259,7 @@ class HomeTab extends ConsumerWidget {
               const SizedBox(height: 28),
               
               // 7. BEGIN YOUR SESSION PILL BUTTON WITH OUTLINE PLAY ICON
-              GestureDetector(
+              Semantics(button: true, label: "Interactive element", child: GestureDetector(
                 onTap: () {
                   launchZenSession(
                     context: context,
@@ -320,7 +320,7 @@ class HomeTab extends ConsumerWidget {
                     ),
                   ),
                 ),
-              ).animate(target: isActive ? 1.0 : 0.0).fadeIn(delay: 750.ms, duration: 600.ms),
+              )).animate(target: isActive ? 1.0 : 0.0).fadeIn(delay: 750.ms, duration: 600.ms),
               
               const SizedBox(height: 20),
             ],
@@ -344,7 +344,7 @@ class HomeTab extends ConsumerWidget {
     required Color subTextColor,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: onTap,
       child: Container(
         height: 140,
@@ -420,7 +420,7 @@ class HomeTab extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 
   /// Riga delle meditazioni veloci sotto la griglia

@@ -9,8 +9,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/theme/animated_magic_portal.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../breathing/presentation/breathing_view.dart';
-import '../../meditation/presentation/meditation_view.dart';
+import '../../breathing/breathing_feature.dart';
+import '../../meditation/meditation_feature.dart';
 
 class MenuView extends ConsumerStatefulWidget {
   const MenuView({Key? key}) : super(key: key);
@@ -339,7 +339,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
     return Row(
       children: List.generate(4, (index) {
         final isSelected = currentValue == index;
-        return GestureDetector(
+        return Semantics(button: true, label: "Interactive element", child: GestureDetector(
           onTap: () => onSelected(index),
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 2.5),
@@ -364,7 +364,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
               ),
             ),
           ),
-        );
+        ));
       }),
     );
   }
@@ -572,7 +572,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
             ),
           ),
           const SizedBox(height: 8),
-          GestureDetector(
+          Semantics(button: true, label: "Interactive element", child: GestureDetector(
             onTap: () => notifier.toggleVrMode(false),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -592,7 +592,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
                 ),
               ),
             ),
-          ),
+          )),
         ],
       );
     } else {
@@ -618,7 +618,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
   /// Toggle Button minimalista in stile Japandi
   Widget _buildToggleButton(String label, bool isActive, VoidCallback onTap, bool isVr, bool isDark) {
     final accentColor = AppColors.getActiveAccentColor(isDark);
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -643,7 +643,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   /// Pannello per la selezione delle meditazioni e respirazioni Japandi
@@ -821,7 +821,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
       onTap: onTap,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
@@ -867,7 +867,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   /// Bottoni per links esterni e chiusura app
@@ -908,12 +908,12 @@ class _MenuViewState extends ConsumerState<MenuView> {
     return Stack(
       children: [
         Positioned.fill(
-          child: GestureDetector(
+          child: Semantics(button: true, label: "Interactive element", child: GestureDetector(
             onTap: () => _setUnlockPanelVisible(false),
             child: Container(
               color: Colors.black.withOpacity(0.75),
             ),
-          ),
+          )),
         ),
 
         // Scheda in vetro centrale Japandi
