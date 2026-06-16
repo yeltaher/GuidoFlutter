@@ -66,12 +66,10 @@ class SettingsState {
 /// Gestisce lo stato e la persistenza offline delle preferenze
 class SettingsNotifier extends Notifier<SettingsState> {
   late final SharedPreferences _prefs;
-  late final GuidoAudioService _audioService;
 
   @override
   SettingsState build() {
     _prefs = ref.watch(sharedPrefsProvider);
-    _audioService = ref.watch(audioServiceProvider).valueOrNull ?? GuidoAudioService();
     
     // Default state
     final defaultState = const SettingsState(
@@ -102,10 +100,24 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final vrBiasX = _prefs.getDouble("VrBiasX") ?? 0.0;
     final vrBiasZ = _prefs.getDouble("VrBiasZ") ?? 0.0;
 
-    _audioService.setAmbientVolume(music);
-    _audioService.setEffectsVolume(effects);
-    _audioService.setVoiceVolume(voice);
-    _audioService.setVoiceMute(muteVoice);
+    // Sincronizza i volumi con il servizio audio appena diventa disponibile
+    ref.listen<AsyncValue<GuidoAudioService>>(
+      audioServiceProvider,
+      (previous, next) {
+        if (next.hasValue && next.value != null) {
+          final service = next.value!;
+          // Applica lo stato corrente (non usare `music` locale ma `state` se già inizializzato, 
+          // ma qui usiamo le variabili lette da prefs visto che state non è ancora tornato, 
+          // però siccome ref.listen con fireImmediately esegue sùbito, potremmo non avere `state` a disposizione,
+          // quindi passiamo i valori iniziali).
+          service.setAmbientVolume(music);
+          service.setEffectsVolume(effects);
+          service.setVoiceVolume(voice);
+          service.setVoiceMute(muteVoice);
+        }
+      },
+      fireImmediately: true,
+    );
 
     return SettingsState(
       musicVolume: music,
@@ -128,28 +140,28 @@ class SettingsNotifier extends Notifier<SettingsState> {
   Future<void> changeMusicVolume(int volume) async {
     state = state.copyWith(musicVolume: volume);
     await _prefs.setInt("Music", volume);
-    _audioService.setAmbientVolume(volume);
+    ref.read(audioServiceProvider).whenData((service) => service.setAmbientVolume(volume));
   }
 
   /// Modifica il volume degli effetti e lo salva offline
   Future<void> changeEffectsVolume(int volume) async {
     state = state.copyWith(effectsVolume: volume);
     await _prefs.setInt("Effects", volume);
-    _audioService.setEffectsVolume(volume);
+    ref.read(audioServiceProvider).whenData((service) => service.setEffectsVolume(volume));
   }
 
   /// Modifica il volume della voce e lo salva offline
   Future<void> changeVoiceVolume(int volume) async {
     state = state.copyWith(voiceVolume: volume);
     await _prefs.setInt("Voice", volume);
-    _audioService.setVoiceVolume(volume);
+    ref.read(audioServiceProvider).whenData((service) => service.setVoiceVolume(volume));
   }
 
   /// Cambia lo stato di Mute della voce
   Future<void> toggleVoiceMute(bool isMuted) async {
     state = state.copyWith(isVoiceMuted: isMuted);
     await _prefs.setBool("MuteVoice", isMuted);
-    _audioService.setVoiceMute(isMuted);
+    ref.read(audioServiceProvider).whenData((service) => service.setVoiceMute(isMuted));
   }
 
   /// Cambia il genere della voce (0 = Maschile, 1 = Femminile)
