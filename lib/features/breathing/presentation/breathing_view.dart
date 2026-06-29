@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -57,6 +58,10 @@ class _BreathingViewState extends ConsumerState<BreathingView>
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
     WakelockPlus.enable();
 
     final settings = ref.read(settingsProvider);
@@ -219,6 +224,9 @@ class _BreathingViewState extends ConsumerState<BreathingView>
   }
 
   void _confirmExit() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     final isVr = ref.read(settingsProvider).isVrMode;
     final audioServiceAsync = ref.read(audioServiceProvider);
     if (audioServiceAsync is AsyncData) {
@@ -242,6 +250,9 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     _pulseController.dispose();
     _gazeController?.dispose();
     WakelockPlus.disable();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     // Qui non servono chiamate dirette ad AppOrientation.
     if (!ref.read(settingsProvider).isVrMode) {
       VrOrientationService.exitVr();
