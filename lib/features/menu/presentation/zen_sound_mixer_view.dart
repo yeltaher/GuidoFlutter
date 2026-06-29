@@ -9,13 +9,14 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 
 class ZenSoundMixerView extends ConsumerStatefulWidget {
-  const ZenSoundMixerView({Key? key}) : super(key: key);
+  const ZenSoundMixerView({super.key});
 
   @override
   ConsumerState<ZenSoundMixerView> createState() => _ZenSoundMixerViewState();
 }
 
-class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with TickerProviderStateMixin {
+class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
+    with TickerProviderStateMixin {
   late AudioPlayer _waterPlayer;
   late AudioPlayer _windPlayer;
   late AudioPlayer _musicPlayer;
@@ -34,7 +35,7 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
   @override
   void initState() {
     super.initState();
-    
+
     // Inizializza i lettori audio indipendenti per il mixer
     _waterPlayer = AudioPlayer();
     _windPlayer = AudioPlayer();
@@ -132,7 +133,9 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
               child: Container(
-                color: isDark ? Colors.black.withOpacity(0.4) : Colors.white.withOpacity(0.4),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.4)
+                    : Colors.white.withValues(alpha: 0.4),
               ),
             ),
           ),
@@ -148,7 +151,7 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
                 height: 280,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: accentColor.withOpacity(isDark ? 0.04 : 0.08),
+                  color: accentColor.withValues(alpha: isDark ? 0.04 : 0.08),
                 ),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 70, sigmaY: 70),
@@ -160,7 +163,10 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
 
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -169,12 +175,17 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          size: 18,
+                        ),
                         color: textColor,
                         onPressed: () => context.pop(),
                       ),
                       Text(
-                        settings.language == 0 ? "MIXER DI SUONI" : "SOUND MIXER",
+                        settings.language == 0
+                            ? "MIXER DI SUONI"
+                            : "SOUND MIXER",
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
@@ -199,7 +210,8 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
                           AnimatedBuilder(
                             animation: _pulseController,
                             builder: (context, child) {
-                              final scale = 0.85 + (_pulseController.value * 0.15);
+                              final scale =
+                                  0.85 + (_pulseController.value * 0.15);
                               return Transform.scale(
                                 scale: scale,
                                 child: Container(
@@ -207,8 +219,11 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
                                   height: 170,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: accentColor.withOpacity(0.04),
-                                    border: Border.all(color: accentColor.withOpacity(0.1), width: 1.5),
+                                    color: accentColor.withValues(alpha: 0.04),
+                                    border: Border.all(
+                                      color: accentColor.withValues(alpha: 0.1),
+                                      width: 1.5,
+                                    ),
                                   ),
                                 ),
                               );
@@ -220,7 +235,7 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
                             child: Icon(
                               Icons.spa_rounded,
                               size: 78,
-                              color: accentColor.withOpacity(0.7),
+                              color: accentColor.withValues(alpha: 0.7),
                             ),
                           ),
                         ],
@@ -236,64 +251,79 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
                       children: [
                         // Card Sound 1: 🌊 ACQUA
                         _buildMixerCard(
-                          title: settings.language == 0 ? "🌊 Pioggia e Acqua" : "🌊 Rain & Water",
-                          isPlaying: _isWaterPlaying,
-                          volume: _waterVolume,
-                          isDark: isDark,
-                          accentColor: accentColor,
-                          textColor: textColor,
-                          subTextColor: subTextColor,
-                          cardColor: cardColor,
-                          onToggle: _toggleWater,
-                          onVolumeChanged: (val) {
-                            setState(() {
-                              _waterVolume = val;
-                              _waterPlayer.setVolume(_waterVolume);
-                            });
-                          },
-                        ).animate().fadeIn(delay: 150.ms, duration: 400.ms).slideY(begin: 0.05, end: 0),
+                              title: settings.language == 0
+                                  ? "🌊 Pioggia e Acqua"
+                                  : "🌊 Rain & Water",
+                              isPlaying: _isWaterPlaying,
+                              volume: _waterVolume,
+                              isDark: isDark,
+                              accentColor: accentColor,
+                              textColor: textColor,
+                              subTextColor: subTextColor,
+                              cardColor: cardColor,
+                              onToggle: _toggleWater,
+                              onVolumeChanged: (val) {
+                                setState(() {
+                                  _waterVolume = val;
+                                  _waterPlayer.setVolume(_waterVolume);
+                                });
+                              },
+                            )
+                            .animate()
+                            .fadeIn(delay: 150.ms, duration: 400.ms)
+                            .slideY(begin: 0.05, end: 0),
 
                         const SizedBox(height: 14),
 
                         // Card Sound 2: 🍃 VENTO
                         _buildMixerCard(
-                          title: settings.language == 0 ? "🍃 Soffio del Vento" : "🍃 Whisper of Wind",
-                          isPlaying: _isWindPlaying,
-                          volume: _windVolume,
-                          isDark: isDark,
-                          accentColor: accentColor,
-                          textColor: textColor,
-                          subTextColor: subTextColor,
-                          cardColor: cardColor,
-                          onToggle: _toggleWind,
-                          onVolumeChanged: (val) {
-                            setState(() {
-                              _windVolume = val;
-                              _windPlayer.setVolume(_windVolume);
-                            });
-                          },
-                        ).animate().fadeIn(delay: 250.ms, duration: 400.ms).slideY(begin: 0.05, end: 0),
+                              title: settings.language == 0
+                                  ? "🍃 Soffio del Vento"
+                                  : "🍃 Whisper of Wind",
+                              isPlaying: _isWindPlaying,
+                              volume: _windVolume,
+                              isDark: isDark,
+                              accentColor: accentColor,
+                              textColor: textColor,
+                              subTextColor: subTextColor,
+                              cardColor: cardColor,
+                              onToggle: _toggleWind,
+                              onVolumeChanged: (val) {
+                                setState(() {
+                                  _windVolume = val;
+                                  _windPlayer.setVolume(_windVolume);
+                                });
+                              },
+                            )
+                            .animate()
+                            .fadeIn(delay: 250.ms, duration: 400.ms)
+                            .slideY(begin: 0.05, end: 0),
 
                         const SizedBox(height: 14),
 
                         // Card Sound 3: 🎵 MUSICA
                         _buildMixerCard(
-                          title: settings.language == 0 ? "🎵 Onde Eteree" : "🎵 Ethereal Waves",
-                          isPlaying: _isMusicPlaying,
-                          volume: _musicVolume,
-                          isDark: isDark,
-                          accentColor: accentColor,
-                          textColor: textColor,
-                          subTextColor: subTextColor,
-                          cardColor: cardColor,
-                          onToggle: _toggleMusic,
-                          onVolumeChanged: (val) {
-                            setState(() {
-                              _musicVolume = val;
-                              _musicPlayer.setVolume(_musicVolume);
-                            });
-                          },
-                        ).animate().fadeIn(delay: 350.ms, duration: 400.ms).slideY(begin: 0.05, end: 0),
+                              title: settings.language == 0
+                                  ? "🎵 Onde Eteree"
+                                  : "🎵 Ethereal Waves",
+                              isPlaying: _isMusicPlaying,
+                              volume: _musicVolume,
+                              isDark: isDark,
+                              accentColor: accentColor,
+                              textColor: textColor,
+                              subTextColor: subTextColor,
+                              cardColor: cardColor,
+                              onToggle: _toggleMusic,
+                              onVolumeChanged: (val) {
+                                setState(() {
+                                  _musicVolume = val;
+                                  _musicPlayer.setVolume(_musicVolume);
+                                });
+                              },
+                            )
+                            .animate()
+                            .fadeIn(delay: 350.ms, duration: 400.ms)
+                            .slideY(begin: 0.05, end: 0),
                       ],
                     ),
                   ),
@@ -301,35 +331,43 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
                   const SizedBox(height: 30),
 
                   // Tasto Esci con click elastico
-                  Semantics(button: true, label: "Interactive element", child: GestureDetector(
-                    onTapDown: (_) {},
-                    child: OnboardingSpringButton(
-                      onTap: () => context.pop(),
-                      child: Container(
-                        width: double.infinity,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(26),
-                          border: Border.all(
-                            color: isDark ? Colors.white12 : Colors.black12,
-                            width: 1.0,
+                  Semantics(
+                    button: true,
+                    label: "Interactive element",
+                    child: GestureDetector(
+                      onTapDown: (_) {},
+                      child: OnboardingSpringButton(
+                        onTap: () => context.pop(),
+                        child: Container(
+                          width: double.infinity,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.06)
+                                : Colors.black.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(26),
+                            border: Border.all(
+                              color: isDark ? Colors.white12 : Colors.black12,
+                              width: 1.0,
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            settings.language == 0 ? "RITORNA AL GIARDINO" : "RETURN TO GARDEN",
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: textColor,
-                              letterSpacing: 0.8,
+                          child: Center(
+                            child: Text(
+                              settings.language == 0
+                                  ? "RITORNA AL GIARDINO"
+                                  : "RETURN TO GARDEN",
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: textColor,
+                                letterSpacing: 0.8,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  )).animate().fadeIn(delay: 450.ms),
+                  ).animate().fadeIn(delay: 450.ms),
 
                   const SizedBox(height: 10),
                 ],
@@ -355,7 +393,11 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: AppColors.japandiCardDecoration(isDark, borderRadius: 24.0, opacity: 0.45),
+      decoration: AppColors.japandiCardDecoration(
+        isDark,
+        borderRadius: 24.0,
+        opacity: 0.45,
+      ),
       child: Row(
         children: [
           // Toggle icon con springy feel
@@ -366,21 +408,29 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: isPlaying ? accentColor : (isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.04)),
+                color: isPlaying
+                    ? accentColor
+                    : (isDark
+                          ? Colors.white.withValues(alpha: 0.04)
+                          : Colors.black.withValues(alpha: 0.04)),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isPlaying ? accentColor : (isDark ? Colors.white12 : Colors.black12),
+                  color: isPlaying
+                      ? accentColor
+                      : (isDark ? Colors.white12 : Colors.black12),
                   width: 1.0,
                 ),
               ),
               child: Icon(
                 isPlaying ? Icons.volume_up_rounded : Icons.volume_off_rounded,
-                color: isPlaying ? (isDark ? Colors.black : Colors.white) : subTextColor,
+                color: isPlaying
+                    ? (isDark ? Colors.black : Colors.white)
+                    : subTextColor,
                 size: 18,
               ),
             ),
           ),
-          
+
           const SizedBox(width: 16),
 
           // Slider e Titolo
@@ -401,11 +451,17 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView> with Tick
                   data: SliderThemeData(
                     trackHeight: 3.0,
                     activeTrackColor: accentColor,
-                    inactiveTrackColor: isDark ? Colors.white10 : Colors.black.withOpacity(0.1),
+                    inactiveTrackColor: isDark
+                        ? Colors.white10
+                        : Colors.black.withValues(alpha: 0.1),
                     thumbColor: accentColor,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
-                    overlayColor: accentColor.withOpacity(0.12),
-                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 6.0,
+                    ),
+                    overlayColor: accentColor.withValues(alpha: 0.12),
+                    overlayShape: const RoundSliderOverlayShape(
+                      overlayRadius: 12.0,
+                    ),
                   ),
                   child: Slider(
                     value: volume,
@@ -429,16 +485,17 @@ class OnboardingSpringButton extends StatefulWidget {
   final VoidCallback onTap;
 
   const OnboardingSpringButton({
-    Key? key,
+    super.key,
     required this.child,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<OnboardingSpringButton> createState() => _OnboardingSpringButtonState();
 }
 
-class _OnboardingSpringButtonState extends State<OnboardingSpringButton> with SingleTickerProviderStateMixin {
+class _OnboardingSpringButtonState extends State<OnboardingSpringButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -449,9 +506,10 @@ class _OnboardingSpringButtonState extends State<OnboardingSpringButton> with Si
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
@@ -462,17 +520,30 @@ class _OnboardingSpringButtonState extends State<OnboardingSpringButton> with Si
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
-      onTapDown: (_) => _controller.animateTo(1.0, duration: const Duration(milliseconds: 80), curve: Curves.easeOut),
-      onTapUp: (_) {
-        _controller.animateTo(0.0, duration: const Duration(milliseconds: 300), curve: Curves.elasticOut);
-        widget.onTap();
-      },
-      onTapCancel: () => _controller.animateTo(0.0, duration: const Duration(milliseconds: 150), curve: Curves.easeOut),
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: widget.child,
+    return Semantics(
+      button: true,
+      label: "Interactive element",
+      child: GestureDetector(
+        onTapDown: (_) => _controller.animateTo(
+          1.0,
+          duration: const Duration(milliseconds: 80),
+          curve: Curves.easeOut,
+        ),
+        onTapUp: (_) {
+          _controller.animateTo(
+            0.0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.elasticOut,
+          );
+          widget.onTap();
+        },
+        onTapCancel: () => _controller.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+        ),
+        child: ScaleTransition(scale: _scaleAnimation, child: widget.child),
       ),
-    ));
+    );
   }
 }

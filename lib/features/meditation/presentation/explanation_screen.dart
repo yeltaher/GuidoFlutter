@@ -14,12 +14,12 @@ class ExplanationScreen extends ConsumerStatefulWidget {
   final String? breathingAudioPath;
 
   const ExplanationScreen({
-    Key? key,
+    super.key,
     required this.title,
     required this.voicePath,
     required this.ambientPath,
     this.breathingAudioPath,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<ExplanationScreen> createState() => _ExplanationScreenState();
@@ -31,25 +31,25 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
   String _getExplanation(bool isIt) {
     final t = widget.title.toLowerCase();
     if (t.contains('acqua') || t.contains('water')) {
-      return isIt 
-        ? "In questa esperienza esplorerai il potere rilassante dell'acqua. \n\nSeguirai un flusso continuo che spazza via le tensioni per rigenerare lo spirito. Lascia che ogni espirazione ti liberi dallo stress, mentre ogni inspirazione infonda nuova calma."
-        : "In this experience, you will explore the relaxing power of water. \n\nYou will follow a continuous flow that washes away tension to regenerate your spirit. Let every exhale release stress, while every inhale brings new calm.";
+      return isIt
+          ? "In questa esperienza esplorerai il potere rilassante dell'acqua. \n\nSeguirai un flusso continuo che spazza via le tensioni per rigenerare lo spirito. Lascia che ogni espirazione ti liberi dallo stress, mentre ogni inspirazione infonda nuova calma."
+          : "In this experience, you will explore the relaxing power of water. \n\nYou will follow a continuous flow that washes away tension to regenerate your spirit. Let every exhale release stress, while every inhale brings new calm.";
     } else if (t.contains('fuoco') || t.contains('fire')) {
       return isIt
-        ? "Il fuoco rappresenta l'energia, la forza vitale e la trasformazione profonda. \n\nLascia che la fiamma interiore riscaldi il tuo corpo e sciolga le ansie. Ritrova la tua vitalità sopita."
-        : "Fire represents energy, vital force, and deep transformation. \n\nLet the inner flame warm your body and melt away anxiety. Rediscover your dormant vitality.";
+          ? "Il fuoco rappresenta l'energia, la forza vitale e la trasformazione profonda. \n\nLascia che la fiamma interiore riscaldi il tuo corpo e sciolga le ansie. Ritrova la tua vitalità sopita."
+          : "Fire represents energy, vital force, and deep transformation. \n\nLet the inner flame warm your body and melt away anxiety. Rediscover your dormant vitality.";
     } else if (t.contains('aria') || t.contains('air')) {
       return isIt
-        ? "Leggero e invisibile, l'elemento aria ti insegnerà a respirare profondamente. \n\nConcediti uno spazio di leggerezza, elevandoti al di sopra dei pensieri quotidiani verso una pura consapevolezza."
-        : "Light and invisible, the air element will teach you to breathe deeply. \n\nAllow yourself a space of lightness, rising above daily thoughts towards pure awareness.";
+          ? "Leggero e invisibile, l'elemento aria ti insegnerà a respirare profondamente. \n\nConcediti uno spazio di leggerezza, elevandoti al di sopra dei pensieri quotidiani verso una pura consapevolezza."
+          : "Light and invisible, the air element will teach you to breathe deeply. \n\nAllow yourself a space of lightness, rising above daily thoughts towards pure awareness.";
     } else if (t.contains('terra') || t.contains('earth')) {
       return isIt
-        ? "Radicati profondamente nella stabilità millenaria della terra. \n\nTrova equilibrio, centratura e una calma incrollabile. Una meditazione profonda per ritrovare il proprio baricentro."
-        : "Root yourself deeply in the ancient stability of the earth. \n\nFind balance, centering, and unshakeable calm. A deep meditation to regain your core balance.";
+          ? "Radicati profondamente nella stabilità millenaria della terra. \n\nTrova equilibrio, centratura e una calma incrollabile. Una meditazione profonda per ritrovare il proprio baricentro."
+          : "Root yourself deeply in the ancient stability of the earth. \n\nFind balance, centering, and unshakeable calm. A deep meditation to regain your core balance.";
     } else {
       return isIt
-        ? "Preparati a vivere un'esperienza unica di rilassamento profondo. \n\nSegui la guida, respira lentamente e lasciati andare completamente al momento presente. Trova il tuo equilibrio interiore."
-        : "Get ready to experience deep relaxation. \n\nFollow the guide, breathe slowly, and completely let go to the present moment. Find your inner balance.";
+          ? "Preparati a vivere un'esperienza unica di rilassamento profondo. \n\nSegui la guida, respira lentamente e lasciati andare completamente al momento presente. Trova il tuo equilibrio interiore."
+          : "Get ready to experience deep relaxation. \n\nFollow the guide, breathe slowly, and completely let go to the present moment. Find your inner balance.";
     }
   }
 
@@ -57,7 +57,7 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
     context.pop(); // Chiude la ExplanationScreen
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.4),
+      barrierColor: Colors.black.withValues(alpha: 0.4),
       barrierDismissible: true,
       builder: (context) => SessionLaunchDialog(
         title: widget.title,
@@ -73,7 +73,7 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
     final settings = ref.watch(settingsProvider);
     final isDark = settings.isDarkTheme;
     final isIt = settings.language == 0;
-    
+
     final accentColor = AppColors.getActiveAccentColor(isDark);
     final textColor = AppColors.getTextColor(isDark);
 
@@ -112,7 +112,7 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
                           fontSize: 18,
                           height: 1.6,
                           fontWeight: FontWeight.w400,
-                          color: textColor.withOpacity(0.9),
+                          color: textColor.withValues(alpha: 0.9),
                         ),
                         speed: const Duration(milliseconds: 50),
                       ),

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'app/router/app_router.dart';
 
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:guido/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/database/settings_provider.dart';
@@ -16,11 +15,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final dir = await getApplicationDocumentsDirectory();
-  final isar = await Isar.open(
-    [UserStatsModelSchema, TimelineRecordModelSchema],
-    directory: dir.path,
-  );
-  
+  final isar = await Isar.open([
+    UserStatsModelSchema,
+    TimelineRecordModelSchema,
+  ], directory: dir.path);
+
   runApp(
     ProviderScope(
       overrides: [

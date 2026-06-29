@@ -9,10 +9,10 @@ class Vr360VideoWidget extends StatefulWidget {
   final bool isVrMode;
 
   const Vr360VideoWidget({
-    Key? key,
+    super.key,
     required this.assetPath,
     required this.isVrMode,
-  }) : super(key: key);
+  });
 
   @override
   State<Vr360VideoWidget> createState() => _Vr360VideoWidgetState();
@@ -34,13 +34,20 @@ class _Vr360VideoWidgetState extends State<Vr360VideoWidget> {
       final byteData = await rootBundle.load(widget.assetPath);
       // Usiamo ApplicationDocumentsDirectory invece di TemporaryDirectory su iOS per evitare restrizioni di lettura
       final dir = await getApplicationDocumentsDirectory();
-      final String safeName = widget.assetPath.split('/').last.replaceAll(' ', '_');
+      final String safeName = widget.assetPath
+          .split('/')
+          .last
+          .replaceAll(' ', '_');
       final tempFile = File('${dir.path}/$safeName');
-      
+
       if (!await tempFile.exists()) {
         await tempFile.writeAsBytes(
-            byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
-            flush: true);
+          byteData.buffer.asUint8List(
+            byteData.offsetInBytes,
+            byteData.lengthInBytes,
+          ),
+          flush: true,
+        );
       }
 
       setState(() {
@@ -53,13 +60,18 @@ class _Vr360VideoWidgetState extends State<Vr360VideoWidget> {
     }
   }
 
-  void _onPlayerCreated(VrPlayerController controller, VrPlayerObserver observer) {
+  void _onPlayerCreated(
+    VrPlayerController controller,
+    VrPlayerObserver observer,
+  ) {
     _playerController = controller;
-    
+
     observer.onStateChange = (state) {
       if (state == VrState.ready) {
         _playerController!.play();
-        _playerController!.setVolume(0.0); // Mute the video to avoid double audio
+        _playerController!.setVolume(
+          0.0,
+        ); // Mute the video to avoid double audio
         if (widget.isVrMode) {
           _playerController!.toggleVRMode();
         }

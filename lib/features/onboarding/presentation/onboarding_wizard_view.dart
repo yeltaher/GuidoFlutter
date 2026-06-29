@@ -1,4 +1,4 @@
-import 'package:go_router/go_router.dart';
+// ignore_for_file: unused_local_variable, deprecated_member_use, use_build_context_synchronously, curly_braces_in_flow_control_structures, unused_element, unused_field
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,16 +9,18 @@ import '../../../core/database/settings_provider.dart';
 import '../../menu/menu_feature.dart';
 
 class OnboardingWizardView extends ConsumerStatefulWidget {
-  const OnboardingWizardView({Key? key}) : super(key: key);
+  const OnboardingWizardView({super.key});
 
   @override
-  ConsumerState<OnboardingWizardView> createState() => _OnboardingWizardViewState();
+  ConsumerState<OnboardingWizardView> createState() =>
+      _OnboardingWizardViewState();
 }
 
 class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  final int _totalPages = 10; // Steps 1-8 are Qs, Step 9 is loading, Step 10 is final recommendation
+  final int _totalPages =
+      10; // Steps 1-8 are Qs, Step 9 is loading, Step 10 is final recommendation
 
   // Form & Input States
   final TextEditingController _nameController = TextEditingController();
@@ -70,7 +72,8 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   }
 
   void _prevPage() {
-    if (_currentPage > 0 && _currentPage != 8) { // Non consentiamo il ritorno durante l'elaborazione o dopo
+    if (_currentPage > 0 && _currentPage != 8) {
+      // Non consentiamo il ritorno durante l'elaborazione o dopo
       FocusScope.of(context).unfocus();
       setState(() {
         _currentPage--;
@@ -101,7 +104,7 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   // Salva le risposte locali e porta l'utente nella Home
   void _completeOnboarding() async {
     final prefs = ref.read(sharedPrefsProvider);
-    
+
     // Salvataggio dei dati personali in SharedPreferences
     await prefs.setString("ProfileName", _nameController.text.trim());
     await prefs.setInt("ProfileCommitment", _selectedCommitment);
@@ -111,10 +114,13 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
     await prefs.setStringList("QuizStrengths", _selectedStrengths);
     await prefs.setStringList("QuizWeaknesses", _selectedWeaknesses);
     await prefs.setStringList("QuizDesires", _selectedDesires);
-    
+
     // Salva il percorso raccomandato
     final recommended = _calculateRecommendation();
-    await prefs.setString("QuizRecommendedTitle", recommended["title"] ?? "Meditazione Naturale");
+    await prefs.setString(
+      "QuizRecommendedTitle",
+      recommended["title"] ?? "Meditazione Naturale",
+    );
     await prefs.setString("QuizRecommendedDesc", recommended["desc"] ?? "");
     await prefs.setString("QuizRecommendedBadge", recommended["badge"] ?? "");
 
@@ -124,12 +130,10 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
     if (mounted) {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const HomeContainerView(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const HomeContainerView(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
+            return FadeTransition(opacity: animation, child: child);
           },
           transitionDuration: const Duration(milliseconds: 700),
         ),
@@ -140,22 +144,27 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   // Genera la raccomandazione del percorso in base alle scelte dell'utente
   Map<String, String> _calculateRecommendation() {
     // Calcoliamo se consigliare meditazione acqua, vento, o naturale
-    if (_selectedProblems.contains("Ansia o stress eccessivo") || _selectedGoals.contains("Ritrovare la pace interiore")) {
+    if (_selectedProblems.contains("Ansia o stress eccessivo") ||
+        _selectedGoals.contains("Ritrovare la pace interiore")) {
       return {
         "title": "Percorso Acqua (Consigliato)",
-        "desc": "Una meditazione fluida incentrata sullo scorrere dei pensieri per allentare tensioni mentali e ritrovare la tua calma interiore.",
+        "desc":
+            "Una meditazione fluida incentrata sullo scorrere dei pensieri per allentare tensioni mentali e ritrovare la tua calma interiore.",
         "badge": "CALMA & RILASSAMENTO",
       };
-    } else if (_selectedProblems.contains("Mancanza di concentrazione") || _selectedGoals.contains("Migliorare la produttività")) {
+    } else if (_selectedProblems.contains("Mancanza di concentrazione") ||
+        _selectedGoals.contains("Migliorare la produttività")) {
       return {
         "title": "Respiro del Vento (Consigliato)",
-        "desc": "Un ciclo respiratorio energizzante e focalizzato per spazzare via il rumore mentale e centrare l'attenzione sul presente.",
+        "desc":
+            "Un ciclo respiratorio energizzante e focalizzato per spazzare via il rumore mentale e centrare l'attenzione sul presente.",
         "badge": "FOCUS & CHIAREZZA",
       };
     } else {
       return {
         "title": "Meditazione Naturale (Consigliato)",
-        "desc": "Un percorso immersivo che unisce la respirazione lenta alla connessione mentale con i suoni organici della natura selvatica.",
+        "desc":
+            "Un percorso immersivo che unisce la respirazione lenta alla connessione mentale con i suoni organici della natura selvatica.",
         "badge": "RILASSAMENTO PROFONDO",
       };
     }
@@ -190,7 +199,10 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                           child: OnboardingSpringButton(
                             onTap: _prevPage,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
                               child: Text(
                                 "INDIETRO",
                                 style: GoogleFonts.plusJakartaSans(
@@ -216,13 +228,16 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: accentColor.withOpacity(0.3),
+                                  color: accentColor.withValues(alpha: 0.3),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -231,11 +246,15 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                                   child: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
-                                      _currentPage == 7 ? "SCOPRI IL TUO SENTIERO" : "AVANTI",
+                                      _currentPage == 7
+                                          ? "SCOPRI IL TUO SENTIERO"
+                                          : "AVANTI",
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w800,
-                                        color: isDark ? Colors.black : Colors.white,
+                                        color: isDark
+                                            ? Colors.black
+                                            : Colors.white,
                                         letterSpacing: 0.8,
                                       ),
                                     ),
@@ -282,7 +301,7 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: accentColor.withOpacity(isDark ? 0.04 : 0.07),
+                color: accentColor.withValues(alpha: isDark ? 0.04 : 0.07),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 70, sigmaY: 70),
@@ -298,7 +317,10 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                 // Top Progress Bar (solo durante le domande, nascondi in caricamento e fine)
                 if (_currentPage < 8)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0,
+                      vertical: 16.0,
+                    ),
                     child: Column(
                       children: [
                         Row(
@@ -315,20 +337,21 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                             ),
                             AnimatedSwitcher(
                               duration: const Duration(milliseconds: 300),
-                              transitionBuilder: (Widget child, Animation<double> animation) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: SlideTransition(
-                                    position: animation.drive(
-                                      Tween<Offset>(
-                                        begin: const Offset(0.0, 0.35),
-                                        end: Offset.zero,
+                              transitionBuilder:
+                                  (Widget child, Animation<double> animation) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: SlideTransition(
+                                        position: animation.drive(
+                                          Tween<Offset>(
+                                            begin: const Offset(0.0, 0.35),
+                                            end: Offset.zero,
+                                          ),
+                                        ),
+                                        child: child,
                                       ),
-                                    ),
-                                    child: child,
-                                  ),
-                                );
-                              },
+                                    );
+                                  },
                               child: Text(
                                 "${_currentPage + 1} di 8",
                                 key: ValueKey<int>(_currentPage),
@@ -343,7 +366,10 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                         ),
                         const SizedBox(height: 8),
                         TweenAnimationBuilder<double>(
-                          tween: Tween<double>(begin: 0.0, end: (_currentPage + 1) / 8),
+                          tween: Tween<double>(
+                            begin: 0.0,
+                            end: (_currentPage + 1) / 8,
+                          ),
                           duration: const Duration(milliseconds: 500),
                           curve: Curves.easeOutBack,
                           builder: (context, value, child) {
@@ -355,7 +381,9 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                                       height: 6,
                                       width: double.infinity,
                                       decoration: BoxDecoration(
-                                        color: isDark ? Colors.white10 : Colors.black12,
+                                        color: isDark
+                                            ? Colors.white10
+                                            : Colors.black12,
                                         borderRadius: BorderRadius.circular(3),
                                       ),
                                     ),
@@ -365,14 +393,16 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
-                                            accentColor.withOpacity(0.6),
+                                            accentColor.withValues(alpha: 0.6),
                                             accentColor,
                                           ],
                                         ),
                                         borderRadius: BorderRadius.circular(3),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: accentColor.withOpacity(0.35),
+                                            color: accentColor.withValues(
+                                              alpha: 0.35,
+                                            ),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
                                           ),
@@ -393,18 +423,69 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                 Expanded(
                   child: PageView(
                     controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(), // Bloccato: una cosa alla volta con i pulsanti
+                    physics:
+                        const NeverScrollableScrollPhysics(), // Bloccato: una cosa alla volta con i pulsanti
                     children: [
-                      _buildStepName(textColor, subTextColor, accentColor, isDark),
-                      _buildStepCommitment(textColor, subTextColor, accentColor, isDark),
-                      _buildStepStyle(textColor, subTextColor, accentColor, isDark),
-                      _buildStepProblems(textColor, subTextColor, accentColor, isDark),
-                      _buildStepGoals(textColor, subTextColor, accentColor, isDark),
-                      _buildStepStrengths(textColor, subTextColor, accentColor, isDark),
-                      _buildStepWeaknesses(textColor, subTextColor, accentColor, isDark),
-                      _buildStepDesires(textColor, subTextColor, accentColor, isDark),
-                      _buildStepProcessing(textColor, subTextColor, accentColor, isDark),
-                      _buildStepRecommendation(textColor, subTextColor, accentColor, isDark),
+                      _buildStepName(
+                        textColor,
+                        subTextColor,
+                        accentColor,
+                        isDark,
+                      ),
+                      _buildStepCommitment(
+                        textColor,
+                        subTextColor,
+                        accentColor,
+                        isDark,
+                      ),
+                      _buildStepStyle(
+                        textColor,
+                        subTextColor,
+                        accentColor,
+                        isDark,
+                      ),
+                      _buildStepProblems(
+                        textColor,
+                        subTextColor,
+                        accentColor,
+                        isDark,
+                      ),
+                      _buildStepGoals(
+                        textColor,
+                        subTextColor,
+                        accentColor,
+                        isDark,
+                      ),
+                      _buildStepStrengths(
+                        textColor,
+                        subTextColor,
+                        accentColor,
+                        isDark,
+                      ),
+                      _buildStepWeaknesses(
+                        textColor,
+                        subTextColor,
+                        accentColor,
+                        isDark,
+                      ),
+                      _buildStepDesires(
+                        textColor,
+                        subTextColor,
+                        accentColor,
+                        isDark,
+                      ),
+                      _buildStepProcessing(
+                        textColor,
+                        subTextColor,
+                        accentColor,
+                        isDark,
+                      ),
+                      _buildStepRecommendation(
+                        textColor,
+                        subTextColor,
+                        accentColor,
+                        isDark,
+                      ),
                     ],
                   ),
                 ),
@@ -420,7 +501,12 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   // --- WIDGET DI CONFIGURAZIONE DEGLI STEP ---
 
   // STEP 1: Richiesta Nome con validazione
-  Widget _buildStepName(Color textColor, Color subTextColor, Color accentColor, bool isDark) {
+  Widget _buildStepName(
+    Color textColor,
+    Color subTextColor,
+    Color accentColor,
+    bool isDark,
+  ) {
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
@@ -450,22 +536,35 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
               ),
             ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
             const SizedBox(height: 30),
-            
+
             // Input Box stile Claymorphic
             Container(
-              decoration: AppColors.japandiCardDecoration(isDark, borderRadius: 22.0, opacity: 0.4),
+              decoration: AppColors.japandiCardDecoration(
+                isDark,
+                borderRadius: 22.0,
+                opacity: 0.4,
+              ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(22),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                      vertical: 4.0,
+                    ),
                     child: TextFormField(
                       controller: _nameController,
-                      style: GoogleFonts.plusJakartaSans(fontSize: 16, color: textColor, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        color: textColor,
+                        fontWeight: FontWeight.w600,
+                      ),
                       decoration: InputDecoration(
                         hintText: "Scrivi qui il tuo nome...",
-                        hintStyle: GoogleFonts.plusJakartaSans(color: subTextColor.withOpacity(0.5)),
+                        hintStyle: GoogleFonts.plusJakartaSans(
+                          color: subTextColor.withValues(alpha: 0.5),
+                        ),
                         border: InputBorder.none,
                       ),
                       validator: (value) {
@@ -486,12 +585,23 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   }
 
   // STEP 2: Impegno temporale giornaliero
-  Widget _buildStepCommitment(Color textColor, Color subTextColor, Color accentColor, bool isDark) {
+  Widget _buildStepCommitment(
+    Color textColor,
+    Color subTextColor,
+    Color accentColor,
+    bool isDark,
+  ) {
     final List<Map<String, dynamic>> options = [
       {"title": "🧘  5 Minuti", "desc": "Ideale per pause brevi ed efficaci"},
       {"title": "🌿  10 Minuti", "desc": "Raccomandato per principianti"},
-      {"title": "🌊  20 Minuti", "desc": "Perfetto per approfondire la presenza"},
-      {"title": "🏔️  30+ Minuti", "desc": "Per un rilassamento e immersione totale"},
+      {
+        "title": "🌊  20 Minuti",
+        "desc": "Perfetto per approfondire la presenza",
+      },
+      {
+        "title": "🏔️  30+ Minuti",
+        "desc": "Per un rilassamento e immersione totale",
+      },
     ];
 
     return SingleChildScrollView(
@@ -526,22 +636,30 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
             children: List.generate(options.length, (idx) {
               final isSelected = _selectedCommitment == idx;
               return Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: OnboardingChoiceCard(
-                  title: options[idx]["title"]!,
-                  desc: options[idx]["desc"]!,
-                  isSelected: isSelected,
-                  isDark: isDark,
-                  textColor: textColor,
-                  subTextColor: subTextColor,
-                  accentColor: accentColor,
-                  onTap: () {
-                    setState(() {
-                      _selectedCommitment = idx;
-                    });
-                  },
-                ),
-              ).animate().fadeIn(delay: (200 + idx * 50).ms, duration: 350.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutBack, duration: 400.ms);
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: OnboardingChoiceCard(
+                      title: options[idx]["title"]!,
+                      desc: options[idx]["desc"]!,
+                      isSelected: isSelected,
+                      isDark: isDark,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      accentColor: accentColor,
+                      onTap: () {
+                        setState(() {
+                          _selectedCommitment = idx;
+                        });
+                      },
+                    ),
+                  )
+                  .animate()
+                  .fadeIn(delay: (200 + idx * 50).ms, duration: 350.ms)
+                  .slideY(
+                    begin: 0.1,
+                    end: 0,
+                    curve: Curves.easeOutBack,
+                    duration: 400.ms,
+                  );
             }),
           ),
         ],
@@ -550,12 +668,29 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   }
 
   // STEP 3: Stile di Meditazione Preferito
-  Widget _buildStepStyle(Color textColor, Color subTextColor, Color accentColor, bool isDark) {
+  Widget _buildStepStyle(
+    Color textColor,
+    Color subTextColor,
+    Color accentColor,
+    bool isDark,
+  ) {
     final List<Map<String, dynamic>> options = [
-      {"title": "🎙️  Voce Guida", "desc": "Un insegnante ti accompagna passo-passo"},
-      {"title": "🎵  Solo Musica", "desc": "Sfondi acustici ed eterei della natura"},
-      {"title": "🤫  Silenzio Zen", "desc": "Meditazione silenziosa senza accompagnamento"},
-      {"title": "🫁  Respirazione", "desc": "Sessioni focalizzate sul controllo polmonare"},
+      {
+        "title": "🎙️  Voce Guida",
+        "desc": "Un insegnante ti accompagna passo-passo",
+      },
+      {
+        "title": "🎵  Solo Musica",
+        "desc": "Sfondi acustici ed eterei della natura",
+      },
+      {
+        "title": "🤫  Silenzio Zen",
+        "desc": "Meditazione silenziosa senza accompagnamento",
+      },
+      {
+        "title": "🫁  Respirazione",
+        "desc": "Sessioni focalizzate sul controllo polmonare",
+      },
     ];
 
     return SingleChildScrollView(
@@ -589,22 +724,30 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
             children: List.generate(options.length, (idx) {
               final isSelected = _selectedStyle == idx;
               return Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: OnboardingChoiceCard(
-                  title: options[idx]["title"]!,
-                  desc: options[idx]["desc"]!,
-                  isSelected: isSelected,
-                  isDark: isDark,
-                  textColor: textColor,
-                  subTextColor: subTextColor,
-                  accentColor: accentColor,
-                  onTap: () {
-                    setState(() {
-                      _selectedStyle = idx;
-                    });
-                  },
-                ),
-              ).animate().fadeIn(delay: (200 + idx * 50).ms, duration: 350.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutBack, duration: 400.ms);
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: OnboardingChoiceCard(
+                      title: options[idx]["title"]!,
+                      desc: options[idx]["desc"]!,
+                      isSelected: isSelected,
+                      isDark: isDark,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      accentColor: accentColor,
+                      onTap: () {
+                        setState(() {
+                          _selectedStyle = idx;
+                        });
+                      },
+                    ),
+                  )
+                  .animate()
+                  .fadeIn(delay: (200 + idx * 50).ms, duration: 350.ms)
+                  .slideY(
+                    begin: 0.1,
+                    end: 0,
+                    curve: Curves.easeOutBack,
+                    duration: 400.ms,
+                  );
             }),
           ),
         ],
@@ -613,7 +756,12 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   }
 
   // STEP 4: Quiz - Difficoltà / Problemi riscontrati (Multi-select)
-  Widget _buildStepProblems(Color textColor, Color subTextColor, Color accentColor, bool isDark) {
+  Widget _buildStepProblems(
+    Color textColor,
+    Color subTextColor,
+    Color accentColor,
+    bool isDark,
+  ) {
     final List<String> options = [
       "Ansia o stress eccessivo",
       "Difficoltà ad addormentarmi",
@@ -624,7 +772,8 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
 
     return _buildMultiSelectStep(
       title: "Cosa ti preoccupa di più?",
-      desc: "Seleziona le sfide o i problemi principali che riscontri maggiormente in questo periodo:",
+      desc:
+          "Seleziona le sfide o i problemi principali che riscontri maggiormente in questo periodo:",
       options: options,
       selectedList: _selectedProblems,
       textColor: textColor,
@@ -635,7 +784,12 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   }
 
   // STEP 5: Quiz - Obiettivi (Multi-select)
-  Widget _buildStepGoals(Color textColor, Color subTextColor, Color accentColor, bool isDark) {
+  Widget _buildStepGoals(
+    Color textColor,
+    Color subTextColor,
+    Color accentColor,
+    bool isDark,
+  ) {
     final List<String> options = [
       "Ritrovare la pace interiore",
       "Dormire meglio e profondamente",
@@ -646,7 +800,8 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
 
     return _buildMultiSelectStep(
       title: "I tuoi obiettivi.",
-      desc: "Cosa desideri ottenere principalmente attraverso la tua pratica su Guido?",
+      desc:
+          "Cosa desideri ottenere principalmente attraverso la tua pratica su Guido?",
       options: options,
       selectedList: _selectedGoals,
       textColor: textColor,
@@ -657,7 +812,12 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   }
 
   // STEP 6: Quiz - Punti Forti (Multi-select)
-  Widget _buildStepStrengths(Color textColor, Color subTextColor, Color accentColor, bool isDark) {
+  Widget _buildStepStrengths(
+    Color textColor,
+    Color subTextColor,
+    Color accentColor,
+    bool isDark,
+  ) {
     final List<String> options = [
       "Sono aperto alle novità",
       "Sono molto determinato",
@@ -668,7 +828,8 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
 
     return _buildMultiSelectStep(
       title: "I tuoi punti forti.",
-      desc: "Quali sono le tue risorse interiori o le tue qualità migliori in questo istante?",
+      desc:
+          "Quali sono le tue risorse interiori o le tue qualità migliori in questo istante?",
       options: options,
       selectedList: _selectedStrengths,
       textColor: textColor,
@@ -679,7 +840,12 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   }
 
   // STEP 7: Quiz - Punti Deboli (Multi-select)
-  Widget _buildStepWeaknesses(Color textColor, Color subTextColor, Color accentColor, bool isDark) {
+  Widget _buildStepWeaknesses(
+    Color textColor,
+    Color subTextColor,
+    Color accentColor,
+    bool isDark,
+  ) {
     final List<String> options = [
       "Mi distraggo facilmente",
       "Tendo a procrastinare",
@@ -690,7 +856,8 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
 
     return _buildMultiSelectStep(
       title: "Le tue fragilità.",
-      desc: "Su quali aspetti o punti deboli interiori vorresti lavorare maggiormente?",
+      desc:
+          "Su quali aspetti o punti deboli interiori vorresti lavorare maggiormente?",
       options: options,
       selectedList: _selectedWeaknesses,
       textColor: textColor,
@@ -701,7 +868,12 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   }
 
   // STEP 8: Quiz - Cosa si vuole tassativamente ottenere (Multi-select)
-  Widget _buildStepDesires(Color textColor, Color subTextColor, Color accentColor, bool isDark) {
+  Widget _buildStepDesires(
+    Color textColor,
+    Color subTextColor,
+    Color accentColor,
+    bool isDark,
+  ) {
     final List<String> options = [
       "Un rituale quotidiano da seguire",
       "Una guida vocale che mi ispiri",
@@ -712,7 +884,8 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
 
     return _buildMultiSelectStep(
       title: "Cosa vuoi da Guido?",
-      desc: "Cosa vorresti tassativamente trovare e sperimentare all'interno dell'app?",
+      desc:
+          "Cosa vorresti tassativamente trovare e sperimentare all'interno dell'app?",
       options: options,
       selectedList: _selectedDesires,
       textColor: textColor,
@@ -723,7 +896,12 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   }
 
   // STEP 9: Processing Animation (Mandala loop)
-  Widget _buildStepProcessing(Color textColor, Color subTextColor, Color accentColor, bool isDark) {
+  Widget _buildStepProcessing(
+    Color textColor,
+    Color subTextColor,
+    Color accentColor,
+    bool isDark,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30.0),
@@ -732,29 +910,39 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
           children: [
             // Mandala animato polmonare per simulare respiro profondo di caricamento
             Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: accentColor.withOpacity(0.08),
-                border: Border.all(color: accentColor.withOpacity(0.2), width: 2),
-              ),
-              child: Center(
-                child: Container(
-                  width: 90,
-                  height: 90,
+                  width: 140,
+                  height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: accentColor.withOpacity(0.2),
+                    color: accentColor.withValues(alpha: 0.08),
+                    border: Border.all(
+                      color: accentColor.withValues(alpha: 0.2),
+                      width: 2,
+                    ),
                   ),
+                  child: Center(
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: accentColor.withValues(alpha: 0.2),
+                      ),
+                    ),
+                  ),
+                )
+                .animate(
+                  onPlay: (controller) => controller.repeat(reverse: true),
+                )
+                .scale(
+                  begin: const Offset(0.8, 0.8),
+                  end: const Offset(1.2, 1.2),
+                  duration: 2.seconds,
+                  curve: Curves.easeInOutSine,
                 ),
-              ),
-            )
-            .animate(onPlay: (controller) => controller.repeat(reverse: true))
-            .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.2, 1.2), duration: 2.seconds, curve: Curves.easeInOutSine),
-            
+
             const SizedBox(height: 40),
-            
+
             Text(
               "Sto tessendo il tuo percorso...",
               textAlign: TextAlign.center,
@@ -782,7 +970,12 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   }
 
   // STEP 10: Schermata Finale di Raccomandazione Custom
-  Widget _buildStepRecommendation(Color textColor, Color subTextColor, Color accentColor, bool isDark) {
+  Widget _buildStepRecommendation(
+    Color textColor,
+    Color subTextColor,
+    Color accentColor,
+    bool isDark,
+  ) {
     final recommendation = _calculateRecommendation();
     final name = _nameController.text.trim();
 
@@ -794,14 +987,14 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 20),
-              
+
               // Icona Successo animata
               Container(
                 width: 68,
                 height: 68,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.successAccent.withOpacity(0.12),
+                  color: AppColors.successAccent.withValues(alpha: 0.12),
                 ),
                 child: const Icon(
                   Icons.spa_rounded,
@@ -809,9 +1002,9 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                   size: 34,
                 ),
               ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
-              
+
               const SizedBox(height: 20),
-              
+
               Text(
                 "Profilo Zen Creato!",
                 style: GoogleFonts.playfairDisplay(
@@ -820,9 +1013,9 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                   color: textColor,
                 ),
               ).animate().fadeIn(delay: 150.ms),
-              
+
               const SizedBox(height: 6),
-              
+
               Text(
                 "Benvenuto nel tuo cammino, $name.",
                 style: GoogleFonts.plusJakartaSans(
@@ -831,7 +1024,7 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                   color: subTextColor,
                 ),
               ).animate().fadeIn(delay: 250.ms),
-              
+
               const SizedBox(height: 24),
 
               // Scheda Raccomandazione Vetrificata Glassmorphic
@@ -852,11 +1045,17 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                       children: [
                         // Badge Percorso Consigliato
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
-                            color: accentColor.withOpacity(0.12),
+                            color: accentColor.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: accentColor.withOpacity(0.2), width: 1.0),
+                            border: Border.all(
+                              color: accentColor.withValues(alpha: 0.2),
+                              width: 1.0,
+                            ),
                           ),
                           child: Text(
                             recommendation["badge"]!.toUpperCase(),
@@ -869,7 +1068,7 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        
+
                         // Titolo
                         Text(
                           recommendation["title"]!,
@@ -880,24 +1079,28 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        
+
                         // Descrizione
                         Text(
                           recommendation["desc"]!,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w500,
-                            color: subTextColor.withOpacity(0.9),
+                            color: subTextColor.withValues(alpha: 0.9),
                             height: 1.45,
                           ),
                         ),
-                        
+
                         const SizedBox(height: 18),
-                        
+
                         // Piccola icona con promemoria tempo quotidiano scelto
                         Row(
                           children: [
-                            Icon(Icons.alarm_on_rounded, size: 16, color: accentColor),
+                            Icon(
+                              Icons.alarm_on_rounded,
+                              size: 16,
+                              color: accentColor,
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               "Impegno scelto: ${_selectedCommitmentText()}",
@@ -914,46 +1117,56 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                   ),
                 ),
               ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.05, end: 0),
-              
+
               const SizedBox(height: 30),
 
               // Bottone Finale di Completamento
-              Semantics(button: true, label: "Interactive element", child: GestureDetector(
-                onTap: _completeOnboarding,
-                child: Container(
-                  width: double.infinity,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppColors.successAccent,
-                    borderRadius: BorderRadius.circular(26),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(isDark ? 0.15 : 0.03),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          "ENTRA NELLO SPAZIO ZEN",
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
+              Semantics(
+                button: true,
+                label: "Interactive element",
+                child: GestureDetector(
+                  onTap: _completeOnboarding,
+                  child: Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.successAccent,
+                      borderRadius: BorderRadius.circular(26),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: isDark ? 0.15 : 0.03,
                           ),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.spa_outlined, color: Colors.white, size: 18),
                       ],
+                    ),
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "ENTRA NELLO SPAZIO ZEN",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.spa_outlined,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              )).animate().fadeIn(delay: 500.ms),
+              ).animate().fadeIn(delay: 500.ms),
               const SizedBox(height: 20),
             ],
           ),
@@ -966,10 +1179,14 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
 
   String _selectedCommitmentText() {
     switch (_selectedCommitment) {
-      case 0: return "5 Minuti al giorno";
-      case 1: return "10 Minuti al giorno";
-      case 2: return "20 Minuti al giorno";
-      default: return "30+ Minuti al giorno";
+      case 0:
+        return "5 Minuti al giorno";
+      case 1:
+        return "10 Minuti al giorno";
+      case 2:
+        return "20 Minuti al giorno";
+      default:
+        return "30+ Minuti al giorno";
     }
   }
 
@@ -1018,28 +1235,44 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                 final val = options[idx];
                 final isSelected = selectedList.contains(val);
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 10.0),
-                  child: OnboardingChoiceCard(
-                    title: val,
-                    isSelected: isSelected,
-                    isDark: isDark,
-                    textColor: textColor,
-                    subTextColor: subTextColor,
-                    accentColor: accentColor,
-                    onTap: () {
-                      setState(() {
-                        if (isSelected) {
-                          selectedList.remove(val);
-                        } else {
-                          selectedList.add(val);
-                        }
-                      });
-                    },
-                    trailing: isSelected
-                        ? Icon(Icons.check_circle_rounded, color: accentColor, size: 20)
-                        : Icon(Icons.radio_button_off_rounded, color: subTextColor.withOpacity(0.4), size: 20),
-                  ),
-                ).animate().fadeIn(delay: (150 + idx * 40).ms, duration: 300.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutBack, duration: 400.ms);
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: OnboardingChoiceCard(
+                        title: val,
+                        isSelected: isSelected,
+                        isDark: isDark,
+                        textColor: textColor,
+                        subTextColor: subTextColor,
+                        accentColor: accentColor,
+                        onTap: () {
+                          setState(() {
+                            if (isSelected) {
+                              selectedList.remove(val);
+                            } else {
+                              selectedList.add(val);
+                            }
+                          });
+                        },
+                        trailing: isSelected
+                            ? Icon(
+                                Icons.check_circle_rounded,
+                                color: accentColor,
+                                size: 20,
+                              )
+                            : Icon(
+                                Icons.radio_button_off_rounded,
+                                color: subTextColor.withValues(alpha: 0.4),
+                                size: 20,
+                              ),
+                      ),
+                    )
+                    .animate()
+                    .fadeIn(delay: (150 + idx * 40).ms, duration: 300.ms)
+                    .slideY(
+                      begin: 0.1,
+                      end: 0,
+                      curve: Curves.easeOutBack,
+                      duration: 400.ms,
+                    );
               }),
             ),
           ),
@@ -1061,7 +1294,7 @@ class OnboardingChoiceCard extends StatefulWidget {
   final Widget? trailing;
 
   const OnboardingChoiceCard({
-    Key? key,
+    super.key,
     required this.title,
     this.desc,
     required this.isSelected,
@@ -1071,13 +1304,14 @@ class OnboardingChoiceCard extends StatefulWidget {
     required this.accentColor,
     required this.isDark,
     this.trailing,
-  }) : super(key: key);
+  });
 
   @override
   State<OnboardingChoiceCard> createState() => _OnboardingChoiceCardState();
 }
 
-class _OnboardingChoiceCardState extends State<OnboardingChoiceCard> with SingleTickerProviderStateMixin {
+class _OnboardingChoiceCardState extends State<OnboardingChoiceCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -1088,9 +1322,10 @@ class _OnboardingChoiceCardState extends State<OnboardingChoiceCard> with Single
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.93).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.93,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
   }
 
   @override
@@ -1101,82 +1336,106 @@ class _OnboardingChoiceCardState extends State<OnboardingChoiceCard> with Single
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
-      onTapDown: (_) => _controller.animateTo(1.0, duration: const Duration(milliseconds: 80), curve: Curves.easeOut),
-      onTapUp: (_) {
-        _controller.animateTo(0.0, duration: const Duration(milliseconds: 350), curve: Curves.elasticOut);
-        widget.onTap();
-      },
-      onTapCancel: () => _controller.animateTo(0.0, duration: const Duration(milliseconds: 150), curve: Curves.easeOut),
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic,
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: widget.desc != null ? 16 : 14,
-          ),
-          decoration: BoxDecoration(
-            color: widget.isSelected 
-                ? widget.accentColor.withOpacity(0.12)
-                : (widget.isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.025)),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: widget.isSelected ? widget.accentColor : (widget.isDark ? Colors.white10 : Colors.black12),
-              width: 1.5,
+    return Semantics(
+      button: true,
+      label: "Interactive element",
+      child: GestureDetector(
+        onTapDown: (_) => _controller.animateTo(
+          1.0,
+          duration: const Duration(milliseconds: 80),
+          curve: Curves.easeOut,
+        ),
+        onTapUp: (_) {
+          _controller.animateTo(
+            0.0,
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.elasticOut,
+          );
+          widget.onTap();
+        },
+        onTapCancel: () => _controller.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+        ),
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: widget.desc != null ? 16 : 14,
             ),
-            boxShadow: widget.isSelected
-                ? [
-                    BoxShadow(
-                      color: widget.accentColor.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    )
-                  ]
-                : [],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w800,
-                        color: widget.isSelected ? widget.accentColor : widget.textColor,
+            decoration: BoxDecoration(
+              color: widget.isSelected
+                  ? widget.accentColor.withValues(alpha: 0.12)
+                  : (widget.isDark
+                        ? Colors.white.withValues(alpha: 0.03)
+                        : Colors.black.withValues(alpha: 0.025)),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: widget.isSelected
+                    ? widget.accentColor
+                    : (widget.isDark ? Colors.white10 : Colors.black12),
+                width: 1.5,
+              ),
+              boxShadow: widget.isSelected
+                  ? [
+                      BoxShadow(
+                        color: widget.accentColor.withValues(alpha: 0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
-                      child: Text(widget.title),
-                    ),
-                    if (widget.desc != null) ...[
-                      const SizedBox(height: 4),
+                    ]
+                  : [],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       AnimatedDefaultTextStyle(
                         duration: const Duration(milliseconds: 200),
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w500,
-                          color: widget.isSelected ? widget.accentColor.withOpacity(0.8) : widget.subTextColor,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          color: widget.isSelected
+                              ? widget.accentColor
+                              : widget.textColor,
                         ),
-                        child: Text(widget.desc!),
+                        child: Text(widget.title),
                       ),
+                      if (widget.desc != null) ...[
+                        const SizedBox(height: 4),
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                            color: widget.isSelected
+                                ? widget.accentColor.withValues(alpha: 0.8)
+                                : widget.subTextColor,
+                          ),
+                          child: Text(widget.desc!),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              if (widget.trailing != null) ...[
-                const SizedBox(width: 12),
-                widget.trailing!,
+                if (widget.trailing != null) ...[
+                  const SizedBox(width: 12),
+                  widget.trailing!,
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 }
 
@@ -1185,16 +1444,17 @@ class OnboardingSpringButton extends StatefulWidget {
   final VoidCallback onTap;
 
   const OnboardingSpringButton({
-    Key? key,
+    super.key,
     required this.child,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<OnboardingSpringButton> createState() => _OnboardingSpringButtonState();
 }
 
-class _OnboardingSpringButtonState extends State<OnboardingSpringButton> with SingleTickerProviderStateMixin {
+class _OnboardingSpringButtonState extends State<OnboardingSpringButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -1205,9 +1465,10 @@ class _OnboardingSpringButtonState extends State<OnboardingSpringButton> with Si
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
@@ -1218,17 +1479,30 @@ class _OnboardingSpringButtonState extends State<OnboardingSpringButton> with Si
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
-      onTapDown: (_) => _controller.animateTo(1.0, duration: const Duration(milliseconds: 80), curve: Curves.easeOut),
-      onTapUp: (_) {
-        _controller.animateTo(0.0, duration: const Duration(milliseconds: 300), curve: Curves.elasticOut);
-        widget.onTap();
-      },
-      onTapCancel: () => _controller.animateTo(0.0, duration: const Duration(milliseconds: 150), curve: Curves.easeOut),
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: widget.child,
+    return Semantics(
+      button: true,
+      label: "Interactive element",
+      child: GestureDetector(
+        onTapDown: (_) => _controller.animateTo(
+          1.0,
+          duration: const Duration(milliseconds: 80),
+          curve: Curves.easeOut,
+        ),
+        onTapUp: (_) {
+          _controller.animateTo(
+            0.0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.elasticOut,
+          );
+          widget.onTap();
+        },
+        onTapCancel: () => _controller.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+        ),
+        child: ScaleTransition(scale: _scaleAnimation, child: widget.child),
       ),
-    ));
+    );
   }
 }

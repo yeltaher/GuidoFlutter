@@ -1,3 +1,4 @@
+// ignore_for_file: unused_local_variable, deprecated_member_use, use_build_context_synchronously, curly_braces_in_flow_control_structures, unused_element, unused_field
 import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -6,10 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/theme/glb_viewer_widget.dart';
-import '../../../core/vr/vr_360_video_widget.dart';
-import '../../../core/vr/flat_video_widget.dart';
 import '../../../core/theme/vr_gaze_button.dart';
 import '../../../core/vr/vr_host_screen.dart';
 import '../../../core/vr/vr_orientation_service.dart';
@@ -25,10 +23,10 @@ class BreathingView extends ConsumerStatefulWidget {
   final String audioPath;
 
   const BreathingView({
-    Key? key,
+    super.key,
     required this.title,
     required this.audioPath,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<BreathingView> createState() => _BreathingViewState();
@@ -90,9 +88,11 @@ class _BreathingViewState extends ConsumerState<BreathingView>
 
   Future<void> _initVideo() async {
     final settings = ref.read(settingsProvider);
-    final bool isWater = widget.title.toLowerCase().contains('acqua') || widget.title.toLowerCase().contains('water');
+    final bool isWater =
+        widget.title.toLowerCase().contains('acqua') ||
+        widget.title.toLowerCase().contains('water');
     if (isWater) {
-      final assetPath = settings.isVrMode 
+      final assetPath = settings.isVrMode
           ? 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_VR360_SBS.mp4'
           : 'assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_4K_Mono.mp4';
       _videoController = VideoPlayerController.asset(assetPath);
@@ -133,9 +133,12 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     final audioServiceAsync = ref.read(audioServiceProvider);
     if (audioServiceAsync is! AsyncData) return;
     final audioService = audioServiceAsync.value!;
-    audioService.playEffect(widget.audioPath, loop: false); // L'audio detta la durata della sessione
+    audioService.playEffect(
+      widget.audioPath,
+      loop: false,
+    ); // L'audio detta la durata della sessione
     _updatePhase();
-    
+
     if (_videoController != null) {
       _videoController!.play();
     }
@@ -250,14 +253,18 @@ class _BreathingViewState extends ConsumerState<BreathingView>
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final isVr = settings.isVrMode;
-    final bool isWater = widget.title.toLowerCase().contains('acqua') || widget.title.toLowerCase().contains('water');
+    final bool isWater =
+        widget.title.toLowerCase().contains('acqua') ||
+        widget.title.toLowerCase().contains('water');
 
     Widget content;
     if (isVr) {
       final ctrl = _gazeController;
       if (ctrl == null) {
         content = const Scaffold(
-            backgroundColor: Colors.black, body: SizedBox.shrink());
+          backgroundColor: Colors.black,
+          body: SizedBox.shrink(),
+        );
       } else {
         final host = VrHostScreen(
           gazeController: ctrl,
@@ -285,7 +292,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
         content = host;
       }
     } else {
-      final uiOverlay = _showCountdown 
+      final uiOverlay = _showCountdown
           ? _buildCountdownOverlay(context)
           : _buildSingleEyeView(
               context,
@@ -303,9 +310,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
           child: _showCountdown
               ? Stack(
                   key: const ValueKey('countdown_stack'),
-                  children: [
-                    Positioned.fill(child: uiOverlay),
-                  ],
+                  children: [Positioned.fill(child: uiOverlay)],
                 )
               : Stack(
                   key: const ValueKey('experience_stack'),
@@ -324,9 +329,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
                           ),
                         ),
                       ),
-                    Positioned.fill(
-                      child: uiOverlay,
-                    ),
+                    Positioned.fill(child: uiOverlay),
                   ],
                 ),
         ),
@@ -350,7 +353,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
   Widget _buildCountdownOverlay(BuildContext context) {
     final isDark = ref.watch(settingsProvider).isDarkTheme;
     final accentColor = AppColors.getActiveAccentColor(isDark);
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -373,7 +376,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
                   height: 280,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: accentColor.withOpacity(isDark ? 0.15 : 0.25),
+                    color: accentColor.withValues(alpha: isDark ? 0.15 : 0.25),
                   ),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
@@ -383,26 +386,32 @@ class _BreathingViewState extends ConsumerState<BreathingView>
               );
             },
           ),
-          
+
           // Testo del conto alla rovescia animato fluidamente
           Text(
-            '$_countdown',
-            style: GoogleFonts.outfit(
-              fontSize: 140,
-              fontWeight: FontWeight.w300,
-              color: Colors.white.withOpacity(0.9),
-              shadows: [
-                Shadow(
-                  color: accentColor.withOpacity(0.6),
-                  blurRadius: 40,
-                  offset: const Offset(0, 0),
-                )
-              ],
-            ),
-          ).animate(key: ValueKey(_countdown))
-           .fadeIn(duration: 400.ms, curve: Curves.easeOut)
-           .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.1, 1.1), duration: 900.ms, curve: Curves.easeOutCubic)
-           .fadeOut(delay: 700.ms, duration: 300.ms, curve: Curves.easeIn),
+                '$_countdown',
+                style: GoogleFonts.outfit(
+                  fontSize: 140,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white.withValues(alpha: 0.9),
+                  shadows: [
+                    Shadow(
+                      color: accentColor.withValues(alpha: 0.6),
+                      blurRadius: 40,
+                      offset: const Offset(0, 0),
+                    ),
+                  ],
+                ),
+              )
+              .animate(key: ValueKey(_countdown))
+              .fadeIn(duration: 400.ms, curve: Curves.easeOut)
+              .scale(
+                begin: const Offset(0.8, 0.8),
+                end: const Offset(1.1, 1.1),
+                duration: 900.ms,
+                curve: Curves.easeOutCubic,
+              )
+              .fadeOut(delay: 700.ms, duration: 300.ms, curve: Curves.easeIn),
         ],
       ),
     );
@@ -424,16 +433,20 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     final double titleFontSize = isVr ? 12.0 : 20.0;
     final double buttonWidth = isVr ? 130.0 : 220.0;
     final double balloonSize = isVr ? 140.0 : 280.0;
-    final bool isWater = widget.title.toLowerCase().contains('acqua') || widget.title.toLowerCase().contains('water');
+    final bool isWater =
+        widget.title.toLowerCase().contains('acqua') ||
+        widget.title.toLowerCase().contains('water');
 
     return Container(
-      decoration: isWater ? null : BoxDecoration(
-        gradient: LinearGradient(
-          colors: AppColors.getGradientByTime(isDark),
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+      decoration: isWater
+          ? null
+          : BoxDecoration(
+              gradient: LinearGradient(
+                colors: AppColors.getGradientByTime(isDark),
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
       child: Stack(
         children: [
           Positioned(
@@ -443,7 +456,10 @@ class _BreathingViewState extends ConsumerState<BreathingView>
             child: Center(
               child: ScaleTransition(
                 scale: Tween<double>(begin: 1.0, end: 1.15).animate(
-                  CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
+                  CurvedAnimation(
+                    parent: _pulseController,
+                    curve: Curves.easeInOutSine,
+                  ),
                 ),
                 child: Container(
                   key: ValueKey('breathing_ambient_glow_$isLeft'),
@@ -451,7 +467,9 @@ class _BreathingViewState extends ConsumerState<BreathingView>
                   height: balloonSize * 1.5,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isWater ? Colors.transparent : accentColor.withOpacity(isDark ? 0.04 : 0.08),
+                    color: isWater
+                        ? Colors.transparent
+                        : accentColor.withValues(alpha: isDark ? 0.04 : 0.08),
                   ),
                   child: isWater
                       ? const SizedBox.shrink()
@@ -472,7 +490,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
               child: SafeArea(
                 child: VrGazableButton(
                   id: 'breath_close_vr',
-                  label: '', 
+                  label: '',
                   icon: Icons.close_rounded,
                   color: AppColors.dangerAccent,
                   size: 32,
@@ -489,9 +507,13 @@ class _BreathingViewState extends ConsumerState<BreathingView>
               child: SafeArea(
                 child: VrGazableButton(
                   id: 'breath_pause_vr',
-                  label: '', 
-                  icon: _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  color: _isPlaying ? AppColors.getSubTextColor(isDark).withOpacity(0.5) : AppColors.successAccent,
+                  label: '',
+                  icon: _isPlaying
+                      ? Icons.pause_rounded
+                      : Icons.play_arrow_rounded,
+                  color: _isPlaying
+                      ? AppColors.getSubTextColor(isDark).withValues(alpha: 0.5)
+                      : AppColors.successAccent,
                   size: 32,
                   hitRadius: 36,
                   isActiveEye: isActiveEye,
@@ -500,7 +522,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
               ),
             ),
           ],
-          
+
           if (!isVr && !_isSessionFinished) ...[
             // Pulsante Uscita (in basso a sinistra)
             Positioned(
@@ -523,15 +545,19 @@ class _BreathingViewState extends ConsumerState<BreathingView>
               child: SafeArea(
                 child: _build2DButton(
                   label: '',
-                  icon: _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  color: _isPlaying ? AppColors.getSubTextColor(isDark).withOpacity(0.5) : AppColors.successAccent,
+                  icon: _isPlaying
+                      ? Icons.pause_rounded
+                      : Icons.play_arrow_rounded,
+                  color: _isPlaying
+                      ? AppColors.getSubTextColor(isDark).withValues(alpha: 0.5)
+                      : AppColors.successAccent,
                   onTap: _togglePlay,
                   size: 48,
                 ),
               ),
             ),
           ],
-          
+
           if (_isSessionFinished)
             Positioned.fill(
               child: Center(
@@ -539,42 +565,42 @@ class _BreathingViewState extends ConsumerState<BreathingView>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     isVr
-                      ? VrGazableButton(
-                          id: 'breath_exit_vr',
-                          label: isIt ? 'ESCI' : 'EXIT',
-                          icon: Icons.close_rounded,
-                          color: AppColors.dangerAccent,
-                          size: 90,
-                          hitRadius: 60,
-                          isActiveEye: isActiveEye,
-                          onTriggered: _confirmExit,
-                        )
-                      : _build2DButton(
-                          label: isIt ? 'ESCI' : 'EXIT',
-                          icon: Icons.close_rounded,
-                          color: AppColors.dangerAccent,
-                          onTap: _confirmExit,
-                          size: 72,
-                        ),
+                        ? VrGazableButton(
+                            id: 'breath_exit_vr',
+                            label: isIt ? 'ESCI' : 'EXIT',
+                            icon: Icons.close_rounded,
+                            color: AppColors.dangerAccent,
+                            size: 90,
+                            hitRadius: 60,
+                            isActiveEye: isActiveEye,
+                            onTriggered: _confirmExit,
+                          )
+                        : _build2DButton(
+                            label: isIt ? 'ESCI' : 'EXIT',
+                            icon: Icons.close_rounded,
+                            color: AppColors.dangerAccent,
+                            onTap: _confirmExit,
+                            size: 72,
+                          ),
                     const SizedBox(width: 40),
                     isVr
-                      ? VrGazableButton(
-                          id: 'breath_repeat_vr',
-                          label: isIt ? 'RIPETI' : 'REPEAT',
-                          icon: Icons.replay_rounded,
-                          color: AppColors.successAccent,
-                          size: 90,
-                          hitRadius: 60,
-                          isActiveEye: isActiveEye,
-                          onTriggered: _repeatSession,
-                        )
-                      : _build2DButton(
-                          label: isIt ? 'RIPETI' : 'REPEAT',
-                          icon: Icons.replay_rounded,
-                          color: AppColors.successAccent,
-                          onTap: _repeatSession,
-                          size: 72,
-                        ),
+                        ? VrGazableButton(
+                            id: 'breath_repeat_vr',
+                            label: isIt ? 'RIPETI' : 'REPEAT',
+                            icon: Icons.replay_rounded,
+                            color: AppColors.successAccent,
+                            size: 90,
+                            hitRadius: 60,
+                            isActiveEye: isActiveEye,
+                            onTriggered: _repeatSession,
+                          )
+                        : _build2DButton(
+                            label: isIt ? 'RIPETI' : 'REPEAT',
+                            icon: Icons.replay_rounded,
+                            color: AppColors.successAccent,
+                            onTap: _repeatSession,
+                            size: 72,
+                          ),
                   ],
                 ),
               ),
@@ -602,88 +628,92 @@ class _BreathingViewState extends ConsumerState<BreathingView>
 
           if (!isVr || _isVrVideoReady || !isWater)
             SafeArea(
-            left: !isVr,
-            right: !isVr,
-            top: !isVr,
-            bottom: !isVr,
-            child: Padding(
-              padding: EdgeInsets.all(isVr ? 12.0 : 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    widget.title.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: titleFontSize,
-                      fontWeight: FontWeight.w900,
-                      color: textColor.withOpacity(0.35),
-                      letterSpacing: isVr ? 1.5 : 3.0,
+              left: !isVr,
+              right: !isVr,
+              top: !isVr,
+              bottom: !isVr,
+              child: Padding(
+                padding: EdgeInsets.all(isVr ? 12.0 : 24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      widget.title.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: titleFontSize,
+                        fontWeight: FontWeight.w900,
+                        color: textColor.withValues(alpha: 0.35),
+                        letterSpacing: isVr ? 1.5 : 3.0,
+                      ),
                     ),
-                  ),
-                  
-                  if (!_isSessionFinished)
-                    Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          AnimatedBuilder(
-                            animation: _pulseController,
-                            builder: (context, child) {
-                              if (isWater) {
-                                return SizedBox(height: balloonSize); // Spazio vuoto, il video fa da sfondo
-                              }
-                              return SizedBox(
-                                width: balloonSize,
-                                height: balloonSize,
-                                child: Transform.scale(
-                                  scale: 1.0 + (_pulseController.value * 0.15),
-                                  child: const GlbViewerWidget(
-                                    src: 'assets/models/balloon.glb',
-                                    autoRotate: false,
-                                    cameraControls: false,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          SizedBox(height: isVr ? 18 : 36),
 
-                          ClipRRect(
-                            borderRadius:
-                                BorderRadius.circular(isVr ? 12 : 24),
-                            child: BackdropFilter(
-                              filter:
-                                  ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: isVr ? 18 : 30,
-                                  vertical: isVr ? 8 : 14,
+                    if (!_isSessionFinished)
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AnimatedBuilder(
+                              animation: _pulseController,
+                              builder: (context, child) {
+                                if (isWater) {
+                                  return SizedBox(
+                                    height: balloonSize,
+                                  ); // Spazio vuoto, il video fa da sfondo
+                                }
+                                return SizedBox(
+                                  width: balloonSize,
+                                  height: balloonSize,
+                                  child: Transform.scale(
+                                    scale:
+                                        1.0 + (_pulseController.value * 0.15),
+                                    child: const GlbViewerWidget(
+                                      src: 'assets/models/balloon.glb',
+                                      autoRotate: false,
+                                      cameraControls: false,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            SizedBox(height: isVr ? 18 : 36),
+
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                isVr ? 12 : 24,
+                              ),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(
+                                  sigmaX: 10,
+                                  sigmaY: 10,
                                 ),
-                                decoration:
-                                    AppColors.japandiCardDecoration(
-                                  isDark,
-                                  borderRadius: isVr ? 12.0 : 24.0,
-                                  opacity: 0.38,
-                                ),
-                                child: Text(
-                                  _phaseText,
-                                  style: GoogleFonts.outfit(
-                                    fontSize: isVr ? 10 : 14,
-                                    fontWeight: FontWeight.w800,
-                                    color: textColor.withOpacity(0.35),
-                                    letterSpacing: isVr ? 1.0 : 2.5,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isVr ? 18 : 30,
+                                    vertical: isVr ? 8 : 14,
+                                  ),
+                                  decoration: AppColors.japandiCardDecoration(
+                                    isDark,
+                                    borderRadius: isVr ? 12.0 : 24.0,
+                                    opacity: 0.38,
+                                  ),
+                                  child: Text(
+                                    _phaseText,
+                                    style: GoogleFonts.outfit(
+                                      fontSize: isVr ? 10 : 14,
+                                      fontWeight: FontWeight.w800,
+                                      color: textColor.withValues(alpha: 0.35),
+                                      letterSpacing: isVr ? 1.0 : 2.5,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ).animate(
-                              target: _phaseText.hashCode.toDouble()),
-                        ],
-                      ),
-                    )
-                  else if (isVr) 
-                    const SizedBox.shrink(),
+                            ).animate(target: _phaseText.hashCode.toDouble()),
+                          ],
+                        ),
+                      )
+                    else if (isVr)
+                      const SizedBox.shrink(),
                   ],
                 ),
               ),
@@ -691,14 +721,22 @@ class _BreathingViewState extends ConsumerState<BreathingView>
 
           if (_showExitConfirm)
             Positioned.fill(
-              child: _buildExitConfirmOverlay(context, isVr: isVr, isActiveEye: isActiveEye),
+              child: _buildExitConfirmOverlay(
+                context,
+                isVr: isVr,
+                isActiveEye: isActiveEye,
+              ),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildExitConfirmOverlay(BuildContext context, {required bool isVr, required bool isActiveEye}) {
+  Widget _buildExitConfirmOverlay(
+    BuildContext context, {
+    required bool isVr,
+    required bool isActiveEye,
+  }) {
     final settings = ref.watch(settingsProvider);
     final isIt = settings.language == 0;
     final isDark = settings.isDarkTheme;
@@ -734,42 +772,42 @@ class _BreathingViewState extends ConsumerState<BreathingView>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   isVr
-                    ? VrGazableButton(
-                        id: 'exit_no_vr_breath',
-                        label: isIt ? 'NO' : 'NO',
-                        icon: Icons.close_rounded,
-                        color: AppColors.getActiveAccentColor(isDark),
-                        size: 40,
-                        hitRadius: 40,
-                        isActiveEye: isActiveEye,
-                        onTriggered: _cancelExit,
-                      )
-                    : _build2DButton(
-                        label: isIt ? 'NO' : 'NO',
-                        icon: Icons.close_rounded,
-                        color: AppColors.getActiveAccentColor(isDark),
-                        onTap: _cancelExit,
-                        size: 40,
-                      ),
+                      ? VrGazableButton(
+                          id: 'exit_no_vr_breath',
+                          label: isIt ? 'NO' : 'NO',
+                          icon: Icons.close_rounded,
+                          color: AppColors.getActiveAccentColor(isDark),
+                          size: 40,
+                          hitRadius: 40,
+                          isActiveEye: isActiveEye,
+                          onTriggered: _cancelExit,
+                        )
+                      : _build2DButton(
+                          label: isIt ? 'NO' : 'NO',
+                          icon: Icons.close_rounded,
+                          color: AppColors.getActiveAccentColor(isDark),
+                          onTap: _cancelExit,
+                          size: 40,
+                        ),
                   SizedBox(width: isVr ? 24 : 32),
                   isVr
-                    ? VrGazableButton(
-                        id: 'exit_yes_vr_breath',
-                        label: isIt ? 'SÌ' : 'YES',
-                        icon: Icons.check_rounded,
-                        color: AppColors.dangerAccent,
-                        size: 40,
-                        hitRadius: 40,
-                        isActiveEye: isActiveEye,
-                        onTriggered: _confirmExit,
-                      )
-                    : _build2DButton(
-                        label: isIt ? 'SÌ' : 'YES',
-                        icon: Icons.check_rounded,
-                        color: AppColors.dangerAccent,
-                        onTap: _confirmExit,
-                        size: 40,
-                      ),
+                      ? VrGazableButton(
+                          id: 'exit_yes_vr_breath',
+                          label: isIt ? 'SÌ' : 'YES',
+                          icon: Icons.check_rounded,
+                          color: AppColors.dangerAccent,
+                          size: 40,
+                          hitRadius: 40,
+                          isActiveEye: isActiveEye,
+                          onTriggered: _confirmExit,
+                        )
+                      : _build2DButton(
+                          label: isIt ? 'SÌ' : 'YES',
+                          icon: Icons.check_rounded,
+                          color: AppColors.dangerAccent,
+                          onTap: _confirmExit,
+                          size: 40,
+                        ),
                 ],
               ),
             ],
@@ -787,51 +825,53 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     double size = 60,
   }) {
     final isDark = ref.watch(settingsProvider).isDarkTheme;
-    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: size,
-            height: size,
-            decoration: AppColors.japandiCardDecoration(
-              isDark,
-              borderRadius: size / 2,
-              opacity: 0.3,
-            ).copyWith(
-              color: Colors.black.withOpacity(0.2), // Added slight background tint for contrast
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.3),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                )
-              ]
-            ),
-            child: Center(
-              child: Icon(icon, color: color, size: size * 0.5),
-            ),
-          ),
-          if (label.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                shadows: [
-                  const Shadow(
-                    blurRadius: 4,
-                    color: Colors.black54,
-                  )
-                ],
+    return Semantics(
+      button: true,
+      label: "Interactive element",
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: size,
+              height: size,
+              decoration:
+                  AppColors.japandiCardDecoration(
+                    isDark,
+                    borderRadius: size / 2,
+                    opacity: 0.3,
+                  ).copyWith(
+                    color: Colors.black.withValues(
+                      alpha: 0.2,
+                    ), // Added slight background tint for contrast
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+              child: Center(
+                child: Icon(icon, color: color, size: size * 0.5),
               ),
             ),
+            if (label.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [const Shadow(blurRadius: 4, color: Colors.black54)],
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
-    ));
+    );
   }
 }

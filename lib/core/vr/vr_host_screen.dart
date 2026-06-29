@@ -24,11 +24,11 @@ class VrHostScreen extends StatefulWidget {
   final Color backgroundColor;
 
   const VrHostScreen({
-    Key? key,
+    super.key,
     required this.eyeBuilder,
     required this.gazeController,
     this.backgroundColor = Colors.black,
-  }) : super(key: key);
+  });
 
   @override
   State<VrHostScreen> createState() => _VrHostScreenState();
@@ -69,7 +69,12 @@ class _VrHostScreenState extends State<VrHostScreen> {
             ),
 
             // Divisore centrale (lente del visore)
-            Container(width: 2.0, color: widget.backgroundColor == Colors.transparent ? Colors.transparent : Colors.black),
+            Container(
+              width: 2.0,
+              color: widget.backgroundColor == Colors.transparent
+                  ? Colors.transparent
+                  : Colors.black,
+            ),
 
             // Occhio DESTRO — isActive=false → solo visivo, no hit-test
             Expanded(

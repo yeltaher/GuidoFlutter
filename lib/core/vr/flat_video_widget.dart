@@ -1,19 +1,16 @@
+// ignore_for_file: unused_local_variable, deprecated_member_use, use_build_context_synchronously, curly_braces_in_flow_control_structures, unused_element, unused_field
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-import 'dart:typed_data';
 
 class FlatVideoWidget extends StatefulWidget {
   final String assetPath;
   final VoidCallback? onVideoFinished;
 
   const FlatVideoWidget({
-    Key? key,
+    super.key,
     required this.assetPath,
     this.onVideoFinished,
-  }) : super(key: key);
+  });
 
   @override
   State<FlatVideoWidget> createState() => _FlatVideoWidgetState();
@@ -33,13 +30,13 @@ class _FlatVideoWidgetState extends State<FlatVideoWidget> {
   Future<void> _prepareAndPlayVideo() async {
     try {
       if (!mounted) return;
-      
+
       // Usa .asset invece di rootBundle.load per evitare problemi di memoria su iOS
       _controller = VideoPlayerController.asset(widget.assetPath);
       await _controller!.initialize();
-      
+
       if (!mounted) return;
-      
+
       setState(() {
         _isInitialized = true;
       });
@@ -57,7 +54,8 @@ class _FlatVideoWidgetState extends State<FlatVideoWidget> {
   }
 
   void _videoListener() {
-    if (_controller != null && _controller!.value.isInitialized &&
+    if (_controller != null &&
+        _controller!.value.isInitialized &&
         !_controller!.value.isPlaying &&
         _controller!.value.position >= _controller!.value.duration) {
       if (widget.onVideoFinished != null) {
@@ -86,13 +84,15 @@ class _FlatVideoWidgetState extends State<FlatVideoWidget> {
     }
 
     if (!_isInitialized || _controller == null) {
-      return const Center(child: CircularProgressIndicator(color: Colors.white));
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
     }
-    
+
     final videoWidth = _controller!.value.size.width;
     final videoHeight = _controller!.value.size.height;
-    final aspectRatio = videoWidth > 0 && videoHeight > 0 
-        ? videoWidth / videoHeight 
+    final aspectRatio = videoWidth > 0 && videoHeight > 0
+        ? videoWidth / videoHeight
         : 16 / 9;
 
     return Container(

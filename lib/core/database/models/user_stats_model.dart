@@ -9,7 +9,7 @@ class UserStatsModel {
   int totalMinutes = 0;
   int totalSessions = 0;
   int profileXp = 0;
-  
+
   int currentStreak = 0;
   String? lastSessionDate;
 }

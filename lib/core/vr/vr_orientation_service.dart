@@ -64,4 +64,3 @@ class VrOrientationService {
     _activeVrScreens = 0;
   }
 }
-

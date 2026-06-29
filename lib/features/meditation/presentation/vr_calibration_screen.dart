@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,13 +27,13 @@ class VrCalibrationScreen extends ConsumerStatefulWidget {
   final String? breathingAudioPath;
 
   const VrCalibrationScreen({
-    Key? key,
+    super.key,
     this.isFromSettings = false,
     this.title,
     this.voicePath,
     this.ambientPath,
     this.breathingAudioPath,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<VrCalibrationScreen> createState() =>
@@ -85,20 +84,20 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
     _phase0StartTime = DateTime.now();
 
     // Campionamento per UI — il bias viene sempre impostato a 0.0 (puro giroscopio)
-    _gyroSub = gyroscopeEventStream(samplingPeriod: SensorInterval.uiInterval)
-        .listen((_) {}, onError: (_) {});
+    _gyroSub = gyroscopeEventStream(
+      samplingPeriod: SensorInterval.uiInterval,
+    ).listen((_) {}, onError: (_) {});
 
-    _countdownTimer =
-        Timer.periodic(const Duration(milliseconds: 30), (timer) {
+    _countdownTimer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       if (!mounted || _phase0StartTime == null) {
         timer.cancel();
         return;
       }
-      final elapsed =
-          DateTime.now().difference(_phase0StartTime!).inMilliseconds;
+      final elapsed = DateTime.now()
+          .difference(_phase0StartTime!)
+          .inMilliseconds;
       setState(() {
-        _calibrationProgress =
-            (elapsed / _phase0DurationMs).clamp(0.0, 1.0);
+        _calibrationProgress = (elapsed / _phase0DurationMs).clamp(0.0, 1.0);
       });
       if (elapsed >= _phase0DurationMs) {
         timer.cancel();
@@ -128,14 +127,13 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               VrConfirmationScreen(
-            title: widget.title ?? '',
-            voicePath: widget.voicePath ?? '',
-            ambientPath: widget.ambientPath ?? '',
-            breathingAudioPath: widget.breathingAudioPath,
-          ),
-          transitionsBuilder:
-              (context, animation, secondaryAnimation, child) =>
-                  FadeTransition(opacity: animation, child: child),
+                title: widget.title ?? '',
+                voicePath: widget.voicePath ?? '',
+                ambientPath: widget.ambientPath ?? '',
+                breathingAudioPath: widget.breathingAudioPath,
+              ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              FadeTransition(opacity: animation, child: child),
           transitionDuration: const Duration(milliseconds: 400),
         ),
       );
@@ -179,7 +177,9 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
         children: [
           Icon(
             Icons.vibration_rounded,
-            color: AppColors.getActiveAccentColor(isDark).withOpacity(0.85),
+            color: AppColors.getActiveAccentColor(
+              isDark,
+            ).withValues(alpha: 0.85),
             size: 28,
           ),
           const SizedBox(height: 10),
@@ -204,7 +204,7 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 10.0,
                 fontWeight: FontWeight.w500,
-                color: AppColors.getTextColor(isDark).withOpacity(0.65),
+                color: AppColors.getTextColor(isDark).withValues(alpha: 0.65),
                 height: 1.45,
               ),
             ),
@@ -218,7 +218,9 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
                   borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
                     value: _calibrationProgress,
-                    backgroundColor: AppColors.getTextColor(isDark).withOpacity(0.1),
+                    backgroundColor: AppColors.getTextColor(
+                      isDark,
+                    ).withValues(alpha: 0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       AppColors.getActiveAccentColor(isDark),
                     ),
@@ -231,25 +233,31 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
                   style: GoogleFonts.outfit(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.getTextColor(isDark).withOpacity(0.5),
+                    color: AppColors.getTextColor(
+                      isDark,
+                    ).withValues(alpha: 0.5),
                   ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 20),
-          Semantics(button: true, label: "Interactive element", child: GestureDetector(
-            onTap: () => context.pop(),
-            child: Text(
-              isIt ? 'ANNULLA' : 'CANCEL',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 9.0,
-                fontWeight: FontWeight.w700,
-                color: AppColors.getTextColor(isDark).withOpacity(0.30),
-                letterSpacing: 1.5,
+          Semantics(
+            button: true,
+            label: "Interactive element",
+            child: GestureDetector(
+              onTap: () => context.pop(),
+              child: Text(
+                isIt ? 'ANNULLA' : 'CANCEL',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 9.0,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.getTextColor(isDark).withValues(alpha: 0.30),
+                  letterSpacing: 1.5,
+                ),
               ),
             ),
-          )),
+          ),
         ],
       ),
     );
@@ -257,8 +265,11 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
 
   // ── FASE 1: Verifica gaze ──────────────────────────────────────────────────
 
-  Widget _buildGazeEyeContent(bool isIt, bool isDark,
-      {required bool isActiveEye}) {
+  Widget _buildGazeEyeContent(
+    bool isIt,
+    bool isDark, {
+    required bool isActiveEye,
+  }) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -272,7 +283,9 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
         children: [
           Icon(
             Icons.center_focus_strong_rounded,
-            color: AppColors.getActiveAccentColor(isDark).withOpacity(0.85),
+            color: AppColors.getActiveAccentColor(
+              isDark,
+            ).withValues(alpha: 0.85),
             size: 26,
           ),
           const SizedBox(height: 10),
@@ -297,7 +310,7 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 9.5,
                 fontWeight: FontWeight.w500,
-                color: AppColors.getTextColor(isDark).withOpacity(0.65),
+                color: AppColors.getTextColor(isDark).withValues(alpha: 0.65),
                 height: 1.4,
               ),
             ),
@@ -325,21 +338,25 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
           ),
 
           const SizedBox(height: 14),
-          Semantics(button: true, label: "Interactive element", child: GestureDetector(
-            onTap: () {
-              _gazeController.recenter();
-              _startDriftCalibration();
-            },
-            child: Text(
-              isIt ? 'RIPETI RILEVAMENTO' : 'REDO DETECTION',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 8.5,
-                fontWeight: FontWeight.w700,
-                color: AppColors.getTextColor(isDark).withOpacity(0.30),
-                letterSpacing: 1.0,
+          Semantics(
+            button: true,
+            label: "Interactive element",
+            child: GestureDetector(
+              onTap: () {
+                _gazeController.recenter();
+                _startDriftCalibration();
+              },
+              child: Text(
+                isIt ? 'RIPETI RILEVAMENTO' : 'REDO DETECTION',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.getTextColor(isDark).withValues(alpha: 0.30),
+                  letterSpacing: 1.0,
+                ),
               ),
             ),
-          )),
+          ),
         ],
       ),
     );
@@ -391,7 +408,7 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 10.0,
               fontWeight: FontWeight.w500,
-              color: AppColors.getTextColor(isDark).withOpacity(0.65),
+              color: AppColors.getTextColor(isDark).withValues(alpha: 0.65),
               height: 1.45,
             ),
           ),

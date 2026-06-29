@@ -1,3 +1,4 @@
+// ignore_for_file: unused_local_variable, deprecated_member_use, use_build_context_synchronously, curly_braces_in_flow_control_structures, unused_element, unused_field
 import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -20,11 +21,11 @@ class MeditationView extends ConsumerStatefulWidget {
   final String ambientPath;
 
   const MeditationView({
-    Key? key,
+    super.key,
     required this.title,
     required this.voicePath,
     required this.ambientPath,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<MeditationView> createState() => _MeditationViewState();
@@ -77,8 +78,9 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
     final textToType = isIt ? _itaIntro : _engIntro;
     int index = 0;
 
-    _typewriterTimer =
-        Timer.periodic(const Duration(milliseconds: 50), (timer) {
+    _typewriterTimer = Timer.periodic(const Duration(milliseconds: 50), (
+      timer,
+    ) {
       if (mounted) {
         if (index < textToType.length) {
           setState(() {
@@ -153,7 +155,9 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
       final ctrl = _gazeController;
       if (ctrl == null) {
         content = const Scaffold(
-            backgroundColor: Colors.black, body: SizedBox.shrink());
+          backgroundColor: Colors.black,
+          body: SizedBox.shrink(),
+        );
       } else {
         // VrHostScreen gestisce: landscape + fullscreen + VrGazeScope + split-screen
         content = VrHostScreen(
@@ -218,18 +222,18 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
           Positioned.fill(
             child: IgnorePointer(
               child: Center(
-                  child: Hero(
-                    tag: 'meditation_portal',
-                    child: SizedBox(
-                      width: portalSize,
-                      height: portalSize,
-                      child: const GlbViewerWidget(
-                        src: 'assets/models/portal.glb',
-                        autoRotate: true,
-                        cameraControls: false,
-                      ),
+                child: Hero(
+                  tag: 'meditation_portal',
+                  child: SizedBox(
+                    width: portalSize,
+                    height: portalSize,
+                    child: const GlbViewerWidget(
+                      src: 'assets/models/portal.glb',
+                      autoRotate: true,
+                      cameraControls: false,
                     ),
                   ),
+                ),
               ),
             ),
           ),
@@ -257,8 +261,12 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
               child: VrGazableButton(
                 id: 'med_pause_vr',
                 label: '', // Nessuna etichetta per renderlo meno ingombrante
-                icon: _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                color: _isPlaying ? AppColors.getSubTextColor(isDark).withOpacity(0.5) : AppColors.successAccent,
+                icon: _isPlaying
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
+                color: _isPlaying
+                    ? AppColors.getSubTextColor(isDark).withValues(alpha: 0.5)
+                    : AppColors.successAccent,
                 size: 32,
                 hitRadius: 36,
                 isActiveEye: isActiveEye,
@@ -283,7 +291,7 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
                     style: GoogleFonts.playfairDisplay(
                       fontSize: titleFontSize,
                       fontWeight: FontWeight.w900,
-                      color: textColor.withOpacity(0.35),
+                      color: textColor.withValues(alpha: 0.35),
                       letterSpacing: isVr ? 1.5 : 3.0,
                     ),
                   ),
@@ -291,16 +299,14 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
                   Expanded(
                     child: Center(
                       child: ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(isVr ? 14 : 26),
+                        borderRadius: BorderRadius.circular(isVr ? 14 : 26),
                         child: BackdropFilter(
-                          filter:
-                              ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                           child: Container(
                             constraints: BoxConstraints(
-                                maxHeight: isVr ? 140 : 280),
-                            padding:
-                                EdgeInsets.all(isVr ? 12 : 24),
+                              maxHeight: isVr ? 140 : 280,
+                            ),
+                            padding: EdgeInsets.all(isVr ? 12 : 24),
                             decoration: AppColors.japandiCardDecoration(
                               isDark,
                               borderRadius: isVr ? 14.0 : 26.0,
@@ -313,7 +319,7 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: textFontSize,
                                   fontWeight: FontWeight.w600,
-                                  color: textColor.withOpacity(0.35),
+                                  color: textColor.withValues(alpha: 0.35),
                                   height: isVr ? 1.45 : 1.7,
                                   letterSpacing: 0.4,
                                 ),
@@ -334,8 +340,9 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
                               : (isIt ? 'RIPRENDI' : 'RESUME'),
                           onTap: _togglePlay,
                           accentColor: _isPlaying
-                              ? AppColors.getSubTextColor(isDark)
-                                  .withOpacity(0.5)
+                              ? AppColors.getSubTextColor(
+                                  isDark,
+                                ).withValues(alpha: 0.5)
                               : AppColors.successAccent,
                           width: buttonWidth,
                         ).animate().fadeIn(duration: 400.ms),
@@ -357,14 +364,22 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
           ),
           if (_showExitConfirm)
             Positioned.fill(
-              child: _buildExitConfirmOverlay(context, isVr: isVr, isActiveEye: isActiveEye),
+              child: _buildExitConfirmOverlay(
+                context,
+                isVr: isVr,
+                isActiveEye: isActiveEye,
+              ),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildExitConfirmOverlay(BuildContext context, {required bool isVr, required bool isActiveEye}) {
+  Widget _buildExitConfirmOverlay(
+    BuildContext context, {
+    required bool isVr,
+    required bool isActiveEye,
+  }) {
     final settings = ref.watch(settingsProvider);
     final isIt = settings.language == 0;
     final isDark = settings.isDarkTheme;
@@ -400,40 +415,40 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   isVr
-                    ? VrGazableButton(
-                        id: 'exit_no_vr',
-                        label: isIt ? 'NO' : 'NO',
-                        icon: Icons.close_rounded,
-                        color: AppColors.getActiveAccentColor(isDark),
-                        size: 40,
-                        hitRadius: 40,
-                        isActiveEye: isActiveEye,
-                        onTriggered: _cancelExit,
-                      )
-                    : CustomUnityButton(
-                        text: isIt ? 'NO' : 'NO',
-                        onTap: _cancelExit,
-                        accentColor: AppColors.getActiveAccentColor(isDark),
-                        width: buttonWidth,
-                      ),
+                      ? VrGazableButton(
+                          id: 'exit_no_vr',
+                          label: isIt ? 'NO' : 'NO',
+                          icon: Icons.close_rounded,
+                          color: AppColors.getActiveAccentColor(isDark),
+                          size: 40,
+                          hitRadius: 40,
+                          isActiveEye: isActiveEye,
+                          onTriggered: _cancelExit,
+                        )
+                      : CustomUnityButton(
+                          text: isIt ? 'NO' : 'NO',
+                          onTap: _cancelExit,
+                          accentColor: AppColors.getActiveAccentColor(isDark),
+                          width: buttonWidth,
+                        ),
                   SizedBox(width: isVr ? 24 : 32),
                   isVr
-                    ? VrGazableButton(
-                        id: 'exit_yes_vr',
-                        label: isIt ? 'SÌ' : 'YES',
-                        icon: Icons.check_rounded,
-                        color: AppColors.dangerAccent,
-                        size: 40,
-                        hitRadius: 40,
-                        isActiveEye: isActiveEye,
-                        onTriggered: _confirmExit,
-                      )
-                    : CustomUnityButton(
-                        text: isIt ? 'SÌ' : 'YES',
-                        onTap: _confirmExit,
-                        accentColor: AppColors.dangerAccent,
-                        width: buttonWidth,
-                      ),
+                      ? VrGazableButton(
+                          id: 'exit_yes_vr',
+                          label: isIt ? 'SÌ' : 'YES',
+                          icon: Icons.check_rounded,
+                          color: AppColors.dangerAccent,
+                          size: 40,
+                          hitRadius: 40,
+                          isActiveEye: isActiveEye,
+                          onTriggered: _confirmExit,
+                        )
+                      : CustomUnityButton(
+                          text: isIt ? 'SÌ' : 'YES',
+                          onTap: _confirmExit,
+                          accentColor: AppColors.dangerAccent,
+                          width: buttonWidth,
+                        ),
                 ],
               ),
             ],

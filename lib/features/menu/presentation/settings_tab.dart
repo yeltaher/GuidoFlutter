@@ -1,20 +1,17 @@
 import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../meditation/meditation_feature.dart';
 import '../../splash/splash_feature.dart';
-import '../../premium/premium_feature.dart';
 
 class SettingsTab extends ConsumerStatefulWidget {
-  const SettingsTab({Key? key}) : super(key: key);
+  const SettingsTab({super.key});
 
   @override
   ConsumerState<SettingsTab> createState() => _SettingsTabState();
@@ -250,10 +247,10 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: accentColor,
             inactiveTrackColor: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.08),
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.08),
             thumbColor: accentColor,
-            overlayColor: accentColor.withOpacity(0.12),
+            overlayColor: accentColor.withValues(alpha: 0.12),
             valueIndicatorColor: accentColor,
             trackHeight: 4.0,
             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
@@ -297,37 +294,43 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
         const SizedBox(height: 4),
         Row(
           children: [
-            Semantics(button: true, label: "Interactive element", child: GestureDetector(
-              onTap: onMuteToggle,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isMuted
-                      ? AppColors.dangerAccent.withOpacity(0.12)
-                      : accentColor.withOpacity(0.06),
-                ),
-                child: Icon(
-                  isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                  color: isMuted ? AppColors.dangerAccent : accentColor,
-                  size: 20,
+            Semantics(
+              button: true,
+              label: "Interactive element",
+              child: GestureDetector(
+                onTap: onMuteToggle,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isMuted
+                        ? AppColors.dangerAccent.withValues(alpha: 0.12)
+                        : accentColor.withValues(alpha: 0.06),
+                  ),
+                  child: Icon(
+                    isMuted
+                        ? Icons.volume_off_rounded
+                        : Icons.volume_up_rounded,
+                    color: isMuted ? AppColors.dangerAccent : accentColor,
+                    size: 20,
+                  ),
                 ),
               ),
-            )),
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: isMuted
-                      ? subTextColor.withOpacity(0.3)
+                      ? subTextColor.withValues(alpha: 0.3)
                       : accentColor,
                   inactiveTrackColor: isDark
-                      ? Colors.white.withOpacity(0.08)
-                      : Colors.black.withOpacity(0.08),
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.08),
                   thumbColor: isMuted
-                      ? subTextColor.withOpacity(0.5)
+                      ? subTextColor.withValues(alpha: 0.5)
                       : accentColor,
-                  overlayColor: accentColor.withOpacity(0.12),
+                  overlayColor: accentColor.withValues(alpha: 0.12),
                   valueIndicatorColor: accentColor,
                   trackHeight: 4.0,
                   thumbShape: const RoundSliderThumbShape(
@@ -408,40 +411,44 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     bool isDark,
   ) {
     final accentColor = AppColors.getActiveAccentColor(isDark);
-    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isActive
-              ? accentColor
-              : (isDark
-                    ? Colors.white.withOpacity(0.04)
-                    : Colors.black.withOpacity(0.04)),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
+    return Semantics(
+      button: true,
+      label: "Interactive element",
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
             color: isActive
                 ? accentColor
-                : (isDark ? Colors.white12 : Colors.black12),
-            width: 1.0,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 11.5,
-              fontWeight: FontWeight.w800,
+                : (isDark
+                      ? Colors.white.withValues(alpha: 0.04)
+                      : Colors.black.withValues(alpha: 0.04)),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
               color: isActive
-                  ? (isDark ? Colors.black : Colors.white)
-                  : AppColors.getSubTextColor(isDark),
-              letterSpacing: 0.5,
+                  ? accentColor
+                  : (isDark ? Colors.white12 : Colors.black12),
+              width: 1.0,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+                color: isActive
+                    ? (isDark ? Colors.black : Colors.white)
+                    : AppColors.getSubTextColor(isDark),
+                letterSpacing: 0.5,
+              ),
             ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   Widget _buildCalibrationSetting({
@@ -467,7 +474,9 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.03),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.03)
+                : Colors.black.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isDark ? Colors.white12 : Colors.black12,
@@ -480,8 +489,12 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
               Row(
                 children: [
                   Icon(
-                    isCalibrated ? Icons.check_circle_rounded : Icons.warning_rounded,
-                    color: isCalibrated ? AppColors.successAccent : Colors.amber,
+                    isCalibrated
+                        ? Icons.check_circle_rounded
+                        : Icons.warning_rounded,
+                    color: isCalibrated
+                        ? AppColors.successAccent
+                        : Colors.amber,
                     size: 22,
                   ),
                   const SizedBox(width: 10),
@@ -490,30 +503,39 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
-                      color: isCalibrated ? AppColors.successAccent : Colors.amber,
+                      color: isCalibrated
+                          ? AppColors.successAccent
+                          : Colors.amber,
                     ),
                   ),
                 ],
               ),
-              Semantics(button: true, label: "Interactive element", child: GestureDetector(
-                onTap: onCalibrateTap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    "CALIBRA",
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w800,
-                      color: accentColor,
-                      letterSpacing: 0.5,
+              Semantics(
+                button: true,
+                label: "Interactive element",
+                child: GestureDetector(
+                  onTap: onCalibrateTap,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      "CALIBRA",
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11.0,
+                        fontWeight: FontWeight.w800,
+                        color: accentColor,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
-              )),
+              ),
             ],
           ),
         ),
@@ -536,7 +558,9 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
             }
           },
           isDark: isDark,
-          accentColor: isUnlocked ? AppColors.successAccent : AppColors.goldAccent,
+          accentColor: isUnlocked
+              ? AppColors.successAccent
+              : AppColors.goldAccent,
           isFilled: true,
         ),
         const SizedBox(height: 12),
@@ -544,7 +568,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           label: "VISITA SITO WEB",
           onTap: _openUrl,
           isDark: isDark,
-          accentColor: AppColors.getSubTextColor(isDark).withOpacity(0.5),
+          accentColor: AppColors.getSubTextColor(isDark).withValues(alpha: 0.5),
           isFilled: false,
         ),
         const SizedBox(height: 12),
@@ -575,39 +599,44 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     required Color accentColor,
     bool isFilled = false,
   }) {
-    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: BoxDecoration(
-          color: isFilled
-              ? accentColor
-              : (isDark
-                    ? Colors.white.withOpacity(0.04)
-                    : Colors.black.withOpacity(0.04)),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isFilled ? accentColor : accentColor.withOpacity(0.5),
-            width: 1.0,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 11.5,
-              fontWeight: FontWeight.w800,
+    return Semantics(
+      button: true,
+      label: "Interactive element",
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: isFilled
+                ? accentColor
+                : (isDark
+                      ? Colors.white.withValues(alpha: 0.04)
+                      : Colors.black.withValues(alpha: 0.04)),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
               color: isFilled
-                  ? (isDark ? Colors.black : Colors.white)
-                  : accentColor,
-              letterSpacing: 0.5,
+                  ? accentColor
+                  : accentColor.withValues(alpha: 0.5),
+              width: 1.0,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+                color: isFilled
+                    ? (isDark ? Colors.black : Colors.white)
+                    : accentColor,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
         ),
       ),
-    ));
+    );
   }
 }
-

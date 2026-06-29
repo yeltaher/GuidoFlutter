@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/settings_provider.dart';
@@ -40,20 +39,21 @@ class AnimatedMagicPortalWidget extends ConsumerStatefulWidget {
   final int? randomSeed;
 
   const AnimatedMagicPortalWidget({
-    Key? key,
+    super.key,
     this.width = 240,
     this.height = 240,
     this.isMeditating = false,
     this.vrEyeOffset = 0.0,
     this.randomSeed,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<AnimatedMagicPortalWidget> createState() =>
       _AnimatedMagicPortalWidgetState();
 }
 
-class _AnimatedMagicPortalWidgetState extends ConsumerState<AnimatedMagicPortalWidget>
+class _AnimatedMagicPortalWidgetState
+    extends ConsumerState<AnimatedMagicPortalWidget>
     with TickerProviderStateMixin {
   late List<ZenPetal> _petals;
   late AnimationController _waveController;
@@ -62,9 +62,11 @@ class _AnimatedMagicPortalWidgetState extends ConsumerState<AnimatedMagicPortalW
   @override
   void initState() {
     super.initState();
-    
+
     // Inizializza 20 petali di ciliegio soffici e asincroni
-    final random = widget.randomSeed != null ? math.Random(widget.randomSeed) : math.Random();
+    final random = widget.randomSeed != null
+        ? math.Random(widget.randomSeed)
+        : math.Random();
     _petals = List.generate(20, (index) {
       return ZenPetal(
         x: random.nextDouble(),
@@ -115,7 +117,9 @@ class _AnimatedMagicPortalWidgetState extends ConsumerState<AnimatedMagicPortalW
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.04),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.2)
+                    : Colors.black.withValues(alpha: 0.04),
                 blurRadius: 20,
                 spreadRadius: -4,
               ),
@@ -167,8 +171,8 @@ class ZenJapandiGardenPainter extends CustomPainter {
     final bgPaint = Paint()
       ..shader = LinearGradient(
         colors: [
-          themeGradients.first.withOpacity(isDarkTheme ? 0.35 : 0.65),
-          themeGradients.last.withOpacity(isDarkTheme ? 0.1 : 0.3),
+          themeGradients.first.withValues(alpha: isDarkTheme ? 0.35 : 0.65),
+          themeGradients.last.withValues(alpha: isDarkTheme ? 0.1 : 0.3),
         ],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
@@ -176,19 +180,24 @@ class ZenJapandiGardenPainter extends CustomPainter {
     canvas.drawRect(rect, bgPaint);
 
     // 2. CRESPATURE CONCENTRICHE GEOMETRICHE (Zen ripples in sync col respiro)
-    final center = Offset(size.width / 2 - (vrEyeOffset * 0.65), size.height / 2);
+    final center = Offset(
+      size.width / 2 - (vrEyeOffset * 0.65),
+      size.height / 2,
+    );
     final double maxRippleRadius = size.width * 0.7;
 
     for (int i = 0; i < 4; i++) {
       // Distribuzione spaziale radiale asincrona
       final double ringProgress = (breatheProgress + i * 0.25) % 1.0;
-      final double ringRadius = maxRippleRadius * 0.15 + (maxRippleRadius * 0.85 * ringProgress);
-      final double ringOpacity = (1.0 - ringProgress) * (isDarkTheme ? 0.18 : 0.25);
+      final double ringRadius =
+          maxRippleRadius * 0.15 + (maxRippleRadius * 0.85 * ringProgress);
+      final double ringOpacity =
+          (1.0 - ringProgress) * (isDarkTheme ? 0.18 : 0.25);
 
       final ripplePaint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = isDarkTheme ? 0.8 : 1.2
-        ..color = accentColor.withOpacity(ringOpacity);
+        ..color = accentColor.withValues(alpha: ringOpacity);
 
       canvas.drawCircle(center, ringRadius, ripplePaint);
     }
@@ -196,42 +205,62 @@ class ZenJapandiGardenPainter extends CustomPainter {
     // 3. PILA DI PIETRE ZEN IN 3D (Cairn prospettico)
     // Disegniamo 3 pietre levigate impilate verticalmente
     // Applicando offset di parallasse diversi a ciascuna pietra, si ottiene un fantastico effetto di tridimensionalità reale
-    
+
     // Pietra 1 (Base - Più grande e vicina)
-    _drawZenStone(canvas, 
-      center: Offset(center.dx - (vrEyeOffset * 0.1), center.dy + (size.height * 0.15)),
+    _drawZenStone(
+      canvas,
+      center: Offset(
+        center.dx - (vrEyeOffset * 0.1),
+        center.dy + (size.height * 0.15),
+      ),
       width: size.width * 0.34,
       height: size.height * 0.14,
-      stoneColor: isDarkTheme ? const Color(0xFF282E37) : const Color(0xFFE2DDD5),
+      stoneColor: isDarkTheme
+          ? const Color(0xFF282E37)
+          : const Color(0xFFE2DDD5),
       shadowOpacity: isDarkTheme ? 0.5 : 0.15,
     );
 
     // Pietra 2 (Mezzo - Media profondità)
-    _drawZenStone(canvas, 
-      center: Offset(center.dx - (vrEyeOffset * 0.2), center.dy + (size.height * 0.05)),
+    _drawZenStone(
+      canvas,
+      center: Offset(
+        center.dx - (vrEyeOffset * 0.2),
+        center.dy + (size.height * 0.05),
+      ),
       width: size.width * 0.26,
       height: size.height * 0.11,
-      stoneColor: isDarkTheme ? const Color(0xFF383F4B) : const Color(0xFFEBE6DC),
+      stoneColor: isDarkTheme
+          ? const Color(0xFF383F4B)
+          : const Color(0xFFEBE6DC),
       shadowOpacity: isDarkTheme ? 0.4 : 0.12,
     );
 
     // Pietra 3 (Cima - Più piccola e distante)
-    _drawZenStone(canvas, 
-      center: Offset(center.dx - (vrEyeOffset * 0.3), center.dy - (size.height * 0.03)),
+    _drawZenStone(
+      canvas,
+      center: Offset(
+        center.dx - (vrEyeOffset * 0.3),
+        center.dy - (size.height * 0.03),
+      ),
       width: size.width * 0.18,
       height: size.height * 0.08,
-      stoneColor: isDarkTheme ? const Color(0xFF485160) : const Color(0xFFF3EFE7),
+      stoneColor: isDarkTheme
+          ? const Color(0xFF485160)
+          : const Color(0xFFF3EFE7),
       shadowOpacity: isDarkTheme ? 0.3 : 0.08,
     );
 
     // Piccolo nucleo di luce eterea sulla cima della pietra (Candela / Moss)
     final glowPaint = Paint()
-      ..color = accentColor.withOpacity(0.35 + 0.15 * math.sin(waveProgress * math.pi * 4))
+      ..color = accentColor.withValues(
+        alpha: 0.35 + 0.15 * math.sin(waveProgress * math.pi * 4),
+      )
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
     canvas.drawCircle(
-      Offset(center.dx - (vrEyeOffset * 0.3), center.dy - (size.height * 0.05)), 
-      size.width * 0.035, 
-      glowPaint
+      Offset(center.dx - (vrEyeOffset * 0.3), center.dy - (size.height * 0.05)),
+      size.width * 0.035,
+      glowPaint,
     );
 
     // 4. CADUTA E OSCILLAZIONE DEI PETALI DI CILIEGIO (Cherry Blossom Rain)
@@ -243,7 +272,9 @@ class ZenJapandiGardenPainter extends CustomPainter {
       }
 
       // Oscillazione a foglia cadente
-      final double sway = math.sin(waveProgress * math.pi * 2 * p.swaySpeed + p.seed) * p.swayWidth;
+      final double sway =
+          math.sin(waveProgress * math.pi * 2 * p.swaySpeed + p.seed) *
+          p.swayWidth;
       double currentX = p.x + sway;
       if (currentX < 0.0) currentX += 1.0;
       if (currentX > 1.0) currentX -= 1.0;
@@ -253,9 +284,14 @@ class ZenJapandiGardenPainter extends CustomPainter {
       final double posX = currentX * size.width - petalVrOffset;
       final double posY = currentY * size.height;
 
-      if (posX >= -20 && posX <= size.width + 20 && posY >= -20 && posY <= size.height + 20) {
-        final double opacity = p.baseOpacity * (0.6 + 0.4 * math.sin(waveProgress * math.pi * 2 + p.seed));
-        
+      if (posX >= -20 &&
+          posX <= size.width + 20 &&
+          posY >= -20 &&
+          posY <= size.height + 20) {
+        final double opacity =
+            p.baseOpacity *
+            (0.6 + 0.4 * math.sin(waveProgress * math.pi * 2 + p.seed));
+
         canvas.save();
         canvas.translate(posX, posY);
         // Rotazione asincrona
@@ -264,18 +300,34 @@ class ZenJapandiGardenPainter extends CustomPainter {
         final Path petalPath = Path();
         // Disegna un grazioso petalo di ciliegio ellittico asimmetrico
         petalPath.moveTo(0, -p.size);
-        petalPath.quadraticBezierTo(p.size * 0.7, -p.size * 0.7, p.size * 0.5, 0);
+        petalPath.quadraticBezierTo(
+          p.size * 0.7,
+          -p.size * 0.7,
+          p.size * 0.5,
+          0,
+        );
         petalPath.quadraticBezierTo(p.size * 0.3, p.size * 0.8, 0, p.size);
-        petalPath.quadraticBezierTo(-p.size * 0.3, p.size * 0.8, -p.size * 0.5, 0);
+        petalPath.quadraticBezierTo(
+          -p.size * 0.3,
+          p.size * 0.8,
+          -p.size * 0.5,
+          0,
+        );
         petalPath.quadraticBezierTo(-p.size * 0.7, -p.size * 0.7, 0, -p.size);
         petalPath.close();
 
         // Riempimento rosa cipria per Light Theme e oro/crema per Dark Theme
         final petalPaint = Paint()
           ..shader = RadialGradient(
-            colors: isDarkTheme 
-                ? [accentColor.withOpacity(opacity), Colors.white.withOpacity(opacity * 0.1)]
-                : [const Color(0xFFFBC4CB).withOpacity(opacity), const Color(0xFFFFF0F2).withOpacity(opacity * 0.3)],
+            colors: isDarkTheme
+                ? [
+                    accentColor.withValues(alpha: opacity),
+                    Colors.white.withValues(alpha: opacity * 0.1),
+                  ]
+                : [
+                    const Color(0xFFFBC4CB).withValues(alpha: opacity),
+                    const Color(0xFFFFF0F2).withValues(alpha: opacity * 0.3),
+                  ],
           ).createShader(Rect.fromCircle(center: Offset.zero, radius: p.size));
 
         canvas.drawPath(petalPath, petalPaint);
@@ -294,16 +346,23 @@ class ZenJapandiGardenPainter extends CustomPainter {
     required double shadowOpacity,
   }) {
     final rect = Rect.fromCenter(center: center, width: width, height: height);
-    final rrect = RRect.fromRectAndRadius(rect, Radius.elliptical(width * 0.45, height * 0.45));
+    final rrect = RRect.fromRectAndRadius(
+      rect,
+      Radius.elliptical(width * 0.45, height * 0.45),
+    );
 
     // 1. Ombra soffusa della pietra sottostante
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromCenter(center: Offset(center.dx, center.dy + (height * 0.22)), width: width * 0.95, height: height * 0.9),
+        Rect.fromCenter(
+          center: Offset(center.dx, center.dy + (height * 0.22)),
+          width: width * 0.95,
+          height: height * 0.9,
+        ),
         Radius.elliptical(width * 0.45, height * 0.45),
       ),
       Paint()
-        ..color = Colors.black.withOpacity(shadowOpacity)
+        ..color = Colors.black.withValues(alpha: shadowOpacity)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
     );
 
@@ -312,8 +371,10 @@ class ZenJapandiGardenPainter extends CustomPainter {
       ..shader = RadialGradient(
         colors: [
           stoneColor,
-          stoneColor.withOpacity(0.85),
-          isDarkTheme ? Colors.black.withOpacity(0.5) : const Color(0xFFB5AEA5).withOpacity(0.5),
+          stoneColor.withValues(alpha: 0.85),
+          isDarkTheme
+              ? Colors.black.withValues(alpha: 0.5)
+              : const Color(0xFFB5AEA5).withValues(alpha: 0.5),
         ],
         center: const Alignment(-0.25, -0.35),
         radius: 0.95,
@@ -325,7 +386,7 @@ class ZenJapandiGardenPainter extends CustomPainter {
     final borderPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
-      ..color = Colors.white.withOpacity(isDarkTheme ? 0.08 : 0.25);
+      ..color = Colors.white.withValues(alpha: isDarkTheme ? 0.08 : 0.25);
     canvas.drawRRect(rrect, borderPaint);
   }
 
@@ -345,10 +406,10 @@ class ZenBreathingBubbleWidget extends StatelessWidget {
   final double size;
 
   const ZenBreathingBubbleWidget({
-    Key? key,
+    super.key,
     required this.progress,
     required this.size,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -396,20 +457,23 @@ class ZenBreathingBubblePainter extends CustomPainter {
     // 1. Cerchi concentrici a feedback d'onda di respirazione (Ripples)
     for (int i = 0; i < 3; i++) {
       final double ringProgress = (progress + i * 0.33) % 1.0;
-      final double ringRadius = maxRadius * 0.28 + (maxRadius * 0.72 * ringProgress);
-      final double ringOpacity = (1.0 - ringProgress) * (isDarkTheme ? 0.2 : 0.26);
+      final double ringRadius =
+          maxRadius * 0.28 + (maxRadius * 0.72 * ringProgress);
+      final double ringOpacity =
+          (1.0 - ringProgress) * (isDarkTheme ? 0.2 : 0.26);
 
       final ringPaint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = isDarkTheme ? 0.8 : 1.2
-        ..color = accentColor.withOpacity(ringOpacity);
+        ..color = accentColor.withValues(alpha: ringOpacity);
 
       canvas.drawCircle(center, ringRadius, ringPaint);
     }
 
     // 2. Core centrale pulsante (stile ciottolo levigato traslucido o loto)
     final double baseRadius = maxRadius * 0.42;
-    final double currentRadius = baseRadius * (0.82 + progress * 0.38); // da 0.82x a 1.2x
+    final double currentRadius =
+        baseRadius * (0.82 + progress * 0.38); // da 0.82x a 1.2x
 
     // Aura di luce esterna soffice in base alla respirazione
     canvas.drawCircle(
@@ -417,7 +481,9 @@ class ZenBreathingBubblePainter extends CustomPainter {
       currentRadius * 1.38,
       Paint()
         ..style = PaintingStyle.fill
-        ..color = accentColor.withOpacity(isDarkTheme ? 0.08 * progress : 0.15 * progress)
+        ..color = accentColor.withValues(
+          alpha: isDarkTheme ? 0.08 * progress : 0.15 * progress,
+        )
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
     );
 
@@ -425,9 +491,17 @@ class ZenBreathingBubblePainter extends CustomPainter {
     final corePaint = Paint()
       ..style = PaintingStyle.fill
       ..shader = RadialGradient(
-        colors: isDarkTheme 
-            ? [Colors.white.withOpacity(0.85), accentColor.withOpacity(0.4), Colors.transparent]
-            : [Colors.white.withOpacity(0.95), accentColor.withOpacity(0.35), Colors.transparent],
+        colors: isDarkTheme
+            ? [
+                Colors.white.withValues(alpha: 0.85),
+                accentColor.withValues(alpha: 0.4),
+                Colors.transparent,
+              ]
+            : [
+                Colors.white.withValues(alpha: 0.95),
+                accentColor.withValues(alpha: 0.35),
+                Colors.transparent,
+              ],
         stops: const [0.0, 0.7, 1.0],
       ).createShader(Rect.fromCircle(center: center, radius: currentRadius));
     canvas.drawCircle(center, currentRadius, corePaint);
@@ -435,16 +509,21 @@ class ZenBreathingBubblePainter extends CustomPainter {
     // 3. Geometria Japandi interna (8 petali stilizzati geometrici rotanti)
     canvas.save();
     canvas.translate(center.dx, center.dy);
-    canvas.rotate(progress * math.pi * 0.22); // Rotazione in sincrono col respiro
+    canvas.rotate(
+      progress * math.pi * 0.22,
+    ); // Rotazione in sincrono col respiro
 
     final petalPaint = Paint()
       ..style = PaintingStyle.fill
-      ..shader = RadialGradient(
-        colors: [
-          Colors.white.withOpacity(isDarkTheme ? 0.42 : 0.52),
-          accentColor.withOpacity(0.0),
-        ],
-      ).createShader(Rect.fromCircle(center: Offset.zero, radius: currentRadius));
+      ..shader =
+          RadialGradient(
+            colors: [
+              Colors.white.withValues(alpha: isDarkTheme ? 0.42 : 0.52),
+              accentColor.withValues(alpha: 0.0),
+            ],
+          ).createShader(
+            Rect.fromCircle(center: Offset.zero, radius: currentRadius),
+          );
 
     for (int i = 0; i < 8; i++) {
       canvas.save();

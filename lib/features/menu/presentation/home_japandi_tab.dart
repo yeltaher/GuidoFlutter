@@ -1,4 +1,4 @@
-import 'dart:ui';
+// ignore_for_file: unused_local_variable, deprecated_member_use, use_build_context_synchronously, curly_braces_in_flow_control_structures, unused_element, unused_field
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -11,7 +11,7 @@ import 'zen_sound_mixer_view.dart';
 
 class HomeJapandiTab extends ConsumerWidget {
   final bool isActive;
-  const HomeJapandiTab({Key? key, this.isActive = true}) : super(key: key);
+  const HomeJapandiTab({super.key, this.isActive = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -57,8 +57,8 @@ class HomeJapandiTab extends ConsumerWidget {
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            accentColor.withOpacity(isDark ? 0.12 : 0.18),
-                            accentColor.withOpacity(0.0),
+                            accentColor.withValues(alpha: isDark ? 0.12 : 0.18),
+                            accentColor.withValues(alpha: 0.0),
                           ],
                         ),
                       ),
@@ -118,8 +118,8 @@ class HomeJapandiTab extends ConsumerWidget {
                             ),
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? Colors.white.withOpacity(0.04)
-                                  : Colors.black.withOpacity(0.04),
+                                  ? Colors.white.withValues(alpha: 0.04)
+                                  : Colors.black.withValues(alpha: 0.04),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: isDark ? Colors.white10 : Colors.black12,
@@ -148,7 +148,7 @@ class HomeJapandiTab extends ConsumerWidget {
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 9.5,
                                     fontWeight: FontWeight.bold,
-                                    color: subTextColor.withOpacity(0.9),
+                                    color: subTextColor.withValues(alpha: 0.9),
                                     letterSpacing: 0.6,
                                   ),
                                 ),
@@ -191,191 +191,204 @@ class HomeJapandiTab extends ConsumerWidget {
                         // 4. DAILY HERO CARD: RITUALE DEL MATTINO (con Loop di Respiro Polmonare) (Padded)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: Semantics(button: true, label: "Interactive element", child: GestureDetector(
-                            onTap: () {
-                              launchZenSession(
-                                context: context,
-                                ref: ref,
-                                title: "Il Respiro dell'Alba",
-                                voicePath:
-                                    'assets/audio/real/Meditazioni/Acqua/Meditazione del Mattino_Procedimento.m4a',
-                                ambientPath:
-                                    'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
-                              );
-                            },
-                            child: Container(
-                              width: double.infinity,
-                              decoration: AppColors.japandiCardDecoration(
-                                isDark,
-                                borderRadius: 28.0,
-                                opacity: 0.58,
-                              ),
-                              child: Stack(
-                                children: [
-                                  // Loop di espansione a onde luminose (Mandala di respiro polmonare)
-                                  Positioned(
-                                    right: -10,
-                                    bottom: -15,
-                                    child:
-                                        Container(
-                                              width: 140,
-                                              height: 140,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                gradient: RadialGradient(
-                                                  colors: [
-                                                    accentColor.withOpacity(
-                                                      isDark ? 0.09 : 0.15,
-                                                    ),
-                                                    accentColor.withOpacity(
-                                                      0.0,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            )
-                                            .animate(
-                                              onPlay: (controller) => controller
-                                                  .repeat(reverse: true),
-                                            )
-                                            .scale(
-                                              begin: const Offset(0.78, 0.78),
-                                              end: const Offset(1.22, 1.22),
-                                              duration: 4.seconds,
-                                              curve: Curves.easeInOutCubic,
-                                            )
-                                            .fadeIn(duration: 4.seconds)
-                                            .fadeOut(duration: 4.seconds),
-                                  ),
-
-                                  Padding(
-                                    padding: const EdgeInsets.all(24.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        // Badge Rituale del Giorno
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: accentColor.withOpacity(
-                                              isDark ? 0.08 : 0.15,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            heroBadge,
-                                            style: GoogleFonts.plusJakartaSans(
-                                              fontSize: 9.0,
-                                              fontWeight: FontWeight.w800,
-                                              color: accentColor,
-                                              letterSpacing: 0.8,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 14),
-                                        Text(
-                                          heroTitle,
-                                          style: GoogleFonts.playfairDisplay(
-                                            fontSize: 25,
-                                            fontWeight: FontWeight.w700,
-                                            color: textColor,
-                                            letterSpacing: -0.2,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          heroDesc,
-                                          style: GoogleFonts.plusJakartaSans(
-                                            fontSize: 12.5,
-                                            fontWeight: FontWeight.w500,
-                                            color: subTextColor,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 20),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.query_builder_rounded,
-                                                  size: 15,
-                                                  color: subTextColor
-                                                      .withOpacity(0.8),
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  "10 MINUTI",
-                                                  style:
-                                                      GoogleFonts.plusJakartaSans(
-                                                        fontSize: 10.5,
-                                                        fontWeight:
-                                                            FontWeight.w800,
-                                                        color: subTextColor,
-                                                        letterSpacing: 0.3,
+                          child: Semantics(
+                            button: true,
+                            label: "Interactive element",
+                            child: GestureDetector(
+                              onTap: () {
+                                launchZenSession(
+                                  context: context,
+                                  ref: ref,
+                                  title: "Il Respiro dell'Alba",
+                                  voicePath:
+                                      'assets/audio/real/Meditazioni/Acqua/Meditazione del Mattino_Procedimento.m4a',
+                                  ambientPath:
+                                      'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
+                                );
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                decoration: AppColors.japandiCardDecoration(
+                                  isDark,
+                                  borderRadius: 28.0,
+                                  opacity: 0.58,
+                                ),
+                                child: Stack(
+                                  children: [
+                                    // Loop di espansione a onde luminose (Mandala di respiro polmonare)
+                                    Positioned(
+                                      right: -10,
+                                      bottom: -15,
+                                      child:
+                                          Container(
+                                                width: 140,
+                                                height: 140,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  gradient: RadialGradient(
+                                                    colors: [
+                                                      accentColor.withValues(
+                                                        alpha: isDark
+                                                            ? 0.09
+                                                            : 0.15,
                                                       ),
-                                                ),
-                                              ],
-                                            ),
-
-                                            // Tasto Play con pulsazione luminosa
-                                            Container(
-                                                  width: 40,
-                                                  height: 40,
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    color: accentColor,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: accentColor
-                                                            .withOpacity(0.25),
-                                                        blurRadius: 8,
-                                                        offset: const Offset(
-                                                          0,
-                                                          3,
-                                                        ),
+                                                      accentColor.withValues(
+                                                        alpha: 0.0,
                                                       ),
                                                     ],
                                                   ),
-                                                  child: Icon(
-                                                    Icons.play_arrow_rounded,
-                                                    color: isDark
-                                                        ? Colors.black
-                                                        : Colors.white,
-                                                    size: 24,
-                                                  ),
-                                                )
-                                                .animate(
-                                                  onPlay: (controller) =>
-                                                      controller.repeat(
-                                                        reverse: true,
-                                                      ),
-                                                )
-                                                .scale(
-                                                  begin: const Offset(
-                                                    0.95,
-                                                    0.95,
-                                                  ),
-                                                  end: const Offset(1.05, 1.05),
-                                                  duration: 2.seconds,
-                                                  curve: Curves.easeInOut,
                                                 ),
-                                          ],
-                                        ),
-                                      ],
+                                              )
+                                              .animate(
+                                                onPlay: (controller) =>
+                                                    controller.repeat(
+                                                      reverse: true,
+                                                    ),
+                                              )
+                                              .scale(
+                                                begin: const Offset(0.78, 0.78),
+                                                end: const Offset(1.22, 1.22),
+                                                duration: 4.seconds,
+                                                curve: Curves.easeInOutCubic,
+                                              )
+                                              .fadeIn(duration: 4.seconds)
+                                              .fadeOut(duration: 4.seconds),
                                     ),
-                                  ),
-                                ],
+
+                                    Padding(
+                                      padding: const EdgeInsets.all(24.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // Badge Rituale del Giorno
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: accentColor.withValues(
+                                                alpha: isDark ? 0.08 : 0.15,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              heroBadge,
+                                              style:
+                                                  GoogleFonts.plusJakartaSans(
+                                                    fontSize: 9.0,
+                                                    fontWeight: FontWeight.w800,
+                                                    color: accentColor,
+                                                    letterSpacing: 0.8,
+                                                  ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 14),
+                                          Text(
+                                            heroTitle,
+                                            style: GoogleFonts.playfairDisplay(
+                                              fontSize: 25,
+                                              fontWeight: FontWeight.w700,
+                                              color: textColor,
+                                              letterSpacing: -0.2,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            heroDesc,
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w500,
+                                              color: subTextColor,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 20),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.query_builder_rounded,
+                                                    size: 15,
+                                                    color: subTextColor
+                                                        .withValues(alpha: 0.8),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    "10 MINUTI",
+                                                    style:
+                                                        GoogleFonts.plusJakartaSans(
+                                                          fontSize: 10.5,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          color: subTextColor,
+                                                          letterSpacing: 0.3,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+
+                                              // Tasto Play con pulsazione luminosa
+                                              Container(
+                                                    width: 40,
+                                                    height: 40,
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color: accentColor,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: accentColor
+                                                              .withValues(
+                                                                alpha: 0.25,
+                                                              ),
+                                                          blurRadius: 8,
+                                                          offset: const Offset(
+                                                            0,
+                                                            3,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.play_arrow_rounded,
+                                                      color: isDark
+                                                          ? Colors.black
+                                                          : Colors.white,
+                                                      size: 24,
+                                                    ),
+                                                  )
+                                                  .animate(
+                                                    onPlay: (controller) =>
+                                                        controller.repeat(
+                                                          reverse: true,
+                                                        ),
+                                                  )
+                                                  .scale(
+                                                    begin: const Offset(
+                                                      0.95,
+                                                      0.95,
+                                                    ),
+                                                    end: const Offset(
+                                                      1.05,
+                                                      1.05,
+                                                    ),
+                                                    duration: 2.seconds,
+                                                    curve: Curves.easeInOut,
+                                                  ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          )),
+                          ),
                         ),
 
                         const SizedBox(height: 24),
@@ -501,7 +514,8 @@ class HomeJapandiTab extends ConsumerWidget {
                                 tag: "SONNO",
                                 voice:
                                     'assets/audio/real/Meditazioni/Acqua/Meditazione-della-Sera.m4a',
-                                ambient: 'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione SERA.m4a',
+                                ambient:
+                                    'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione SERA.m4a',
                                 isDark: isDark,
                                 accentColor: AppColors.goldAccent,
                                 textColor: textColor,
@@ -540,7 +554,7 @@ class HomeJapandiTab extends ConsumerWidget {
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               color: AppColors.goldAccent
-                                                  .withOpacity(0.04),
+                                                  .withValues(alpha: 0.04),
                                             ),
                                           )
                                           .animate(
@@ -554,8 +568,8 @@ class HomeJapandiTab extends ConsumerWidget {
                                   children: [
                                     Icon(
                                       Icons.format_quote_rounded,
-                                      color: AppColors.goldAccent.withOpacity(
-                                        0.8,
+                                      color: AppColors.goldAccent.withValues(
+                                        alpha: 0.8,
                                       ),
                                       size: 28,
                                     ),
@@ -567,7 +581,7 @@ class HomeJapandiTab extends ConsumerWidget {
                                         fontSize: 15.5,
                                         fontStyle: FontStyle.italic,
                                         fontWeight: FontWeight.w600,
-                                        color: textColor.withOpacity(0.9),
+                                        color: textColor.withValues(alpha: 0.9),
                                         height: 1.45,
                                       ),
                                     ),
@@ -577,7 +591,9 @@ class HomeJapandiTab extends ConsumerWidget {
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 11.0,
                                         fontWeight: FontWeight.w600,
-                                        color: subTextColor.withOpacity(0.7),
+                                        color: subTextColor.withValues(
+                                          alpha: 0.7,
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -586,7 +602,9 @@ class HomeJapandiTab extends ConsumerWidget {
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 9.0,
                                         fontWeight: FontWeight.bold,
-                                        color: subTextColor.withOpacity(0.45),
+                                        color: subTextColor.withValues(
+                                          alpha: 0.45,
+                                        ),
                                         letterSpacing: 0.5,
                                       ),
                                     ),
@@ -627,17 +645,17 @@ class HomeJapandiTab extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? accentColor.withOpacity(isDark ? 0.12 : 0.18)
+              ? accentColor.withValues(alpha: isDark ? 0.12 : 0.18)
               : (isDark
-                    ? Colors.white.withOpacity(0.03)
-                    : Colors.black.withOpacity(0.03)),
+                    ? Colors.white.withValues(alpha: 0.03)
+                    : Colors.black.withValues(alpha: 0.03)),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? accentColor.withOpacity(0.3)
+                ? accentColor.withValues(alpha: 0.3)
                 : (isDark
-                      ? Colors.white.withOpacity(0.06)
-                      : Colors.black.withOpacity(0.06)),
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : Colors.black.withValues(alpha: 0.06)),
             width: 1.0,
           ),
         ),
@@ -647,7 +665,9 @@ class HomeJapandiTab extends ConsumerWidget {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 11.5,
               fontWeight: FontWeight.bold,
-              color: isSelected ? textColor : subTextColor.withOpacity(0.8),
+              color: isSelected
+                  ? textColor
+                  : subTextColor.withValues(alpha: 0.8),
             ),
           ),
         ),
@@ -670,120 +690,126 @@ class HomeJapandiTab extends ConsumerWidget {
     required Color textColor,
     required Color subTextColor,
   }) {
-    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
-      onTap: () {
-        launchZenSession(
-          context: context,
-          ref: ref,
-          title: title,
-          voicePath: voice,
-          ambientPath: ambient,
-        );
-      },
-      child: Container(
-        width: 220,
-        decoration: AppColors.japandiCardDecoration(
-          isDark,
-          borderRadius: 24.0,
-          opacity: 0.55,
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Tag badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: accentColor.withOpacity(isDark ? 0.08 : 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    tag,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 8.0,
-                      fontWeight: FontWeight.bold,
-                      color: accentColor,
-                      letterSpacing: 0.5,
+    return Semantics(
+      button: true,
+      label: "Interactive element",
+      child: GestureDetector(
+        onTap: () {
+          launchZenSession(
+            context: context,
+            ref: ref,
+            title: title,
+            voicePath: voice,
+            ambientPath: ambient,
+          );
+        },
+        child: Container(
+          width: 220,
+          decoration: AppColors.japandiCardDecoration(
+            isDark,
+            borderRadius: 24.0,
+            opacity: 0.55,
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tag badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
                     ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  title,
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 19.5,
-                    fontWeight: FontWeight.w700,
-                    color: textColor,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  desc,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w500,
-                    color: subTextColor.withOpacity(0.9),
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.query_builder_rounded,
-                      size: 13,
-                      color: subTextColor.withOpacity(0.7),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(
+                        alpha: isDark ? 0.08 : 0.15,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(width: 3),
-                    Text(
-                      time,
+                    child: Text(
+                      tag,
                       style: GoogleFonts.plusJakartaSans(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w800,
-                        color: subTextColor.withOpacity(0.85),
+                        fontSize: 8.0,
+                        fontWeight: FontWeight.bold,
+                        color: accentColor,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                  ],
-                ),
-
-                // Pulsante Play minimal
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: textColor.withOpacity(0.8),
-                      width: 1.0,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    title,
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 19.5,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
                     ),
                   ),
-                  child: Icon(
-                    Icons.play_arrow_rounded,
-                    color: textColor,
-                    size: 16,
+                  const SizedBox(height: 4),
+                  Text(
+                    desc,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      color: subTextColor.withValues(alpha: 0.9),
+                      height: 1.35,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.query_builder_rounded,
+                        size: 13,
+                        color: subTextColor.withValues(alpha: 0.7),
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        time,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: subTextColor.withValues(alpha: 0.85),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Pulsante Play minimal
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: textColor.withValues(alpha: 0.8),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.play_arrow_rounded,
+                      color: textColor,
+                      size: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 }
 
@@ -792,10 +818,10 @@ class OnboardingSpringButton extends StatefulWidget {
   final VoidCallback onTap;
 
   const OnboardingSpringButton({
-    Key? key,
+    super.key,
     required this.child,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<OnboardingSpringButton> createState() => _OnboardingSpringButtonState();
@@ -827,26 +853,30 @@ class _OnboardingSpringButtonState extends State<OnboardingSpringButton>
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
-      onTapDown: (_) => _controller.animateTo(
-        1.0,
-        duration: const Duration(milliseconds: 80),
-        curve: Curves.easeOut,
-      ),
-      onTapUp: (_) {
-        _controller.animateTo(
+    return Semantics(
+      button: true,
+      label: "Interactive element",
+      child: GestureDetector(
+        onTapDown: (_) => _controller.animateTo(
+          1.0,
+          duration: const Duration(milliseconds: 80),
+          curve: Curves.easeOut,
+        ),
+        onTapUp: (_) {
+          _controller.animateTo(
+            0.0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.elasticOut,
+          );
+          widget.onTap();
+        },
+        onTapCancel: () => _controller.animateTo(
           0.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.elasticOut,
-        );
-        widget.onTap();
-      },
-      onTapCancel: () => _controller.animateTo(
-        0.0,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+        ),
+        child: ScaleTransition(scale: _scaleAnimation, child: widget.child),
       ),
-      child: ScaleTransition(scale: _scaleAnimation, child: widget.child),
-    ));
+    );
   }
 }

@@ -7,11 +7,11 @@ class GlbViewerWidget extends StatelessWidget {
   final bool cameraControls;
 
   const GlbViewerWidget({
-    Key? key,
+    super.key,
     required this.src,
     this.autoRotate = true,
     this.cameraControls = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

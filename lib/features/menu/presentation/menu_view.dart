@@ -1,3 +1,4 @@
+// ignore_for_file: unused_local_variable, deprecated_member_use, use_build_context_synchronously, curly_braces_in_flow_control_structures, unused_element, unused_field
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,11 +10,10 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/theme/animated_magic_portal.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../breathing/breathing_feature.dart';
 import '../../meditation/meditation_feature.dart';
 
 class MenuView extends ConsumerStatefulWidget {
-  const MenuView({Key? key}) : super(key: key);
+  const MenuView({super.key});
 
   @override
   ConsumerState<MenuView> createState() => _MenuViewState();
@@ -32,20 +32,20 @@ class _MenuViewState extends ConsumerState<MenuView> {
   final Map<String, List<String>> _translations = {
     "it": [
       "MENU PRINCIPALE", // 0
-      "Volume Musica",   // 1
-      "Volume Effetti",  // 2
-      "Volume Voce",     // 3
-      "Voce Guida",      // 4
-      "Lingua",          // 5
+      "Volume Musica", // 1
+      "Volume Effetti", // 2
+      "Volume Voce", // 3
+      "Voce Guida", // 4
+      "Lingua", // 5
       "SBLOCCA VERSIONE COMPLETA", // 6
-      "Sbloccato",       // 7
-      "Maschile",        // 8
-      "Femminile",       // 9
-      "Muta Voce",       // 10
+      "Sbloccato", // 7
+      "Maschile", // 8
+      "Femminile", // 9
+      "Muta Voce", // 10
       "Visita Sito Web", // 11
-      "Esci dal Gioco",  // 12
-      "MEDITAZIONI",     // 13
-      "RESPIRAZIONI",    // 14
+      "Esci dal Gioco", // 12
+      "MEDITAZIONI", // 13
+      "RESPIRAZIONI", // 14
       "Generale (Gratis)", // 15
       "Percorso Acqua (Premium)", // 16
       "Respirazione Aria (Gratis)", // 17
@@ -55,29 +55,29 @@ class _MenuViewState extends ConsumerState<MenuView> {
       "CHIUDI", // 21
     ],
     "en": [
-      "MAIN MENU",       // 0
-      "Music Volume",    // 1
-      "Effects Volume",  // 2
-      "Voice Volume",    // 3
-      "Voice Guide",     // 4
-      "Language",        // 5
+      "MAIN MENU", // 0
+      "Music Volume", // 1
+      "Effects Volume", // 2
+      "Voice Volume", // 3
+      "Voice Guide", // 4
+      "Language", // 5
       "UNLOCK FULL VERSION", // 6
-      "Unlocked",        // 7
-      "Male",            // 8
-      "Female",          // 9
-      "Mute Voice",      // 10
-      "Visit Website",   // 11
-      "Exit Game",       // 12
-      "MEDITATIONS",     // 13
-      "BREATHINGS",      // 14
-      "General (Free)",  // 15
+      "Unlocked", // 7
+      "Male", // 8
+      "Female", // 9
+      "Mute Voice", // 10
+      "Visit Website", // 11
+      "Exit Game", // 12
+      "MEDITATIONS", // 13
+      "BREATHINGS", // 14
+      "General (Free)", // 15
       "Water Path (Premium)", // 16
       "Air Breathing (Free)", // 17
       "Fire Breathing (Premium)", // 18
       "Simulate Purchase", // 19
       "WARNING: Session Locked! Unlock the full version to access all guided paths of Guido.", // 20
       "CLOSE", // 21
-    ]
+    ],
   };
 
   List<String> _getTexts(int langCode) {
@@ -101,7 +101,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final settingsNotifier = ref.read(settingsProvider.notifier);
-    
+
     final texts = _getTexts(settings.language);
     final isVrMode = settings.isVrMode;
 
@@ -114,18 +114,29 @@ class _MenuViewState extends ConsumerState<MenuView> {
             // Occhio sinistro (Interattivo)
             Expanded(
               child: ClipRect(
-                child: _buildSingleEyeMenu(context, settings, settingsNotifier, texts, vrOffset: -3.5, isLeft: true),
+                child: _buildSingleEyeMenu(
+                  context,
+                  settings,
+                  settingsNotifier,
+                  texts,
+                  vrOffset: -3.5,
+                  isLeft: true,
+                ),
               ),
             ),
             // Linea divisoria nera per il visore Cardboard
-            Container(
-              width: 2.0,
-              color: Colors.black,
-            ),
+            Container(width: 2.0, color: Colors.black),
             // Occhio destro
             Expanded(
               child: ClipRect(
-                child: _buildSingleEyeMenu(context, settings, settingsNotifier, texts, vrOffset: 3.5, isLeft: false),
+                child: _buildSingleEyeMenu(
+                  context,
+                  settings,
+                  settingsNotifier,
+                  texts,
+                  vrOffset: 3.5,
+                  isLeft: false,
+                ),
               ),
             ),
           ],
@@ -134,7 +145,15 @@ class _MenuViewState extends ConsumerState<MenuView> {
     } else {
       // Modalità flat standard
       return Scaffold(
-        body: _buildSingleEyeMenu(context, settings, settingsNotifier, texts, vrOffset: 0.0, isLeft: true, showFooter: true),
+        body: _buildSingleEyeMenu(
+          context,
+          settings,
+          settingsNotifier,
+          texts,
+          vrOffset: 0.0,
+          isLeft: true,
+          showFooter: true,
+        ),
       );
     }
   }
@@ -176,7 +195,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
               height: 360,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: accentColor.withOpacity(isDark ? 0.04 : 0.07),
+                color: accentColor.withValues(alpha: isDark ? 0.04 : 0.07),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
@@ -188,8 +207,8 @@ class _MenuViewState extends ConsumerState<MenuView> {
           SafeArea(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(
-                horizontal: isVr ? 12.0 : 22.0, 
-                vertical: isVr ? 8.0 : 20.0
+                horizontal: isVr ? 12.0 : 22.0,
+                vertical: isVr ? 8.0 : 20.0,
               ),
               child: Column(
                 children: [
@@ -221,12 +240,17 @@ class _MenuViewState extends ConsumerState<MenuView> {
                   SizedBox(height: isVr ? 12 : 24),
 
                   // 3. Pannello di Controllo Impostazioni Japandi Claymorphic
-                  _buildSettingsPanel(context, settings, settingsNotifier, texts),
+                  _buildSettingsPanel(
+                    context,
+                    settings,
+                    settingsNotifier,
+                    texts,
+                  ),
                   SizedBox(height: isVr ? 12 : 24),
 
                   // 4. Pannello Selezione Meditazioni e Respirazioni Japandi
                   _buildSelectionPanel(context, settings, texts),
-                  
+
                   // 5. Footer (Sito e Chiudi)
                   if (showFooter || (isVr && isLeft)) ...[
                     SizedBox(height: isVr ? 12 : 24),
@@ -239,7 +263,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
           ),
 
           // 6. Pannello di Sblocco Premium Glassmorphic Overlay
-          if (_showUnlockPanel && (!isVr || isLeft)) 
+          if (_showUnlockPanel && (!isVr || isLeft))
             Positioned.fill(
               child: _buildUnlockOverlay(context, settingsNotifier, texts),
             ),
@@ -272,16 +296,31 @@ class _MenuViewState extends ConsumerState<MenuView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Controllo Volume Musica
-              _buildVolumeRow(texts[1], settings.musicVolume, (index) => notifier.changeMusicVolume(index), isVr, isDark),
+              _buildVolumeRow(
+                texts[1],
+                settings.musicVolume,
+                (index) => notifier.changeMusicVolume(index),
+                isVr,
+                isDark,
+              ),
               SizedBox(height: isVr ? 10 : 18),
-              
+
               // Controllo Volume Effetti
-              _buildVolumeRow(texts[2], settings.effectsVolume, (index) => notifier.changeEffectsVolume(index), isVr, isDark),
+              _buildVolumeRow(
+                texts[2],
+                settings.effectsVolume,
+                (index) => notifier.changeEffectsVolume(index),
+                isVr,
+                isDark,
+              ),
               SizedBox(height: isVr ? 10 : 18),
 
               // Controllo Volume Voce & Mute
               _buildVoiceVolumeRow(settings, notifier, texts, isVr, isDark),
-              Divider(height: isVr ? 20 : 30, color: isDark ? Colors.white10 : Colors.black12),
+              Divider(
+                height: isVr ? 20 : 30,
+                color: isDark ? Colors.white10 : Colors.black12,
+              ),
 
               // Genere della Voce (Maschile / Femminile)
               _buildVoiceSexRow(settings, notifier, texts, isVr, isDark),
@@ -301,11 +340,17 @@ class _MenuViewState extends ConsumerState<MenuView> {
   }
 
   /// Riga Volume con design minimalista
-  Widget _buildVolumeRow(String title, int currentValue, Function(int) onSelected, bool isVr, bool isDark) {
+  Widget _buildVolumeRow(
+    String title,
+    int currentValue,
+    Function(int) onSelected,
+    bool isVr,
+    bool isDark,
+  ) {
     final textStyle = GoogleFonts.outfit(
       fontSize: isVr ? 11 : 14,
       fontWeight: FontWeight.w700,
-      color: AppColors.getTextColor(isDark).withOpacity(0.95),
+      color: AppColors.getTextColor(isDark).withValues(alpha: 0.95),
       letterSpacing: 0.8,
     );
 
@@ -330,50 +375,73 @@ class _MenuViewState extends ConsumerState<MenuView> {
   }
 
   /// Selettore a 4 pillole orizzontali ad alto feedback visivo
-  Widget _buildVolumeSelector(int currentValue, Function(int) onSelected, bool isVr, bool isDark) {
+  Widget _buildVolumeSelector(
+    int currentValue,
+    Function(int) onSelected,
+    bool isVr,
+    bool isDark,
+  ) {
     final double boxWidth = isVr ? 24.0 : 34.0;
     final double boxHeight = isVr ? 18.0 : 24.0;
     final double fontSize = isVr ? 9.0 : 11.0;
     final accentColor = AppColors.getActiveAccentColor(isDark);
-    
+
     return Row(
       children: List.generate(4, (index) {
         final isSelected = currentValue == index;
-        return Semantics(button: true, label: "Interactive element", child: GestureDetector(
-          onTap: () => onSelected(index),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 2.5),
-            width: boxWidth,
-            height: boxHeight,
-            decoration: BoxDecoration(
-              color: isSelected ? accentColor.withOpacity(0.85) : (isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.04)),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isSelected ? accentColor : (isDark ? Colors.white12 : Colors.black12),
-                width: 1.0,
+        return Semantics(
+          button: true,
+          label: "Interactive element",
+          child: GestureDetector(
+            onTap: () => onSelected(index),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2.5),
+              width: boxWidth,
+              height: boxHeight,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? accentColor.withValues(alpha: 0.85)
+                    : (isDark
+                          ? Colors.white.withValues(alpha: 0.04)
+                          : Colors.black.withValues(alpha: 0.04)),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected
+                      ? accentColor
+                      : (isDark ? Colors.white12 : Colors.black12),
+                  width: 1.0,
+                ),
               ),
-            ),
-            child: Center(
-              child: Text(
-                index.toString(),
-                style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? (isDark ? Colors.black : Colors.white) : AppColors.getSubTextColor(isDark),
+              child: Center(
+                child: Text(
+                  index.toString(),
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected
+                        ? (isDark ? Colors.black : Colors.white)
+                        : AppColors.getSubTextColor(isDark),
+                  ),
                 ),
               ),
             ),
           ),
-        ));
+        );
       }),
     );
   }
 
-  Widget _buildVoiceVolumeRow(SettingsState settings, SettingsNotifier notifier, List<String> texts, bool isVr, bool isDark) {
+  Widget _buildVoiceVolumeRow(
+    SettingsState settings,
+    SettingsNotifier notifier,
+    List<String> texts,
+    bool isVr,
+    bool isDark,
+  ) {
     final titleStyle = GoogleFonts.outfit(
       fontSize: isVr ? 11 : 14,
       fontWeight: FontWeight.w700,
-      color: AppColors.getTextColor(isDark).withOpacity(0.95),
+      color: AppColors.getTextColor(isDark).withValues(alpha: 0.95),
       letterSpacing: 0.8,
     );
     final accentColor = AppColors.getActiveAccentColor(isDark);
@@ -391,13 +459,23 @@ class _MenuViewState extends ConsumerState<MenuView> {
                 constraints: const BoxConstraints(maxHeight: 24, maxWidth: 24),
                 padding: EdgeInsets.zero,
                 icon: Icon(
-                  settings.isVoiceMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                  color: settings.isVoiceMuted ? AppColors.dangerAccent : accentColor,
+                  settings.isVoiceMuted
+                      ? Icons.volume_off_rounded
+                      : Icons.volume_up_rounded,
+                  color: settings.isVoiceMuted
+                      ? AppColors.dangerAccent
+                      : accentColor,
                 ),
-                onPressed: () => notifier.toggleVoiceMute(!settings.isVoiceMuted),
+                onPressed: () =>
+                    notifier.toggleVoiceMute(!settings.isVoiceMuted),
               ),
               const SizedBox(width: 8),
-              _buildVolumeSelector(settings.voiceVolume, (index) => notifier.changeVoiceVolume(index), true, isDark),
+              _buildVolumeSelector(
+                settings.voiceVolume,
+                (index) => notifier.changeVoiceVolume(index),
+                true,
+                isDark,
+              ),
             ],
           ),
         ],
@@ -411,13 +489,23 @@ class _MenuViewState extends ConsumerState<MenuView> {
             children: [
               IconButton(
                 icon: Icon(
-                  settings.isVoiceMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                  color: settings.isVoiceMuted ? AppColors.dangerAccent : accentColor,
+                  settings.isVoiceMuted
+                      ? Icons.volume_off_rounded
+                      : Icons.volume_up_rounded,
+                  color: settings.isVoiceMuted
+                      ? AppColors.dangerAccent
+                      : accentColor,
                 ),
-                onPressed: () => notifier.toggleVoiceMute(!settings.isVoiceMuted),
+                onPressed: () =>
+                    notifier.toggleVoiceMute(!settings.isVoiceMuted),
               ),
               const SizedBox(width: 4),
-              _buildVolumeSelector(settings.voiceVolume, (index) => notifier.changeVoiceVolume(index), false, isDark),
+              _buildVolumeSelector(
+                settings.voiceVolume,
+                (index) => notifier.changeVoiceVolume(index),
+                false,
+                isDark,
+              ),
             ],
           ),
         ],
@@ -425,11 +513,17 @@ class _MenuViewState extends ConsumerState<MenuView> {
     }
   }
 
-  Widget _buildVoiceSexRow(SettingsState settings, SettingsNotifier notifier, List<String> texts, bool isVr, bool isDark) {
+  Widget _buildVoiceSexRow(
+    SettingsState settings,
+    SettingsNotifier notifier,
+    List<String> texts,
+    bool isVr,
+    bool isDark,
+  ) {
     final titleStyle = GoogleFonts.outfit(
       fontSize: isVr ? 11 : 14,
       fontWeight: FontWeight.w700,
-      color: AppColors.getTextColor(isDark).withOpacity(0.95),
+      color: AppColors.getTextColor(isDark).withValues(alpha: 0.95),
       letterSpacing: 0.8,
     );
 
@@ -441,9 +535,21 @@ class _MenuViewState extends ConsumerState<MenuView> {
           const SizedBox(height: 5),
           Row(
             children: [
-              _buildToggleButton(texts[8], settings.voiceSex == 0, () => notifier.changeVoiceSex(0), true, isDark),
+              _buildToggleButton(
+                texts[8],
+                settings.voiceSex == 0,
+                () => notifier.changeVoiceSex(0),
+                true,
+                isDark,
+              ),
               const SizedBox(width: 8),
-              _buildToggleButton(texts[9], settings.voiceSex == 1, () => notifier.changeVoiceSex(1), true, isDark),
+              _buildToggleButton(
+                texts[9],
+                settings.voiceSex == 1,
+                () => notifier.changeVoiceSex(1),
+                true,
+                isDark,
+              ),
             ],
           ),
         ],
@@ -455,9 +561,21 @@ class _MenuViewState extends ConsumerState<MenuView> {
           Text(texts[4].toUpperCase(), style: titleStyle),
           Row(
             children: [
-              _buildToggleButton(texts[8], settings.voiceSex == 0, () => notifier.changeVoiceSex(0), false, isDark),
+              _buildToggleButton(
+                texts[8],
+                settings.voiceSex == 0,
+                () => notifier.changeVoiceSex(0),
+                false,
+                isDark,
+              ),
               const SizedBox(width: 10),
-              _buildToggleButton(texts[9], settings.voiceSex == 1, () => notifier.changeVoiceSex(1), false, isDark),
+              _buildToggleButton(
+                texts[9],
+                settings.voiceSex == 1,
+                () => notifier.changeVoiceSex(1),
+                false,
+                isDark,
+              ),
             ],
           ),
         ],
@@ -465,11 +583,17 @@ class _MenuViewState extends ConsumerState<MenuView> {
     }
   }
 
-  Widget _buildLanguageRow(SettingsState settings, SettingsNotifier notifier, List<String> texts, bool isVr, bool isDark) {
+  Widget _buildLanguageRow(
+    SettingsState settings,
+    SettingsNotifier notifier,
+    List<String> texts,
+    bool isVr,
+    bool isDark,
+  ) {
     final titleStyle = GoogleFonts.outfit(
       fontSize: isVr ? 11 : 14,
       fontWeight: FontWeight.w700,
-      color: AppColors.getTextColor(isDark).withOpacity(0.95),
+      color: AppColors.getTextColor(isDark).withValues(alpha: 0.95),
       letterSpacing: 0.8,
     );
 
@@ -481,9 +605,21 @@ class _MenuViewState extends ConsumerState<MenuView> {
           const SizedBox(height: 5),
           Row(
             children: [
-              _buildToggleButton("ITA", settings.language == 0, () => notifier.changeLanguage(0), true, isDark),
+              _buildToggleButton(
+                "ITA",
+                settings.language == 0,
+                () => notifier.changeLanguage(0),
+                true,
+                isDark,
+              ),
               const SizedBox(width: 8),
-              _buildToggleButton("ENG", settings.language == 1, () => notifier.changeLanguage(1), true, isDark),
+              _buildToggleButton(
+                "ENG",
+                settings.language == 1,
+                () => notifier.changeLanguage(1),
+                true,
+                isDark,
+              ),
             ],
           ),
         ],
@@ -495,9 +631,21 @@ class _MenuViewState extends ConsumerState<MenuView> {
           Text(texts[5].toUpperCase(), style: titleStyle),
           Row(
             children: [
-              _buildToggleButton("ITA", settings.language == 0, () => notifier.changeLanguage(0), false, isDark),
+              _buildToggleButton(
+                "ITA",
+                settings.language == 0,
+                () => notifier.changeLanguage(0),
+                false,
+                isDark,
+              ),
               const SizedBox(width: 10),
-              _buildToggleButton("ENG", settings.language == 1, () => notifier.changeLanguage(1), false, isDark),
+              _buildToggleButton(
+                "ENG",
+                settings.language == 1,
+                () => notifier.changeLanguage(1),
+                false,
+                isDark,
+              ),
             ],
           ),
         ],
@@ -506,14 +654,21 @@ class _MenuViewState extends ConsumerState<MenuView> {
   }
 
   /// Selettore per il tema dinamico Japandi (Chiaro vs Scuro)
-  Widget _buildThemeModeRow(SettingsState settings, SettingsNotifier notifier, bool isVr, bool isDark) {
+  Widget _buildThemeModeRow(
+    SettingsState settings,
+    SettingsNotifier notifier,
+    bool isVr,
+    bool isDark,
+  ) {
     final titleStyle = GoogleFonts.outfit(
       fontSize: isVr ? 11 : 14,
       fontWeight: FontWeight.w700,
-      color: AppColors.getTextColor(isDark).withOpacity(0.95),
+      color: AppColors.getTextColor(isDark).withValues(alpha: 0.95),
       letterSpacing: 0.8,
     );
-    final String label = settings.language == 0 ? "TEMA JAPANDI" : "JAPANDI THEME";
+    final String label = settings.language == 0
+        ? "TEMA JAPANDI"
+        : "JAPANDI THEME";
 
     if (isVr) {
       return Column(
@@ -523,9 +678,21 @@ class _MenuViewState extends ConsumerState<MenuView> {
           const SizedBox(height: 5),
           Row(
             children: [
-              _buildToggleButton(settings.language == 0 ? "CHIARO" : "LIGHT", !settings.isDarkTheme, () => notifier.toggleDarkTheme(false), true, isDark),
+              _buildToggleButton(
+                settings.language == 0 ? "CHIARO" : "LIGHT",
+                !settings.isDarkTheme,
+                () => notifier.toggleDarkTheme(false),
+                true,
+                isDark,
+              ),
               const SizedBox(width: 8),
-              _buildToggleButton(settings.language == 0 ? "SCURO" : "DARK", settings.isDarkTheme, () => notifier.toggleDarkTheme(true), true, isDark),
+              _buildToggleButton(
+                settings.language == 0 ? "SCURO" : "DARK",
+                settings.isDarkTheme,
+                () => notifier.toggleDarkTheme(true),
+                true,
+                isDark,
+              ),
             ],
           ),
         ],
@@ -537,9 +704,21 @@ class _MenuViewState extends ConsumerState<MenuView> {
           Text(label, style: titleStyle),
           Row(
             children: [
-              _buildToggleButton(settings.language == 0 ? "CHIARO" : "LIGHT", !settings.isDarkTheme, () => notifier.toggleDarkTheme(false), false, isDark),
+              _buildToggleButton(
+                settings.language == 0 ? "CHIARO" : "LIGHT",
+                !settings.isDarkTheme,
+                () => notifier.toggleDarkTheme(false),
+                false,
+                isDark,
+              ),
               const SizedBox(width: 10),
-              _buildToggleButton(settings.language == 0 ? "SCURO" : "DARK", settings.isDarkTheme, () => notifier.toggleDarkTheme(true), false, isDark),
+              _buildToggleButton(
+                settings.language == 0 ? "SCURO" : "DARK",
+                settings.isDarkTheme,
+                () => notifier.toggleDarkTheme(true),
+                false,
+                isDark,
+              ),
             ],
           ),
         ],
@@ -547,11 +726,16 @@ class _MenuViewState extends ConsumerState<MenuView> {
     }
   }
 
-  Widget _buildVrModeRow(SettingsState settings, SettingsNotifier notifier, bool isVr, bool isDark) {
+  Widget _buildVrModeRow(
+    SettingsState settings,
+    SettingsNotifier notifier,
+    bool isVr,
+    bool isDark,
+  ) {
     final titleStyle = GoogleFonts.outfit(
       fontSize: isVr ? 11 : 14,
       fontWeight: FontWeight.w700,
-      color: AppColors.getTextColor(isDark).withOpacity(0.95),
+      color: AppColors.getTextColor(isDark).withValues(alpha: 0.95),
       letterSpacing: 0.8,
     );
     final accentColor = AppColors.getActiveAccentColor(isDark);
@@ -562,37 +746,47 @@ class _MenuViewState extends ConsumerState<MenuView> {
         children: [
           const SizedBox(height: 4),
           Text(
-            (settings.language == 0 ? "MODALITÀ VR CARDBOARD" : "VR CARDBOARD MODE").toUpperCase(),
+            (settings.language == 0
+                    ? "MODALITÀ VR CARDBOARD"
+                    : "VR CARDBOARD MODE")
+                .toUpperCase(),
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
               fontSize: 10,
               fontWeight: FontWeight.w800,
-              color: accentColor.withOpacity(0.9),
+              color: accentColor.withValues(alpha: 0.9),
               letterSpacing: 1.0,
             ),
           ),
           const SizedBox(height: 8),
-          Semantics(button: true, label: "Interactive element", child: GestureDetector(
-            onTap: () => notifier.toggleVrMode(false),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.dangerAccent.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.dangerAccent.withOpacity(0.8), width: 1.2),
-              ),
-              child: Text(
-                settings.language == 0 ? "DISATTIVA VR" : "DEACTIVATE VR",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: 1.0,
+          Semantics(
+            button: true,
+            label: "Interactive element",
+            child: GestureDetector(
+              onTap: () => notifier.toggleVrMode(false),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.dangerAccent.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.dangerAccent.withValues(alpha: 0.8),
+                    width: 1.2,
+                  ),
+                ),
+                child: Text(
+                  settings.language == 0 ? "DISATTIVA VR" : "DEACTIVATE VR",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.outfit(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 1.0,
+                  ),
                 ),
               ),
             ),
-          )),
+          ),
         ],
       );
     } else {
@@ -600,14 +794,29 @@ class _MenuViewState extends ConsumerState<MenuView> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            (settings.language == 0 ? "MODALITÀ VR CARDBOARD" : "VR CARDBOARD MODE").toUpperCase(),
+            (settings.language == 0
+                    ? "MODALITÀ VR CARDBOARD"
+                    : "VR CARDBOARD MODE")
+                .toUpperCase(),
             style: titleStyle,
           ),
           Row(
             children: [
-              _buildToggleButton("OFF", !settings.isVrMode, () => notifier.toggleVrMode(false), false, isDark),
+              _buildToggleButton(
+                "OFF",
+                !settings.isVrMode,
+                () => notifier.toggleVrMode(false),
+                false,
+                isDark,
+              ),
               const SizedBox(width: 10),
-              _buildToggleButton("VR 3D", settings.isVrMode, () => notifier.toggleVrMode(true), false, isDark),
+              _buildToggleButton(
+                "VR 3D",
+                settings.isVrMode,
+                () => notifier.toggleVrMode(true),
+                false,
+                isDark,
+              ),
             ],
           ),
         ],
@@ -616,38 +825,60 @@ class _MenuViewState extends ConsumerState<MenuView> {
   }
 
   /// Toggle Button minimalista in stile Japandi
-  Widget _buildToggleButton(String label, bool isActive, VoidCallback onTap, bool isVr, bool isDark) {
+  Widget _buildToggleButton(
+    String label,
+    bool isActive,
+    VoidCallback onTap,
+    bool isVr,
+    bool isDark,
+  ) {
     final accentColor = AppColors.getActiveAccentColor(isDark);
-    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: isVr ? 12 : 18, 
-          vertical: isVr ? 6 : 8
-        ),
-        decoration: BoxDecoration(
-          color: isActive ? accentColor.withOpacity(0.85) : (isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.04)),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isActive ? accentColor : (isDark ? Colors.white12 : Colors.black12),
-            width: 1.0,
+    return Semantics(
+      button: true,
+      label: "Interactive element",
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: isVr ? 12 : 18,
+            vertical: isVr ? 6 : 8,
           ),
-        ),
-        child: Text(
-          label.toUpperCase(),
-          style: GoogleFonts.outfit(
-            fontSize: isVr ? 9 : 12,
-            fontWeight: FontWeight.w800,
-            color: isActive ? (isDark ? Colors.black : Colors.white) : AppColors.getSubTextColor(isDark),
-            letterSpacing: 0.5,
+          decoration: BoxDecoration(
+            color: isActive
+                ? accentColor.withValues(alpha: 0.85)
+                : (isDark
+                      ? Colors.white.withValues(alpha: 0.04)
+                      : Colors.black.withValues(alpha: 0.04)),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isActive
+                  ? accentColor
+                  : (isDark ? Colors.white12 : Colors.black12),
+              width: 1.0,
+            ),
+          ),
+          child: Text(
+            label.toUpperCase(),
+            style: GoogleFonts.outfit(
+              fontSize: isVr ? 9 : 12,
+              fontWeight: FontWeight.w800,
+              color: isActive
+                  ? (isDark ? Colors.black : Colors.white)
+                  : AppColors.getSubTextColor(isDark),
+              letterSpacing: 0.5,
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   /// Pannello per la selezione delle meditazioni e respirazioni Japandi
-  Widget _buildSelectionPanel(BuildContext context, SettingsState settings, List<String> texts) {
+  Widget _buildSelectionPanel(
+    BuildContext context,
+    SettingsState settings,
+    List<String> texts,
+  ) {
     final isVr = settings.isVrMode;
     final isDark = settings.isDarkTheme;
     final baseTextColor = AppColors.getTextColor(isDark);
@@ -670,7 +901,13 @@ class _MenuViewState extends ConsumerState<MenuView> {
               // Sezione Meditazioni in Playfair Display
               Row(
                 children: [
-                  Icon(Icons.spa_outlined, color: AppColors.getSubTextColor(isDark).withOpacity(0.8), size: isVr ? 16 : 20),
+                  Icon(
+                    Icons.spa_outlined,
+                    color: AppColors.getSubTextColor(
+                      isDark,
+                    ).withValues(alpha: 0.8),
+                    size: isVr ? 16 : 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     texts[13].toUpperCase(),
@@ -684,7 +921,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
                 ],
               ),
               SizedBox(height: isVr ? 10 : 16),
-              
+
               // Meditazione 1 (Gratis)
               _buildSelectionCard(
                 context: context,
@@ -717,20 +954,20 @@ class _MenuViewState extends ConsumerState<MenuView> {
                   if (settings.isUnlocked) {
                     final hour = DateTime.now().hour;
                     final isIt = settings.language == 0;
-                    String voiceAsset = isIt 
+                    String voiceAsset = isIt
                         ? 'assets/audio/voci/it/meditazione_percorso_acqua_procedimento_it.m4a'
                         : 'assets/audio/voci/en/meditazione_generale.m4a';
-                    
+
                     if (hour >= 6 && hour < 13) {
-                      voiceAsset = isIt 
+                      voiceAsset = isIt
                           ? 'assets/audio/voci/it/mattina.m4a'
                           : 'assets/audio/voci/en/mattina.m4a';
                     } else if (hour >= 13 && hour < 19) {
-                      voiceAsset = isIt 
+                      voiceAsset = isIt
                           ? 'assets/audio/voci/it/pomeriggio.m4a'
                           : 'assets/audio/voci/en/pomeriggio.m4a';
                     } else {
-                      voiceAsset = isIt 
+                      voiceAsset = isIt
                           ? 'assets/audio/voci/it/sera.m4a'
                           : 'assets/audio/voci/en/sera.m4a';
                     }
@@ -747,12 +984,21 @@ class _MenuViewState extends ConsumerState<MenuView> {
                   }
                 },
               ),
-              Divider(height: isVr ? 20 : 36, color: isDark ? Colors.white10 : Colors.black12),
+              Divider(
+                height: isVr ? 20 : 36,
+                color: isDark ? Colors.white10 : Colors.black12,
+              ),
 
               // Sezione Respirazioni
               Row(
                 children: [
-                  Icon(Icons.air_rounded, color: AppColors.getSubTextColor(isDark).withOpacity(0.8), size: isVr ? 16 : 20),
+                  Icon(
+                    Icons.air_rounded,
+                    color: AppColors.getSubTextColor(
+                      isDark,
+                    ).withValues(alpha: 0.8),
+                    size: isVr ? 16 : 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     texts[14].toUpperCase(),
@@ -821,53 +1067,68 @@ class _MenuViewState extends ConsumerState<MenuView> {
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    return Semantics(button: true, label: "Interactive element", child: GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: isVr ? 14 : 20, vertical: isVr ? 11 : 17),
-          decoration: BoxDecoration(
-            color: isDark ? Colors.white.withOpacity(0.02) : Colors.black.withOpacity(0.02),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: isLocked 
-                  ? AppColors.goldAccent.withOpacity(0.18) 
-                  : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
-              width: 1.2,
+    return Semantics(
+      button: true,
+      label: "Interactive element",
+      child: GestureDetector(
+        onTap: onTap,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(
+              horizontal: isVr ? 14 : 20,
+              vertical: isVr ? 11 : 17,
             ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: isVr ? 12 : 15,
-                    fontWeight: FontWeight.w600,
-                    color: isLocked ? AppColors.getSubTextColor(isDark).withOpacity(0.8) : AppColors.getTextColor(isDark),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.02)
+                  : Colors.black.withValues(alpha: 0.02),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isLocked
+                    ? AppColors.goldAccent.withValues(alpha: 0.18)
+                    : (isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.05)),
+                width: 1.2,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isVr ? 12 : 15,
+                      fontWeight: FontWeight.w600,
+                      color: isLocked
+                          ? AppColors.getSubTextColor(
+                              isDark,
+                            ).withValues(alpha: 0.8)
+                          : AppColors.getTextColor(isDark),
+                    ),
                   ),
                 ),
-              ),
-              if (isLocked)
-                Icon(
-                  Icons.lock_rounded,
-                  color: AppColors.goldAccent.withOpacity(0.8),
-                  size: isVr ? 16 : 20,
-                )
-              else
-                Icon(
-                  Icons.play_circle_fill_rounded,
-                  color: AppColors.successAccent.withOpacity(0.85),
-                  size: isVr ? 18 : 24,
-                ),
-            ],
+                if (isLocked)
+                  Icon(
+                    Icons.lock_rounded,
+                    color: AppColors.goldAccent.withValues(alpha: 0.8),
+                    size: isVr ? 16 : 20,
+                  )
+                else
+                  Icon(
+                    Icons.play_circle_fill_rounded,
+                    color: AppColors.successAccent.withValues(alpha: 0.85),
+                    size: isVr ? 18 : 24,
+                  ),
+              ],
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   /// Bottoni per links esterni e chiusura app
@@ -879,7 +1140,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
         CustomUnityButton(
           text: texts[11],
           onTap: () => _openUrl(0),
-          accentColor: AppColors.getSubTextColor(isDark).withOpacity(0.5),
+          accentColor: AppColors.getSubTextColor(isDark).withValues(alpha: 0.5),
           width: 210,
         ),
         const SizedBox(height: 12),
@@ -908,12 +1169,14 @@ class _MenuViewState extends ConsumerState<MenuView> {
     return Stack(
       children: [
         Positioned.fill(
-          child: Semantics(button: true, label: "Interactive element", child: GestureDetector(
-            onTap: () => _setUnlockPanelVisible(false),
-            child: Container(
-              color: Colors.black.withOpacity(0.75),
+          child: Semantics(
+            button: true,
+            label: "Interactive element",
+            child: GestureDetector(
+              onTap: () => _setUnlockPanelVisible(false),
+              child: Container(color: Colors.black.withValues(alpha: 0.75)),
             ),
-          )),
+          ),
         ),
 
         // Scheda in vetro centrale Japandi
@@ -924,7 +1187,10 @@ class _MenuViewState extends ConsumerState<MenuView> {
               filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
               child: Container(
                 width: 325,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 30,
+                ),
                 decoration: AppColors.japandiCardDecoration(
                   isDark,
                   borderRadius: 30,
@@ -937,14 +1203,17 @@ class _MenuViewState extends ConsumerState<MenuView> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.goldAccent.withOpacity(0.12),
+                        color: AppColors.goldAccent.withValues(alpha: 0.12),
                       ),
                       child: const Icon(
                         Icons.stars_rounded,
                         color: AppColors.goldAccent,
                         size: 50,
                       ),
-                    ).animate().scale(duration: 450.ms, curve: Curves.easeOutBack),
+                    ).animate().scale(
+                      duration: 450.ms,
+                      curve: Curves.easeOutBack,
+                    ),
                     const SizedBox(height: 18),
 
                     // Titolo Premium in Playfair Display
@@ -966,7 +1235,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13.5,
-                        color: textColor.withOpacity(0.9),
+                        color: textColor.withValues(alpha: 0.9),
                         height: 1.55,
                         fontWeight: FontWeight.w600,
                       ),
@@ -976,11 +1245,26 @@ class _MenuViewState extends ConsumerState<MenuView> {
                     // Vantaggi inclusi
                     Column(
                       children: [
-                        _buildBenefitRow(texts[5] == "Lingua" ? "Audio Spaziale 3D Binaurale" : "3D Binaural Spatial Audio", isDark),
+                        _buildBenefitRow(
+                          texts[5] == "Lingua"
+                              ? "Audio Spaziale 3D Binaurale"
+                              : "3D Binaural Spatial Audio",
+                          isDark,
+                        ),
                         const SizedBox(height: 8),
-                        _buildBenefitRow(texts[5] == "Lingua" ? "Tutte le Meditazioni & Respirazioni" : "All Meditations & Breathings", isDark),
+                        _buildBenefitRow(
+                          texts[5] == "Lingua"
+                              ? "Tutte le Meditazioni & Respirazioni"
+                              : "All Meditations & Breathings",
+                          isDark,
+                        ),
                         const SizedBox(height: 8),
-                        _buildBenefitRow(texts[5] == "Lingua" ? "Modalità offline senza pubblicità" : "Offline mode & No Ads", isDark),
+                        _buildBenefitRow(
+                          texts[5] == "Lingua"
+                              ? "Modalità offline senza pubblicità"
+                              : "Offline mode & No Ads",
+                          isDark,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 26),
@@ -999,7 +1283,9 @@ class _MenuViewState extends ConsumerState<MenuView> {
                     CustomUnityButton(
                       text: texts[21],
                       onTap: () => _setUnlockPanelVisible(false),
-                      accentColor: AppColors.dangerAccent.withOpacity(0.85),
+                      accentColor: AppColors.dangerAccent.withValues(
+                        alpha: 0.85,
+                      ),
                       width: double.infinity,
                     ),
                   ],
@@ -1007,7 +1293,12 @@ class _MenuViewState extends ConsumerState<MenuView> {
               ),
             ),
           ),
-        ).animate().scale(begin: const Offset(0.94, 0.94), end: const Offset(1, 1), curve: Curves.easeOutBack, duration: 300.ms),
+        ).animate().scale(
+          begin: const Offset(0.94, 0.94),
+          end: const Offset(1, 1),
+          curve: Curves.easeOutBack,
+          duration: 300.ms,
+        ),
       ],
     );
   }
@@ -1015,7 +1306,11 @@ class _MenuViewState extends ConsumerState<MenuView> {
   Widget _buildBenefitRow(String text, bool isDark) {
     return Row(
       children: [
-        const Icon(Icons.check_circle_outline_rounded, color: AppColors.goldAccent, size: 16),
+        const Icon(
+          Icons.check_circle_outline_rounded,
+          color: AppColors.goldAccent,
+          size: 16,
+        ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -1023,7 +1318,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.getTextColor(isDark).withOpacity(0.8),
+              color: AppColors.getTextColor(isDark).withValues(alpha: 0.8),
             ),
           ),
         ),

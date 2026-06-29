@@ -8,11 +8,11 @@ class SharedSbsVideoWidget extends StatelessWidget {
   final VrGazeController gazeController;
 
   const SharedSbsVideoWidget({
-    Key? key,
+    super.key,
     required this.controller,
     required this.isLeftEye,
     required this.gazeController,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class SharedSbsVideoWidget extends StatelessWidget {
           builder: (context, constraints) {
             final double width = constraints.maxWidth;
             final double height = constraints.maxHeight;
-            
+
             // Aumentiamo notevolmente lo zoom (2.2) per avvicinare il soggetto ("molto lontano")
             // e avere tantissimo margine di esplorazione VR
             const double scale = 2.2;
@@ -51,7 +51,7 @@ class SharedSbsVideoWidget extends StatelessWidget {
               height: double.infinity,
               child: ClipRect(
                 child: Transform.scale(
-                  scale: scale, 
+                  scale: scale,
                   child: Transform.translate(
                     offset: Offset(panX, panY),
                     // FittedBox ESTERNO: scala la metà perfetta del video per coprire lo schermo
@@ -66,7 +66,9 @@ class SharedSbsVideoWidget extends StatelessWidget {
                             maxWidth: videoWidth,
                             maxHeight: videoHeight,
                             // Allineiamo il video intero a sinistra o a destra per inquadrare la giusta metà
-                            alignment: isLeftEye ? Alignment.centerLeft : Alignment.centerRight,
+                            alignment: isLeftEye
+                                ? Alignment.centerLeft
+                                : Alignment.centerRight,
                             child: SizedBox(
                               width: videoWidth,
                               height: videoHeight,
@@ -80,7 +82,7 @@ class SharedSbsVideoWidget extends StatelessWidget {
                 ),
               ),
             );
-          }
+          },
         );
       },
     );

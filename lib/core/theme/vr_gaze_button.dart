@@ -63,8 +63,9 @@ class VrGazeController extends ChangeNotifier {
     _activeTargetId = null;
     _lastGyroTime = null;
 
-    _gyroSub = gyroscopeEventStream(samplingPeriod: SensorInterval.uiInterval)
-        .listen(_onGyroEvent, onError: (_) {});
+    _gyroSub = gyroscopeEventStream(
+      samplingPeriod: SensorInterval.uiInterval,
+    ).listen(_onGyroEvent, onError: (_) {});
   }
 
   void stop() {
@@ -108,8 +109,10 @@ class VrGazeController extends ChangeNotifier {
     // dt calcolato dal tempo REALE tra eventi (non il fisso 16ms)
     final now = DateTime.now();
     final dt = _lastGyroTime != null
-        ? (now.difference(_lastGyroTime!).inMicroseconds / 1000000.0)
-            .clamp(0.004, 0.050)
+        ? (now.difference(_lastGyroTime!).inMicroseconds / 1000000.0).clamp(
+            0.004,
+            0.050,
+          )
         : 0.016;
     _lastGyroTime = now;
 
@@ -146,8 +149,8 @@ class VrGazeController extends ChangeNotifier {
     _dwellTimer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       if (_dwellStartTime == null) return;
       final elapsed = DateTime.now().difference(_dwellStartTime!);
-      _dwellProgress =
-          (elapsed.inMilliseconds / dwellTime.inMilliseconds).clamp(0.0, 1.0);
+      _dwellProgress = (elapsed.inMilliseconds / dwellTime.inMilliseconds)
+          .clamp(0.0, 1.0);
       notifyListeners();
 
       if (_dwellProgress >= 1.0) {
@@ -185,11 +188,7 @@ class VrGazeScope extends StatefulWidget {
   final Widget child;
   final VrGazeController controller;
 
-  const VrGazeScope({
-    Key? key,
-    required this.child,
-    required this.controller,
-  }) : super(key: key);
+  const VrGazeScope({super.key, required this.child, required this.controller});
 
   @override
   State<VrGazeScope> createState() => _VrGazeScopeState();
@@ -216,20 +215,14 @@ class _VrGazeScopeState extends State<VrGazeScope> {
 
   @override
   Widget build(BuildContext context) {
-    return _VrGazeScopeData(
-      controller: widget.controller,
-      child: widget.child,
-    );
+    return _VrGazeScopeData(controller: widget.controller, child: widget.child);
   }
 }
 
 class _VrGazeScopeData extends InheritedWidget {
   final VrGazeController controller;
 
-  const _VrGazeScopeData({
-    required this.controller,
-    required super.child,
-  });
+  const _VrGazeScopeData({required this.controller, required super.child});
 
   @override
   bool updateShouldNotify(_VrGazeScopeData oldWidget) => false;
@@ -250,11 +243,11 @@ class VrGazeOverlay extends StatefulWidget {
   final bool isActive;
 
   const VrGazeOverlay({
-    Key? key,
+    super.key,
     required this.child,
     required this.controller,
     this.isActive = false,
-  }) : super(key: key);
+  });
 
   @override
   State<VrGazeOverlay> createState() => _VrGazeOverlayState();
@@ -317,7 +310,9 @@ class _VrGazeOverlayState extends State<VrGazeOverlay> {
                     offset: widget.controller.reticleOffset,
                     dwellProgress: widget.controller.dwellProgress,
                     hasTarget: widget.controller.activeTargetId != null,
-                    textColor: AppColors.getTextColor(Theme.of(context).brightness == Brightness.dark),
+                    textColor: AppColors.getTextColor(
+                      Theme.of(context).brightness == Brightness.dark,
+                    ),
                   ),
                 ),
               ),
@@ -361,7 +356,7 @@ class _ReticlePainter extends CustomPainter {
       center,
       ringRadius,
       Paint()
-        ..color = textColor.withOpacity(0.30)
+        ..color = textColor.withValues(alpha: 0.30)
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth,
     );
@@ -375,7 +370,7 @@ class _ReticlePainter extends CustomPainter {
         2 * pi * dwellProgress,
         false,
         Paint()
-          ..color = textColor.withOpacity(0.25)
+          ..color = textColor.withValues(alpha: 0.25)
           ..style = PaintingStyle.stroke
           ..strokeWidth = strokeWidth + 4
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
@@ -399,7 +394,7 @@ class _ReticlePainter extends CustomPainter {
       center,
       dotRadius,
       Paint()
-        ..color = textColor.withOpacity(hasTarget ? 1.0 : 0.7)
+        ..color = textColor.withValues(alpha: hasTarget ? 1.0 : 0.7)
         ..style = PaintingStyle.fill,
     );
     // Alone
@@ -407,7 +402,7 @@ class _ReticlePainter extends CustomPainter {
       center,
       dotRadius + 3,
       Paint()
-        ..color = textColor.withOpacity(0.15)
+        ..color = textColor.withValues(alpha: 0.15)
         ..style = PaintingStyle.fill,
     );
   }
@@ -438,7 +433,7 @@ class VrGazableButton extends StatefulWidget {
   final bool isActiveEye;
 
   const VrGazableButton({
-    Key? key,
+    super.key,
     required this.id,
     required this.label,
     required this.icon,
@@ -447,7 +442,7 @@ class VrGazableButton extends StatefulWidget {
     this.size = 80.0,
     this.hitRadius = 50.0,
     this.isActiveEye = true,
-  }) : super(key: key);
+  });
 
   @override
   State<VrGazableButton> createState() => _VrGazableButtonState();
@@ -522,9 +517,12 @@ class _VrGazableButtonState extends State<VrGazableButton>
   @override
   Widget build(BuildContext context) {
     final isActive = _gazeController?.activeTargetId == widget.id;
-    final dwellProgress =
-        isActive ? (_gazeController?.dwellProgress ?? 0.0) : 0.0;
-    final textColor = AppColors.getTextColor(Theme.of(context).brightness == Brightness.dark);
+    final dwellProgress = isActive
+        ? (_gazeController?.dwellProgress ?? 0.0)
+        : 0.0;
+    final textColor = AppColors.getTextColor(
+      Theme.of(context).brightness == Brightness.dark,
+    );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -545,8 +543,8 @@ class _VrGazableButtonState extends State<VrGazableButton>
                     height: widget.size + 14 + (pulse * 8),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: widget.color.withOpacity(
-                        isActive
+                      color: widget.color.withValues(
+                        alpha: isActive
                             ? 0.10 + dwellProgress * 0.15
                             : 0.03 + pulse * 0.05,
                       ),
@@ -558,7 +556,7 @@ class _VrGazableButtonState extends State<VrGazableButton>
                     size: Size(widget.size + 14, widget.size + 14),
                     painter: _GazeRingPainter(
                       progress: 1.0,
-                      color: textColor.withOpacity(0.10),
+                      color: textColor.withValues(alpha: 0.10),
                       strokeWidth: 3.0,
                     ),
                   ),
@@ -571,7 +569,7 @@ class _VrGazableButtonState extends State<VrGazableButton>
                         progress: dwellProgress,
                         color: widget.color,
                         strokeWidth: 4.0,
-                        glowColor: widget.color.withOpacity(0.6),
+                        glowColor: widget.color.withValues(alpha: 0.6),
                       ),
                     ),
 
@@ -585,14 +583,14 @@ class _VrGazableButtonState extends State<VrGazableButton>
                         height: widget.size,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: textColor.withOpacity(
-                            isActive
+                          color: textColor.withValues(
+                            alpha: isActive
                                 ? 0.10 + dwellProgress * 0.12
                                 : 0.05,
                           ),
                           border: Border.all(
-                            color: widget.color.withOpacity(
-                              isActive
+                            color: widget.color.withValues(
+                              alpha: isActive
                                   ? 0.50 + dwellProgress * 0.30
                                   : 0.18 + pulse * 0.12,
                             ),
@@ -601,8 +599,8 @@ class _VrGazableButtonState extends State<VrGazableButton>
                         ),
                         child: Icon(
                           widget.icon,
-                          color: textColor.withOpacity(
-                            isActive
+                          color: textColor.withValues(
+                            alpha: isActive
                                 ? 0.85 + dwellProgress * 0.15
                                 : 0.55 + pulse * 0.25,
                           ),
@@ -629,8 +627,8 @@ class _VrGazableButtonState extends State<VrGazableButton>
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 9.5,
                 fontWeight: FontWeight.w700,
-                color: textColor.withOpacity(
-                  isActive ? 0.9 : 0.40 + _pulseController.value * 0.30,
+                color: textColor.withValues(
+                  alpha: isActive ? 0.9 : 0.40 + _pulseController.value * 0.30,
                 ),
                 letterSpacing: 1.2,
                 height: 1.4,

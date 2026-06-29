@@ -2,7 +2,6 @@ import 'package:isar/isar.dart';
 import '../models/user_stats_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import '../settings_provider.dart';
 
 /// Provider for Isar instance
@@ -22,9 +21,7 @@ class UserRepository {
 
     await isar.writeTxn(() async {
       var stats = await isar.userStatsModels.where().findFirst();
-      if (stats == null) {
-        stats = UserStatsModel();
-      }
+      stats ??= UserStatsModel();
 
       stats.totalMinutes += minutes;
       stats.totalSessions += 1;
@@ -35,7 +32,7 @@ class UserRepository {
         stats.currentStreak += 1;
         stats.lastSessionDate = todayStr;
       }
-      
+
       await isar.userStatsModels.put(stats);
 
       final record = TimelineRecordModel()
@@ -45,9 +42,12 @@ class UserRepository {
         ..timestamp = DateTime.now().millisecondsSinceEpoch;
 
       await isar.timelineRecordModels.put(record);
-      
+
       // keep only last 10 records
-      final allRecords = await isar.timelineRecordModels.where().sortByTimestampDesc().findAll();
+      final allRecords = await isar.timelineRecordModels
+          .where()
+          .sortByTimestampDesc()
+          .findAll();
       if (allRecords.length > 10) {
         final toDelete = allRecords.sublist(10).map((e) => e.id).toList();
         await isar.timelineRecordModels.deleteAll(toDelete);
@@ -64,12 +64,16 @@ class UserRepository {
   }
 
   String get profileName => prefs.getString("ProfileName") ?? "";
-  Future<void> setProfileName(String name) => prefs.setString("ProfileName", name);
+  Future<void> setProfileName(String name) =>
+      prefs.setString("ProfileName", name);
 
   bool get isOnboarded => prefs.getBool("IsOnboarded") ?? false;
   Future<void> setOnboarded(bool value) => prefs.setBool("IsOnboarded", value);
 }
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return UserRepository(ref.watch(isarProvider), ref.watch(sharedPrefsProvider));
+  return UserRepository(
+    ref.watch(isarProvider),
+    ref.watch(sharedPrefsProvider),
+  );
 });

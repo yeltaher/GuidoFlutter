@@ -8,22 +8,38 @@ class AppColors {
   // --- PALETTE JAPANDI LIGHT (GIORNO) ---
   static const Color lightBg = Color(0xFFECE7DF); // Sabbia calda mockup / Crema
   static const Color lightCard = Color(0xFFF5F2EC); // Argilla chiara mockup
-  static const Color lightText = Color(0xFF2D322F); // Antracite desaturato mockup
-  static const Color lightTextSub = Color(0xFF6E7571); // Slate grigio-verde mockup
-  static const Color sageAccent = Color(0xFF8CA693); // Verde salvia desaturato mockup
+  static const Color lightText = Color(
+    0xFF2D322F,
+  ); // Antracite desaturato mockup
+  static const Color lightTextSub = Color(
+    0xFF6E7571,
+  ); // Slate grigio-verde mockup
+  static const Color sageAccent = Color(
+    0xFF8CA693,
+  ); // Verde salvia desaturato mockup
   static const Color lightBorder = Color(0x228CA693);
 
   // --- PALETTE JAPANDI DARK (NOTTE) ---
-  static const Color darkBg = Color(0xFF0F1115); // Pietra vulcanica ardesia scurissima
+  static const Color darkBg = Color(
+    0xFF0F1115,
+  ); // Pietra vulcanica ardesia scurissima
   static const Color darkCard = Color(0xFF16191E); // Argilla scura levigata
-  static const Color darkText = Color(0xFFECE7E0); // Avorio caldo / Bianco antico
+  static const Color darkText = Color(
+    0xFFECE7E0,
+  ); // Avorio caldo / Bianco antico
   static const Color darkTextSub = Color(0xFF8E959E); // Slate grigio medio
-  static const Color goldAccent = Color(0xFFD9A05B); // Oro antico caldo / Luce candela
+  static const Color goldAccent = Color(
+    0xFFD9A05B,
+  ); // Oro antico caldo / Luce candela
   static const Color darkBorder = Color(0x33D9A05B);
 
   // --- ALTRI ACCENTI ---
-  static const Color dangerAccent = Color(0xFFC94C4C); // Rosso argilla soffice per uscire
-  static const Color successAccent = Color(0xFF5E8C7A); // Verde bosco/selezionato Japandi
+  static const Color dangerAccent = Color(
+    0xFFC94C4C,
+  ); // Rosso argilla soffice per uscire
+  static const Color successAccent = Color(
+    0xFF5E8C7A,
+  ); // Verde bosco/selezionato Japandi
 
   // Gradienti dinamici basati sull'orario, adattati all'estetica Japandi
   // 1. Mattina Japandi (Sabbia & Salvia soffusa)
@@ -81,24 +97,39 @@ class AppColors {
   // --- HELPER DIVERSIFICATI PER TEMA ---
 
   static Color getBgColor(bool isDarkTheme) => isDarkTheme ? darkBg : lightBg;
-  static Color getCardColor(bool isDarkTheme) => isDarkTheme ? darkCard : lightCard;
-  static Color getTextColor(bool isDarkTheme) => isDarkTheme ? darkText : lightText;
-  static Color getSubTextColor(bool isDarkTheme) => isDarkTheme ? darkTextSub : lightTextSub;
-  static Color getActiveAccentColor(bool isDarkTheme) => isDarkTheme ? goldAccent : sageAccent;
-  static Color getBorderColor(bool isDarkTheme) => isDarkTheme ? darkBorder : lightBorder;
+  static Color getCardColor(bool isDarkTheme) =>
+      isDarkTheme ? darkCard : lightCard;
+  static Color getTextColor(bool isDarkTheme) =>
+      isDarkTheme ? darkText : lightText;
+  static Color getSubTextColor(bool isDarkTheme) =>
+      isDarkTheme ? darkTextSub : lightTextSub;
+  static Color getActiveAccentColor(bool isDarkTheme) =>
+      isDarkTheme ? goldAccent : sageAccent;
+  static Color getBorderColor(bool isDarkTheme) =>
+      isDarkTheme ? darkBorder : lightBorder;
 
   /// Stile di decorazione Japandi "Claymorphism" e "Glassmorphism"
-  static BoxDecoration japandiCardDecoration(bool isDarkTheme, {double borderRadius = 24.0, double opacity = 0.5}) {
+  static BoxDecoration japandiCardDecoration(
+    bool isDarkTheme, {
+    double borderRadius = 24.0,
+    double opacity = 0.5,
+  }) {
     return BoxDecoration(
-      color: getCardColor(isDarkTheme).withOpacity(isDarkTheme ? opacity : 0.8),
+      color: getCardColor(
+        isDarkTheme,
+      ).withValues(alpha: isDarkTheme ? opacity : 0.8),
       borderRadius: BorderRadius.circular(borderRadius),
       border: Border.all(
-        color: isDarkTheme ? goldAccent.withOpacity(0.04) : sageAccent.withOpacity(0.04),
+        color: isDarkTheme
+            ? goldAccent.withValues(alpha: 0.04)
+            : sageAccent.withValues(alpha: 0.04),
         width: 1.0,
       ),
       boxShadow: [
         BoxShadow(
-          color: isDarkTheme ? Colors.black.withOpacity(0.15) : Colors.black.withOpacity(0.02),
+          color: isDarkTheme
+              ? Colors.black.withValues(alpha: 0.15)
+              : Colors.black.withValues(alpha: 0.02),
           blurRadius: 18,
           spreadRadius: -2,
           offset: const Offset(0, 4),

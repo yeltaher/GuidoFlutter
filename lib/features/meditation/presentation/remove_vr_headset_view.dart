@@ -50,7 +50,9 @@ class RemoveVrHeadsetView extends ConsumerWidget {
                   style: GoogleFonts.outfit(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
-                    color: isDark ? AppColors.darkTextSub : AppColors.lightTextSub,
+                    color: isDark
+                        ? AppColors.darkTextSub
+                        : AppColors.lightTextSub,
                   ),
                 ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
                 const SizedBox(height: 64),

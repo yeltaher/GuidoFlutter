@@ -1,21 +1,22 @@
+// ignore_for_file: unused_local_variable, deprecated_member_use, use_build_context_synchronously, curly_braces_in_flow_control_structures, unused_element, unused_field
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../audio/audio_service.dart';
 
 /// Rappresenta lo stato completo delle preferenze e sblocchi dell'app
 class SettingsState {
-  final int musicVolume;     // 0 = Mute, 1 = Low, 2 = Mid, 3 = High
-  final int effectsVolume;   // 0 = Mute, 1 = Low, 2 = Mid, 3 = High
-  final int voiceVolume;     // 0 = Mute, 1 = Low, 2 = Mid, 3 = High
-  final bool isVoiceMuted;   // Se la voce guida è silenziata
-  final int voiceSex;        // 0 = Maschile, 1 = Femminile
-  final int language;        // 0 = Italiano, 1 = Inglese
-  final bool isUnlocked;     // Se l'app premium è sbloccata
-  final bool isVrMode;       // Se la visualizzazione VR stereoscopica è attiva
-  final bool isDarkTheme;    // Se il tema scuro Japandi è attivo
-  final bool vrCalibrated;   // Se la calibrazione VR è stata effettuata
-  final double vrBiasX;      // Drift asse X giroscopio
-  final double vrBiasZ;      // Drift asse Z giroscopio
+  final int musicVolume; // 0 = Mute, 1 = Low, 2 = Mid, 3 = High
+  final int effectsVolume; // 0 = Mute, 1 = Low, 2 = Mid, 3 = High
+  final int voiceVolume; // 0 = Mute, 1 = Low, 2 = Mid, 3 = High
+  final bool isVoiceMuted; // Se la voce guida è silenziata
+  final int voiceSex; // 0 = Maschile, 1 = Femminile
+  final int language; // 0 = Italiano, 1 = Inglese
+  final bool isUnlocked; // Se l'app premium è sbloccata
+  final bool isVrMode; // Se la visualizzazione VR stereoscopica è attiva
+  final bool isDarkTheme; // Se il tema scuro Japandi è attivo
+  final bool vrCalibrated; // Se la calibrazione VR è stata effettuata
+  final double vrBiasX; // Drift asse X giroscopio
+  final double vrBiasZ; // Drift asse Z giroscopio
 
   const SettingsState({
     required this.musicVolume,
@@ -70,7 +71,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   @override
   SettingsState build() {
     _prefs = ref.watch(sharedPrefsProvider);
-    
+
     // Default state
     final defaultState = const SettingsState(
       musicVolume: 3,
@@ -86,7 +87,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       vrBiasX: 0.0,
       vrBiasZ: 0.0,
     );
-    
+
     // Initialize from prefs
     final music = _prefs.getInt("Music") ?? 3;
     final effects = _prefs.getInt("Effects") ?? 3;
@@ -101,23 +102,22 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final vrBiasZ = _prefs.getDouble("VrBiasZ") ?? 0.0;
 
     // Sincronizza i volumi con il servizio audio appena diventa disponibile
-    ref.listen<AsyncValue<GuidoAudioService>>(
-      audioServiceProvider,
-      (previous, next) {
-        if (next.hasValue && next.value != null) {
-          final service = next.value!;
-          // Applica lo stato corrente (non usare `music` locale ma `state` se già inizializzato, 
-          // ma qui usiamo le variabili lette da prefs visto che state non è ancora tornato, 
-          // però siccome ref.listen con fireImmediately esegue sùbito, potremmo non avere `state` a disposizione,
-          // quindi passiamo i valori iniziali).
-          service.setAmbientVolume(music);
-          service.setEffectsVolume(effects);
-          service.setVoiceVolume(voice);
-          service.setVoiceMute(muteVoice);
-        }
-      },
-      fireImmediately: true,
-    );
+    ref.listen<AsyncValue<GuidoAudioService>>(audioServiceProvider, (
+      previous,
+      next,
+    ) {
+      if (next.hasValue && next.value != null) {
+        final service = next.value!;
+        // Applica lo stato corrente (non usare `music` locale ma `state` se già inizializzato,
+        // ma qui usiamo le variabili lette da prefs visto che state non è ancora tornato,
+        // però siccome ref.listen con fireImmediately esegue sùbito, potremmo non avere `state` a disposizione,
+        // quindi passiamo i valori iniziali).
+        service.setAmbientVolume(music);
+        service.setEffectsVolume(effects);
+        service.setVoiceVolume(voice);
+        service.setVoiceMute(muteVoice);
+      }
+    }, fireImmediately: true);
 
     return SettingsState(
       musicVolume: music,
@@ -135,33 +135,40 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
-
   /// Modifica il volume della musica e lo salva offline
   Future<void> changeMusicVolume(int volume) async {
     state = state.copyWith(musicVolume: volume);
     await _prefs.setInt("Music", volume);
-    ref.read(audioServiceProvider).whenData((service) => service.setAmbientVolume(volume));
+    ref
+        .read(audioServiceProvider)
+        .whenData((service) => service.setAmbientVolume(volume));
   }
 
   /// Modifica il volume degli effetti e lo salva offline
   Future<void> changeEffectsVolume(int volume) async {
     state = state.copyWith(effectsVolume: volume);
     await _prefs.setInt("Effects", volume);
-    ref.read(audioServiceProvider).whenData((service) => service.setEffectsVolume(volume));
+    ref
+        .read(audioServiceProvider)
+        .whenData((service) => service.setEffectsVolume(volume));
   }
 
   /// Modifica il volume della voce e lo salva offline
   Future<void> changeVoiceVolume(int volume) async {
     state = state.copyWith(voiceVolume: volume);
     await _prefs.setInt("Voice", volume);
-    ref.read(audioServiceProvider).whenData((service) => service.setVoiceVolume(volume));
+    ref
+        .read(audioServiceProvider)
+        .whenData((service) => service.setVoiceVolume(volume));
   }
 
   /// Cambia lo stato di Mute della voce
   Future<void> toggleVoiceMute(bool isMuted) async {
     state = state.copyWith(isVoiceMuted: isMuted);
     await _prefs.setBool("MuteVoice", isMuted);
-    ref.read(audioServiceProvider).whenData((service) => service.setVoiceMute(isMuted));
+    ref
+        .read(audioServiceProvider)
+        .whenData((service) => service.setVoiceMute(isMuted));
   }
 
   /// Cambia il genere della voce (0 = Maschile, 1 = Femminile)
@@ -196,11 +203,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   /// Salva la calibrazione del giroscopio VR
   Future<void> saveVrCalibration(double biasX, double biasZ) async {
-    state = state.copyWith(
-      vrCalibrated: true,
-      vrBiasX: biasX,
-      vrBiasZ: biasZ,
-    );
+    state = state.copyWith(vrCalibrated: true, vrBiasX: biasX, vrBiasZ: biasZ);
     await _prefs.setBool("VrCalibrated", true);
     await _prefs.setDouble("VrBiasX", biasX);
     await _prefs.setDouble("VrBiasZ", biasZ);
@@ -208,11 +211,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   /// Resetta la calibrazione del giroscopio VR
   Future<void> resetVrCalibration() async {
-    state = state.copyWith(
-      vrCalibrated: false,
-      vrBiasX: 0.0,
-      vrBiasZ: 0.0,
-    );
+    state = state.copyWith(vrCalibrated: false, vrBiasX: 0.0, vrBiasZ: 0.0);
     await _prefs.setBool("VrCalibrated", false);
     await _prefs.setDouble("VrBiasX", 0.0);
     await _prefs.setDouble("VrBiasZ", 0.0);

@@ -17,10 +17,7 @@ void main() {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [
-            Locale('it', ''),
-            Locale('en', ''),
-          ],
+          supportedLocales: const [Locale('it', ''), Locale('en', '')],
           home: Scaffold(
             body: AuthFormCard(
               isDark: false,
@@ -36,5 +33,7 @@ void main() {
 
     // Verify if AuthFormCard is rendered
     expect(find.byType(AuthFormCard), findsOneWidget);
+
+    await tester.pumpAndSettle();
   });
 }
