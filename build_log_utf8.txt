@@ -1,0 +1,82 @@
+﻿Running Gradle task 'assembleRelease'...                        
+[GradlePatch] Forced namespace for subproject app -> com.codepulse.guido.app
+[GradlePatch] Forced compileSdk=36 for subproject app
+[GradlePatch] Forced namespace for subproject audio_session -> com.codepulse.guido.audio_session
+[GradlePatch] Forced compileSdk=36 for subproject audio_session
+[GradlePatch] Forced namespace for subproject flutter_local_notifications -> com.codepulse.guido.flutter_local_notifications
+[GradlePatch] Forced compileSdk=36 for subproject flutter_local_notifications
+[GradlePatch] Forced namespace for subproject flutter_timezone -> com.codepulse.guido.flutter_timezone
+[GradlePatch] Forced compileSdk=36 for subproject flutter_timezone
+[GradlePatch] Forced namespace for subproject isar_flutter_libs -> com.codepulse.guido.isar_flutter_libs
+[GradlePatch] Forced compileSdk=36 for subproject isar_flutter_libs
+[GradlePatch] Forced namespace for subproject jni -> com.codepulse.guido.jni
+[GradlePatch] Forced compileSdk=36 for subproject jni
+[GradlePatch] Forced namespace for subproject jni_flutter -> com.codepulse.guido.jni_flutter
+[GradlePatch] Forced compileSdk=36 for subproject jni_flutter
+[GradlePatch] Forced namespace for subproject just_audio -> com.codepulse.guido.just_audio
+[GradlePatch] Forced compileSdk=36 for subproject just_audio
+[GradlePatch] Forced namespace for subproject sensors_plus -> com.codepulse.guido.sensors_plus
+[GradlePatch] Forced compileSdk=36 for subproject sensors_plus
+[GradlePatch] Forced namespace for subproject shared_preferences_android -> com.codepulse.guido.shared_preferences_android
+[GradlePatch] Forced compileSdk=36 for subproject shared_preferences_android
+[GradlePatch] Forced namespace for subproject url_launcher_android -> com.codepulse.guido.url_launcher_android
+[GradlePatch] Forced compileSdk=36 for subproject url_launcher_android
+flutter : lib/core/recommendations/recommendation_service.dart:3:8: Error: Error when reading 
+'lib/database/settings_provider.dart': Het systeem kan het opgegeven pad niet vinden
+At line:1 char:1
++ flutter build apk --release > build_log.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (lib/core/recomm...pad niet vinden:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+import '../../database/settings_provider.dart';
+       ^
+lib/core/recommendations/recommendation_service.dart:6:27: Error: Undefined name 'sharedPrefsProvider'.
+  final prefs = ref.watch(sharedPrefsProvider);
+                          ^^^^^^^^^^^^^^^^^^^
+lib/core/notifications/notification_service.dart:21:35: Error: A value of type 'TimezoneInfo' can't be assigned to a 
+variable of type 'String'.
+ - 'TimezoneInfo' is from 'package:flutter_timezone/timezone_info.dart' 
+('../../../../../../../../../AppData/Local/Pub/Cache/hosted/pub.dev/flutter_timezone-5.0.2/lib/timezone_info.dart').
+      final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+                                  ^
+lib/core/notifications/notification_service.dart:41:53: Error: Too many positional arguments: 0 allowed, but 1 found.
+Try removing the extra positional arguments.
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+                                                    ^
+lib/core/notifications/notification_service.dart:87:46: Error: The getter 'UILocalNotificationDateInterpretation' 
+isn't defined for the type 'NotificationService'.
+ - 'NotificationService' is from 'package:guido/core/notifications/notification_service.dart' 
+('lib/core/notifications/notification_service.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 
+'UILocalNotificationDateInterpretation'.
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+lib/core/notifications/notification_service.dart:80:56: Error: Too many positional arguments: 0 allowed, but 5 found.
+Try removing the extra positional arguments.
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+                                                       ^
+lib/features/menu/presentation/me_tab.dart:581:46: Error: Member not found: 'primaryViolet'.
+                      accentColor: AppColors.primaryViolet,
+                                             ^^^^^^^^^^^^^
+lib/features/menu/presentation/settings_tab.dart:681:38: Error: Member not found: 'edit_time_rounded'.
+                    icon: Icon(Icons.edit_time_rounded, color: accentColor, size: 22),
+                                     ^^^^^^^^^^^^^^^^^
+Target kernel_snapshot_program failed: Exception
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileFlutterBuildRelease'.
+> Process 'command 'C:\Users\y.el.taher\flutter\bin\flutter.bat'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 33s
+Running Gradle task 'assembleRelease'...                           33.7s
+Gradle task assembleRelease failed with exit code 1

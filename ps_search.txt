@@ -1,0 +1,204 @@
+﻿
+build_log.txt:75:> Run with --stacktrace option to get the stack trace.
+build_log_utf8.txt:75:> Run with --stacktrace option to get the stack trace.
+Guido-Flutter-build-logs-1780256496349.txt:12273:@@[error] EXCEPTION: Input value is required. Input name: AC_SCHEME
+Guido-Flutter-build-logs-1780257842492.txt:12292:@@[error] EXCEPTION: Input value is required. Input name: AC_SCHEME
+main-Guido-build-logs-1780239078738.txt:791:@@[error] EXCEPTION: Step execution has an error: Failed, Process Exit 
+Code: 1
+main-Guido-Flutter-build-logs-1780255627946.txt:12272:@@[error] EXCEPTION: Input value is required. Input name: 
+AC_PROJECT_PATH
+main-Guido-Flutter-build-logs-1780260818699.txt:12325:@@[error] EXCEPTION: Step execution has an error: Failed, 
+Process Exit Code: 1
+ps_search.txt:2:build_log.txt:75:> Run with --stacktrace option to get the stack trace.
+ps_search.txt:3:build_log_utf8.txt:75:> Run with --stacktrace option to get the stack trace.
+ps_search.txt:4:Guido-Flutter-build-logs-1780256496349.txt:12273:@@[error] EXCEPTION: Input value is required. Input 
+name: AC_SCHEME
+ps_search.txt:5:Guido-Flutter-build-logs-1780257842492.txt:12292:@@[error] EXCEPTION: Input value is required. Input 
+name: AC_SCHEME
+ps_search.txt:6:main-Guido-build-logs-1780239078738.txt:791:@@[error] EXCEPTION: Step execution has an error: Failed, 
+Process Exit 
+ps_search.txt:8:main-Guido-Flutter-build-logs-1780255627946.txt:12272:@@[error] EXCEPTION: Input value is required. 
+Input name: 
+ps_search.txt:10:main-Guido-Flutter-build-logs-1780260818699.txt:12325:@@[error] EXCEPTION: Step execution has an 
+error: Failed, 
+ps_search.txt:12:ps_search.txt:2:build_log.txt:75:> Run with --stacktrace option to get the stack trace.
+ps_search.txt:13:ps_search.txt:3:build_log_utf8.txt:75:> Run with --stacktrace option to get the stack trace.
+ps_search.txt:14:ps_search.txt:4:Guido-Flutter-build-logs-1780256496349.txt:12273:@@[error] EXCEPTION: Input value is 
+required. Input 
+ps_search.txt:16:ps_search.txt:5:Guido-Flutter-build-logs-1780257842492.txt:12292:@@[error] EXCEPTION: Input value is 
+required. Input 
+ps_search.txt:18:ps_search.txt:6:main-Guido-build-logs-1780239078738.txt:791:@@[error] EXCEPTION: Step execution has 
+an error: Failed, 
+ps_search.txt:20:ps_search.txt:8:main-Guido-Flutter-build-logs-1780255627946.txt:12272:@@[error] EXCEPTION: Input 
+value is required. 
+ps_search.txt:22:ps_search.txt:10:main-Guido-Flutter-build-logs-1780260818699.txt:12325:@@[error] EXCEPTION: Step 
+execution has an 
+ps_search.txt:24:ps_search.txt:12:ps_search.txt:2:build_log.txt:75:> Run with --stacktrace option to get the stack 
+trace.
+ps_search.txt:25:ps_search.txt:13:ps_search.txt:3:build_log_utf8.txt:75:> Run with --stacktrace option to get the 
+stack trace.
+ps_search.txt:26:ps_search.txt:14:ps_search.txt:4:Guido-Flutter-build-logs-1780256496349.txt:12273:@@[error] 
+EXCEPTION: Input value is 
+ps_search.txt:28:ps_search.txt:16:ps_search.txt:5:Guido-Flutter-build-logs-1780257842492.txt:12292:@@[error] 
+EXCEPTION: Input value is 
+ps_search.txt:30:ps_search.txt:18:ps_search.txt:6:main-Guido-build-logs-1780239078738.txt:791:@@[error] EXCEPTION: 
+Step execution has 
+ps_search.txt:32:ps_search.txt:20:ps_search.txt:8:main-Guido-Flutter-build-logs-1780255627946.txt:12272:@@[error] 
+EXCEPTION: Input 
+ps_search.txt:34:ps_search.txt:22:ps_search.txt:10:main-Guido-Flutter-build-logs-1780260818699.txt:12325:@@[error] 
+EXCEPTION: Step 
+ps_search.txt:39:stack trace.
+ps_search.txt:41:EXCEPTION: Input value is 
+ps_search.txt:43:EXCEPTION: Input value is 
+ps_search.txt:44:ps_search.txt:30:ps_search.txt:18:ps_search.txt:6:main-Guido-build-logs-1780239078738.txt:791:@@[error
+] EXCEPTION: 
+ps_search.txt:47:EXCEPTION: Input 
+ps_search.txt:49:EXCEPTION: Step 
+ps_search.txt:50:ps_search.txt:39:stack trace.
+ps_search.txt:51:ps_search.txt:41:EXCEPTION: Input value is 
+ps_search.txt:52:ps_search.txt:43:EXCEPTION: Input value is 
+ps_search.txt:54:] EXCEPTION: 
+ps_search.txt:55:ps_search.txt:47:EXCEPTION: Input 
+ps_search.txt:56:ps_search.txt:49:EXCEPTION: Step 
+ps_search.txt:57:ps_search.txt:50:ps_search.txt:39:stack trace.
+ps_search.txt:58:ps_search.txt:51:ps_search.txt:41:EXCEPTION: Input value is 
+ps_search.txt:59:ps_search.txt:52:ps_search.txt:43:EXCEPTION: Input value is 
+ps_search.txt:60:ps_search.txt:54:] EXCEPTION: 
+ps_search.txt:61:ps_search.txt:55:ps_search.txt:47:EXCEPTION: Input 
+ps_search.txt:62:ps_search.txt:56:ps_search.txt:49:EXCEPTION: Step 
+ps_search.txt:63:ps_search.txt:57:ps_search.txt:50:ps_search.txt:39:stack trace.
+ps_search.txt:64:ps_search.txt:58:ps_search.txt:51:ps_search.txt:41:EXCEPTION: Input value is 
+ps_search.txt:65:ps_search.txt:59:ps_search.txt:52:ps_search.txt:43:EXCEPTION: Input value is 
+ps_search.txt:66:ps_search.txt:60:ps_search.txt:54:] EXCEPTION: 
+ps_search.txt:67:ps_search.txt:61:ps_search.txt:55:ps_search.txt:47:EXCEPTION: Input 
+ps_search.txt:68:ps_search.txt:62:ps_search.txt:56:ps_search.txt:49:EXCEPTION: Step 
+ps_search.txt:69:ps_search.txt:63:ps_search.txt:57:ps_search.txt:50:ps_search.txt:39:stack trace.
+ps_search.txt:70:ps_search.txt:64:ps_search.txt:58:ps_search.txt:51:ps_search.txt:41:EXCEPTION: Input value is 
+ps_search.txt:71:ps_search.txt:65:ps_search.txt:59:ps_search.txt:52:ps_search.txt:43:EXCEPTION: Input value is 
+ps_search.txt:72:ps_search.txt:66:ps_search.txt:60:ps_search.txt:54:] EXCEPTION: 
+ps_search.txt:73:ps_search.txt:67:ps_search.txt:61:ps_search.txt:55:ps_search.txt:47:EXCEPTION: Input 
+ps_search.txt:74:ps_search.txt:68:ps_search.txt:62:ps_search.txt:56:ps_search.txt:49:EXCEPTION: Step 
+ps_search.txt:75:ps_search.txt:69:ps_search.txt:63:ps_search.txt:57:ps_search.txt:50:ps_search.txt:39:stack trace.
+ps_search.txt:76:ps_search.txt:70:ps_search.txt:64:ps_search.txt:58:ps_search.txt:51:ps_search.txt:41:EXCEPTION: Input 
+value is 
+ps_search.txt:77:ps_search.txt:71:ps_search.txt:65:ps_search.txt:59:ps_search.txt:52:ps_search.txt:43:EXCEPTION: Input 
+value is 
+ps_search.txt:78:ps_search.txt:72:ps_search.txt:66:ps_search.txt:60:ps_search.txt:54:] EXCEPTION: 
+ps_search.txt:79:ps_search.txt:73:ps_search.txt:67:ps_search.txt:61:ps_search.txt:55:ps_search.txt:47:EXCEPTION: Input 
+ps_search.txt:80:ps_search.txt:74:ps_search.txt:68:ps_search.txt:62:ps_search.txt:56:ps_search.txt:49:EXCEPTION: Step 
+ps_search.txt:81:ps_search.txt:75:ps_search.txt:69:ps_search.txt:63:ps_search.txt:57:ps_search.txt:50:ps_search.txt:39:
+stack trace.
+ps_search.txt:82:ps_search.txt:76:ps_search.txt:70:ps_search.txt:64:ps_search.txt:58:ps_search.txt:51:ps_search.txt:41:
+EXCEPTION: Input 
+ps_search.txt:84:ps_search.txt:77:ps_search.txt:71:ps_search.txt:65:ps_search.txt:59:ps_search.txt:52:ps_search.txt:43:
+EXCEPTION: Input 
+ps_search.txt:86:ps_search.txt:78:ps_search.txt:72:ps_search.txt:66:ps_search.txt:60:ps_search.txt:54:] EXCEPTION: 
+ps_search.txt:87:ps_search.txt:79:ps_search.txt:73:ps_search.txt:67:ps_search.txt:61:ps_search.txt:55:ps_search.txt:47:
+EXCEPTION: Input 
+ps_search.txt:88:ps_search.txt:80:ps_search.txt:74:ps_search.txt:68:ps_search.txt:62:ps_search.txt:56:ps_search.txt:49:
+EXCEPTION: Step 
+ps_search.txt:90:stack trace.
+ps_search.txt:92:EXCEPTION: Input 
+ps_search.txt:94:EXCEPTION: Input 
+ps_search.txt:95:ps_search.txt:86:ps_search.txt:78:ps_search.txt:72:ps_search.txt:66:ps_search.txt:60:ps_search.txt:54:
+] EXCEPTION: 
+ps_search.txt:97:EXCEPTION: Input 
+ps_search.txt:99:EXCEPTION: Step 
+ps_search.txt:100:ps_search.txt:90:stack trace.
+ps_search.txt:101:ps_search.txt:92:EXCEPTION: Input 
+ps_search.txt:102:ps_search.txt:94:EXCEPTION: Input 
+ps_search.txt:104:] EXCEPTION: 
+ps_search.txt:105:ps_search.txt:97:EXCEPTION: Input 
+ps_search.txt:106:ps_search.txt:99:EXCEPTION: Step 
+ps_search.txt:107:ps_search.txt:100:ps_search.txt:90:stack trace.
+ps_search.txt:108:ps_search.txt:101:ps_search.txt:92:EXCEPTION: Input 
+ps_search.txt:109:ps_search.txt:102:ps_search.txt:94:EXCEPTION: Input 
+ps_search.txt:110:ps_search.txt:104:] EXCEPTION: 
+ps_search.txt:111:ps_search.txt:105:ps_search.txt:97:EXCEPTION: Input 
+ps_search.txt:112:ps_search.txt:106:ps_search.txt:99:EXCEPTION: Step 
+ps_search.txt:113:ps_search.txt:107:ps_search.txt:100:ps_search.txt:90:stack trace.
+ps_search.txt:114:ps_search.txt:108:ps_search.txt:101:ps_search.txt:92:EXCEPTION: Input 
+ps_search.txt:115:ps_search.txt:109:ps_search.txt:102:ps_search.txt:94:EXCEPTION: Input 
+ps_search.txt:116:ps_search.txt:110:ps_search.txt:104:] EXCEPTION: 
+ps_search.txt:117:ps_search.txt:111:ps_search.txt:105:ps_search.txt:97:EXCEPTION: Input 
+ps_search.txt:118:ps_search.txt:112:ps_search.txt:106:ps_search.txt:99:EXCEPTION: Step 
+ps_search.txt:119:ps_search.txt:113:ps_search.txt:107:ps_search.txt:100:ps_search.txt:90:stack trace.
+ps_search.txt:120:ps_search.txt:114:ps_search.txt:108:ps_search.txt:101:ps_search.txt:92:EXCEPTION: Input 
+ps_search.txt:121:ps_search.txt:115:ps_search.txt:109:ps_search.txt:102:ps_search.txt:94:EXCEPTION: Input 
+ps_search.txt:122:ps_search.txt:116:ps_search.txt:110:ps_search.txt:104:] EXCEPTION: 
+ps_search.txt:123:ps_search.txt:117:ps_search.txt:111:ps_search.txt:105:ps_search.txt:97:EXCEPTION: Input 
+ps_search.txt:124:ps_search.txt:118:ps_search.txt:112:ps_search.txt:106:ps_search.txt:99:EXCEPTION: Step 
+ps_search.txt:125:ps_search.txt:119:ps_search.txt:113:ps_search.txt:107:ps_search.txt:100:ps_search.txt:90:stack trace.
+ps_search.txt:126:ps_search.txt:120:ps_search.txt:114:ps_search.txt:108:ps_search.txt:101:ps_search.txt:92:EXCEPTION: 
+Input 
+ps_search.txt:127:ps_search.txt:121:ps_search.txt:115:ps_search.txt:109:ps_search.txt:102:ps_search.txt:94:EXCEPTION: 
+Input 
+ps_search.txt:128:ps_search.txt:122:ps_search.txt:116:ps_search.txt:110:ps_search.txt:104:] EXCEPTION: 
+ps_search.txt:129:ps_search.txt:123:ps_search.txt:117:ps_search.txt:111:ps_search.txt:105:ps_search.txt:97:EXCEPTION: 
+Input 
+ps_search.txt:130:ps_search.txt:124:ps_search.txt:118:ps_search.txt:112:ps_search.txt:106:ps_search.txt:99:EXCEPTION: 
+Step 
+ps_search.txt:131:ps_search.txt:125:ps_search.txt:119:ps_search.txt:113:ps_search.txt:107:ps_search.txt:100:ps_search.t
+xt:90:stack trace.
+ps_search.txt:132:ps_search.txt:126:ps_search.txt:120:ps_search.txt:114:ps_search.txt:108:ps_search.txt:101:ps_search.t
+xt:92:EXCEPTION: 
+ps_search.txt:134:ps_search.txt:127:ps_search.txt:121:ps_search.txt:115:ps_search.txt:109:ps_search.txt:102:ps_search.t
+xt:94:EXCEPTION: 
+ps_search.txt:136:ps_search.txt:128:ps_search.txt:122:ps_search.txt:116:ps_search.txt:110:ps_search.txt:104:] 
+EXCEPTION: 
+ps_search.txt:137:ps_search.txt:129:ps_search.txt:123:ps_search.txt:117:ps_search.txt:111:ps_search.txt:105:ps_search.t
+xt:97:EXCEPTION: 
+ps_search.txt:139:ps_search.txt:130:ps_search.txt:124:ps_search.txt:118:ps_search.txt:112:ps_search.txt:106:ps_search.t
+xt:99:EXCEPTION: 
+ps_search.txt:142:xt:90:stack trace.
+ps_search.txt:144:xt:92:EXCEPTION: 
+ps_search.txt:146:xt:94:EXCEPTION: 
+ps_search.txt:148:EXCEPTION: 
+ps_search.txt:150:xt:97:EXCEPTION: 
+ps_search.txt:152:xt:99:EXCEPTION: 
+ps_search.txt:153:ps_search.txt:142:xt:90:stack trace.
+ps_search.txt:154:ps_search.txt:144:xt:92:EXCEPTION: 
+ps_search.txt:155:ps_search.txt:146:xt:94:EXCEPTION: 
+ps_search.txt:156:ps_search.txt:148:EXCEPTION: 
+ps_search.txt:157:ps_search.txt:150:xt:97:EXCEPTION: 
+ps_search.txt:158:ps_search.txt:152:xt:99:EXCEPTION: 
+ps_search.txt:159:ps_search.txt:153:ps_search.txt:142:xt:90:stack trace.
+ps_search.txt:160:ps_search.txt:154:ps_search.txt:144:xt:92:EXCEPTION: 
+ps_search.txt:161:ps_search.txt:155:ps_search.txt:146:xt:94:EXCEPTION: 
+ps_search.txt:162:ps_search.txt:156:ps_search.txt:148:EXCEPTION: 
+ps_search.txt:163:ps_search.txt:157:ps_search.txt:150:xt:97:EXCEPTION: 
+ps_search.txt:164:ps_search.txt:158:ps_search.txt:152:xt:99:EXCEPTION: 
+ps_search.txt:165:ps_search.txt:159:ps_search.txt:153:ps_search.txt:142:xt:90:stack trace.
+ps_search.txt:166:ps_search.txt:160:ps_search.txt:154:ps_search.txt:144:xt:92:EXCEPTION: 
+ps_search.txt:167:ps_search.txt:161:ps_search.txt:155:ps_search.txt:146:xt:94:EXCEPTION: 
+ps_search.txt:168:ps_search.txt:162:ps_search.txt:156:ps_search.txt:148:EXCEPTION: 
+ps_search.txt:169:ps_search.txt:163:ps_search.txt:157:ps_search.txt:150:xt:97:EXCEPTION: 
+ps_search.txt:170:ps_search.txt:164:ps_search.txt:158:ps_search.txt:152:xt:99:EXCEPTION: 
+ps_search.txt:171:ps_search.txt:165:ps_search.txt:159:ps_search.txt:153:ps_search.txt:142:xt:90:stack trace.
+ps_search.txt:172:ps_search.txt:166:ps_search.txt:160:ps_search.txt:154:ps_search.txt:144:xt:92:EXCEPTION: 
+ps_search.txt:173:ps_search.txt:167:ps_search.txt:161:ps_search.txt:155:ps_search.txt:146:xt:94:EXCEPTION: 
+ps_search.txt:174:ps_search.txt:168:ps_search.txt:162:ps_search.txt:156:ps_search.txt:148:EXCEPTION: 
+ps_search.txt:175:ps_search.txt:169:ps_search.txt:163:ps_search.txt:157:ps_search.txt:150:xt:97:EXCEPTION: 
+ps_search.txt:176:ps_search.txt:170:ps_search.txt:164:ps_search.txt:158:ps_search.txt:152:xt:99:EXCEPTION: 
+ps_search.txt:177:ps_search.txt:171:ps_search.txt:165:ps_search.txt:159:ps_search.txt:153:ps_search.txt:142:xt:90:stack
+ trace.
+ps_search.txt:178:ps_search.txt:172:ps_search.txt:166:ps_search.txt:160:ps_search.txt:154:ps_search.txt:144:xt:92:EXCEP
+TION: 
+ps_search.txt:179:ps_search.txt:173:ps_search.txt:167:ps_search.txt:161:ps_search.txt:155:ps_search.txt:146:xt:94:EXCEP
+TION: 
+ps_search.txt:180:ps_search.txt:174:ps_search.txt:168:ps_search.txt:162:ps_search.txt:156:ps_search.txt:148:EXCEPTION: 
+ps_search.txt:181:ps_search.txt:175:ps_search.txt:169:ps_search.txt:163:ps_search.txt:157:ps_search.txt:150:xt:97:EXCEP
+TION: 
+ps_search.txt:182:ps_search.txt:176:ps_search.txt:170:ps_search.txt:164:ps_search.txt:158:ps_search.txt:152:xt:99:EXCEP
+TION: 
+ps_search.txt:189:ps_search.txt:180:ps_search.txt:174:ps_search.txt:168:ps_search.txt:162:ps_search.txt:156:ps_search.t
+xt:148:EXCEPTION: 
+ps_search.txt:195:xt:148:EXCEPTION: 
+ps_search.txt:196:ps_search.txt:195:xt:148:EXCEPTION: 
+ps_search.txt:197:ps_search.txt:196:ps_search.txt:195:xt:148:EXCEPTION: 
+ps_search.txt:198:ps_search.txt:197:ps_search.txt:196:ps_search.txt:195:xt:148:EXCEPTION: 
+ps_search.txt:199:ps_search.txt:198:ps_search.txt:197:ps_search.txt:196:ps_search.txt:195:xt:148:EXCEPTION: 
+ps_search.txt:200:ps_search.txt:199:ps_search.txt:198:ps_search.txt:197:ps_search.txt:196:ps_search.txt:195:xt:148:EXCE
+PTION: 
+
+

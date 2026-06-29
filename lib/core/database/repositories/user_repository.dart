@@ -3,10 +3,13 @@ import '../models/user_stats_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../settings_provider.dart';
+import '../app_initializer_provider.dart';
 
 /// Provider for Isar instance
 final isarProvider = Provider<Isar>((ref) {
-  throw UnimplementedError('isarProvider not initialized');
+  final isar = ref.watch(isarInstanceProvider);
+  if (isar == null) throw UnimplementedError('isarProvider not initialized');
+  return isar;
 });
 
 class UserRepository {

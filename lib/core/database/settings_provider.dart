@@ -2,6 +2,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../audio/audio_service.dart';
+import 'app_initializer_provider.dart';
+
 
 /// Rappresenta lo stato completo delle preferenze e sblocchi dell'app
 class SettingsState {
@@ -66,11 +68,11 @@ class SettingsState {
 
 /// Gestisce lo stato e la persistenza offline delle preferenze
 class SettingsNotifier extends Notifier<SettingsState> {
-  late final SharedPreferences _prefs;
+  SharedPreferences? _prefs;
 
   @override
   SettingsState build() {
-    _prefs = ref.watch(sharedPrefsProvider);
+    _prefs = ref.watch(sharedPrefsInstanceProvider);
 
     // Default state
     final defaultState = const SettingsState(
@@ -88,18 +90,22 @@ class SettingsNotifier extends Notifier<SettingsState> {
       vrBiasZ: 0.0,
     );
 
+    if (_prefs == null) {
+      return defaultState;
+    }
+
     // Initialize from prefs
-    final music = _prefs.getInt("Music") ?? 3;
-    final effects = _prefs.getInt("Effects") ?? 3;
-    final voice = _prefs.getInt("Voice") ?? 3;
-    final muteVoice = _prefs.getBool("MuteVoice") ?? false;
-    final sex = _prefs.getInt("VoiceSex") ?? 0;
-    final lang = _prefs.getInt("Lang") ?? 0;
-    final unlocked = _prefs.getBool("IsUnlocked") ?? false;
-    final darkTheme = _prefs.getBool("IsDarkTheme") ?? true;
-    final vrCalibrated = _prefs.getBool("VrCalibrated") ?? false;
-    final vrBiasX = _prefs.getDouble("VrBiasX") ?? 0.0;
-    final vrBiasZ = _prefs.getDouble("VrBiasZ") ?? 0.0;
+    final music = _prefs!.getInt("Music") ?? 3;
+    final effects = _prefs!.getInt("Effects") ?? 3;
+    final voice = _prefs!.getInt("Voice") ?? 3;
+    final muteVoice = _prefs!.getBool("MuteVoice") ?? false;
+    final sex = _prefs!.getInt("VoiceSex") ?? 0;
+    final lang = _prefs!.getInt("Lang") ?? 0;
+    final unlocked = _prefs!.getBool("IsUnlocked") ?? false;
+    final darkTheme = _prefs!.getBool("IsDarkTheme") ?? true;
+    final vrCalibrated = _prefs!.getBool("VrCalibrated") ?? false;
+    final vrBiasX = _prefs!.getDouble("VrBiasX") ?? 0.0;
+    final vrBiasZ = _prefs!.getDouble("VrBiasZ") ?? 0.0;
 
     // Sincronizza i volumi con il servizio audio appena diventa disponibile
     ref.listen<AsyncValue<GuidoAudioService>>(audioServiceProvider, (
@@ -138,7 +144,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   /// Modifica il volume della musica e lo salva offline
   Future<void> changeMusicVolume(int volume) async {
     state = state.copyWith(musicVolume: volume);
-    await _prefs.setInt("Music", volume);
+    await _prefs?.setInt("Music", volume);
     ref
         .read(audioServiceProvider)
         .whenData((service) => service.setAmbientVolume(volume));
@@ -147,7 +153,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   /// Modifica il volume degli effetti e lo salva offline
   Future<void> changeEffectsVolume(int volume) async {
     state = state.copyWith(effectsVolume: volume);
-    await _prefs.setInt("Effects", volume);
+    await _prefs?.setInt("Effects", volume);
     ref
         .read(audioServiceProvider)
         .whenData((service) => service.setEffectsVolume(volume));
@@ -156,7 +162,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   /// Modifica il volume della voce e lo salva offline
   Future<void> changeVoiceVolume(int volume) async {
     state = state.copyWith(voiceVolume: volume);
-    await _prefs.setInt("Voice", volume);
+    await _prefs?.setInt("Voice", volume);
     ref
         .read(audioServiceProvider)
         .whenData((service) => service.setVoiceVolume(volume));
@@ -165,7 +171,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   /// Cambia lo stato di Mute della voce
   Future<void> toggleVoiceMute(bool isMuted) async {
     state = state.copyWith(isVoiceMuted: isMuted);
-    await _prefs.setBool("MuteVoice", isMuted);
+    await _prefs?.setBool("MuteVoice", isMuted);
     ref
         .read(audioServiceProvider)
         .whenData((service) => service.setVoiceMute(isMuted));
@@ -174,19 +180,19 @@ class SettingsNotifier extends Notifier<SettingsState> {
   /// Cambia il genere della voce (0 = Maschile, 1 = Femminile)
   Future<void> changeVoiceSex(int sex) async {
     state = state.copyWith(voiceSex: sex);
-    await _prefs.setInt("VoiceSex", sex);
+    await _prefs?.setInt("VoiceSex", sex);
   }
 
   /// Cambia la lingua dell'applicazione (0 = Italiano, 1 = Inglese)
   Future<void> changeLanguage(int lang) async {
     state = state.copyWith(language: lang);
-    await _prefs.setInt("Lang", lang);
+    await _prefs?.setInt("Lang", lang);
   }
 
   /// Sblocca la versione Premium completa dell'app
   Future<void> unlockPremium() async {
     state = state.copyWith(isUnlocked: true);
-    await _prefs.setBool("IsUnlocked", true);
+    await _prefs?.setBool("IsUnlocked", true);
   }
 
   /// Attiva o disattiva la modalità VR per la sessione corrente (non persistita)
@@ -198,23 +204,23 @@ class SettingsNotifier extends Notifier<SettingsState> {
   /// Attiva o disattiva il tema scuro Japandi
   Future<void> toggleDarkTheme(bool enabled) async {
     state = state.copyWith(isDarkTheme: enabled);
-    await _prefs.setBool("IsDarkTheme", enabled);
+    await _prefs?.setBool("IsDarkTheme", enabled);
   }
 
   /// Salva la calibrazione del giroscopio VR
   Future<void> saveVrCalibration(double biasX, double biasZ) async {
     state = state.copyWith(vrCalibrated: true, vrBiasX: biasX, vrBiasZ: biasZ);
-    await _prefs.setBool("VrCalibrated", true);
-    await _prefs.setDouble("VrBiasX", biasX);
-    await _prefs.setDouble("VrBiasZ", biasZ);
+    await _prefs?.setBool("VrCalibrated", true);
+    await _prefs?.setDouble("VrBiasX", biasX);
+    await _prefs?.setDouble("VrBiasZ", biasZ);
   }
 
   /// Resetta la calibrazione del giroscopio VR
   Future<void> resetVrCalibration() async {
     state = state.copyWith(vrCalibrated: false, vrBiasX: 0.0, vrBiasZ: 0.0);
-    await _prefs.setBool("VrCalibrated", false);
-    await _prefs.setDouble("VrBiasX", 0.0);
-    await _prefs.setDouble("VrBiasZ", 0.0);
+    await _prefs?.setBool("VrCalibrated", false);
+    await _prefs?.setDouble("VrBiasX", 0.0);
+    await _prefs?.setDouble("VrBiasZ", 0.0);
   }
 }
 
@@ -222,7 +228,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
 /// Provider globale per SharedPreferences (inizializzato nel main)
 final sharedPrefsProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError();
+  final prefs = ref.watch(sharedPrefsInstanceProvider);
+  if (prefs == null) throw UnimplementedError('SharedPreferences non ancora inizializzato');
+  return prefs;
 });
 
 /// Provider globale per GuidoAudioService (inizializzato a inizio app)

@@ -12,7 +12,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const SplashView()),
+      GoRoute(path: '/', builder: (context, state) => const BootSplashView()),
+      GoRoute(path: '/login', builder: (context, state) => const SplashView()),
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingWizardView(),

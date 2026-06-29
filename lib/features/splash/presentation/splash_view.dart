@@ -51,8 +51,8 @@ class SplashView extends ConsumerWidget {
           return Stack(
             children: [
               // Sfondo a gradiente Japandi dinamico
-              RepaintBoundary(
-                child: Positioned.fill(
+              Positioned.fill(
+                child: RepaintBoundary(
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
