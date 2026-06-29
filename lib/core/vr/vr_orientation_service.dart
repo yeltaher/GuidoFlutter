@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -35,6 +36,13 @@ class VrOrientationService {
       } catch (e) {
         debugPrint('[VR] forceLandscape error: $e');
       }
+      
+      if (Platform.isIOS) {
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.landscapeRight,
+          DeviceOrientation.landscapeLeft,
+        ]);
+      }
     }
     // Se count > 1: già in landscape, nessuna azione necessaria
   }
@@ -54,6 +62,12 @@ class VrOrientationService {
         await _channel.invokeMethod('forcePortrait');
       } catch (e) {
         debugPrint('[VR] forcePortrait error: $e');
+      }
+
+      if (Platform.isIOS) {
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+        ]);
       }
     }
     // Se count > 0: ci sono ancora schermate VR attive, non uscire
