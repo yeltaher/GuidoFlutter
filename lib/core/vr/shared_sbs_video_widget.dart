@@ -35,9 +35,10 @@ class SharedSbsVideoWidget extends StatelessWidget {
             // e avere tantissimo margine di esplorazione VR
             const double scale = 2.2;
 
-            // Calcolo matematico del limite massimo di traslazione per non mostrare mai bordi neri
-            final double maxPanX = (width * (scale - 1)) / (2 * scale);
-            final double maxPanY = (height * (scale - 1)) / (2 * scale);
+            // Calcolo matematico del limite massimo di traslazione per non mostrare mai bordi neri.
+            // Moltiplichiamo per 0.9 per bloccare la visuale prima che l'utente veda il margine nero.
+            final double maxPanX = ((width * (scale - 1)) / (2 * scale)) * 0.9;
+            final double maxPanY = ((height * (scale - 1)) / (2 * scale)) * 0.9;
 
             double panX = -gazeController.reticleOffset.dx * 0.7;
             double panY = -gazeController.reticleOffset.dy * 0.7;

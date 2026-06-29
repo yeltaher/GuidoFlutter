@@ -229,7 +229,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
         MaterialPageRoute(builder: (_) => const RemoveVrHeadsetView()),
       );
     } else {
-      context.pop();
+      context.go('/home');
     }
   }
 
@@ -320,7 +320,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
                         child: Container(
                           color: Colors.black,
                           child: FittedBox(
-                            fit: BoxFit.fill,
+                            fit: BoxFit.cover,
                             child: SizedBox(
                               width: _videoController!.value.size.width,
                               height: _videoController!.value.size.height,
