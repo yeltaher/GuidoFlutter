@@ -96,15 +96,18 @@ class _FlatVideoWidgetState extends State<FlatVideoWidget> {
         : 16 / 9;
 
     return Container(
-      color: Colors.black,
+      color: const Color(0xFF0A1B2A),
       width: double.infinity,
       height: double.infinity,
-      child: FittedBox(
-        fit: BoxFit.cover,
-        child: SizedBox(
-          width: videoWidth,
-          height: videoHeight,
-          child: VideoPlayer(_controller!),
+      child: Transform.scale(
+        scale: 1.15,
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(
+            width: videoWidth,
+            height: videoHeight,
+            child: VideoPlayer(_controller!),
+          ),
         ),
       ),
     );
