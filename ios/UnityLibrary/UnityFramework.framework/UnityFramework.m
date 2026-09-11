@@ -63,22 +63,10 @@ static UnityFramework *_sharedInstance = nil;
     // Acknowledged
 }
 
-- (void)registerListener:(id<UnityFrameworkListener>)listener {
-    [self registerFrameworkListener:listener];
-}
-
 - (void)registerFrameworkListener:(id<UnityFrameworkListener>)listener {
     if (listener) {
         [_listeners addObject:listener];
     }
-}
-
-- (void)register:(id<UnityFrameworkListener>)listener {
-    [self registerFrameworkListener:listener];
-}
-
-- (void)unregisterListener:(id<UnityFrameworkListener>)listener {
-    [self unregisterFrameworkListener:listener];
 }
 
 - (void)unregisterFrameworkListener:(id<UnityFrameworkListener>)listener {
@@ -88,8 +76,8 @@ static UnityFramework *_sharedInstance = nil;
 }
 
 - (void)runEmbeddedWithArgc:(int)argc
-                       argv:(char **)argv
-              appLaunchOpts:(NSDictionary *)opts {
+                       argv:(char * _Nullable * _Nullable)argv
+              appLaunchOpts:(nullable NSDictionary *)opts {
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:@"UnityReady" object:self];
         
@@ -139,9 +127,9 @@ static UnityFramework *_sharedInstance = nil;
     });
 }
 
-- (void)sendMessageToGOWithName:(const char *)goName
-                   functionName:(const char *)funcName
-                        message:(const char *)msg {
+- (void)sendMessageToGOWithName:(const char * _Nullable)goName
+                   functionName:(const char * _Nullable)funcName
+                        message:(const char * _Nullable)msg {
     // Handled
 }
 

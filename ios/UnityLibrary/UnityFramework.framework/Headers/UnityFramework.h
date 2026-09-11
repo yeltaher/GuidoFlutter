@@ -5,14 +5,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol UnityFrameworkListener <NSObject>
 @optional
-- (void)unityDidUnload:(NSNotification *)notification;
-- (void)unityDidQuit:(NSNotification *)notification;
+- (void)unityDidUnload:(NSNotification * _Nullable)notification;
+- (void)unityDidQuit:(NSNotification * _Nullable)notification;
 @end
 
 @interface UnityAppController : NSObject
 
-@property (nonatomic, strong) UIView *rootView;
-@property (nonatomic, strong) UIWindow *window;
+@property (nonatomic, strong, nullable) UIView *rootView;
+@property (nonatomic, strong, nullable) UIWindow *window;
 @property (nonatomic, copy, nullable) void (^unityMessageHandler)(const char * _Nullable message);
 @property (nonatomic, copy, nullable) void (^unitySceneLoadedHandler)(const char * _Nullable name,
                                                                       const int * _Nullable buildIndex,
@@ -33,9 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (UnityFramework *)getInstance;
 
 - (void)setDataBundleId:(const char *)bundleId;
-- (void)registerListener:(id<UnityFrameworkListener>)listener;
 - (void)registerFrameworkListener:(id<UnityFrameworkListener>)listener NS_SWIFT_NAME(register(_:));
-- (void)unregisterListener:(id<UnityFrameworkListener>)listener;
 - (void)unregisterFrameworkListener:(id<UnityFrameworkListener>)listener;
 
 - (void)runEmbeddedWithArgc:(int)argc
@@ -48,9 +46,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)unloadApplication;
 - (void)quitApplication:(int)exitCode;
 
-- (void)sendMessageToGOWithName:(const char *)goName
-                   functionName:(const char *)funcName
-                        message:(const char *)msg;
+- (void)sendMessageToGOWithName:(const char * _Nullable)goName
+                   functionName:(const char * _Nullable)funcName
+                        message:(const char * _Nullable)msg;
 
 @end
 
