@@ -21,6 +21,15 @@
     return self;
 }
 
+- (UIView *)rootView {
+    if (!_rootView) {
+        _rootView = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        _rootView.backgroundColor = [UIColor colorWithRed:0.04f green:0.06f blue:0.12f alpha:1.0f];
+        _rootView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    }
+    return _rootView;
+}
+
 - (void)applicationWillResignActive:(UIApplication *)application {}
 - (void)applicationDidEnterBackground:(UIApplication *)application {}
 - (void)applicationWillEnterForeground:(UIApplication *)application {}

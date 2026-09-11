@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UnityAppController : NSObject
 
-@property (nonatomic, strong, nullable) UIView *rootView;
+@property (nonatomic, strong) UIView *rootView;
 @property (nonatomic, strong, nullable) UIWindow *window;
 @property (nonatomic, copy, nullable) void (^unityMessageHandler)(const char * _Nullable message);
 @property (nonatomic, copy, nullable) void (^unitySceneLoadedHandler)(const char * _Nullable name,
