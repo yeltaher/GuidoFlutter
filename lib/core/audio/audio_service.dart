@@ -24,23 +24,27 @@ class GuidoAudioService {
   /// Inizializza la sessione audio a livello di sistema operativo
   /// per consentire la riproduzione in background a schermo spento.
   Future<void> initSession() async {
-    final session = await AudioSession.instance;
-    await session.configure(
-      const AudioSessionConfiguration(
-        avAudioSessionCategory: AVAudioSessionCategory.playback,
-        avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.none,
-        avAudioSessionMode: AVAudioSessionMode.defaultMode,
-        avAudioSessionRouteSharingPolicy:
-            AVAudioSessionRouteSharingPolicy.defaultPolicy,
-        avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
-        androidAudioAttributes: AndroidAudioAttributes(
-          contentType: AndroidAudioContentType.music,
-          usage: AndroidAudioUsage.media,
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(
+        const AudioSessionConfiguration(
+          avAudioSessionCategory: AVAudioSessionCategory.playback,
+          avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.none,
+          avAudioSessionMode: AVAudioSessionMode.defaultMode,
+          avAudioSessionRouteSharingPolicy:
+              AVAudioSessionRouteSharingPolicy.defaultPolicy,
+          avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+          androidAudioAttributes: AndroidAudioAttributes(
+            contentType: AndroidAudioContentType.music,
+            usage: AndroidAudioUsage.media,
+          ),
+          androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+          androidWillPauseWhenDucked: true,
         ),
-        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-        androidWillPauseWhenDucked: true,
-      ),
-    );
+      );
+    } catch (e, st) {
+      debugPrint('[AudioService] Errore configurazione AudioSession: $e\n$st');
+    }
   }
 
   /// Mappa gli indici delle preferenze (0, 1, 2, 3) su valori di volume lineare (0.0 -> 1.0)

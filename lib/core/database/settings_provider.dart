@@ -115,20 +115,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final qualityInt = _prefs!.getInt("QualityPreset") ?? 0;
     final qualityPreset = QualityPreset.fromValue(qualityInt);
 
-    // Sincronizza i volumi con il servizio audio appena diventa disponibile
-    ref.listen<AsyncValue<GuidoAudioService>>(audioServiceProvider, (
-      previous,
-      next,
-    ) {
-      if (next.hasValue && next.value != null) {
-        final service = next.value!;
-        service.setAmbientVolume(music);
-        service.setEffectsVolume(effects);
-        service.setVoiceVolume(voice);
-        service.setVoiceMute(muteVoice);
-      }
-    }, fireImmediately: true);
-
     return SettingsState(
       musicVolume: music,
       effectsVolume: effects,

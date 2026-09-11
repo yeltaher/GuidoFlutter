@@ -20,5 +20,7 @@
 	<string>1.0</string>
 	<key>MinimumOSVersion</key>
 	<string>15.0</string>
+	<key>NSPrincipalClass</key>
+	<string>UnityFramework</string>
 </dict>
 </plist>

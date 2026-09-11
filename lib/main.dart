@@ -7,11 +7,25 @@ import 'package:guido/l10n/app_localizations.dart';
 import 'core/database/settings_provider.dart';
 import 'core/database/app_initializer_provider.dart';
 
-void main() {
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  SharedPreferences? prefs;
+  try {
+    prefs = await SharedPreferences.getInstance();
+  } catch (e) {
+    debugPrint('[Main] Prefs init error: $e');
+  }
+
   runApp(
-    const ProviderScope(
-      child: MainApp(),
+    ProviderScope(
+      overrides: [
+        if (prefs != null)
+          sharedPrefsInstanceProvider.overrideWith((ref) => prefs),
+      ],
+      child: const MainApp(),
     ),
   );
 }
