@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
+import '../../../core/unity/unity_bridge_dto.dart';
 import '../../meditation/meditation_feature.dart';
 
 class HomeTab extends ConsumerWidget {
@@ -121,6 +122,8 @@ class HomeTab extends ConsumerWidget {
                               'assets/audio/real/Meditazioni/Acqua/Meditazione del Mattino_Procedimento.m4a',
                           ambientPath:
                               'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
+                          sceneName: UnityScenes.waterMeditation,
+                          durationSeconds: 900.0,
                         );
                       },
                       child: Container(
@@ -247,6 +250,8 @@ class HomeTab extends ConsumerWidget {
                               'assets/audio/real/Meditazioni/Acqua/Meditazione del Mattino_Procedimento.m4a',
                           ambientPath:
                               'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
+                          sceneName: UnityScenes.waterMeditation,
+                          durationSeconds: 900.0,
                         );
                       },
                     ),
@@ -273,6 +278,8 @@ class HomeTab extends ConsumerWidget {
                               'assets/audio/real/Meditazioni/Acqua/Meditazione-del-Pomeriggio.m4a',
                           ambientPath:
                               'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione POMERIGGIO.m4a',
+                          sceneName: UnityScenes.waterMeditation,
+                          durationSeconds: 1200.0,
                         );
                       },
                     ),
@@ -330,6 +337,8 @@ class HomeTab extends ConsumerWidget {
                               'assets/audio/real/Meditazioni/Acqua/Meditazione-della-Sera.m4a',
                           ambientPath:
                               'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione SERA.m4a',
+                          sceneName: UnityScenes.generalMeditation,
+                          durationSeconds: 900.0,
                         );
                       },
                       child: Container(

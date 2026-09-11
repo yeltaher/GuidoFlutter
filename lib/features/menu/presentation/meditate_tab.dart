@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
+import '../../../core/unity/unity_bridge_dto.dart';
 import '../../meditation/meditation_feature.dart';
 import '../../premium/premium_feature.dart';
 
@@ -125,9 +126,12 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                               'assets/audio/real/Meditazioni/Acqua/Meditazione del Mattino_Procedimento.m4a',
                           ambientPath:
                               'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
+                          sceneName: UnityScenes.waterMeditation,
+                          durationSeconds: 900.0,
                         );
                       },
                     ),
+                    const SizedBox(height: 12),
                     _buildPathCard(
                       context: context,
                       title: settings.language == 0
@@ -154,6 +158,8 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                               'assets/audio/real/Meditazioni/Acqua/Meditazione-del-Pomeriggio.m4a',
                           ambientPath:
                               'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione POMERIGGIO.m4a',
+                          sceneName: UnityScenes.waterMeditation,
+                          durationSeconds: 900.0,
                         );
                       },
                     ),
@@ -184,7 +190,137 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                               'assets/audio/real/Meditazioni/Acqua/Meditazione-della-Sera.m4a',
                           ambientPath:
                               'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione SERA.m4a',
+                          sceneName: UnityScenes.waterMeditation,
+                          durationSeconds: 1500.0,
                         );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPathCard(
+                      context: context,
+                      title: settings.language == 0
+                          ? "Meditazione Generale (Gratis)"
+                          : "General Meditation (Free)",
+                      desc: settings.language == 0
+                          ? "Pura consapevolezza e rilassamento panoramico nello spazio zen."
+                          : "Pure awareness and panoramic relaxation in the zen space.",
+                      duration: "10 MIN",
+                      isPremium: false,
+                      isLocked: false,
+                      isDark: isDark,
+                      accentColor: accentColor,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      onTap: () {
+                        launchZenSession(
+                          context: context,
+                          ref: ref,
+                          title: settings.language == 0
+                              ? "Meditazione Generale"
+                              : "General Meditation",
+                          voicePath: settings.language == 0
+                              ? 'assets/audio/voci/it/meditazione_generale.m4a'
+                              : 'assets/audio/voci/en/meditazione_generale.m4a',
+                          ambientPath: 'assets/audio/ambient/musica_eterea.m4a',
+                          sceneName: UnityScenes.generalMeditation,
+                          durationSeconds: 600.0,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPathCard(
+                      context: context,
+                      title: settings.language == 0
+                          ? "Percorso Aria (Premium)"
+                          : "Air Path (Premium)",
+                      desc: settings.language == 0
+                          ? "Eleva la mente con la leggerezza dell'aria e l'espansione del sé."
+                          : "Elevate your mind with the lightness of air and expansion of self.",
+                      duration: "15 MIN",
+                      isPremium: true,
+                      isLocked: !settings.isUnlocked,
+                      isDark: isDark,
+                      accentColor: accentColor,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      onTap: () {
+                        if (settings.isUnlocked) {
+                          launchZenSession(
+                            context: context,
+                            ref: ref,
+                            title: settings.language == 0
+                                ? "Percorso Aria"
+                                : "Air Path",
+                            sceneName: UnityScenes.airMeditation,
+                            durationSeconds: 900.0,
+                          );
+                        } else {
+                          _showPurchaseDialog(context);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPathCard(
+                      context: context,
+                      title: settings.language == 0
+                          ? "Percorso Fuoco (Premium)"
+                          : "Fire Path (Premium)",
+                      desc: settings.language == 0
+                          ? "Riaccendi la vitalità interiore e trasforma le tensioni in energia."
+                          : "Rekindle inner vitality and transform tension into energy.",
+                      duration: "15 MIN",
+                      isPremium: true,
+                      isLocked: !settings.isUnlocked,
+                      isDark: isDark,
+                      accentColor: accentColor,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      onTap: () {
+                        if (settings.isUnlocked) {
+                          launchZenSession(
+                            context: context,
+                            ref: ref,
+                            title: settings.language == 0
+                                ? "Percorso Fuoco"
+                                : "Fire Path",
+                            sceneName: UnityScenes.fireMeditation,
+                            durationSeconds: 900.0,
+                          );
+                        } else {
+                          _showPurchaseDialog(context);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPathCard(
+                      context: context,
+                      title: settings.language == 0
+                          ? "Percorso Terra (Premium)"
+                          : "Earth Path (Premium)",
+                      desc: settings.language == 0
+                          ? "Radicamento profondo e stabilità millenaria per ritrovare il centro."
+                          : "Deep grounding and ancient stability to rediscover your center.",
+                      duration: "20 MIN",
+                      isPremium: true,
+                      isLocked: !settings.isUnlocked,
+                      isDark: isDark,
+                      accentColor: accentColor,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      onTap: () {
+                        if (settings.isUnlocked) {
+                          launchZenSession(
+                            context: context,
+                            ref: ref,
+                            title: settings.language == 0
+                                ? "Percorso Terra"
+                                : "Earth Path",
+                            sceneName: UnityScenes.earthMeditation,
+                            durationSeconds: 1200.0,
+                          );
+                        } else {
+                          _showPurchaseDialog(context);
+                        }
                       },
                     ),
                     const SizedBox(height: 20),
@@ -220,6 +356,8 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                               : "Water Breath",
                           breathingAudioPath:
                               'assets/audio/real/Respirazioni/Acqua/Respirazione acqua.m4a',
+                          sceneName: UnityScenes.waterBreathing,
+                          durationSeconds: 300.0,
                         );
                       },
                     ),
@@ -248,6 +386,8 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                               : "Air Breath",
                           breathingAudioPath:
                               'assets/audio/real/Respirazioni/Aria/Respirazione aria.m4a',
+                          sceneName: UnityScenes.airBreathing,
+                          durationSeconds: 300.0,
                         );
                       },
                     ),
@@ -277,6 +417,8 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                                 : "Fire Breath",
                             breathingAudioPath:
                                 'assets/audio/real/Respirazioni/Fuoco/percorso fuoco quadrato Esercizio fix tempo.m4a',
+                            sceneName: UnityScenes.fireBreathing,
+                            durationSeconds: 300.0,
                           );
                         } else {
                           _showPurchaseDialog(context);
@@ -309,6 +451,8 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                                 : "Earth Breath",
                             breathingAudioPath:
                                 'assets/audio/real/Respirazioni/Terra/Respirazione terra.m4a',
+                            sceneName: UnityScenes.earthBreathing,
+                            durationSeconds: 300.0,
                           );
                         } else {
                           _showPurchaseDialog(context);

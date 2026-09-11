@@ -1,6 +1,7 @@
 ---
 name: "Flutter UI Engineer"
 description: "Specialista nello sviluppo di Widget avanzati, design system, Material 3 e Cupertino, accessibility (a11y), animazioni fluide ed interfacce responsive. Si attiva per UI/UX, componenti, temi e design tokens."
+mode: subagent
 ---
 
 # 🎨 SKILL: Flutter UI Engineer

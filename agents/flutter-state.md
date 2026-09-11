@@ -1,6 +1,7 @@
 ---
 name: "State & Data Engineer"
 description: "Specialista nella gestione dello stato (Riverpod, BLoC), architetture offline-first, sincronizzazione dati, strategie di caching e repository pattern. Si attiva per state management, persistenza locale e integrazione API."
+mode: subagent
 ---
 
 # 🗃️ SKILL: State & Data Engineer (Riverpod/BLoC + Offline-First)

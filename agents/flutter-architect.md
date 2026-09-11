@@ -1,6 +1,7 @@
 ---
 name: "Flutter Architect"
 description: "Esperto in design sistemico, Architecture Decision Records (ADR), feature-first architecture, selezione dello state management e scalabilità di team. Si attiva per feature complesse, refactoring strutturali o scelte architetturali."
+mode: subagent
 ---
 
 # 🏗️ SKILL: Flutter Architect (Mobile Enterprise)

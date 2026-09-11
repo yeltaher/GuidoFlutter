@@ -12,6 +12,8 @@ class ExplanationScreen extends ConsumerStatefulWidget {
   final String voicePath;
   final String ambientPath;
   final String? breathingAudioPath;
+  final String? sceneName;
+  final double durationSeconds;
 
   const ExplanationScreen({
     super.key,
@@ -19,6 +21,8 @@ class ExplanationScreen extends ConsumerStatefulWidget {
     required this.voicePath,
     required this.ambientPath,
     this.breathingAudioPath,
+    this.sceneName,
+    this.durationSeconds = 300.0,
   });
 
   @override
@@ -64,6 +68,8 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
         voicePath: widget.voicePath,
         ambientPath: widget.ambientPath,
         breathingAudioPath: widget.breathingAudioPath,
+        sceneName: widget.sceneName,
+        durationSeconds: widget.durationSeconds,
       ),
     );
   }

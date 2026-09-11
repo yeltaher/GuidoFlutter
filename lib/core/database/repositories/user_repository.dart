@@ -18,9 +18,15 @@ class UserRepository {
 
   UserRepository(this.isar, this.prefs);
 
-  Future<void> recordSession(String sessionTitle, String sessionType) async {
-    final int minutes = sessionType == "Respirazione" ? 8 : 15;
-    final int xpEarned = minutes * 2;
+  Future<void> recordSession(
+    String sessionTitle,
+    String sessionType, {
+    int? durationMinutes,
+    int? xp,
+  }) async {
+    final int minutes =
+        durationMinutes ?? (sessionType == "Respirazione" ? 8 : 15);
+    final int xpEarned = xp ?? (minutes * 2);
 
     await isar.writeTxn(() async {
       var stats = await isar.userStatsModels.where().findFirst();

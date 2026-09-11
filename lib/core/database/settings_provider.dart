@@ -2,6 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../audio/audio_service.dart';
+import '../unity/unity_bridge_dto.dart';
 import 'app_initializer_provider.dart';
 
 
@@ -19,6 +20,7 @@ class SettingsState {
   final bool vrCalibrated; // Se la calibrazione VR è stata effettuata
   final double vrBiasX; // Drift asse X giroscopio
   final double vrBiasZ; // Drift asse Z giroscopio
+  final QualityPreset qualityPreset; // Profilo di resa grafica UaaL (0 = Alta Fedeltà, 1 = Eco)
 
   const SettingsState({
     required this.musicVolume,
@@ -33,6 +35,7 @@ class SettingsState {
     required this.vrCalibrated,
     required this.vrBiasX,
     required this.vrBiasZ,
+    this.qualityPreset = QualityPreset.highFidelity,
   });
 
   SettingsState copyWith({
@@ -48,6 +51,7 @@ class SettingsState {
     bool? vrCalibrated,
     double? vrBiasX,
     double? vrBiasZ,
+    QualityPreset? qualityPreset,
   }) {
     return SettingsState(
       musicVolume: musicVolume ?? this.musicVolume,
@@ -62,6 +66,7 @@ class SettingsState {
       vrCalibrated: vrCalibrated ?? this.vrCalibrated,
       vrBiasX: vrBiasX ?? this.vrBiasX,
       vrBiasZ: vrBiasZ ?? this.vrBiasZ,
+      qualityPreset: qualityPreset ?? this.qualityPreset,
     );
   }
 }
@@ -88,6 +93,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       vrCalibrated: false,
       vrBiasX: 0.0,
       vrBiasZ: 0.0,
+      qualityPreset: QualityPreset.highFidelity,
     );
 
     if (_prefs == null) {
@@ -106,6 +112,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final vrCalibrated = _prefs!.getBool("VrCalibrated") ?? false;
     final vrBiasX = _prefs!.getDouble("VrBiasX") ?? 0.0;
     final vrBiasZ = _prefs!.getDouble("VrBiasZ") ?? 0.0;
+    final qualityInt = _prefs!.getInt("QualityPreset") ?? 0;
+    final qualityPreset = QualityPreset.fromValue(qualityInt);
 
     // Sincronizza i volumi con il servizio audio appena diventa disponibile
     ref.listen<AsyncValue<GuidoAudioService>>(audioServiceProvider, (
@@ -114,10 +122,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     ) {
       if (next.hasValue && next.value != null) {
         final service = next.value!;
-        // Applica lo stato corrente (non usare `music` locale ma `state` se già inizializzato,
-        // ma qui usiamo le variabili lette da prefs visto che state non è ancora tornato,
-        // però siccome ref.listen con fireImmediately esegue sùbito, potremmo non avere `state` a disposizione,
-        // quindi passiamo i valori iniziali).
         service.setAmbientVolume(music);
         service.setEffectsVolume(effects);
         service.setVoiceVolume(voice);
@@ -138,7 +142,14 @@ class SettingsNotifier extends Notifier<SettingsState> {
       vrCalibrated: vrCalibrated,
       vrBiasX: vrBiasX,
       vrBiasZ: vrBiasZ,
+      qualityPreset: qualityPreset,
     );
+  }
+
+  /// Modifica il profilo grafico UaaL (Alta Fedeltà / Eco) e lo salva offline
+  Future<void> changeQualityPreset(QualityPreset preset) async {
+    state = state.copyWith(qualityPreset: preset);
+    await _prefs?.setInt("QualityPreset", preset.value);
   }
 
   /// Modifica il volume della musica e lo salva offline

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../../core/constants/daily_quotes.dart';
+import '../../../core/unity/unity_bridge_dto.dart';
 import '../../meditation/meditation_feature.dart';
 import 'zen_sound_mixer_view.dart';
 
@@ -204,6 +205,8 @@ class HomeJapandiTab extends ConsumerWidget {
                                       'assets/audio/real/Meditazioni/Acqua/Meditazione del Mattino_Procedimento.m4a',
                                   ambientPath:
                                       'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
+                                  sceneName: UnityScenes.waterMeditation,
+                                  durationSeconds: 900.0,
                                 );
                               },
                               child: Container(
@@ -486,6 +489,8 @@ class HomeJapandiTab extends ConsumerWidget {
                                 accentColor: AppColors.successAccent,
                                 textColor: textColor,
                                 subTextColor: subTextColor,
+                                sceneName: UnityScenes.waterMeditation,
+                                durationSeconds: 900.0,
                               ),
                               const SizedBox(width: 16),
                               _buildDeckCard(
@@ -503,6 +508,8 @@ class HomeJapandiTab extends ConsumerWidget {
                                 accentColor: accentColor,
                                 textColor: textColor,
                                 subTextColor: subTextColor,
+                                sceneName: UnityScenes.waterMeditation,
+                                durationSeconds: 900.0,
                               ),
                               const SizedBox(width: 16),
                               _buildDeckCard(
@@ -520,6 +527,8 @@ class HomeJapandiTab extends ConsumerWidget {
                                 accentColor: AppColors.goldAccent,
                                 textColor: textColor,
                                 subTextColor: subTextColor,
+                                sceneName: UnityScenes.waterMeditation,
+                                durationSeconds: 1500.0,
                               ),
                             ],
                           ),
@@ -689,6 +698,8 @@ class HomeJapandiTab extends ConsumerWidget {
     required Color accentColor,
     required Color textColor,
     required Color subTextColor,
+    String? sceneName,
+    double durationSeconds = 900.0,
   }) {
     return Semantics(
       button: true,
@@ -701,6 +712,8 @@ class HomeJapandiTab extends ConsumerWidget {
             title: title,
             voicePath: voice,
             ambientPath: ambient,
+            sceneName: sceneName,
+            durationSeconds: durationSeconds,
           );
         },
         child: Container(

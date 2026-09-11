@@ -25,6 +25,8 @@ class VrCalibrationScreen extends ConsumerStatefulWidget {
   final String? voicePath;
   final String? ambientPath;
   final String? breathingAudioPath;
+  final String? sceneName;
+  final double durationSeconds;
 
   const VrCalibrationScreen({
     super.key,
@@ -33,6 +35,8 @@ class VrCalibrationScreen extends ConsumerStatefulWidget {
     this.voicePath,
     this.ambientPath,
     this.breathingAudioPath,
+    this.sceneName,
+    this.durationSeconds = 300.0,
   });
 
   @override
@@ -131,6 +135,8 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
                 voicePath: widget.voicePath ?? '',
                 ambientPath: widget.ambientPath ?? '',
                 breathingAudioPath: widget.breathingAudioPath,
+                sceneName: widget.sceneName,
+                durationSeconds: widget.durationSeconds,
               ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(opacity: animation, child: child),

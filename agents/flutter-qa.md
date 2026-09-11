@@ -1,6 +1,7 @@
 ---
 name: "Mobile QA"
 description: "Responsabile dei gate di qualità per applicazioni mobile. Specializzato in Widget, integration ed E2E testing, golden tests, ottimizzazione delle performance tramite Flame Graph e audit di accessibilità."
+mode: subagent
 ---
 
 # 🧪 SKILL: Mobile QA Engineer (Flutter Testing)

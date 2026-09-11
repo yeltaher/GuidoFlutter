@@ -1,10 +1,10 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/unity/unity_bridge_dto.dart';
 import '../../features/splash/splash_feature.dart';
 import '../../features/onboarding/onboarding_feature.dart';
 import '../../features/menu/menu_feature.dart';
-import '../../features/breathing/breathing_feature.dart';
 import '../../features/meditation/meditation_feature.dart';
 import '../../features/premium/premium_feature.dart';
 
@@ -38,9 +38,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/breathing',
         builder: (context, state) {
           final args = state.extra as Map<String, dynamic>? ?? {};
-          return BreathingView(
-            title: args['title'] ?? 'Respirazione',
-            audioPath: args['audioPath'] ?? '',
+          final title = args['title'] ?? 'Respirazione';
+          final sceneName = UnityScenes.resolveSceneName(
+            explicitSceneName: args['sceneName'] as String?,
+            title: title,
+            isBreathing: true,
+          );
+          return UnityExperienceScreen(
+            title: title,
+            sceneName: sceneName,
+            durationSeconds:
+                (args['durationSeconds'] as num?)?.toDouble() ?? 300.0,
+            isVrMode: args['isVrMode'] ?? false,
           );
         },
       ),
@@ -48,10 +57,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/meditation',
         builder: (context, state) {
           final args = state.extra as Map<String, dynamic>? ?? {};
-          return MeditationView(
-            title: args['title'] ?? 'Meditazione',
-            voicePath: args['voicePath'] ?? '',
-            ambientPath: args['ambientPath'] ?? '',
+          final title = args['title'] ?? 'Meditazione';
+          final sceneName = UnityScenes.resolveSceneName(
+            explicitSceneName: args['sceneName'] as String?,
+            title: title,
+            isBreathing: false,
+          );
+          return UnityExperienceScreen(
+            title: title,
+            sceneName: sceneName,
+            durationSeconds:
+                (args['durationSeconds'] as num?)?.toDouble() ?? 900.0,
+            isVrMode: args['isVrMode'] ?? false,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/unity-experience',
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>? ?? {};
+          final title = args['title'] ?? 'Esperienza Zen';
+          final sceneName = UnityScenes.resolveSceneName(
+            explicitSceneName: args['sceneName'] as String?,
+            title: title,
+          );
+          return UnityExperienceScreen(
+            title: title,
+            sceneName: sceneName,
+            durationSeconds:
+                (args['durationSeconds'] as num?)?.toDouble() ?? 300.0,
+            isVrMode: args['isVrMode'] ?? false,
           );
         },
       ),

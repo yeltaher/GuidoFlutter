@@ -7,6 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
+import '../../../core/unity/unity_bridge_dto.dart';
+import '../../../core/unity/unity_session_controller.dart';
 import '../../meditation/meditation_feature.dart';
 import '../../splash/splash_feature.dart';
 
@@ -168,6 +170,28 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                                           .toggleDarkTheme(true),
                                       isDark: isDark,
                                     ),
+                                    const SizedBox(height: 20),
+
+                                    // 6. PROFILO GRAFICO 3D / VR
+                                    _buildQualityPresetSetting(
+                                      isDark: isDark,
+                                      accentColor: accentColor,
+                                      subTextColor: subColor,
+                                      textColor: textColor,
+                                      selectedPreset: settings.qualityPreset,
+                                      isItalian: settings.language == 0,
+                                      onPresetChanged: (preset) {
+                                        settingsNotifier.changeQualityPreset(
+                                          preset,
+                                        );
+                                        ref
+                                            .read(
+                                              unitySessionControllerProvider
+                                                  .notifier,
+                                            )
+                                            .setQualityPreset(preset);
+                                      },
+                                    ),
 
                                     Divider(
                                       height: 36,
@@ -176,7 +200,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                                           : Colors.black12,
                                     ),
 
-                                    // 6. CALIBRAZIONE GIROSCOPIO VR
+                                    // 7. CALIBRAZIONE GIROSCOPIO VR
                                     _buildCalibrationSetting(
                                       isDark: isDark,
                                       accentColor: accentColor,
@@ -445,6 +469,168 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                 letterSpacing: 0.5,
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQualityPresetSetting({
+    required bool isDark,
+    required Color accentColor,
+    required Color subTextColor,
+    required Color textColor,
+    required QualityPreset selectedPreset,
+    required Function(QualityPreset) onPresetChanged,
+    required bool isItalian,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              isItalian ? "PROFILO GRAFICO 3D / VR" : "3D / VR GRAPHICS PROFILE",
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: subTextColor,
+                letterSpacing: 1.0,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                selectedPreset == QualityPreset.highFidelity
+                    ? "URP 60 FPS"
+                    : "ECO BATTERY",
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w800,
+                  color: accentColor,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildPresetCard(
+                title: isItalian ? "ALTA FEDELTÀ" : "HIGH FIDELITY",
+                desc: isItalian
+                    ? "PBR • Ombre • 60 FPS"
+                    : "PBR • Shadows • 60 FPS",
+                icon: Icons.auto_awesome_rounded,
+                isSelected: selectedPreset == QualityPreset.highFidelity,
+                onTap: () => onPresetChanged(QualityPreset.highFidelity),
+                isDark: isDark,
+                accentColor: accentColor,
+                textColor: textColor,
+                subTextColor: subTextColor,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildPresetCard(
+                title: isItalian ? "ECO SAVER" : "ECO SAVER",
+                desc: isItalian ? "Batteria • Termiche" : "Battery • Thermals",
+                icon: Icons.eco_rounded,
+                isSelected: selectedPreset == QualityPreset.balancedEco,
+                onTap: () => onPresetChanged(QualityPreset.balancedEco),
+                isDark: isDark,
+                accentColor: accentColor,
+                textColor: textColor,
+                subTextColor: subTextColor,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPresetCard({
+    required String title,
+    required String desc,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+    required Color accentColor,
+    required Color textColor,
+    required Color subTextColor,
+  }) {
+    return Semantics(
+      button: true,
+      label: "Interactive element",
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? accentColor.withValues(alpha: isDark ? 0.16 : 0.12)
+                : (isDark
+                      ? Colors.white.withValues(alpha: 0.03)
+                      : Colors.black.withValues(alpha: 0.03)),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? accentColor
+                  : (isDark ? Colors.white12 : Colors.black12),
+              width: isSelected ? 1.5 : 1.0,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(
+                    icon,
+                    size: 20,
+                    color: isSelected ? accentColor : subTextColor,
+                  ),
+                  if (isSelected)
+                    Icon(
+                      Icons.check_circle_rounded,
+                      size: 16,
+                      color: accentColor,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w800,
+                  color: isSelected ? textColor : subTextColor,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                desc,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 10.0,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected
+                      ? subTextColor
+                      : subTextColor.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
           ),
         ),
       ),

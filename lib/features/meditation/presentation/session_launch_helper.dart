@@ -8,9 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/vr_gaze_button.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../../core/database/repositories/user_repository.dart';
-import 'meditation_view.dart';
-import '../../breathing/breathing_feature.dart';
+import '../../../core/unity/unity_bridge_dto.dart';
+import 'unity_experience_screen.dart';
 import 'vr_calibration_screen.dart';
 
 import 'explanation_screen.dart';
@@ -24,7 +23,15 @@ void launchZenSession({
   String voicePath = '',
   String ambientPath = '',
   String? breathingAudioPath,
+  String? sceneName,
+  double durationSeconds = 300.0,
 }) {
+  final resolvedScene = UnityScenes.resolveSceneName(
+    explicitSceneName: sceneName,
+    title: title,
+    isBreathing: breathingAudioPath != null,
+  );
+
   Navigator.of(context).push(
     MaterialPageRoute(
       builder: (context) => ExplanationScreen(
@@ -32,8 +39,35 @@ void launchZenSession({
         voicePath: voicePath,
         ambientPath: ambientPath,
         breathingAudioPath: breathingAudioPath,
+        sceneName: resolvedScene,
+        durationSeconds: durationSeconds,
       ),
     ),
+  );
+}
+
+/// Avvia direttamente un'esperienza Unity UaaL 3D / VR fotorealistica.
+void launchUnityExperience({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String title,
+  required String sceneName,
+  double durationSeconds = 300.0,
+  bool isVrMode = false,
+}) {
+  final resolvedScene = UnityScenes.resolveSceneName(
+    explicitSceneName: sceneName,
+    title: title,
+  );
+
+  context.push(
+    '/unity-experience',
+    extra: {
+      'title': title,
+      'sceneName': resolvedScene,
+      'durationSeconds': durationSeconds,
+      'isVrMode': isVrMode,
+    },
   );
 }
 
@@ -46,6 +80,8 @@ class SessionLaunchDialog extends ConsumerWidget {
   final String voicePath;
   final String ambientPath;
   final String? breathingAudioPath;
+  final String? sceneName;
+  final double durationSeconds;
 
   const SessionLaunchDialog({
     super.key,
@@ -53,32 +89,37 @@ class SessionLaunchDialog extends ConsumerWidget {
     required this.voicePath,
     required this.ambientPath,
     this.breathingAudioPath,
+    this.sceneName,
+    this.durationSeconds = 300.0,
   });
 
   void _startFlatSession(BuildContext context, WidgetRef ref) {
     ref.read(settingsProvider.notifier).toggleVrMode(false);
     context.pop();
-    if (breathingAudioPath != null) {
-      context.push(
-        '/breathing',
-        extra: {'title': title, 'audioPath': breathingAudioPath!},
-      );
-    } else {
-      context.push(
-        '/meditation',
-        extra: {
-          'title': title,
-          'voicePath': voicePath,
-          'ambientPath': ambientPath,
-        },
-      );
-    }
+    final resolvedScene = UnityScenes.resolveSceneName(
+      explicitSceneName: sceneName,
+      title: title,
+      isBreathing: breathingAudioPath != null,
+    );
+    launchUnityExperience(
+      context: context,
+      ref: ref,
+      title: title,
+      sceneName: resolvedScene,
+      durationSeconds: durationSeconds,
+      isVrMode: false,
+    );
   }
 
   void _goToVrConfirm(BuildContext context, WidgetRef ref) {
     context.pop();
 
     final settings = ref.read(settingsProvider);
+    final resolvedScene = UnityScenes.resolveSceneName(
+      explicitSceneName: sceneName,
+      title: title,
+      isBreathing: breathingAudioPath != null,
+    );
 
     if (!settings.vrCalibrated) {
       // Se non calibrato, prima calibrazione poi conferma
@@ -90,6 +131,8 @@ class SessionLaunchDialog extends ConsumerWidget {
                 voicePath: voicePath,
                 ambientPath: ambientPath,
                 breathingAudioPath: breathingAudioPath,
+                sceneName: resolvedScene,
+                durationSeconds: durationSeconds,
               ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(opacity: animation, child: child),
@@ -106,6 +149,8 @@ class SessionLaunchDialog extends ConsumerWidget {
                 voicePath: voicePath,
                 ambientPath: ambientPath,
                 breathingAudioPath: breathingAudioPath,
+                sceneName: resolvedScene,
+                durationSeconds: durationSeconds,
               ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(opacity: animation, child: child),
@@ -298,6 +343,8 @@ class VrConfirmationScreen extends ConsumerStatefulWidget {
   final String voicePath;
   final String ambientPath;
   final String? breathingAudioPath;
+  final String? sceneName;
+  final double durationSeconds;
 
   const VrConfirmationScreen({
     super.key,
@@ -305,6 +352,8 @@ class VrConfirmationScreen extends ConsumerStatefulWidget {
     required this.voicePath,
     required this.ambientPath,
     this.breathingAudioPath,
+    this.sceneName,
+    this.durationSeconds = 300.0,
   });
 
   @override
@@ -336,30 +385,24 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
     if (_sessionStarting) return;
     _sessionStarting = true;
     ref.read(settingsProvider.notifier).toggleVrMode(true);
+    final resolvedScene = UnityScenes.resolveSceneName(
+      explicitSceneName: widget.sceneName,
+      title: widget.title,
+      isBreathing: widget.breathingAudioPath != null,
+    );
     Navigator.of(context)
         .pushReplacement(
           MaterialPageRoute(
-            builder: (_) => widget.breathingAudioPath != null
-                ? BreathingView(
-                    title: widget.title,
-                    audioPath: widget.breathingAudioPath!,
-                  )
-                : MeditationView(
-                    title: widget.title,
-                    voicePath: widget.voicePath,
-                    ambientPath: widget.ambientPath,
-                  ),
+            builder: (_) => UnityExperienceScreen(
+              title: widget.title,
+              sceneName: resolvedScene,
+              durationSeconds: widget.durationSeconds,
+              isVrMode: true,
+            ),
           ),
         )
         .then((_) async {
           ref.read(settingsProvider.notifier).toggleVrMode(false);
-          final prefs = ref.read(sharedPrefsProvider);
-          final sessionType = widget.breathingAudioPath != null
-              ? "Respirazione"
-              : "Meditazione";
-          await ref
-              .read(userRepositoryProvider)
-              .recordSession(widget.title, sessionType);
         });
   }
 

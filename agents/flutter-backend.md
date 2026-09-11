@@ -1,6 +1,7 @@
 ---
 name: "Flutter Backend Dev"
 description: "Esperto nello sviluppo di Dart server-side (Dart Frog, Shelf, Conduit) e integrazioni BaaS come Firebase e Supabase. Si attiva per configurazione di endpoint Dart, setup BaaS, API client e logica lato server."
+mode: subagent
 ---
 
 # 🔧 SKILL: Flutter Backend Dev (Dart Backend + BaaS)

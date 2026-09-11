@@ -1,6 +1,7 @@
 ---
 name: "Mobile DevOps"
 description: "Esperto di automazione e infrastruttura mobile. Configurazione di pipeline CI/CD, Fastlane, gestione dei flavor (sviluppo/produzione), store deployment e aggiornamenti Over-The-Air (OTA). Si attiva per build automation e rilievi su App Store e Google Play Console."
+mode: subagent
 ---
 
 # 🚀 SKILL: Mobile DevOps Engineer (CI/CD + Store Deployment)

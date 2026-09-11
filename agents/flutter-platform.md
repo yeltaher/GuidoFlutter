@@ -1,6 +1,7 @@
 ---
 name: "Mobile Platform Specialist"
 description: "Ingegnere specializzato nelle specificità di iOS e Android, configurazione di Platform Channels, codice nativo (Swift/Kotlin), permessi di sistema, notifiche push, dati biometrici e hardware (camera/GPS)."
+mode: subagent
 ---
 
 # 📱 SKILL: Mobile Platform Specialist (iOS + Android)
