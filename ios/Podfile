@@ -29,9 +29,12 @@ def compile_unity_framework_if_needed
     system(cmd)
     if File.exist?(binary_path)
       puts "=== [Guido CI Bridge] UnityFramework compiled successfully! (#{File.size(binary_path)} bytes) ==="
+      system("codesign --force --deep --sign - '#{binary_path}' 2>/dev/null")
     else
       puts "=== [Guido CI Bridge] Notice: UnityFramework compilation skipped or pending macOS toolchain ==="
     end
+  elsif File.exist?(binary_path)
+    system("codesign --force --deep --sign - '#{binary_path}' 2>/dev/null")
   end
 end
 
@@ -102,6 +105,19 @@ post_install do |installer|
         target.xcconfigs.each do |config_name, config_file|
           config_file.attributes['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
         end
+      end
+    end
+  end
+
+  # Ensure UnityFramework is embedded and signed in CocoaPods frameworks script if present
+  frameworks_script = File.expand_path("Pods/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh", __dir__)
+  if File.exist?(frameworks_script)
+    content = File.read(frameworks_script)
+    unity_entry = 'install_framework "${PODS_ROOT}/../UnityLibrary/UnityFramework.framework"'
+    unless content.include?(unity_entry)
+      File.open(frameworks_script, 'a') do |f|
+        f.puts "\n# Guido UnityFramework dynamic embedding"
+        f.puts unity_entry
       end
     end
   end

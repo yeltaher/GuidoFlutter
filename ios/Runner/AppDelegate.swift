@@ -2,16 +2,18 @@ import Flutter
 import UIKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+@objc class AppDelegate: FlutterAppDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    let success = super.application(application, didFinishLaunchingWithOptions: launchOptions)
-    
+    GeneratedPluginRegistrant.register(with: self)
+
     if let controller = window?.rootViewController as? FlutterViewController {
-      let orientationChannel = FlutterMethodChannel(name: "com.codepulse.guido/orientation",
-                                                    binaryMessenger: controller.binaryMessenger)
+      let orientationChannel = FlutterMethodChannel(
+        name: "com.codepulse.guido/orientation",
+        binaryMessenger: controller.binaryMessenger
+      )
       orientationChannel.setMethodCallHandler { call, result in
         if call.method == "forceLandscape" {
           result(nil)
@@ -22,11 +24,8 @@ import UIKit
         }
       }
     }
-    
-    return success
-  }
 
-  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
-    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
+

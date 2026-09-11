@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:isar/isar.dart';
@@ -12,13 +13,31 @@ final isarInstanceProvider = StateProvider<Isar?>((ref) => null);
 
 /// Inizializza le dipendenze asincrone bloccanti (SharedPreferences e Isar)
 final appInitializerProvider = FutureProvider<void>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
-  final dir = await getApplicationDocumentsDirectory();
-  final isar = await Isar.open([
-    UserStatsModelSchema,
-    TimelineRecordModelSchema,
-  ], directory: dir.path);
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    ref.read(sharedPrefsInstanceProvider.notifier).state = prefs;
+  } catch (e, st) {
+    debugPrint('[AppInitializer] Errore inizializzazione SharedPreferences: $e\n$st');
+  }
 
-  ref.read(sharedPrefsInstanceProvider.notifier).state = prefs;
-  ref.read(isarInstanceProvider.notifier).state = isar;
+  try {
+    final dir = await getApplicationDocumentsDirectory();
+    final isar = Isar.getInstance() ??
+        await Isar.open(
+          [
+            UserStatsModelSchema,
+            TimelineRecordModelSchema,
+          ],
+          directory: dir.path,
+          inspector: kDebugMode,
+        );
+    ref.read(isarInstanceProvider.notifier).state = isar;
+  } catch (e, st) {
+    debugPrint('[AppInitializer] Errore apertura database Isar: $e\n$st');
+    final existingIsar = Isar.getInstance();
+    if (existingIsar != null) {
+      ref.read(isarInstanceProvider.notifier).state = existingIsar;
+    }
+  }
 });
+
