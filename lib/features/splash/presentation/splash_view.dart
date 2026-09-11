@@ -38,7 +38,7 @@ class SplashView extends ConsumerWidget {
     final accentColor = AppColors.getActiveAccentColor(isDark);
     final textColor = AppColors.getTextColor(isDark);
     final subTextColor = AppColors.getSubTextColor(isDark);
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       body: LayoutBuilder(
@@ -110,7 +110,7 @@ class SplashView extends ConsumerWidget {
                             .scale(begin: const Offset(0.8, 0.8)),
                         const SizedBox(height: 12),
                         Text(
-                              loc.splashTitle,
+                              loc?.splashTitle ?? 'Guido',
                               style: Theme.of(context).textTheme.displaySmall
                                   ?.copyWith(
                                     fontWeight: FontWeight.w900,
@@ -123,7 +123,7 @@ class SplashView extends ConsumerWidget {
                             .slideY(begin: -0.1, end: 0),
                         const SizedBox(height: 8),
                         Text(
-                          loc.splashSubtitle,
+                          loc?.splashSubtitle ?? 'Meditazione & Respirazione',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.labelLarge
                               ?.copyWith(
@@ -170,7 +170,7 @@ class SplashView extends ConsumerWidget {
                                 ),
                               ),
                               child: Text(
-                                loc.splashGuestLogin,
+                                loc?.splashGuestLogin ?? 'ENTRA COME OSPITE',
                                 style: Theme.of(context).textTheme.labelMedium
                                     ?.copyWith(
                                       fontWeight: FontWeight.w800,
@@ -236,20 +236,26 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     super.dispose();
   }
 
-  void _submitForm(AppLocalizations loc) {
+  void _submitForm(AppLocalizations? loc) {
     if (_isSignUpMode) {
       if (_nameController.text.trim().isEmpty ||
           _emailController.text.trim().isEmpty ||
           _passwordController.text.trim().isEmpty) {
-        _showErrorSnackbar(loc.splashErrorFillFields);
+        _showErrorSnackbar(
+          loc?.splashErrorFillFields ?? 'Compila tutti i campi obbligatori!',
+        );
         return;
       }
       if (_passwordController.text != _confirmPasswordController.text) {
-        _showErrorSnackbar(loc.splashErrorPasswordMismatch);
+        _showErrorSnackbar(
+          loc?.splashErrorPasswordMismatch ?? 'Le password non coincidono!',
+        );
         return;
       }
       if (!_acceptTerms) {
-        _showErrorSnackbar(loc.splashErrorAcceptTerms);
+        _showErrorSnackbar(
+          loc?.splashErrorAcceptTerms ?? 'Devi accettare i termini di servizio!',
+        );
         return;
       }
       final prefs = ref.read(sharedPrefsProvider);
@@ -257,7 +263,9 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
     } else {
       if (_emailController.text.trim().isEmpty ||
           _passwordController.text.trim().isEmpty) {
-        _showErrorSnackbar(loc.splashErrorEmailPassword);
+        _showErrorSnackbar(
+          loc?.splashErrorEmailPassword ?? 'Inserisci email e password!',
+        );
         return;
       }
     }
@@ -283,7 +291,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     return RepaintBoundary(
       child:
           ClipRRect(
@@ -315,7 +323,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                               children: [
                                 Expanded(
                                   child: _buildAuthTabButton(
-                                    label: loc.splashTabLogin,
+                                    label: loc?.splashTabLogin ?? 'ACCEDI',
                                     isSelected: !_isSignUpMode,
                                     onTap: () =>
                                         setState(() => _isSignUpMode = false),
@@ -323,7 +331,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                                 ),
                                 Expanded(
                                   child: _buildAuthTabButton(
-                                    label: loc.splashTabRegister,
+                                    label: loc?.splashTabRegister ?? 'REGISTRATI',
                                     isSelected: _isSignUpMode,
                                     onTap: () =>
                                         setState(() => _isSignUpMode = true),
@@ -337,7 +345,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                           if (_isSignUpMode) ...[
                             _buildInputField(
                               controller: _nameController,
-                              hint: loc.splashNameHint,
+                              hint: loc?.splashNameHint ?? 'Nome completo',
                               icon: Icons.person_outline_rounded,
                             ).animate().fadeIn(duration: 300.ms),
                             const SizedBox(height: 14),
@@ -345,7 +353,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
 
                           _buildInputField(
                             controller: _emailController,
-                            hint: loc.splashEmailHint,
+                            hint: loc?.splashEmailHint ?? 'Indirizzo Email',
                             icon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
                           ),
@@ -353,7 +361,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
 
                           _buildInputField(
                             controller: _passwordController,
-                            hint: loc.splashPasswordHint,
+                            hint: loc?.splashPasswordHint ?? 'Password',
                             icon: Icons.lock_outline_rounded,
                             obscure: !_showPassword,
                             suffixIcon: IconButton(
@@ -376,7 +384,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                           if (_isSignUpMode) ...[
                             _buildInputField(
                               controller: _confirmPasswordController,
-                              hint: loc.splashConfirmPasswordHint,
+                              hint: loc?.splashConfirmPasswordHint ?? 'Conferma Password',
                               icon: Icons.lock_reset_rounded,
                               obscure: true,
                             ).animate().fadeIn(duration: 300.ms),
@@ -403,7 +411,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                                     ),
                                     Expanded(
                                       child: Text(
-                                        loc.splashAcceptTerms,
+                                        loc?.splashAcceptTerms ?? 'Accetto Termini e Condizioni e Privacy Policy',
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelSmall
@@ -422,8 +430,8 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
 
                           CustomUnityButton(
                             text: _isSignUpMode
-                                ? loc.splashTabRegister
-                                : loc.splashTabLogin,
+                                ? (loc?.splashTabRegister ?? 'REGISTRATI')
+                                : (loc?.splashTabLogin ?? 'ACCEDI'),
                             onTap: () => _submitForm(loc),
                             accentColor: AppColors.successAccent,
                             width: double.infinity,
