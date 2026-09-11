@@ -161,7 +161,16 @@ class GuidoAudioService {
     _effectsPlayer.dispose();
   }
 
+  /// Ferma la voce guida lasciando intatta la musica ambientale
+  Future<void> stopVoice() async {
+    await _voicePlayer.stop();
+  }
+
   /// Espone lo stream dello stato del player degli effetti per sapere quando finisce
   Stream<PlayerState> get effectsPlayerStateStream =>
       _effectsPlayer.playerStateStream;
+
+  /// Espone lo stream dello stato del player della voce per sapere quando la guida finisce
+  Stream<PlayerState> get voicePlayerStateStream =>
+      _voicePlayer.playerStateStream;
 }

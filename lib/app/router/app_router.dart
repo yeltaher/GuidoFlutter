@@ -6,6 +6,7 @@ import '../../features/splash/splash_feature.dart';
 import '../../features/onboarding/onboarding_feature.dart';
 import '../../features/menu/menu_feature.dart';
 import '../../features/meditation/meditation_feature.dart';
+import '../../features/breathing/breathing_feature.dart';
 import '../../features/premium/premium_feature.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -38,18 +39,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/breathing',
         builder: (context, state) {
           final args = state.extra as Map<String, dynamic>? ?? {};
-          final title = args['title'] ?? 'Respirazione';
-          final sceneName = UnityScenes.resolveSceneName(
-            explicitSceneName: args['sceneName'] as String?,
+          final title = args['title'] as String? ?? 'Respirazione Acqua';
+          final audioPath = args['audioPath'] as String? ??
+              'assets/audio/real/Respirazioni/Acqua/Respirazione acqua.m4a';
+          return BreathingView(
             title: title,
-            isBreathing: true,
-          );
-          return UnityExperienceScreen(
-            title: title,
-            sceneName: sceneName,
-            durationSeconds:
-                (args['durationSeconds'] as num?)?.toDouble() ?? 300.0,
-            isVrMode: args['isVrMode'] ?? false,
+            audioPath: audioPath,
           );
         },
       ),
@@ -57,18 +52,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/meditation',
         builder: (context, state) {
           final args = state.extra as Map<String, dynamic>? ?? {};
-          final title = args['title'] ?? 'Meditazione';
-          final sceneName = UnityScenes.resolveSceneName(
-            explicitSceneName: args['sceneName'] as String?,
+          final title = args['title'] as String? ?? 'Meditazione Acqua';
+          final voicePath = args['voicePath'] as String? ??
+              'assets/audio/real/Meditazioni/Acqua/Meditazione del Mattino_Procedimento.m4a';
+          final ambientPath = args['ambientPath'] as String? ??
+              'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a';
+          return MeditationView(
             title: title,
-            isBreathing: false,
-          );
-          return UnityExperienceScreen(
-            title: title,
-            sceneName: sceneName,
-            durationSeconds:
-                (args['durationSeconds'] as num?)?.toDouble() ?? 900.0,
-            isVrMode: args['isVrMode'] ?? false,
+            voicePath: voicePath,
+            ambientPath: ambientPath,
           );
         },
       ),

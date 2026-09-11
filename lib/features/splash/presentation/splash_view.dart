@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:guido/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../menu/presentation/home_container_view.dart';
-import '../../onboarding/presentation/onboarding_wizard_view.dart';
 
 class SplashView extends ConsumerWidget {
   const SplashView({super.key});
@@ -16,19 +15,11 @@ class SplashView extends ConsumerWidget {
     final prefs = ref.read(sharedPrefsProvider);
     final isOnboarded = prefs.getBool("IsOnboarded") ?? false;
 
-    final Widget nextScreen = isOnboarded
-        ? const HomeContainerView()
-        : const OnboardingWizardView();
-
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 600),
-      ),
-    );
+    if (isOnboarded) {
+      context.go('/home');
+    } else {
+      context.go('/onboarding');
+    }
   }
 
   @override

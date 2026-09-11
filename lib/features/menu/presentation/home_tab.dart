@@ -5,7 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
+import '../../../core/services/daily_quotes_service.dart';
 import '../../meditation/meditation_feature.dart';
+import '../../vr_safety/vr_safety_feature.dart';
+import '../../premium/premium_feature.dart';
 
 class HomeTab extends ConsumerWidget {
   final bool isActive;
@@ -18,6 +21,7 @@ class HomeTab extends ConsumerWidget {
     final accentColor = AppColors.getActiveAccentColor(isDark);
     final textColor = AppColors.getTextColor(isDark);
     final subTextColor = AppColors.getSubTextColor(isDark);
+    final dailyQuote = ref.watch(dailyQuoteProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -89,9 +93,68 @@ class HomeTab extends ConsumerWidget {
                     ),
                   )
                   .animate(target: isActive ? 1.0 : 0.0)
+                  .fadeIn(delay: 200.ms, duration: 500.ms),
+
+              const SizedBox(height: 18),
+
+              // PROMINENT CARD "IL RESPIRO DI OGGI"
+              _buildDailyQuoteCard(
+                quote: dailyQuote,
+                isDark: isDark,
+                accentColor: accentColor,
+                textColor: textColor,
+                subTextColor: subTextColor,
+              )
+                  .animate(target: isActive ? 1.0 : 0.0)
                   .fadeIn(delay: 250.ms, duration: 500.ms),
 
               const SizedBox(height: 24),
+
+              // I 4 PERCORSI NATURALI
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    settings.language == 0
+                        ? "I 4 Percorsi Naturali"
+                        : "4 Natural Paths",
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: settings.language == 0
+                        ? "Sicurezza VR"
+                        : "VR Safety",
+                    icon: Icon(
+                      Icons.health_and_safety_outlined,
+                      color: accentColor,
+                      size: 22,
+                    ),
+                    onPressed: () => showVrSafetyDialog(context),
+                  ),
+                ],
+              )
+                  .animate(target: isActive ? 1.0 : 0.0)
+                  .fadeIn(delay: 300.ms, duration: 500.ms),
+
+              const SizedBox(height: 12),
+
+              _buildNaturalPathsGrid(
+                context: context,
+                ref: ref,
+                settings: settings,
+                isDark: isDark,
+                textColor: textColor,
+                subTextColor: subTextColor,
+              )
+                  .animate(target: isActive ? 1.0 : 0.0)
+                  .fadeIn(delay: 350.ms, duration: 500.ms),
+
+              const SizedBox(height: 26),
 
               // 3. FEATURED MEDITATION TITLE
               Text(
@@ -560,6 +623,287 @@ class HomeTab extends ConsumerWidget {
                 : Colors.black.withValues(alpha: 0.04),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDailyQuoteCard({
+    required DailyQuote quote,
+    required bool isDark,
+    required Color accentColor,
+    required Color textColor,
+    required Color subTextColor,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: AppColors.japandiCardDecoration(
+        isDark,
+        borderRadius: 24.0,
+        opacity: 0.75,
+      ),
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accentColor.withValues(alpha: isDark ? 0.15 : 0.2),
+                ),
+                child: Icon(Icons.format_quote_rounded, color: accentColor, size: 16),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                quote.subtitle ?? "IL RESPIRO DI OGGI",
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: accentColor,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "“${quote.text}”",
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 16.5,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              "— ${quote.author}",
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: subTextColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNaturalPathsGrid({
+    required BuildContext context,
+    required WidgetRef ref,
+    required dynamic settings,
+    required bool isDark,
+    required Color textColor,
+    required Color subTextColor,
+  }) {
+    final isIt = settings.language == 0;
+    final bool isUnlocked = settings.isUnlocked;
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildPathOverviewCard(
+                title: isIt ? "Percorso Acqua" : "Water Path",
+                subtitle: isIt ? "Calma & Fluidità" : "Calm & Flow",
+                icon: Icons.water_drop_rounded,
+                iconColor: const Color(0xFF38BDF8),
+                badgeText: isIt ? "Respiro FREE" : "Breath FREE",
+                isDark: isDark,
+                textColor: textColor,
+                subTextColor: subTextColor,
+                onTap: () {
+                  launchZenSession(
+                    context: context,
+                    ref: ref,
+                    title: isIt ? "Respirazione Acqua" : "Water Breath",
+                    breathingAudioPath:
+                        'assets/audio/real/Respirazioni/Acqua/Respirazione acqua.m4a',
+                    sceneName: UnityScenes.waterBreathing,
+                    durationSeconds: 300.0,
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildPathOverviewCard(
+                title: isIt ? "Percorso Fuoco" : "Fire Path",
+                subtitle: isIt ? "Energia & Vitalità" : "Energy & Vitality",
+                icon: Icons.local_fire_department_rounded,
+                iconColor: const Color(0xFFF97316),
+                badgeText: "PREMIUM",
+                isDark: isDark,
+                textColor: textColor,
+                subTextColor: subTextColor,
+                onTap: () {
+                  if (isUnlocked) {
+                    launchZenSession(
+                      context: context,
+                      ref: ref,
+                      title: isIt ? "Percorso Fuoco" : "Fire Path",
+                      sceneName: UnityScenes.fireMeditation,
+                      durationSeconds: 900.0,
+                    );
+                  } else {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PremiumPaywallView(),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildPathOverviewCard(
+                title: isIt ? "Percorso Terra" : "Earth Path",
+                subtitle: isIt ? "Radicamento & Stabilità" : "Grounding & Stability",
+                icon: Icons.landscape_rounded,
+                iconColor: const Color(0xFF84CC16),
+                badgeText: isIt ? "Respiro FREE" : "Breath FREE",
+                isDark: isDark,
+                textColor: textColor,
+                subTextColor: subTextColor,
+                onTap: () {
+                  launchZenSession(
+                    context: context,
+                    ref: ref,
+                    title: isIt ? "Respirazione Terra" : "Earth Breath",
+                    breathingAudioPath:
+                        'assets/audio/real/Respirazioni/Terra/Respirazione terra.m4a',
+                    sceneName: UnityScenes.earthBreathing,
+                    durationSeconds: 300.0,
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildPathOverviewCard(
+                title: isIt ? "Percorso Aria" : "Air Path",
+                subtitle: isIt ? "Leggerezza & Espansione" : "Lightness & Expansion",
+                icon: Icons.air_rounded,
+                iconColor: const Color(0xFF06B6D4),
+                badgeText: "PREMIUM",
+                isDark: isDark,
+                textColor: textColor,
+                subTextColor: subTextColor,
+                onTap: () {
+                  if (isUnlocked) {
+                    launchZenSession(
+                      context: context,
+                      ref: ref,
+                      title: isIt ? "Percorso Aria" : "Air Path",
+                      sceneName: UnityScenes.airMeditation,
+                      durationSeconds: 900.0,
+                    );
+                  } else {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PremiumPaywallView(),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPathOverviewCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required String badgeText,
+    required bool isDark,
+    required Color textColor,
+    required Color subTextColor,
+    required VoidCallback onTap,
+  }) {
+    final isFree = badgeText.contains("FREE");
+    return Semantics(
+      button: true,
+      label: title,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: AppColors.japandiCardDecoration(
+            isDark,
+            borderRadius: 22.0,
+            opacity: 0.65,
+          ),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Stylized icon above the text
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: iconColor.withValues(alpha: isDark ? 0.12 : 0.16),
+                ),
+                child: Icon(icon, color: iconColor, size: 24),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w500,
+                  color: subTextColor,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isFree
+                      ? AppColors.successAccent.withValues(alpha: 0.14)
+                      : AppColors.goldAccent.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  badgeText,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w800,
+                    color: isFree ? AppColors.successAccent : AppColors.goldAccent,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

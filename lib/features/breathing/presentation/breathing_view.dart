@@ -17,7 +17,6 @@ import '../../../core/database/settings_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:just_audio/just_audio.dart';
-import '../../meditation/meditation_feature.dart';
 
 class BreathingView extends ConsumerStatefulWidget {
   final String title;
@@ -178,9 +177,14 @@ class _BreathingViewState extends ConsumerState<BreathingView>
       _updatePhase();
       _pulseController.repeat(reverse: true);
     });
+    // Modalità Ripeti: prosegue nell'ambiente immersivo con audio d'atmosfera/video
+    // e visual respiro, senza ripetere la voce guida
+    _videoController?.play();
     final audioServiceAsync = ref.read(audioServiceProvider);
     if (audioServiceAsync is AsyncData) {
-      audioServiceAsync.value!.playEffect(widget.audioPath, loop: false);
+      audioServiceAsync.value!.playAmbient(
+        'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
+      );
     }
   }
 
@@ -227,15 +231,15 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     final isVr = ref.read(settingsProvider).isVrMode;
     final audioServiceAsync = ref.read(audioServiceProvider);
     if (audioServiceAsync is AsyncData) {
       audioServiceAsync.value!.stopAll();
     }
     if (isVr) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const RemoveVrHeadsetView()),
-      );
+      ref.read(settingsProvider.notifier).toggleVrMode(false);
+      context.go('/remove-vr-headset');
     } else {
       context.go('/home');
     }
@@ -253,7 +257,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
-    // Qui non servono chiamate dirette ad AppOrientation.
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     if (!ref.read(settingsProvider).isVrMode) {
       VrOrientationService.exitVr();
     }

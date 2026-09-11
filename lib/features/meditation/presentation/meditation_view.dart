@@ -6,13 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'remove_vr_headset_view.dart';
+import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/theme/glb_viewer_widget.dart';
 import '../../../core/theme/vr_gaze_button.dart';
 import '../../../core/vr/vr_host_screen.dart';
 import '../../../core/database/settings_provider.dart';
+import '../../../core/database/repositories/user_repository.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class MeditationView extends ConsumerStatefulWidget {
@@ -35,9 +37,11 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
   String _typedText = '';
   bool _isTypewriterComplete = false;
   bool _isPlaying = true;
+  bool _isSessionFinished = false;
   Timer? _typewriterTimer;
   int _vrRandomSeed = 0;
   bool _showExitConfirm = false;
+  StreamSubscription<PlayerState>? _voiceSub;
 
   // Controller gaze — creato solo in VR mode, gestito dal VrHostScreen
   VrGazeController? _gazeController;
@@ -66,8 +70,20 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final audioServiceAsync = ref.read(audioServiceProvider);
       if (audioServiceAsync is AsyncData) {
-        audioServiceAsync.value!.playAmbient(widget.ambientPath);
-        audioServiceAsync.value!.playVoice(widget.voicePath);
+        final audio = audioServiceAsync.value!;
+        audio.playAmbient(widget.ambientPath);
+        audio.playVoice(widget.voicePath);
+
+        _voiceSub = audio.voicePlayerStateStream.listen((state) {
+          if (state.processingState == ProcessingState.completed) {
+            if (mounted && !_isSessionFinished) {
+              setState(() {
+                _isSessionFinished = true;
+              });
+              ref.read(userRepositoryProvider).recordSession(widget.title, "Meditazione");
+            }
+          }
+        });
       }
       _startTypewriter();
     });
@@ -107,6 +123,19 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
     setState(() => _isPlaying = !_isPlaying);
   }
 
+  void _repeatSession() {
+    setState(() {
+      _isSessionFinished = false;
+      _isPlaying = true;
+    });
+    final audioServiceAsync = ref.read(audioServiceProvider);
+    if (audioServiceAsync is AsyncData) {
+      // Modalità Ripeti: prosegue nell'ambiente immersivo con musica d'atmosfera senza ripetere la voce guida
+      audioServiceAsync.value!.stopVoice();
+      audioServiceAsync.value!.playAmbient(widget.ambientPath);
+    }
+  }
+
   void _requestExit() {
     setState(() {
       _showExitConfirm = true;
@@ -121,27 +150,34 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
 
   void _confirmExit() {
     _typewriterTimer?.cancel();
+    _voiceSub?.cancel();
     final audioServiceAsync = ref.read(audioServiceProvider);
     if (audioServiceAsync is AsyncData) {
       audioServiceAsync.value!.stopAll();
     }
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     final isVr = ref.read(settingsProvider).isVrMode;
     if (isVr) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const RemoveVrHeadsetView()),
-      );
+      ref.read(settingsProvider.notifier).toggleVrMode(false);
+      context.go('/remove-vr-headset');
     } else {
-      context.pop();
+      context.go('/home');
     }
   }
 
   @override
   void dispose() {
     _typewriterTimer?.cancel();
+    _voiceSub?.cancel();
     _gazeController?.dispose();
     WakelockPlus.disable();
-    // VrHostScreen chiama già VrOrientationService.exitVr() nel suo dispose.
-    // Qui non servono chiamate dirette ad AppOrientation.
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
@@ -275,6 +311,38 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
             ),
           ],
 
+          if (isVr && _isSessionFinished)
+            Positioned.fill(
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    VrGazableButton(
+                      id: 'med_exit_vr',
+                      label: isIt ? 'ESCI' : 'EXIT',
+                      icon: Icons.close_rounded,
+                      color: AppColors.dangerAccent,
+                      size: 72,
+                      hitRadius: 50,
+                      isActiveEye: isActiveEye,
+                      onTriggered: _confirmExit,
+                    ),
+                    const SizedBox(width: 32),
+                    VrGazableButton(
+                      id: 'med_repeat_vr',
+                      label: isIt ? 'RIPETI' : 'REPEAT',
+                      icon: Icons.replay_rounded,
+                      color: AppColors.successAccent,
+                      size: 72,
+                      hitRadius: 50,
+                      isActiveEye: isActiveEye,
+                      onTriggered: _repeatSession,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           SafeArea(
             left: !isVr,
             right: !isVr,
@@ -333,7 +401,7 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
 
                   Column(
                     children: [
-                      if (_isTypewriterComplete && !isVr) ...[
+                      if (_isTypewriterComplete && !isVr && !_isSessionFinished) ...[
                         CustomUnityButton(
                           text: _isPlaying
                               ? (isIt ? 'PAUSA' : 'PAUSE')
@@ -346,15 +414,37 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
                               : AppColors.successAccent,
                           width: buttonWidth,
                         ).animate().fadeIn(duration: 400.ms),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 10),
+                        CustomUnityButton(
+                          text: isIt ? 'RIPETI (SOLO AMBIENT)' : 'REPEAT (AMBIENT ONLY)',
+                          onTap: _repeatSession,
+                          accentColor: AppColors.successAccent,
+                          width: buttonWidth,
+                        ).animate().fadeIn(duration: 400.ms),
+                        const SizedBox(height: 10),
                       ],
-                      if (!isVr)
+                      if (!isVr && !_isSessionFinished)
                         CustomUnityButton(
                           text: isIt ? 'Chiudi sessione' : 'Close session',
                           onTap: _requestExit,
                           accentColor: AppColors.dangerAccent,
                           width: buttonWidth,
                         ),
+                      if (!isVr && _isSessionFinished) ...[
+                        CustomUnityButton(
+                          text: isIt ? 'RIPETI' : 'REPEAT',
+                          onTap: _repeatSession,
+                          accentColor: AppColors.successAccent,
+                          width: buttonWidth,
+                        ),
+                        const SizedBox(height: 10),
+                        CustomUnityButton(
+                          text: isIt ? 'ESCI' : 'EXIT',
+                          onTap: _confirmExit,
+                          accentColor: AppColors.dangerAccent,
+                          width: buttonWidth,
+                        ),
+                      ],
                       SizedBox(height: isVr ? 4 : 10),
                     ],
                   ),

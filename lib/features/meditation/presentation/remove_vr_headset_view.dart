@@ -59,7 +59,7 @@ class RemoveVrHeadsetView extends ConsumerWidget {
                 CustomUnityButton(
                   text: isIt ? 'FATTO' : 'DONE',
                   onTap: () {
-                    context.pop();
+                    context.go('/home');
                   },
                   accentColor: AppColors.sageAccent,
                   width: 250,

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
+import '../../../core/services/daily_quotes_service.dart';
 import '../../meditation/meditation_feature.dart';
 import '../../premium/premium_feature.dart';
 
@@ -24,6 +25,7 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
     final accentColor = AppColors.getActiveAccentColor(isDark);
     final textColor = AppColors.getTextColor(isDark);
     final subTextColor = AppColors.getSubTextColor(isDark);
+    final dailyQuote = ref.watch(dailyQuoteProvider);
 
     return Container(
       color: Colors
@@ -93,6 +95,16 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                   100.0,
                 ), // Spazio extra in basso per consentire al contenuto di scorrere completamente sopra la barra fluttuante
                 children: [
+                  // PROMINENT CARD "IL RESPIRO DI OGGI"
+                  _buildDailyQuoteCard(
+                    quote: dailyQuote,
+                    isDark: isDark,
+                    accentColor: accentColor,
+                    textColor: textColor,
+                    subTextColor: subTextColor,
+                  ),
+                  const SizedBox(height: 18),
+
                   if (_selectedCategory == 0 || _selectedCategory == 1) ...[
                     _buildSectionHeader(
                       settings.language == 0
@@ -100,102 +112,6 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                           : "Guided Meditations",
                       isDark,
                     ),
-                    _buildPathCard(
-                      context: context,
-                      title: settings.language == 0
-                          ? "Percorso Acqua (Mattina)"
-                          : "Water Path (Morning)",
-                      desc: settings.language == 0
-                          ? "Una meditazione fluida per ritrovare calma e centratura nel presente."
-                          : "A flowing meditation to recover calm and presence in the moment.",
-                      duration: "15 MIN",
-                      isPremium: false,
-                      isLocked: false,
-                      isDark: isDark,
-                      accentColor: accentColor,
-                      textColor: textColor,
-                      subTextColor: subTextColor,
-                      onTap: () {
-                        launchZenSession(
-                          context: context,
-                          ref: ref,
-                          title: settings.language == 0
-                              ? "Percorso Acqua"
-                              : "Water Path",
-                          voicePath:
-                              'assets/audio/real/Meditazioni/Acqua/Meditazione del Mattino_Procedimento.m4a',
-                          ambientPath:
-                              'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
-                          sceneName: UnityScenes.waterMeditation,
-                          durationSeconds: 900.0,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _buildPathCard(
-                      context: context,
-                      title: settings.language == 0
-                          ? "Percorso Acqua (Pomeriggio)"
-                          : "Water Path (Afternoon)",
-                      desc: settings.language == 0
-                          ? "Lascia scorrere i pensieri per rigenerarti a metà giornata."
-                          : "Let your thoughts flow to recharge mid-day.",
-                      duration: "15 MIN",
-                      isPremium: false,
-                      isLocked: false,
-                      isDark: isDark,
-                      accentColor: accentColor,
-                      textColor: textColor,
-                      subTextColor: subTextColor,
-                      onTap: () {
-                        launchZenSession(
-                          context: context,
-                          ref: ref,
-                          title: settings.language == 0
-                              ? "Percorso Acqua (Pomeriggio)"
-                              : "Water Path (Afternoon)",
-                          voicePath:
-                              'assets/audio/real/Meditazioni/Acqua/Meditazione-del-Pomeriggio.m4a',
-                          ambientPath:
-                              'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione POMERIGGIO.m4a',
-                          sceneName: UnityScenes.waterMeditation,
-                          durationSeconds: 900.0,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _buildPathCard(
-                      context: context,
-                      title: settings.language == 0
-                          ? "Percorso Acqua (Sera)"
-                          : "Water Path (Evening)",
-                      desc: settings.language == 0
-                          ? "Rilassa la mente per prepararti a un riposo profondo."
-                          : "Relax your mind to prepare for deep rest.",
-                      duration: "25 MIN",
-                      isPremium: false,
-                      isLocked: false,
-                      isDark: isDark,
-                      accentColor: accentColor,
-                      textColor: textColor,
-                      subTextColor: subTextColor,
-                      onTap: () {
-                        launchZenSession(
-                          context: context,
-                          ref: ref,
-                          title: settings.language == 0
-                              ? "Percorso Acqua (Sera)"
-                              : "Water Path (Evening)",
-                          voicePath:
-                              'assets/audio/real/Meditazioni/Acqua/Meditazione-della-Sera.m4a',
-                          ambientPath:
-                              'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione SERA.m4a',
-                          sceneName: UnityScenes.waterMeditation,
-                          durationSeconds: 1500.0,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
                     _buildPathCard(
                       context: context,
                       title: settings.language == 0
@@ -207,6 +123,8 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                       duration: "10 MIN",
                       isPremium: false,
                       isLocked: false,
+                      pathIcon: Icons.spa_rounded,
+                      pathIconColor: AppColors.sageAccent,
                       isDark: isDark,
                       accentColor: accentColor,
                       textColor: textColor,
@@ -231,14 +149,130 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                     _buildPathCard(
                       context: context,
                       title: settings.language == 0
-                          ? "Percorso Aria (Premium)"
-                          : "Air Path (Premium)",
+                          ? "Percorso Acqua (Mattina)"
+                          : "Water Path (Morning)",
+                      desc: settings.language == 0
+                          ? "Una meditazione fluida per ritrovare calma e centratura nel presente."
+                          : "A flowing meditation to recover calm and presence in the moment.",
+                      duration: "15 MIN",
+                      isPremium: true,
+                      isLocked: !settings.isUnlocked,
+                      pathIcon: Icons.water_drop_rounded,
+                      pathIconColor: const Color(0xFF38BDF8),
+                      isDark: isDark,
+                      accentColor: accentColor,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      onTap: () {
+                        if (settings.isUnlocked) {
+                          launchZenSession(
+                            context: context,
+                            ref: ref,
+                            title: settings.language == 0
+                                ? "Percorso Acqua"
+                                : "Water Path",
+                            voicePath:
+                                'assets/audio/real/Meditazioni/Acqua/Meditazione del Mattino_Procedimento.m4a',
+                            ambientPath:
+                                'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
+                            sceneName: UnityScenes.waterMeditation,
+                            durationSeconds: 900.0,
+                          );
+                        } else {
+                          _showPurchaseDialog(context);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPathCard(
+                      context: context,
+                      title: settings.language == 0
+                          ? "Percorso Acqua (Pomeriggio)"
+                          : "Water Path (Afternoon)",
+                      desc: settings.language == 0
+                          ? "Lascia scorrere i pensieri per rigenerarti a metà giornata."
+                          : "Let your thoughts flow to recharge mid-day.",
+                      duration: "15 MIN",
+                      isPremium: true,
+                      isLocked: !settings.isUnlocked,
+                      pathIcon: Icons.water_drop_rounded,
+                      pathIconColor: const Color(0xFF38BDF8),
+                      isDark: isDark,
+                      accentColor: accentColor,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      onTap: () {
+                        if (settings.isUnlocked) {
+                          launchZenSession(
+                            context: context,
+                            ref: ref,
+                            title: settings.language == 0
+                                ? "Percorso Acqua (Pomeriggio)"
+                                : "Water Path (Afternoon)",
+                            voicePath:
+                                'assets/audio/real/Meditazioni/Acqua/Meditazione-del-Pomeriggio.m4a',
+                            ambientPath:
+                                'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione POMERIGGIO.m4a',
+                            sceneName: UnityScenes.waterMeditation,
+                            durationSeconds: 900.0,
+                          );
+                        } else {
+                          _showPurchaseDialog(context);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPathCard(
+                      context: context,
+                      title: settings.language == 0
+                          ? "Percorso Acqua (Sera)"
+                          : "Water Path (Evening)",
+                      desc: settings.language == 0
+                          ? "Rilassa la mente per prepararti a un riposo profondo."
+                          : "Relax your mind to prepare for deep rest.",
+                      duration: "25 MIN",
+                      isPremium: true,
+                      isLocked: !settings.isUnlocked,
+                      pathIcon: Icons.water_drop_rounded,
+                      pathIconColor: const Color(0xFF38BDF8),
+                      isDark: isDark,
+                      accentColor: accentColor,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      onTap: () {
+                        if (settings.isUnlocked) {
+                          launchZenSession(
+                            context: context,
+                            ref: ref,
+                            title: settings.language == 0
+                                ? "Percorso Acqua (Sera)"
+                                : "Water Path (Evening)",
+                            voicePath:
+                                'assets/audio/real/Meditazioni/Acqua/Meditazione-della-Sera.m4a',
+                            ambientPath:
+                                'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione SERA.m4a',
+                            sceneName: UnityScenes.waterMeditation,
+                            durationSeconds: 1500.0,
+                          );
+                        } else {
+                          _showPurchaseDialog(context);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPathCard(
+                      context: context,
+                      title: settings.language == 0
+                          ? "Percorso Aria (Meditazione)"
+                          : "Air Path (Meditation)",
                       desc: settings.language == 0
                           ? "Eleva la mente con la leggerezza dell'aria e l'espansione del sé."
                           : "Elevate your mind with the lightness of air and expansion of self.",
                       duration: "15 MIN",
                       isPremium: true,
                       isLocked: !settings.isUnlocked,
+                      pathIcon: Icons.air_rounded,
+                      pathIconColor: const Color(0xFF06B6D4),
                       isDark: isDark,
                       accentColor: accentColor,
                       textColor: textColor,
@@ -263,14 +297,16 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                     _buildPathCard(
                       context: context,
                       title: settings.language == 0
-                          ? "Percorso Fuoco (Premium)"
-                          : "Fire Path (Premium)",
+                          ? "Percorso Fuoco (Meditazione)"
+                          : "Fire Path (Meditation)",
                       desc: settings.language == 0
                           ? "Riaccendi la vitalità interiore e trasforma le tensioni in energia."
                           : "Rekindle inner vitality and transform tension into energy.",
                       duration: "15 MIN",
                       isPremium: true,
                       isLocked: !settings.isUnlocked,
+                      pathIcon: Icons.local_fire_department_rounded,
+                      pathIconColor: const Color(0xFFF97316),
                       isDark: isDark,
                       accentColor: accentColor,
                       textColor: textColor,
@@ -295,14 +331,16 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                     _buildPathCard(
                       context: context,
                       title: settings.language == 0
-                          ? "Percorso Terra (Premium)"
-                          : "Earth Path (Premium)",
+                          ? "Percorso Terra (Meditazione)"
+                          : "Earth Path (Meditation)",
                       desc: settings.language == 0
                           ? "Radicamento profondo e stabilità millenaria per ritrovare il centro."
                           : "Deep grounding and ancient stability to rediscover your center.",
                       duration: "20 MIN",
                       isPremium: true,
                       isLocked: !settings.isUnlocked,
+                      pathIcon: Icons.landscape_rounded,
+                      pathIconColor: const Color(0xFF84CC16),
                       isDark: isDark,
                       accentColor: accentColor,
                       textColor: textColor,
@@ -343,6 +381,8 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                       duration: "5 MIN",
                       isPremium: false,
                       isLocked: false,
+                      pathIcon: Icons.water_drop_rounded,
+                      pathIconColor: const Color(0xFF38BDF8),
                       isDark: isDark,
                       accentColor: accentColor,
                       textColor: textColor,
@@ -365,14 +405,16 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                     _buildPathCard(
                       context: context,
                       title: settings.language == 0
-                          ? "Respirazione Aria (Gratis)"
-                          : "Air Breath (Free)",
+                          ? "Respirazione Terra (Gratis)"
+                          : "Earth Breath (Free)",
                       desc: settings.language == 0
-                          ? "Sincronizza il tuo ritmo vitale con il soffio dell'aria."
-                          : "Synchronize your vital rhythm with the blowing of the air.",
+                          ? "Radicati nel presente con una respirazione profonda."
+                          : "Ground yourself in the present with deep breathing.",
                       duration: "5 MIN",
                       isPremium: false,
                       isLocked: false,
+                      pathIcon: Icons.landscape_rounded,
+                      pathIconColor: const Color(0xFF84CC16),
                       isDark: isDark,
                       accentColor: accentColor,
                       textColor: textColor,
@@ -382,13 +424,49 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                           context: context,
                           ref: ref,
                           title: settings.language == 0
-                              ? "Respirazione Aria"
-                              : "Air Breath",
+                              ? "Respirazione Terra"
+                              : "Earth Breath",
                           breathingAudioPath:
-                              'assets/audio/real/Respirazioni/Aria/Respirazione aria.m4a',
-                          sceneName: UnityScenes.airBreathing,
+                              'assets/audio/real/Respirazioni/Terra/Respirazione terra.m4a',
+                          sceneName: UnityScenes.earthBreathing,
                           durationSeconds: 300.0,
                         );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPathCard(
+                      context: context,
+                      title: settings.language == 0
+                          ? "Respirazione Aria (Premium)"
+                          : "Air Breath (Premium)",
+                      desc: settings.language == 0
+                          ? "Sincronizza il tuo ritmo vitale con il soffio dell'aria."
+                          : "Synchronize your vital rhythm with the blowing of the air.",
+                      duration: "5 MIN",
+                      isPremium: true,
+                      isLocked: !settings.isUnlocked,
+                      pathIcon: Icons.air_rounded,
+                      pathIconColor: const Color(0xFF06B6D4),
+                      isDark: isDark,
+                      accentColor: accentColor,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      onTap: () {
+                        if (settings.isUnlocked) {
+                          launchZenSession(
+                            context: context,
+                            ref: ref,
+                            title: settings.language == 0
+                                ? "Respirazione Aria"
+                                : "Air Breath",
+                            breathingAudioPath:
+                                'assets/audio/real/Respirazioni/Aria/Respirazione aria.m4a',
+                            sceneName: UnityScenes.airBreathing,
+                            durationSeconds: 300.0,
+                          );
+                        } else {
+                          _showPurchaseDialog(context);
+                        }
                       },
                     ),
                     const SizedBox(height: 12),
@@ -403,6 +481,8 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                       duration: "5 MIN",
                       isPremium: true,
                       isLocked: !settings.isUnlocked,
+                      pathIcon: Icons.local_fire_department_rounded,
+                      pathIconColor: const Color(0xFFF97316),
                       isDark: isDark,
                       accentColor: accentColor,
                       textColor: textColor,
@@ -418,40 +498,6 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                             breathingAudioPath:
                                 'assets/audio/real/Respirazioni/Fuoco/percorso fuoco quadrato Esercizio fix tempo.m4a',
                             sceneName: UnityScenes.fireBreathing,
-                            durationSeconds: 300.0,
-                          );
-                        } else {
-                          _showPurchaseDialog(context);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _buildPathCard(
-                      context: context,
-                      title: settings.language == 0
-                          ? "Respirazione Terra (Premium)"
-                          : "Earth Breath (Premium)",
-                      desc: settings.language == 0
-                          ? "Radicati nel presente con una respirazione profonda."
-                          : "Ground yourself in the present with deep breathing.",
-                      duration: "5 MIN",
-                      isPremium: true,
-                      isLocked: !settings.isUnlocked,
-                      isDark: isDark,
-                      accentColor: accentColor,
-                      textColor: textColor,
-                      subTextColor: subTextColor,
-                      onTap: () {
-                        if (settings.isUnlocked) {
-                          launchZenSession(
-                            context: context,
-                            ref: ref,
-                            title: settings.language == 0
-                                ? "Respirazione Terra"
-                                : "Earth Breath",
-                            breathingAudioPath:
-                                'assets/audio/real/Respirazioni/Terra/Respirazione terra.m4a',
-                            sceneName: UnityScenes.earthBreathing,
                             durationSeconds: 300.0,
                           );
                         } else {
@@ -533,6 +579,74 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
     );
   }
 
+  Widget _buildDailyQuoteCard({
+    required DailyQuote quote,
+    required bool isDark,
+    required Color accentColor,
+    required Color textColor,
+    required Color subTextColor,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: AppColors.japandiCardDecoration(
+        isDark,
+        borderRadius: 24.0,
+        opacity: 0.75,
+      ),
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accentColor.withValues(alpha: isDark ? 0.15 : 0.2),
+                ),
+                child: Icon(Icons.format_quote_rounded, color: accentColor, size: 16),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                quote.subtitle ?? "IL RESPIRO DI OGGI",
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: accentColor,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "“${quote.text}”",
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 16.5,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              "— ${quote.author}",
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: subTextColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPathCard({
     required BuildContext context,
     required String title,
@@ -545,6 +659,8 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
     required Color textColor,
     required Color subTextColor,
     required VoidCallback onTap,
+    IconData? pathIcon,
+    Color? pathIconColor,
   }) {
     return Semantics(
       button: true,
@@ -562,6 +678,22 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Icona stilizzata posizionata SOPRA al testo
+              if (pathIcon != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: (pathIconColor ?? accentColor).withValues(alpha: isDark ? 0.12 : 0.16),
+                  ),
+                  child: Icon(
+                    pathIcon,
+                    size: 22,
+                    color: pathIconColor ?? accentColor,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -569,16 +701,40 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                     children: [
                       Icon(
                         isPremium ? Icons.stars_rounded : Icons.spa_outlined,
-                        size: 20,
+                        size: 18,
                         color: isPremium ? AppColors.goldAccent : accentColor,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Text(
                         duration,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: subTextColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isPremium
+                              ? AppColors.goldAccent.withValues(alpha: 0.15)
+                              : AppColors.successAccent.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: isPremium
+                                ? AppColors.goldAccent.withValues(alpha: 0.3)
+                                : AppColors.successAccent.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Text(
+                          isPremium ? "PREMIUM" : "FREE",
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: isPremium ? AppColors.goldAccent : AppColors.successAccent,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
                     ],
@@ -591,11 +747,11 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                     ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
                 title,
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18.5,
+                  fontSize: 18.0,
                   fontWeight: FontWeight.w800,
                   color: textColor,
                   letterSpacing: -0.2,
@@ -605,7 +761,7 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
               Text(
                 desc,
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w500,
                   color: subTextColor.withValues(alpha: 0.9),
                   height: 1.45,
