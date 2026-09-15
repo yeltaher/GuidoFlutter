@@ -1,0 +1,129 @@
+﻿#include "pch-c.h"
+
+
+#include "codegen/il2cpp-codegen-metadata.h"
+
+
+
+
+
+extern void EmbeddedAttribute__ctor_mF69DB1DDCB30C037EC8104D24BB78680E7D83158 (void);
+extern void NullableAttribute__ctor_m5CE32CA63E10F8B6721D4D34359A877D11515103 (void);
+extern void NullableAttribute__ctor_m1FFA18A4DAC05A8B119F4B86A29717822E028900 (void);
+extern void NullableContextAttribute__ctor_m6948FC7E1497220AC500140978F421A79D021C8D (void);
+extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_m9F68421D0160B963DF419D490C69D592CB4E2129 (void);
+extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_m2F29EB96846E5A7A133EF5E09D8BF270205820F5 (void);
+extern void ParticleMeshUtility_CreateOctagonParticleMesh_mA37E33F60B5A1D36F8D520BB5BEF439D868071CD (void);
+extern void ParticleMeshUtility_CreateHexagonParticleMesh_m004F5E74F2DF765540894929C15A77924DF77BB8 (void);
+extern void BreathingVFXController_get_CurrentPhase_mA83CC621F523CE49308572614731FCB4547ACFC8 (void);
+extern void BreathingVFXController_get_BreathScale_mB75B406B6B719F3C92DE99FC49E6A593CB924B89 (void);
+extern void BreathingVFXController_get_PhaseNormalized_m9E715ED44ACBD55747CBB789507A476525D2DA0C (void);
+extern void BreathingVFXController_Awake_m9EB1CE940E064C9449E6FCD8696532656A258C43 (void);
+extern void BreathingVFXController_OnEnable_m3CE7C15F94ED167A6E0D253455D05E8B80E84E75 (void);
+extern void BreathingVFXController_OnDisable_m017CA896324637DD99FAFA098064A7940216A3EB (void);
+extern void BreathingVFXController_OnBreathingPhaseReceived_mB0A7A77333A4ED58701A0F647B71854643DA3941 (void);
+extern void BreathingVFXController_OnSessionProgressReceived_m7261E0DD7FA085F0C8CFDFC2E0C2DBD22EA6404E (void);
+extern void BreathingVFXController_OnBreathScaleReceived_m7AD8BD0632535B34BCA5C5A599B9F201882BBD5F (void);
+extern void BreathingVFXController_CacheModules_m497C4AAD5A9685CE0E6DBA666616C75EE49E2DF1 (void);
+extern void BreathingVFXController_EnforcePerformanceBudget_mA2E25685E88D4A4B45AE63723004F63D3D100DCD (void);
+extern void BreathingVFXController_Update_m5C8AEF20A0BAFAAA3F9AC1429FDC3746AF0551B6 (void);
+extern void BreathingVFXController_UpdateAutoCycle_m7F5DD4D4C19473E679C06F5D5D0C1902E3012A73 (void);
+extern void BreathingVFXController_SetPhase_m945613AEE8EAC94954972E58EF5C8E39CF461666 (void);
+extern void BreathingVFXController_UpdateParticleDynamics_m80FD32F37D44864BF12B727CFBC58CD72703A695 (void);
+extern void BreathingVFXController_ApplyWaterDynamics_mAC4DCCC01D7F08BA83F289058DE60EBF332D7D08 (void);
+extern void BreathingVFXController_ApplyAirDynamics_mC1217EB4AF9F9E2C4699D5C914D45540D7BE309D (void);
+extern void BreathingVFXController_ApplyFireDynamics_mF44C1CC9E0CC82B07A9E71DAA0F98FD8125D54D9 (void);
+extern void BreathingVFXController_ApplyEarthDynamics_mDC73FEEA0787B37BED0335E404F43AA72205EC6C (void);
+extern void BreathingVFXController_SmoothStep01_mED3F2B9393150DC4893E77EA06B6710688C8C5D0 (void);
+extern void BreathingVFXController__ctor_mC6D18E8B5972498B19C10D0BCB75CDA1269DDADA (void);
+extern void BreathingVFXController__cctor_m4C64F8A3671D7D3C5F0411B2EE7029C2A2C2DC3E (void);
+extern void BreathingPhaseEventChannelSO__ctor_mDFDBA2F5CB4C15089304CC8B5699DA00CCA3845D (void);
+static Il2CppMethodPointer s_methodPointers[31] = 
+{
+	EmbeddedAttribute__ctor_mF69DB1DDCB30C037EC8104D24BB78680E7D83158,
+	NullableAttribute__ctor_m5CE32CA63E10F8B6721D4D34359A877D11515103,
+	NullableAttribute__ctor_m1FFA18A4DAC05A8B119F4B86A29717822E028900,
+	NullableContextAttribute__ctor_m6948FC7E1497220AC500140978F421A79D021C8D,
+	UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_m9F68421D0160B963DF419D490C69D592CB4E2129,
+	UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_m2F29EB96846E5A7A133EF5E09D8BF270205820F5,
+	ParticleMeshUtility_CreateOctagonParticleMesh_mA37E33F60B5A1D36F8D520BB5BEF439D868071CD,
+	ParticleMeshUtility_CreateHexagonParticleMesh_m004F5E74F2DF765540894929C15A77924DF77BB8,
+	BreathingVFXController_get_CurrentPhase_mA83CC621F523CE49308572614731FCB4547ACFC8,
+	BreathingVFXController_get_BreathScale_mB75B406B6B719F3C92DE99FC49E6A593CB924B89,
+	BreathingVFXController_get_PhaseNormalized_m9E715ED44ACBD55747CBB789507A476525D2DA0C,
+	BreathingVFXController_Awake_m9EB1CE940E064C9449E6FCD8696532656A258C43,
+	BreathingVFXController_OnEnable_m3CE7C15F94ED167A6E0D253455D05E8B80E84E75,
+	BreathingVFXController_OnDisable_m017CA896324637DD99FAFA098064A7940216A3EB,
+	BreathingVFXController_OnBreathingPhaseReceived_mB0A7A77333A4ED58701A0F647B71854643DA3941,
+	BreathingVFXController_OnSessionProgressReceived_m7261E0DD7FA085F0C8CFDFC2E0C2DBD22EA6404E,
+	BreathingVFXController_OnBreathScaleReceived_m7AD8BD0632535B34BCA5C5A599B9F201882BBD5F,
+	BreathingVFXController_CacheModules_m497C4AAD5A9685CE0E6DBA666616C75EE49E2DF1,
+	BreathingVFXController_EnforcePerformanceBudget_mA2E25685E88D4A4B45AE63723004F63D3D100DCD,
+	BreathingVFXController_Update_m5C8AEF20A0BAFAAA3F9AC1429FDC3746AF0551B6,
+	BreathingVFXController_UpdateAutoCycle_m7F5DD4D4C19473E679C06F5D5D0C1902E3012A73,
+	BreathingVFXController_SetPhase_m945613AEE8EAC94954972E58EF5C8E39CF461666,
+	BreathingVFXController_UpdateParticleDynamics_m80FD32F37D44864BF12B727CFBC58CD72703A695,
+	BreathingVFXController_ApplyWaterDynamics_mAC4DCCC01D7F08BA83F289058DE60EBF332D7D08,
+	BreathingVFXController_ApplyAirDynamics_mC1217EB4AF9F9E2C4699D5C914D45540D7BE309D,
+	BreathingVFXController_ApplyFireDynamics_mF44C1CC9E0CC82B07A9E71DAA0F98FD8125D54D9,
+	BreathingVFXController_ApplyEarthDynamics_mDC73FEEA0787B37BED0335E404F43AA72205EC6C,
+	BreathingVFXController_SmoothStep01_mED3F2B9393150DC4893E77EA06B6710688C8C5D0,
+	BreathingVFXController__ctor_mC6D18E8B5972498B19C10D0BCB75CDA1269DDADA,
+	BreathingVFXController__cctor_m4C64F8A3671D7D3C5F0411B2EE7029C2A2C2DC3E,
+	BreathingPhaseEventChannelSO__ctor_mDFDBA2F5CB4C15089304CC8B5699DA00CCA3845D,
+};
+static const int32_t s_InvokerIndices[31] = 
+{
+	4471,
+	3766,
+	3858,
+	3766,
+	8745,
+	4471,
+	7990,
+	7990,
+	4308,
+	4400,
+	4400,
+	4471,
+	4471,
+	4471,
+	3834,
+	3903,
+	3908,
+	4471,
+	4471,
+	4471,
+	3908,
+	3834,
+	3908,
+	4471,
+	4471,
+	4471,
+	4471,
+	8147,
+	4471,
+	8710,
+	4471,
+};
+IL2CPP_EXTERN_C const Il2CppCodeGenModule g_Guido_Features_Breathing_CodeGenModule;
+const Il2CppCodeGenModule g_Guido_Features_Breathing_CodeGenModule = 
+{
+	"Guido.Features.Breathing.dll",
+	31,
+	s_methodPointers,
+	0,
+	NULL,
+	s_InvokerIndices,
+	0,
+	NULL,
+	0,
+	NULL,
+	0,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+};

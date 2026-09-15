@@ -51,3 +51,8 @@ ios/UnityLibrary/**/*.a filter=lfs diff=lfs merge=lfs -text
 ios/UnityLibrary/**/*.dylib filter=lfs diff=lfs merge=lfs -text
 ios/UnityLibrary/**/*.dat filter=lfs diff=lfs merge=lfs -text
 ios/UnityLibrary/**/*.assets filter=lfs diff=lfs merge=lfs -text
+ios/UnityLibrary/Frameworks/** filter=lfs diff=lfs merge=lfs -text
+ios/UnityLibrary/**/UnityRuntime filter=lfs diff=lfs merge=lfs -text
+ios/UnityLibrary/**/UnityFramework filter=lfs diff=lfs merge=lfs -text
+ios/UnityLibrary/Libraries/** filter=lfs diff=lfs merge=lfs -text
+ios/UnityLibrary/Data/** filter=lfs diff=lfs merge=lfs -text

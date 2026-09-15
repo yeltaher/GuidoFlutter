@@ -1,0 +1,138 @@
+﻿#include "pch-c.h"
+
+
+#include "codegen/il2cpp-codegen-metadata.h"
+
+
+
+
+
+extern void EmbeddedAttribute__ctor_m6AB354927277C99B0A723F133517BFD8D95F7296 (void);
+extern void NullableAttribute__ctor_mB28A13E9732BCCAAF7DE189F7EE1ADF254B0C5C0 (void);
+extern void NullableAttribute__ctor_mABB22EBA24A9B8894DBB620B501E65943DA9EAB3 (void);
+extern void NullableContextAttribute__ctor_m911C25900A4A23538240BE7BA3D68498D6647789 (void);
+extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_m5301DBD9AC749705A207FAB4F504A61129B15A8A (void);
+extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_m6F3F9E00DE2AC491A7FB26ACE442A8700237986D (void);
+extern void GuidoSceneCatalog_ResolveSceneName_mFE7E1CE1B95665C11FE61DE5475541CF17DC8497 (void);
+extern void GuidoSceneCatalog_ResolveScenePath_m545D651D324B4673CD61083C7D5EB319A2EFE889 (void);
+extern void GuidoSceneCatalog_IsKnownScene_mF8569611A382FE6E3030089FD8239CF9266E74FC (void);
+extern void GuidoSceneCatalog__cctor_m806C97B707E401D07C4B58D99FBE6B6597275149 (void);
+extern void SceneLoader_get_Instance_m3EE41BE20D83E892593FF32931B8AAB7AC881446 (void);
+extern void SceneLoader_get_IsLoading_m4AD2FB9A0FE0B00E7D16D16F918F77AC02E50275 (void);
+extern void SceneLoader_get_ActiveLoadedSceneName_mB80D21EEFA9075BB665A0EE1C0FEC3E9AE15C32E (void);
+extern void SceneLoader_Awake_mC292DAC7340C0D0DD10A180E82D259758C1FE0F8 (void);
+extern void SceneLoader_LoadSceneAdditive_m6800F705E7831408D5E98CD3064D82D3F9FB3C61 (void);
+extern void SceneLoader_LoadSceneRoutine_mD8971BE60B0C5A0046E7C88D31CF66DE00D1CF5B (void);
+extern void SceneLoader__ctor_mFF26B20A460B609BD09E40C109F1C41210F9DF2F (void);
+extern void U3CLoadSceneRoutineU3Ed__14__ctor_mE8E2D3308C5A8F62DADF608423E0A4B3CBCFBA0C (void);
+extern void U3CLoadSceneRoutineU3Ed__14_System_IDisposable_Dispose_m00F7C3C6AC523EB54ABC9AC1511175460906CADA (void);
+extern void U3CLoadSceneRoutineU3Ed__14_MoveNext_mD147B74C9A5471841DAA3B1A2B4859A96CEF3F25 (void);
+extern void U3CLoadSceneRoutineU3Ed__14_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m53949D291D95BC89C60852D200E27673C1DD3F4E (void);
+extern void U3CLoadSceneRoutineU3Ed__14_System_Collections_IEnumerator_Reset_mD98C2D024DB9BDBAA0F81E690A3566F7A2E2B159 (void);
+extern void U3CLoadSceneRoutineU3Ed__14_System_Collections_IEnumerator_get_Current_m523DEE28A27DA6919C8E2502F7038F14CA758628 (void);
+extern void QualityPresetManager_get_Instance_m59D5532FEF41C092D1B4C598F4DBF7021BC22FED (void);
+extern void QualityPresetManager_get_CurrentPreset_m679D450120C60E161C6F479A923E5CCDA2405CB0 (void);
+extern void QualityPresetManager_Awake_mC28F27DCEB99B2BB7A123DE3CE920EB4E5EF04F4 (void);
+extern void QualityPresetManager_OnEnable_m94B833FA96F4CC1FA0BB13E98DDA0CAC9F6CE88E (void);
+extern void QualityPresetManager_OnDisable_mE2ABEE2A2CFC802DFD1240FD3F439C056935BF85 (void);
+extern void QualityPresetManager_Start_mA73E45263386259A4CC4802D0E8373DD14B9EFCE (void);
+extern void QualityPresetManager_ApplyPreset_mA58952F4BDEBD0023C772E67D67F869CF9C638A4 (void);
+extern void QualityPresetManager_ApplyHighFidelityProfile_m5AC168000DE41D11ED528AB28D26775C57672C92 (void);
+extern void QualityPresetManager_ApplyBalancedEcoProfile_mCB9A3E9D5AE8C832C340C78479C026C7C0917E9B (void);
+extern void QualityPresetManager__ctor_mAFC7F7892B561E4EB94BCD8A00284534CEE43D4C (void);
+extern void MemoryManager_CollectAndUnloadUnusedAssets_mFD1BFA38EE4387CDDA76468EFDBF821CFC305C3A (void);
+static Il2CppMethodPointer s_methodPointers[34] = 
+{
+	EmbeddedAttribute__ctor_m6AB354927277C99B0A723F133517BFD8D95F7296,
+	NullableAttribute__ctor_mB28A13E9732BCCAAF7DE189F7EE1ADF254B0C5C0,
+	NullableAttribute__ctor_mABB22EBA24A9B8894DBB620B501E65943DA9EAB3,
+	NullableContextAttribute__ctor_m911C25900A4A23538240BE7BA3D68498D6647789,
+	UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_m5301DBD9AC749705A207FAB4F504A61129B15A8A,
+	UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_m6F3F9E00DE2AC491A7FB26ACE442A8700237986D,
+	GuidoSceneCatalog_ResolveSceneName_mFE7E1CE1B95665C11FE61DE5475541CF17DC8497,
+	GuidoSceneCatalog_ResolveScenePath_m545D651D324B4673CD61083C7D5EB319A2EFE889,
+	GuidoSceneCatalog_IsKnownScene_mF8569611A382FE6E3030089FD8239CF9266E74FC,
+	GuidoSceneCatalog__cctor_m806C97B707E401D07C4B58D99FBE6B6597275149,
+	SceneLoader_get_Instance_m3EE41BE20D83E892593FF32931B8AAB7AC881446,
+	SceneLoader_get_IsLoading_m4AD2FB9A0FE0B00E7D16D16F918F77AC02E50275,
+	SceneLoader_get_ActiveLoadedSceneName_mB80D21EEFA9075BB665A0EE1C0FEC3E9AE15C32E,
+	SceneLoader_Awake_mC292DAC7340C0D0DD10A180E82D259758C1FE0F8,
+	SceneLoader_LoadSceneAdditive_m6800F705E7831408D5E98CD3064D82D3F9FB3C61,
+	SceneLoader_LoadSceneRoutine_mD8971BE60B0C5A0046E7C88D31CF66DE00D1CF5B,
+	SceneLoader__ctor_mFF26B20A460B609BD09E40C109F1C41210F9DF2F,
+	U3CLoadSceneRoutineU3Ed__14__ctor_mE8E2D3308C5A8F62DADF608423E0A4B3CBCFBA0C,
+	U3CLoadSceneRoutineU3Ed__14_System_IDisposable_Dispose_m00F7C3C6AC523EB54ABC9AC1511175460906CADA,
+	U3CLoadSceneRoutineU3Ed__14_MoveNext_mD147B74C9A5471841DAA3B1A2B4859A96CEF3F25,
+	U3CLoadSceneRoutineU3Ed__14_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m53949D291D95BC89C60852D200E27673C1DD3F4E,
+	U3CLoadSceneRoutineU3Ed__14_System_Collections_IEnumerator_Reset_mD98C2D024DB9BDBAA0F81E690A3566F7A2E2B159,
+	U3CLoadSceneRoutineU3Ed__14_System_Collections_IEnumerator_get_Current_m523DEE28A27DA6919C8E2502F7038F14CA758628,
+	QualityPresetManager_get_Instance_m59D5532FEF41C092D1B4C598F4DBF7021BC22FED,
+	QualityPresetManager_get_CurrentPreset_m679D450120C60E161C6F479A923E5CCDA2405CB0,
+	QualityPresetManager_Awake_mC28F27DCEB99B2BB7A123DE3CE920EB4E5EF04F4,
+	QualityPresetManager_OnEnable_m94B833FA96F4CC1FA0BB13E98DDA0CAC9F6CE88E,
+	QualityPresetManager_OnDisable_mE2ABEE2A2CFC802DFD1240FD3F439C056935BF85,
+	QualityPresetManager_Start_mA73E45263386259A4CC4802D0E8373DD14B9EFCE,
+	QualityPresetManager_ApplyPreset_mA58952F4BDEBD0023C772E67D67F869CF9C638A4,
+	QualityPresetManager_ApplyHighFidelityProfile_m5AC168000DE41D11ED528AB28D26775C57672C92,
+	QualityPresetManager_ApplyBalancedEcoProfile_mCB9A3E9D5AE8C832C340C78479C026C7C0917E9B,
+	QualityPresetManager__ctor_mAFC7F7892B561E4EB94BCD8A00284534CEE43D4C,
+	MemoryManager_CollectAndUnloadUnusedAssets_mFD1BFA38EE4387CDDA76468EFDBF821CFC305C3A,
+};
+static const int32_t s_InvokerIndices[34] = 
+{
+	4471,
+	3766,
+	3858,
+	3766,
+	8746,
+	4471,
+	7990,
+	7990,
+	7704,
+	8710,
+	8627,
+	4235,
+	4338,
+	4471,
+	2594,
+	2202,
+	4471,
+	3834,
+	4471,
+	4235,
+	4338,
+	4471,
+	4338,
+	8627,
+	4308,
+	4471,
+	4471,
+	4471,
+	4471,
+	3834,
+	4471,
+	4471,
+	4471,
+	8710,
+};
+IL2CPP_EXTERN_C const Il2CppCodeGenModule g_Guido_Infrastructure_CodeGenModule;
+const Il2CppCodeGenModule g_Guido_Infrastructure_CodeGenModule = 
+{
+	"Guido.Infrastructure.dll",
+	34,
+	s_methodPointers,
+	0,
+	NULL,
+	s_InvokerIndices,
+	0,
+	NULL,
+	0,
+	NULL,
+	0,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+};

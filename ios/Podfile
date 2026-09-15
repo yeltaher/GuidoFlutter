@@ -10,36 +10,6 @@ project 'Runner', {
   'Release' => :release,
 }
 
-# Auto-compilation helper for UnityFramework in CI/CD environments (Appcircle headless macOS runner)
-def compile_unity_framework_if_needed
-  framework_dir = File.expand_path("UnityLibrary/UnityFramework.framework", __dir__)
-  binary_path = File.join(framework_dir, "UnityFramework")
-  source_path = File.join(framework_dir, "UnityFramework.m")
-  headers_path = File.join(framework_dir, "Headers")
-
-  if File.exist?(source_path) && !File.exist?(binary_path)
-    puts "=== [Guido CI Bridge] Compiling UnityFramework static archive for arm64 iOS ==="
-    sdk_path = `xcrun --sdk iphoneos --show-sdk-path 2>/dev/null`.strip
-    sdk_path = "$(xcrun --sdk iphoneos --show-sdk-path)" if sdk_path.empty?
-    obj_path = File.join(framework_dir, "UnityFramework.o")
-    compile_cmd = "xcrun --sdk iphoneos clang -target arm64-apple-ios15.0 -isysroot '#{sdk_path}' -I'#{headers_path}' -fobjc-arc -c '#{source_path}' -o '#{obj_path}'"
-    libtool_cmd = "xcrun --sdk iphoneos libtool -static -o '#{binary_path}' '#{obj_path}'"
-    puts "Executing: #{compile_cmd}"
-    system(compile_cmd)
-    puts "Executing: #{libtool_cmd}"
-    system(libtool_cmd)
-    File.delete(obj_path) if File.exist?(obj_path)
-    if File.exist?(binary_path)
-      puts "=== [Guido CI Bridge] UnityFramework static archive compiled successfully! (#{File.size(binary_path)} bytes) ==="
-    else
-      puts "=== [Guido CI Bridge] Notice: UnityFramework compilation skipped or pending macOS toolchain ==="
-    end
-  end
-end
-
-# Compile immediately when Podfile is evaluated
-compile_unity_framework_if_needed
-
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
@@ -57,10 +27,6 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_ios_podfile_setup
 
-pre_install do |installer|
-  compile_unity_framework_if_needed
-end
-
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
@@ -73,8 +39,6 @@ target 'Runner' do
 end
 
 post_install do |installer|
-  compile_unity_framework_if_needed
-
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
 

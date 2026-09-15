@@ -1,0 +1,302 @@
+﻿#include "pch-c.h"
+
+
+#include "codegen/il2cpp-codegen-metadata.h"
+
+
+
+
+
+extern void EmbeddedAttribute__ctor_m3238712FD6AFBC7A47F6CCAA14A01993C2EF6EED (void);
+extern void NullableAttribute__ctor_mB2AEC390092F8DDF2D71DBA368E089DA0B0E5505 (void);
+extern void NullableAttribute__ctor_mECA45D5A8C5407897220414C524944B676AF54C8 (void);
+extern void NullableContextAttribute__ctor_m208C1224AB43799FB6F87C6218F72AD7462D01E1 (void);
+extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_m366090371F9231DC7532C84DFB70C62180108F38 (void);
+extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_m879656A3D0DC80DD9227E3AE11A58C3132F87A7F (void);
+extern void CountdownTimer_get_Duration_m254475C787BAA83B422E8EE9EF4CF3DD8748E6CB (void);
+extern void CountdownTimer_get_TimeRemaining_mD0F2B285532198AD4D332B1D48CA798127B9C280 (void);
+extern void CountdownTimer_get_TimeElapsed_m42C0E30654DD4A1BEA0304E9EBDE02C799481BD4 (void);
+extern void CountdownTimer_get_ProgressNormalized_mAF729A21156A425A4B6E17EED4973887A08E98D9 (void);
+extern void CountdownTimer_get_IsRunning_m6C2D3588783D86355C626CC5C30800AEFD88AE15 (void);
+extern void CountdownTimer_get_IsFinished_mEAC01FF630D030A888ED1B70BE9FB6B0B62B8406 (void);
+extern void CountdownTimer__ctor_m39553E9D573DA9E4945D9C4715F2156B9378C224 (void);
+extern void CountdownTimer_Start_m054A9BADDA9342C2A20FC027AC416D55311FE758 (void);
+extern void CountdownTimer_Resume_m440F6165F4F93DCC77D772BFE842B9D6122A627C (void);
+extern void CountdownTimer_Pause_m6B136ADAD875D339C4906C7395EBA359415FA157 (void);
+extern void CountdownTimer_Reset_m25CC29259287635210680AB4A5C5398159F0CCE2 (void);
+extern void CountdownTimer_Tick_m83E340974326F683C086BE282AAE717E9B2B6FDD (void);
+extern void ScreenFader_get_Instance_m289432EE06ECC9E994933DA42E3AA853CB2C3523 (void);
+extern void ScreenFader_get_IsFading_mEF99ABA71FA56B264523B0CCBD89157561948B78 (void);
+extern void ScreenFader_get_CurrentAlpha_mEA65F2192731DA9FD60E5014037A3E474C8FCF3C (void);
+extern void ScreenFader_Awake_m1AC1715D06C8CA574EE6CFF9831AAC5455829F6C (void);
+extern void ScreenFader_FadeOut_mA5900760B63FEFB5DC019DD219850D169B23D7F2 (void);
+extern void ScreenFader_FadeOut_m5A205E0213E7F470AFD2CEB1E471624184A7E25C (void);
+extern void ScreenFader_FadeIn_m164B04CA9C96663B8F109353B18BE20DA93A4CF4 (void);
+extern void ScreenFader_FadeIn_mB89F90DAFE99CA65A39789DD7C09DF24429368FE (void);
+extern void ScreenFader_FadeOutRoutine_m0FE5EF1151C1CD71C9FB6D36162428657FEBF26E (void);
+extern void ScreenFader_FadeInRoutine_m3A45571EF237CCCDC1F9E2B743D8102C8F8A7709 (void);
+extern void ScreenFader_StartFade_m376606D4719E18851AA5DA67914BA5A7EBC04B79 (void);
+extern void ScreenFader_FadeRoutine_m6AC9E90AAAD73C927F21BD84E72C2EFCC5FE9C68 (void);
+extern void ScreenFader__ctor_m3C924F32CAE128C498C6ED3FA87C66D716B4CEFB (void);
+extern void U3CFadeInRoutineU3Ed__17__ctor_mEC59077E94121159EDCA815B88D4C0449734D499 (void);
+extern void U3CFadeInRoutineU3Ed__17_System_IDisposable_Dispose_m4925B74F5C33CF41837A87E548A7C80EA1EBAEB7 (void);
+extern void U3CFadeInRoutineU3Ed__17_MoveNext_m139E792B04341893AB60FDA3E96DF04A5F555A9C (void);
+extern void U3CFadeInRoutineU3Ed__17_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m19A42820E98CE8511CB12605D2EA6A131661169E (void);
+extern void U3CFadeInRoutineU3Ed__17_System_Collections_IEnumerator_Reset_mC9EF8CE407D05444BB0FAADE6A6C4AF691294467 (void);
+extern void U3CFadeInRoutineU3Ed__17_System_Collections_IEnumerator_get_Current_m930B6BACF436260996F3C47B33D5D0A575623347 (void);
+extern void U3CFadeOutRoutineU3Ed__16__ctor_m7E4E4716EB42F6649A351081ACB87B8D369CF170 (void);
+extern void U3CFadeOutRoutineU3Ed__16_System_IDisposable_Dispose_m2F5B41A0BA23892E52763CE07BA0FD3DDAE9C931 (void);
+extern void U3CFadeOutRoutineU3Ed__16_MoveNext_mC78BC75551BFF0BE3EAC62B24620DC906F8B908C (void);
+extern void U3CFadeOutRoutineU3Ed__16_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mA484624033D8BFA49F3EF9C96D4FCD557010AFAE (void);
+extern void U3CFadeOutRoutineU3Ed__16_System_Collections_IEnumerator_Reset_mF64F4D468756627165CA69AE98A2E7782BA907B6 (void);
+extern void U3CFadeOutRoutineU3Ed__16_System_Collections_IEnumerator_get_Current_m311F07733579DCBE6F49681236FB3E9E1F08840C (void);
+extern void U3CFadeRoutineU3Ed__19__ctor_m440694840CF41B442E6ADADCA9BA4958E887BFF6 (void);
+extern void U3CFadeRoutineU3Ed__19_System_IDisposable_Dispose_m512CCCC11B7C1F17A76ED6FACF0340FF60DB4168 (void);
+extern void U3CFadeRoutineU3Ed__19_MoveNext_m97EE42B95630B30DC6627BE3FF240103D281F24E (void);
+extern void U3CFadeRoutineU3Ed__19_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mFAD1A1E65AFBDC08105FD2F112AE8826624FC39B (void);
+extern void U3CFadeRoutineU3Ed__19_System_Collections_IEnumerator_Reset_mF15CD11045F8046AC74127E74CEBCDD08447F335 (void);
+extern void U3CFadeRoutineU3Ed__19_System_Collections_IEnumerator_get_Current_mE4FE9BFB35E5999A5161D33A89BB8FAF2C34F049 (void);
+static Il2CppMethodPointer s_methodPointers[69] = 
+{
+	EmbeddedAttribute__ctor_m3238712FD6AFBC7A47F6CCAA14A01993C2EF6EED,
+	NullableAttribute__ctor_mB2AEC390092F8DDF2D71DBA368E089DA0B0E5505,
+	NullableAttribute__ctor_mECA45D5A8C5407897220414C524944B676AF54C8,
+	NullableContextAttribute__ctor_m208C1224AB43799FB6F87C6218F72AD7462D01E1,
+	UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_m366090371F9231DC7532C84DFB70C62180108F38,
+	UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_m879656A3D0DC80DD9227E3AE11A58C3132F87A7F,
+	CountdownTimer_get_Duration_m254475C787BAA83B422E8EE9EF4CF3DD8748E6CB,
+	CountdownTimer_get_TimeRemaining_mD0F2B285532198AD4D332B1D48CA798127B9C280,
+	CountdownTimer_get_TimeElapsed_m42C0E30654DD4A1BEA0304E9EBDE02C799481BD4,
+	CountdownTimer_get_ProgressNormalized_mAF729A21156A425A4B6E17EED4973887A08E98D9,
+	CountdownTimer_get_IsRunning_m6C2D3588783D86355C626CC5C30800AEFD88AE15,
+	CountdownTimer_get_IsFinished_mEAC01FF630D030A888ED1B70BE9FB6B0B62B8406,
+	CountdownTimer__ctor_m39553E9D573DA9E4945D9C4715F2156B9378C224,
+	CountdownTimer_Start_m054A9BADDA9342C2A20FC027AC416D55311FE758,
+	CountdownTimer_Resume_m440F6165F4F93DCC77D772BFE842B9D6122A627C,
+	CountdownTimer_Pause_m6B136ADAD875D339C4906C7395EBA359415FA157,
+	CountdownTimer_Reset_m25CC29259287635210680AB4A5C5398159F0CCE2,
+	CountdownTimer_Tick_m83E340974326F683C086BE282AAE717E9B2B6FDD,
+	ScreenFader_get_Instance_m289432EE06ECC9E994933DA42E3AA853CB2C3523,
+	ScreenFader_get_IsFading_mEF99ABA71FA56B264523B0CCBD89157561948B78,
+	ScreenFader_get_CurrentAlpha_mEA65F2192731DA9FD60E5014037A3E474C8FCF3C,
+	ScreenFader_Awake_m1AC1715D06C8CA574EE6CFF9831AAC5455829F6C,
+	ScreenFader_FadeOut_mA5900760B63FEFB5DC019DD219850D169B23D7F2,
+	ScreenFader_FadeOut_m5A205E0213E7F470AFD2CEB1E471624184A7E25C,
+	ScreenFader_FadeIn_m164B04CA9C96663B8F109353B18BE20DA93A4CF4,
+	ScreenFader_FadeIn_mB89F90DAFE99CA65A39789DD7C09DF24429368FE,
+	ScreenFader_FadeOutRoutine_m0FE5EF1151C1CD71C9FB6D36162428657FEBF26E,
+	ScreenFader_FadeInRoutine_m3A45571EF237CCCDC1F9E2B743D8102C8F8A7709,
+	ScreenFader_StartFade_m376606D4719E18851AA5DA67914BA5A7EBC04B79,
+	ScreenFader_FadeRoutine_m6AC9E90AAAD73C927F21BD84E72C2EFCC5FE9C68,
+	ScreenFader__ctor_m3C924F32CAE128C498C6ED3FA87C66D716B4CEFB,
+	U3CFadeInRoutineU3Ed__17__ctor_mEC59077E94121159EDCA815B88D4C0449734D499,
+	U3CFadeInRoutineU3Ed__17_System_IDisposable_Dispose_m4925B74F5C33CF41837A87E548A7C80EA1EBAEB7,
+	U3CFadeInRoutineU3Ed__17_MoveNext_m139E792B04341893AB60FDA3E96DF04A5F555A9C,
+	U3CFadeInRoutineU3Ed__17_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m19A42820E98CE8511CB12605D2EA6A131661169E,
+	U3CFadeInRoutineU3Ed__17_System_Collections_IEnumerator_Reset_mC9EF8CE407D05444BB0FAADE6A6C4AF691294467,
+	U3CFadeInRoutineU3Ed__17_System_Collections_IEnumerator_get_Current_m930B6BACF436260996F3C47B33D5D0A575623347,
+	U3CFadeOutRoutineU3Ed__16__ctor_m7E4E4716EB42F6649A351081ACB87B8D369CF170,
+	U3CFadeOutRoutineU3Ed__16_System_IDisposable_Dispose_m2F5B41A0BA23892E52763CE07BA0FD3DDAE9C931,
+	U3CFadeOutRoutineU3Ed__16_MoveNext_mC78BC75551BFF0BE3EAC62B24620DC906F8B908C,
+	U3CFadeOutRoutineU3Ed__16_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mA484624033D8BFA49F3EF9C96D4FCD557010AFAE,
+	U3CFadeOutRoutineU3Ed__16_System_Collections_IEnumerator_Reset_mF64F4D468756627165CA69AE98A2E7782BA907B6,
+	U3CFadeOutRoutineU3Ed__16_System_Collections_IEnumerator_get_Current_m311F07733579DCBE6F49681236FB3E9E1F08840C,
+	U3CFadeRoutineU3Ed__19__ctor_m440694840CF41B442E6ADADCA9BA4958E887BFF6,
+	U3CFadeRoutineU3Ed__19_System_IDisposable_Dispose_m512CCCC11B7C1F17A76ED6FACF0340FF60DB4168,
+	U3CFadeRoutineU3Ed__19_MoveNext_m97EE42B95630B30DC6627BE3FF240103D281F24E,
+	U3CFadeRoutineU3Ed__19_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mFAD1A1E65AFBDC08105FD2F112AE8826624FC39B,
+	U3CFadeRoutineU3Ed__19_System_Collections_IEnumerator_Reset_mF15CD11045F8046AC74127E74CEBCDD08447F335,
+	U3CFadeRoutineU3Ed__19_System_Collections_IEnumerator_get_Current_mE4FE9BFB35E5999A5161D33A89BB8FAF2C34F049,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+};
+extern void CountdownTimer_get_Duration_m254475C787BAA83B422E8EE9EF4CF3DD8748E6CB_AdjustorThunk (void);
+extern void CountdownTimer_get_TimeRemaining_mD0F2B285532198AD4D332B1D48CA798127B9C280_AdjustorThunk (void);
+extern void CountdownTimer_get_TimeElapsed_m42C0E30654DD4A1BEA0304E9EBDE02C799481BD4_AdjustorThunk (void);
+extern void CountdownTimer_get_ProgressNormalized_mAF729A21156A425A4B6E17EED4973887A08E98D9_AdjustorThunk (void);
+extern void CountdownTimer_get_IsRunning_m6C2D3588783D86355C626CC5C30800AEFD88AE15_AdjustorThunk (void);
+extern void CountdownTimer_get_IsFinished_mEAC01FF630D030A888ED1B70BE9FB6B0B62B8406_AdjustorThunk (void);
+extern void CountdownTimer__ctor_m39553E9D573DA9E4945D9C4715F2156B9378C224_AdjustorThunk (void);
+extern void CountdownTimer_Start_m054A9BADDA9342C2A20FC027AC416D55311FE758_AdjustorThunk (void);
+extern void CountdownTimer_Resume_m440F6165F4F93DCC77D772BFE842B9D6122A627C_AdjustorThunk (void);
+extern void CountdownTimer_Pause_m6B136ADAD875D339C4906C7395EBA359415FA157_AdjustorThunk (void);
+extern void CountdownTimer_Reset_m25CC29259287635210680AB4A5C5398159F0CCE2_AdjustorThunk (void);
+extern void CountdownTimer_Tick_m83E340974326F683C086BE282AAE717E9B2B6FDD_AdjustorThunk (void);
+static Il2CppTokenAdjustorThunkPair s_adjustorThunks[12] = 
+{
+	{ 0x06000007, CountdownTimer_get_Duration_m254475C787BAA83B422E8EE9EF4CF3DD8748E6CB_AdjustorThunk },
+	{ 0x06000008, CountdownTimer_get_TimeRemaining_mD0F2B285532198AD4D332B1D48CA798127B9C280_AdjustorThunk },
+	{ 0x06000009, CountdownTimer_get_TimeElapsed_m42C0E30654DD4A1BEA0304E9EBDE02C799481BD4_AdjustorThunk },
+	{ 0x0600000A, CountdownTimer_get_ProgressNormalized_mAF729A21156A425A4B6E17EED4973887A08E98D9_AdjustorThunk },
+	{ 0x0600000B, CountdownTimer_get_IsRunning_m6C2D3588783D86355C626CC5C30800AEFD88AE15_AdjustorThunk },
+	{ 0x0600000C, CountdownTimer_get_IsFinished_mEAC01FF630D030A888ED1B70BE9FB6B0B62B8406_AdjustorThunk },
+	{ 0x0600000D, CountdownTimer__ctor_m39553E9D573DA9E4945D9C4715F2156B9378C224_AdjustorThunk },
+	{ 0x0600000E, CountdownTimer_Start_m054A9BADDA9342C2A20FC027AC416D55311FE758_AdjustorThunk },
+	{ 0x0600000F, CountdownTimer_Resume_m440F6165F4F93DCC77D772BFE842B9D6122A627C_AdjustorThunk },
+	{ 0x06000010, CountdownTimer_Pause_m6B136ADAD875D339C4906C7395EBA359415FA157_AdjustorThunk },
+	{ 0x06000011, CountdownTimer_Reset_m25CC29259287635210680AB4A5C5398159F0CCE2_AdjustorThunk },
+	{ 0x06000012, CountdownTimer_Tick_m83E340974326F683C086BE282AAE717E9B2B6FDD_AdjustorThunk },
+};
+static const int32_t s_InvokerIndices[69] = 
+{
+	4471,
+	3766,
+	3858,
+	3766,
+	8747,
+	4471,
+	4400,
+	4400,
+	4400,
+	4400,
+	4235,
+	4235,
+	3908,
+	3908,
+	4471,
+	4471,
+	4471,
+	3097,
+	8627,
+	4235,
+	4400,
+	4471,
+	3858,
+	2659,
+	3858,
+	2659,
+	3441,
+	3441,
+	1239,
+	986,
+	4471,
+	3834,
+	4471,
+	4235,
+	4338,
+	4471,
+	4338,
+	3834,
+	4471,
+	4235,
+	4338,
+	4471,
+	4338,
+	3834,
+	4471,
+	4235,
+	4338,
+	4471,
+	4338,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+};
+static const Il2CppTokenRangePair s_rgctxIndices[2] = 
+{
+	{ 0x0200000C, { 0, 11 } },
+	{ 0x0200000E, { 11, 11 } },
+};
+extern const uint32_t g_rgctx_ComponentPool_1_t68F8D3C61F7C7A758C5E9373716FB7D7BF3E1494;
+extern const uint32_t g_rgctx_Stack_1_t4BBE637B9ADBA725B9A5C5735771503F64E73CC1;
+extern const uint32_t g_rgctx_Stack_1_get_Count_mE9AC46D620734ED8BEE9E256A4E00882DC46CA63;
+extern const uint32_t g_rgctx_T_t0B4579241D8F8FA44FEC0A2C6CBF91FF9F3DFE86;
+extern const uint32_t g_rgctx_Stack_1__ctor_m73199335A9BB0E86537B4388F1562C38AA517FA5;
+extern const uint32_t g_rgctx_Action_1_t63EEF02D54C5B1F2A7CA977C87FDADAD91E8BC70;
+extern const uint32_t g_rgctx_ComponentPool_1_Prewarm_mC334249631E52F47D2C013B6859137F254BC6608;
+extern const uint32_t g_rgctx_Object_Instantiate_TisT_t0B4579241D8F8FA44FEC0A2C6CBF91FF9F3DFE86_mBE9EE6A687013C3F6EAC94691BB77EBFE338A01B;
+extern const uint32_t g_rgctx_Stack_1_Push_mBD5804DB4B1AD20CCB296C3731775E44B7854C94;
+extern const uint32_t g_rgctx_Stack_1_Pop_m45253092B68CF37750E9BAC7CC57848276458B6D;
+extern const uint32_t g_rgctx_Action_1_Invoke_m1411DCDB6E9C113D30405DB6379A4C1EE3E4D892;
+extern const uint32_t g_rgctx_ObjectPool_1_t2663849912C7F4F2A302AAB5466DF18BBBDCF930;
+extern const uint32_t g_rgctx_Stack_1_tB469AF22A1E821218FC2C0BADFC4C18F643949DB;
+extern const uint32_t g_rgctx_Stack_1_get_Count_m29DB22E47771B68BFDA3230FB634820B34ECCCD1;
+extern const uint32_t g_rgctx_Func_1_tC35EB6755D9179A77DDF293284F2EF70763C28A8;
+extern const uint32_t g_rgctx_Action_1_t0FEA5F2093B064C2D34A81AD9F4D7E5AE4C99960;
+extern const uint32_t g_rgctx_Stack_1__ctor_m81A40451321D95695E974DB502F243EB058551A0;
+extern const uint32_t g_rgctx_Func_1_Invoke_m228B661360A1F3A4A9A01ADA424B91EE2D577D6E;
+extern const uint32_t g_rgctx_T_t16ACDA19FA2A52DF44991B2BF1732F4A80D9ED24;
+extern const uint32_t g_rgctx_Stack_1_Push_m895A52DE26B10EECAEC692EF38A49AC6FE6CBFDC;
+extern const uint32_t g_rgctx_Stack_1_Pop_m63CB0EA31B5C2169A30DD95ABDFF9C025B33904F;
+extern const uint32_t g_rgctx_Action_1_Invoke_mAE0A1AD207739F331B7C9BE794F4906265248781;
+static const Il2CppRGCTXDefinition s_rgctxValues[22] = 
+{
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_ComponentPool_1_t68F8D3C61F7C7A758C5E9373716FB7D7BF3E1494 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Stack_1_t4BBE637B9ADBA725B9A5C5735771503F64E73CC1 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Stack_1_get_Count_mE9AC46D620734ED8BEE9E256A4E00882DC46CA63 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_T_t0B4579241D8F8FA44FEC0A2C6CBF91FF9F3DFE86 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Stack_1__ctor_m73199335A9BB0E86537B4388F1562C38AA517FA5 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Action_1_t63EEF02D54C5B1F2A7CA977C87FDADAD91E8BC70 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_ComponentPool_1_Prewarm_mC334249631E52F47D2C013B6859137F254BC6608 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Object_Instantiate_TisT_t0B4579241D8F8FA44FEC0A2C6CBF91FF9F3DFE86_mBE9EE6A687013C3F6EAC94691BB77EBFE338A01B },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Stack_1_Push_mBD5804DB4B1AD20CCB296C3731775E44B7854C94 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Stack_1_Pop_m45253092B68CF37750E9BAC7CC57848276458B6D },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Action_1_Invoke_m1411DCDB6E9C113D30405DB6379A4C1EE3E4D892 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_ObjectPool_1_t2663849912C7F4F2A302AAB5466DF18BBBDCF930 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Stack_1_tB469AF22A1E821218FC2C0BADFC4C18F643949DB },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Stack_1_get_Count_m29DB22E47771B68BFDA3230FB634820B34ECCCD1 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Func_1_tC35EB6755D9179A77DDF293284F2EF70763C28A8 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Action_1_t0FEA5F2093B064C2D34A81AD9F4D7E5AE4C99960 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Stack_1__ctor_m81A40451321D95695E974DB502F243EB058551A0 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Func_1_Invoke_m228B661360A1F3A4A9A01ADA424B91EE2D577D6E },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_T_t16ACDA19FA2A52DF44991B2BF1732F4A80D9ED24 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Stack_1_Push_m895A52DE26B10EECAEC692EF38A49AC6FE6CBFDC },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Stack_1_Pop_m63CB0EA31B5C2169A30DD95ABDFF9C025B33904F },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Action_1_Invoke_mAE0A1AD207739F331B7C9BE794F4906265248781 },
+};
+IL2CPP_EXTERN_C const Il2CppCodeGenModule g_Guido_Shared_CodeGenModule;
+const Il2CppCodeGenModule g_Guido_Shared_CodeGenModule = 
+{
+	"Guido.Shared.dll",
+	69,
+	s_methodPointers,
+	12,
+	s_adjustorThunks,
+	s_InvokerIndices,
+	0,
+	NULL,
+	2,
+	s_rgctxIndices,
+	22,
+	s_rgctxValues,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+};
