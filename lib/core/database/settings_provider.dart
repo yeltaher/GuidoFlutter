@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable, deprecated_member_use, use_build_context_synchronously, curly_braces_in_flow_control_structures, unused_element, unused_field
+import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../audio/audio_service.dart';
@@ -7,7 +7,7 @@ import 'app_initializer_provider.dart';
 
 
 /// Rappresenta lo stato completo delle preferenze e sblocchi dell'app
-class SettingsState {
+class SettingsState extends Equatable {
   final int musicVolume; // 0 = Mute, 1 = Low, 2 = Mid, 3 = High
   final int effectsVolume; // 0 = Mute, 1 = Low, 2 = Mid, 3 = High
   final int voiceVolume; // 0 = Mute, 1 = Low, 2 = Mid, 3 = High
@@ -69,6 +69,23 @@ class SettingsState {
       qualityPreset: qualityPreset ?? this.qualityPreset,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        musicVolume,
+        effectsVolume,
+        voiceVolume,
+        isVoiceMuted,
+        voiceSex,
+        language,
+        isUnlocked,
+        isVrMode,
+        isDarkTheme,
+        vrCalibrated,
+        vrBiasX,
+        vrBiasZ,
+        qualityPreset,
+      ];
 }
 
 /// Gestisce lo stato e la persistenza offline delle preferenze
@@ -246,9 +263,8 @@ final audioServiceProvider = FutureProvider<GuidoAudioService>((ref) async {
 });
 
 /// Provider globale dello stato delle impostazioni dell'app
-final settingsProvider = NotifierProvider<SettingsNotifier, SettingsState>(() {
-  return SettingsNotifier();
-});
+final settingsProvider =
+    NotifierProvider<SettingsNotifier, SettingsState>(SettingsNotifier.new);
 
 /// Provider globale per controllare l'indice del tab attivo da qualsiasi schermata
 final activeTabProvider = StateProvider<int>((ref) => 0);

@@ -48,11 +48,29 @@ void main() {
       expect(quote1, isNot(same(quote2)));
     });
 
-    test('dailyQuoteProvider provides quote correctly', () {
+    test('deterministic UTC rotation handles DST change dates correctly', () {
+      final dstDateSpring = DateTime(2026, 3, 29, 2, 30); // Spring forward
+      final dstDateAutumn = DateTime(2026, 10, 25, 2, 30); // Fall back
+      final quoteSpring = DailyQuotesService.getDailyQuote(dstDateSpring);
+      final quoteAutumn = DailyQuotesService.getDailyQuote(dstDateAutumn);
+
+      expect(quoteSpring.text.isNotEmpty, isTrue);
+      expect(quoteAutumn.text.isNotEmpty, isTrue);
+    });
+
+    test('dailyQuoteProvider and DailyQuoteNotifier refresh and setForDate work correctly', () {
       final container = ProviderContainer();
       final quote = container.read(dailyQuoteProvider);
       expect(quote.text.isNotEmpty, isTrue);
       expect(quote.author.isNotEmpty, isTrue);
+
+      final notifier = container.read(dailyQuoteProvider.notifier);
+      notifier.setForDate(DateTime(2026, 5, 10));
+      final dateQuote = container.read(dailyQuoteProvider);
+      expect(dateQuote.text.isNotEmpty, isTrue);
+
+      notifier.refresh();
+      expect(container.read(dailyQuoteProvider).text.isNotEmpty, isTrue);
       container.dispose();
     });
   });

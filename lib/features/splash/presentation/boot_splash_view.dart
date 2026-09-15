@@ -19,7 +19,13 @@ class BootSplashView extends ConsumerWidget {
       data: (_) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (context.mounted) {
-            context.go('/login');
+            final prefs = ref.read(sharedPrefsProvider);
+            final isOnboarded = prefs.getBool("IsOnboarded") ?? false;
+            if (isOnboarded) {
+              context.go('/home');
+            } else {
+              context.go('/login');
+            }
           }
         });
         return const _BootBackground();

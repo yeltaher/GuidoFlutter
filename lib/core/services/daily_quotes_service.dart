@@ -242,12 +242,28 @@ class DailyQuotesService {
   ];
 
   static DailyQuote getDailyQuote([DateTime? date]) {
-    final d = date ?? DateTime.now();
-    final dayOfYear = d.difference(DateTime(d.year, 1, 1)).inDays;
-    return quotes[dayOfYear.abs() % quotes.length];
+    final now = (date ?? DateTime.now()).toUtc();
+    final startOfYear = DateTime.utc(now.year, 1, 1);
+    final dayOfYear = now.difference(startOfYear).inDays;
+    final quoteIndex = dayOfYear.abs() % quotes.length;
+    return quotes[quoteIndex];
   }
 }
 
-final dailyQuoteProvider = Provider<DailyQuote>((ref) {
-  return DailyQuotesService.getDailyQuote();
-});
+class DailyQuoteNotifier extends Notifier<DailyQuote> {
+  @override
+  DailyQuote build() {
+    return DailyQuotesService.getDailyQuote();
+  }
+
+  void refresh() {
+    state = DailyQuotesService.getDailyQuote();
+  }
+
+  void setForDate(DateTime date) {
+    state = DailyQuotesService.getDailyQuote(date);
+  }
+}
+
+final dailyQuoteProvider =
+    NotifierProvider<DailyQuoteNotifier, DailyQuote>(DailyQuoteNotifier.new);

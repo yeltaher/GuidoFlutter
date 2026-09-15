@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../../core/audio/audio_resolver_service.dart';
+import '../../../core/audio/audio_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/vr/vr_orientation_service.dart';
@@ -44,6 +46,11 @@ class UnityExperienceScreen extends ConsumerStatefulWidget {
 class _UnityExperienceScreenState
     extends ConsumerState<UnityExperienceScreen> {
   bool _showExitConfirm = false;
+  bool _showLoadTimeoutDialog = false;
+  Timer? _loadTimeoutTimer;
+
+  UnitySessionController? _sessionNotifier;
+  GuidoAudioService? _audioService;
 
   @override
   void initState() {
@@ -61,6 +68,11 @@ class _UnityExperienceScreenState
   }
 
   void _initializeSession({bool isRepeat = false}) {
+    _loadTimeoutTimer?.cancel();
+    setState(() {
+      _showLoadTimeoutDialog = false;
+    });
+
     final settings = ref.read(settingsProvider);
     final bundle = AudioResolverService.resolveBundle(
       title: widget.title,
@@ -80,8 +92,25 @@ class _UnityExperienceScreenState
       qualityPreset: settings.qualityPreset.value,
     );
 
-    ref.read(unitySessionControllerProvider.notifier).startSession(config);
+    _sessionNotifier = ref.read(unitySessionControllerProvider.notifier);
+    _sessionNotifier?.startSession(config);
     _startAudio(bundle, isRepeat: isRepeat);
+
+    // Timeout a 12 secondi se l'ambiente Unity non si carica
+    _loadTimeoutTimer = Timer(const Duration(seconds: 12), () {
+      if (mounted) {
+        final isLoaded = ref.read(unitySessionControllerProvider).isSceneLoaded;
+        if (!isLoaded) {
+          setState(() {
+            _showLoadTimeoutDialog = true;
+          });
+        }
+      }
+    });
+  }
+
+  void _retryLoading() {
+    _initializeSession();
   }
 
   Future<void> _startAudio(
@@ -90,6 +119,7 @@ class _UnityExperienceScreenState
   }) async {
     try {
       final audioService = await ref.read(audioServiceProvider.future);
+      _audioService = audioService;
       final settings = ref.read(settingsProvider);
 
       audioService.setVoiceVolume(settings.voiceVolume);
@@ -135,6 +165,7 @@ class _UnityExperienceScreenState
   }
 
   void _confirmExit() async {
+    _loadTimeoutTimer?.cancel();
     final controller = ref.read(unitySessionControllerProvider.notifier);
     controller.stopSession();
 
@@ -167,12 +198,15 @@ class _UnityExperienceScreenState
 
   @override
   void dispose() {
-    final controller = ref.read(unitySessionControllerProvider.notifier);
-    controller.stopSession();
-    controller.detachUnityWidgetController();
+    _loadTimeoutTimer?.cancel();
+    _loadTimeoutTimer = null;
 
-    final audioService = ref.read(audioServiceProvider).valueOrNull;
-    audioService?.stopAll();
+    final sessionNotifier = _sessionNotifier;
+    if (sessionNotifier != null) {
+      sessionNotifier.detachUnityWidgetController();
+      Future.microtask(() => sessionNotifier.stopSession());
+    }
+    _audioService?.stopAll();
 
     WakelockPlus.disable();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -194,6 +228,17 @@ class _UnityExperienceScreenState
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<UnitySessionState>(unitySessionControllerProvider, (prev, next) {
+      if (next.isSceneLoaded && _loadTimeoutTimer?.isActive == true) {
+        _loadTimeoutTimer?.cancel();
+        if (_showLoadTimeoutDialog) {
+          setState(() {
+            _showLoadTimeoutDialog = false;
+          });
+        }
+      }
+    });
+
     final sessionState = ref.watch(unitySessionControllerProvider);
     final sessionNotifier = ref.read(unitySessionControllerProvider.notifier);
     final settings = ref.watch(settingsProvider);
@@ -231,7 +276,8 @@ class _UnityExperienceScreenState
             ),
 
             // 2. Loading / Initializing HUD Overlay
-            if (!sessionState.isUnityLoaded || !sessionState.isSceneLoaded)
+            if ((!sessionState.isUnityLoaded || !sessionState.isSceneLoaded) &&
+                !_showLoadTimeoutDialog)
               Positioned.fill(
                 child: Container(
                   color: Colors.black.withValues(alpha: 0.85),
@@ -641,7 +687,80 @@ class _UnityExperienceScreenState
                 ).animate().fadeIn(duration: 400.ms),
               ),
 
-            // 5. Exit Confirmation Dialog Overlay
+            // 5. Timeout Fallback Dialog Overlay
+            if (_showLoadTimeoutDialog)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black87,
+                  child: Center(
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 340),
+                      padding: const EdgeInsets.all(28),
+                      decoration: AppColors.japandiCardDecoration(
+                        isDark,
+                        borderRadius: 24.0,
+                        opacity: 0.95,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: AppColors.goldAccent,
+                            size: 40,
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            isIt
+                                ? 'Caricamento non riuscito'
+                                : 'Loading Failed',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            isIt
+                                ? 'L\'ambiente 3D non è riuscito a caricare. Vuoi riprovare o tornare alla Home?'
+                                : 'The 3D environment failed to load. Would you like to retry or return to Home?',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              color: subTextColor,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CustomUnityButton(
+                                  text: isIt ? 'RIPROVA' : 'RETRY',
+                                  onTap: _retryLoading,
+                                  accentColor: accentColor,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: CustomUnityButton(
+                                  text: isIt ? 'HOME' : 'HOME',
+                                  onTap: _confirmExit,
+                                  accentColor: AppColors.dangerAccent,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ).animate().fadeIn(duration: 300.ms),
+
+            // 6. Exit Confirmation Dialog Overlay
             if (_showExitConfirm)
               Positioned.fill(
                 child: Container(

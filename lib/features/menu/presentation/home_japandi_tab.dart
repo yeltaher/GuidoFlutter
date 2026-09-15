@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../../core/constants/daily_quotes.dart';
+import '../../../core/services/daily_quotes_service.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
 import '../../meditation/meditation_feature.dart';
 import 'zen_sound_mixer_view.dart';
@@ -22,10 +22,7 @@ class HomeJapandiTab extends ConsumerWidget {
     final textColor = AppColors.getTextColor(isDark);
     final subTextColor = AppColors.getSubTextColor(isDark);
 
-    final now = DateTime.now();
-    final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
-    final dailyQuote =
-        DailyQuotes.quotes[dayOfYear % DailyQuotes.quotes.length];
+    final dailyQuote = ref.watch(dailyQuoteProvider);
 
     final prefs = ref.watch(sharedPrefsProvider);
     final heroTitle =
@@ -678,7 +675,7 @@ class HomeJapandiTab extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      "\"${dailyQuote['quote']}\"",
+                                      "\"${dailyQuote.text}\"",
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.playfairDisplay(
                                         fontSize: 15.5,
@@ -690,7 +687,7 @@ class HomeJapandiTab extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
-                                      "- ${dailyQuote['author']} -",
+                                      "- ${dailyQuote.author} -",
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 11.0,
                                         fontWeight: FontWeight.w600,
@@ -701,7 +698,7 @@ class HomeJapandiTab extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      "Riflessione Zen di oggi",
+                                      dailyQuote.subtitle ?? "Riflessione Zen di oggi",
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 9.0,
                                         fontWeight: FontWeight.bold,

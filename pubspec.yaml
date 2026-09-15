@@ -1,7 +1,7 @@
 name: guido
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0+12
+version: 0.1.0+13
 
 environment:
   sdk: ^3.11.5
@@ -13,6 +13,7 @@ dependencies:
     sdk: flutter
   intl: any
   flutter_riverpod: ^2.4.9
+  equatable: ^2.0.7
   just_audio: ^0.9.36
   audio_session: ^0.1.16
   isar: ^3.1.0+1
