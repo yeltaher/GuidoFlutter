@@ -1,7 +1,7 @@
 name: guido
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0+11
+version: 0.1.0+12
 
 environment:
   sdk: ^3.11.5
@@ -77,6 +77,14 @@ flutter:
     - assets/audio/real/Respirazioni/Aria/
     - assets/audio/real/Respirazioni/Fuoco/
     - assets/audio/real/Respirazioni/Terra/
+    - assets/Esperienze_Guido/Audio/Voce_Luigi/
+    - assets/Esperienze_Guido/Audio/Respirazioni/Acqua/
+    - assets/Esperienze_Guido/Audio/Respirazioni/Aria/
+    - assets/Esperienze_Guido/Audio/Respirazioni/Fuoco/
+    - assets/Esperienze_Guido/Audio/Respirazioni/Terra/
+    - assets/Esperienze_Guido/Audio/Meditazioni/Acqua/
+    - assets/Esperienze_Guido/Audio/Meditazioni/Effetti/
+    - assets/Esperienze_Guido/Audio/Meditazioni/Generale/
     - "assets/Esperienze_Guido/Video/"
     - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_4K_Mono.mp4"
     - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_VR360_SBS.mp4"

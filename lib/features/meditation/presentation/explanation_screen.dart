@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 import 'session_launch_helper.dart';
@@ -135,7 +136,67 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              // Selettore Voce Guida Japandi (Michela / Luigi)
+              AnimatedOpacity(
+                opacity: _isTextFinished ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 600),
+                child: Column(
+                  children: [
+                    Text(
+                      isIt ? 'VOCE GUIDA' : 'GUIDE VOICE',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                        color: textColor.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.black.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.black.withValues(alpha: 0.08),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildVoiceOption(
+                            label: isIt ? 'Michela (Femminile)' : 'Michela (Female)',
+                            isSelected: settings.voiceSex == 1,
+                            accentColor: accentColor,
+                            textColor: textColor,
+                            onTap: () {
+                              ref.read(settingsProvider.notifier).changeVoiceSex(1);
+                              HapticFeedback.selectionClick();
+                            },
+                          ),
+                          const SizedBox(width: 4),
+                          _buildVoiceOption(
+                            label: isIt ? 'Luigi (Maschile)' : 'Luigi (Male)',
+                            isSelected: settings.voiceSex == 0,
+                            accentColor: accentColor,
+                            textColor: textColor,
+                            onTap: () {
+                              ref.read(settingsProvider.notifier).changeVoiceSex(0);
+                              HapticFeedback.selectionClick();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
               AnimatedOpacity(
                 opacity: _isTextFinished ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 600),
@@ -162,6 +223,43 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
               ),
               const SizedBox(height: 24),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVoiceOption({
+    required String label,
+    required bool isSelected,
+    required Color accentColor,
+    required Color textColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? accentColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: accentColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? Colors.white : textColor.withValues(alpha: 0.7),
           ),
         ),
       ),

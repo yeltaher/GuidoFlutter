@@ -8,13 +8,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../../core/audio/audio_resolver_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/vr/vr_orientation_service.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
 import '../../../core/unity/unity_session_controller.dart';
-import 'remove_vr_headset_view.dart';
 
 /// Embedded Unity UaaL hosting screen with glassmorphic overlays,
 /// tactile feedback sync, and lifecycle management.
@@ -23,6 +23,8 @@ class UnityExperienceScreen extends ConsumerStatefulWidget {
   final String sceneName;
   final double durationSeconds;
   final bool isVrMode;
+  final String? voicePath;
+  final String? ambientPath;
 
   const UnityExperienceScreen({
     super.key,
@@ -30,6 +32,8 @@ class UnityExperienceScreen extends ConsumerStatefulWidget {
     required this.sceneName,
     this.durationSeconds = 300.0,
     this.isVrMode = false,
+    this.voicePath,
+    this.ambientPath,
   });
 
   @override
@@ -56,27 +60,65 @@ class _UnityExperienceScreenState
     });
   }
 
-  void _initializeSession() {
+  void _initializeSession({bool isRepeat = false}) {
     final settings = ref.read(settingsProvider);
-    final config = SessionConfigDto(
+    final bundle = AudioResolverService.resolveBundle(
+      title: widget.title,
       sceneName: widget.sceneName,
+      voiceSex: settings.voiceSex,
       language: settings.language,
+      customVoicePath: widget.voicePath,
+      customAmbientPath: widget.ambientPath,
       durationSeconds: widget.durationSeconds,
+    );
+
+    final config = SessionConfigDto(
+      sceneName: bundle.sceneName,
+      language: settings.language,
+      durationSeconds: bundle.durationSeconds,
       isVrMode: widget.isVrMode,
       qualityPreset: settings.qualityPreset.value,
     );
 
     ref.read(unitySessionControllerProvider.notifier).startSession(config);
+    _startAudio(bundle, isRepeat: isRepeat);
   }
 
-  void _togglePlayPause() {
+  Future<void> _startAudio(
+    AudioExperienceBundle bundle, {
+    bool isRepeat = false,
+  }) async {
+    try {
+      final audioService = await ref.read(audioServiceProvider.future);
+      final settings = ref.read(settingsProvider);
+
+      audioService.setVoiceVolume(settings.voiceVolume);
+      audioService.setVoiceMute(settings.isVoiceMuted);
+      audioService.setAmbientVolume(settings.musicVolume);
+      audioService.setEffectsVolume(settings.effectsVolume);
+
+      if (bundle.ambientPath.isNotEmpty) {
+        await audioService.playAmbient(bundle.ambientPath);
+      }
+      if (!isRepeat && bundle.voicePath.isNotEmpty && !settings.isVoiceMuted) {
+        await audioService.playVoice(bundle.voicePath);
+      }
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore riproduzione audio: $e');
+    }
+  }
+
+  void _togglePlayPause() async {
     final sessionState = ref.read(unitySessionControllerProvider);
     final controller = ref.read(unitySessionControllerProvider.notifier);
+    final audioService = ref.read(audioServiceProvider).valueOrNull;
 
     if (sessionState.isPlaying) {
       controller.pauseSession();
+      await audioService?.pauseAll();
     } else {
       controller.resumeSession();
+      await audioService?.resumeAll();
     }
   }
 
@@ -92,25 +134,35 @@ class _UnityExperienceScreenState
     });
   }
 
-  void _confirmExit() {
+  void _confirmExit() async {
     final controller = ref.read(unitySessionControllerProvider.notifier);
     controller.stopSession();
 
+    final audioService = ref.read(audioServiceProvider).valueOrNull;
+    await audioService?.stopAll();
+
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
     if (widget.isVrMode) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const RemoveVrHeadsetView()),
-      );
+      if (mounted) {
+        context.go('/remove-vr-headset');
+      }
     } else {
-      if (context.canPop()) {
-        context.pop();
-      } else {
-        context.go('/home');
+      if (mounted) {
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/home');
+        }
       }
     }
   }
 
-  void _repeatSession() {
-    _initializeSession();
+  void _repeatSession() async {
+    final audioService = ref.read(audioServiceProvider).valueOrNull;
+    await audioService?.stopVoice();
+    _initializeSession(isRepeat: true);
   }
 
   @override
@@ -119,7 +171,11 @@ class _UnityExperienceScreenState
     controller.stopSession();
     controller.detachUnityWidgetController();
 
+    final audioService = ref.read(audioServiceProvider).valueOrNull;
+    audioService?.stopAll();
+
     WakelockPlus.disable();
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     if (widget.isVrMode) {

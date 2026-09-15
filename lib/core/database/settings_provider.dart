@@ -192,6 +192,13 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs?.setBool("IsUnlocked", true);
   }
 
+  /// Commuta lo stato di sblocco dell'app per test e sviluppo con persistenza
+  Future<void> togglePremiumSimulation([bool? forceState]) async {
+    final next = forceState ?? !state.isUnlocked;
+    state = state.copyWith(isUnlocked: next);
+    await _prefs?.setBool("IsUnlocked", next);
+  }
+
   /// Attiva o disattiva la modalità VR per la sessione corrente (non persistita)
   void toggleVrMode(bool enabled) {
     state = state.copyWith(isVrMode: enabled);

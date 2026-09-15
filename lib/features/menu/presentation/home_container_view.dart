@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
-import 'home_tab.dart';
 import 'home_japandi_tab.dart';
 import 'meditate_tab.dart';
 import 'journal_tab.dart';
@@ -22,7 +21,7 @@ class _HomeContainerViewState extends ConsumerState<HomeContainerView> {
   late PageController _pageController;
 
   final List<Widget> _tabs = const [
-    HomeTab(),
+    HomeJapandiTab(),
     MeditateTab(),
     JournalTab(),
     MeTab(),

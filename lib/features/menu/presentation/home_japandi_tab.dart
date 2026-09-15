@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable, deprecated_member_use, use_build_context_synchronously, curly_braces_in_flow_control_structures, unused_element, unused_field
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -38,7 +38,6 @@ class HomeJapandiTab extends ConsumerWidget {
 
     final historyStr = prefs.getStringList("timeline_history") ?? [];
     final int totalSessions = historyStr.length;
-    final int totalMinutes = prefs.getInt("total_minutes") ?? 0;
     final int currentStreak = prefs.getInt("current_streak") ?? 0;
 
     return Container(
@@ -189,6 +188,101 @@ class HomeJapandiTab extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // BANNER PACCHETTO PREMIUM JAPANDI
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          child: Semantics(
+                            button: true,
+                            label: "Pacchetto Premium Guido",
+                            child: GestureDetector(
+                              onTap: () => context.push('/premium'),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      AppColors.goldAccent.withValues(
+                                        alpha: isDark ? 0.22 : 0.15,
+                                      ),
+                                      AppColors.sageAccent.withValues(
+                                        alpha: isDark ? 0.15 : 0.08,
+                                      ),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: AppColors.goldAccent.withValues(
+                                      alpha: 0.35,
+                                    ),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.goldAccent.withValues(
+                                          alpha: 0.2,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.workspace_premium_rounded,
+                                        color: AppColors.goldAccent,
+                                        size: 22,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            settings.isUnlocked
+                                                ? "GUIDO PREMIUM ATTIVO"
+                                                : "SCOPRI GUIDO PREMIUM",
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: textColor,
+                                              letterSpacing: 0.8,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            settings.isUnlocked
+                                                ? "Tutte le esperienze e percorsi VR sbloccati"
+                                                : "Accedi a tutti i 4 elementi e alle meditazioni",
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w500,
+                                              color: subTextColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.arrow_forward_ios_rounded,
+                                      size: 13,
+                                      color: AppColors.goldAccent,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
                         // 4. DAILY HERO CARD: RITUALE DEL MATTINO (con Loop di Respiro Polmonare) (Padded)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24.0),

@@ -79,6 +79,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             durationSeconds:
                 (args['durationSeconds'] as num?)?.toDouble() ?? 300.0,
             isVrMode: args['isVrMode'] ?? false,
+            voicePath: args['voicePath'] as String?,
+            ambientPath: args['ambientPath'] as String?,
           );
         },
       ),

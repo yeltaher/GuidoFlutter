@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -45,14 +46,62 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                 top: 20.0,
                 bottom: 10.0,
               ),
-              child: Text(
-                settings.language == 0 ? "Percorsi Zen" : "Zen Paths",
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: textColor,
-                  letterSpacing: -0.5,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    settings.language == 0 ? "Percorsi Zen" : "Zen Paths",
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  Semantics(
+                    button: true,
+                    label: "Pacchetti Premium",
+                    child: GestureDetector(
+                      onTap: () => context.push('/premium'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.goldAccent.withValues(
+                            alpha: isDark ? 0.2 : 0.12,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.goldAccent.withValues(alpha: 0.4),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.workspace_premium_rounded,
+                              size: 16,
+                              color: AppColors.goldAccent,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              settings.isUnlocked ? "PREMIUM ✓" : "PREMIUM",
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.goldAccent,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 

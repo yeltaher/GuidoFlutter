@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -215,6 +216,26 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                                                 ),
                                           ),
                                         );
+                                      },
+                                    ),
+
+                                    Divider(
+                                      height: 36,
+                                      color: isDark
+                                          ? Colors.white10
+                                          : Colors.black12,
+                                    ),
+
+                                    // 8. SIMULATORE PACCHETTO PREMIUM (TEST/DEV)
+                                    _buildPremiumSimulatorSetting(
+                                      isDark: isDark,
+                                      accentColor: accentColor,
+                                      subTextColor: subColor,
+                                      textColor: textColor,
+                                      isUnlocked: settings.isUnlocked,
+                                      onToggle: (val) {
+                                        settingsNotifier.togglePremiumSimulation(val);
+                                        HapticFeedback.mediumImpact();
                                       },
                                     ),
                                   ],
@@ -729,6 +750,82 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     );
   }
 
+  Widget _buildPremiumSimulatorSetting({
+    required bool isDark,
+    required Color accentColor,
+    required Color subTextColor,
+    required Color textColor,
+    required bool isUnlocked,
+    required ValueChanged<bool> onToggle,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: isUnlocked
+            ? AppColors.goldAccent.withValues(alpha: 0.08)
+            : (isDark
+                ? Colors.white.withValues(alpha: 0.03)
+                : Colors.black.withValues(alpha: 0.03)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isUnlocked
+              ? AppColors.goldAccent.withValues(alpha: 0.35)
+              : (isDark ? Colors.white12 : Colors.black12),
+          width: 1.0,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Icon(
+                  Icons.auto_awesome,
+                  color: isUnlocked ? AppColors.goldAccent : subTextColor,
+                  size: 22,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "SIMULATORE PACCHETTO PREMIUM",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: isUnlocked ? AppColors.goldAccent : textColor,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isUnlocked
+                            ? "Tutte le esperienze sbloccate (Test Mode ATTIVO)"
+                            : "Esperienze bloccate (Test Mode DISATTIVO)",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w500,
+                          color: subTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch.adaptive(
+            value: isUnlocked,
+            activeTrackColor: AppColors.goldAccent,
+            onChanged: onToggle,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFooterButtons(
     BuildContext context,
     bool isUnlocked,
@@ -737,16 +834,14 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     return Column(
       children: [
         _buildActionBtn(
-          label: isUnlocked ? "SBLOCCATO" : "SBLOCCA PREMIUM",
+          label: isUnlocked
+              ? "PACCHETTI PREMIUM (ATTIVO)"
+              : "PACCHETTI PREMIUM / SBLOCCA",
           onTap: () {
-            if (!isUnlocked) {
-              context.push('/premium');
-            }
+            context.push('/premium');
           },
           isDark: isDark,
-          accentColor: isUnlocked
-              ? AppColors.successAccent
-              : AppColors.goldAccent,
+          accentColor: AppColors.goldAccent,
           isFilled: true,
         ),
         const SizedBox(height: 12),

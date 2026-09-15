@@ -10,8 +10,8 @@ import '../../../core/theme/vr_gaze_button.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
 import '../../../core/database/repositories/user_repository.dart';
-import '../../breathing/presentation/breathing_view.dart';
-import 'meditation_view.dart';
+import '../../../core/audio/audio_resolver_service.dart';
+import 'unity_experience_screen.dart';
 import 'vr_calibration_screen.dart';
 
 import 'explanation_screen.dart';
@@ -48,7 +48,7 @@ void launchZenSession({
   );
 }
 
-/// Avvia direttamente un'esperienza Unity UaaL 3D / VR fotorealistica.
+/// Avvia direttamente un'esperienza Unity UaaL 3D / VR fotorealistica con bundle audio sincronizzato.
 void launchUnityExperience({
   required BuildContext context,
   required WidgetRef ref,
@@ -56,19 +56,29 @@ void launchUnityExperience({
   required String sceneName,
   double durationSeconds = 300.0,
   bool isVrMode = false,
+  String? voicePath,
+  String? ambientPath,
 }) {
-  final resolvedScene = UnityScenes.resolveSceneName(
-    explicitSceneName: sceneName,
+  final settings = ref.read(settingsProvider);
+  final bundle = AudioResolverService.resolveBundle(
     title: title,
+    sceneName: sceneName,
+    voiceSex: settings.voiceSex,
+    language: settings.language,
+    customVoicePath: voicePath,
+    customAmbientPath: ambientPath,
+    durationSeconds: durationSeconds,
   );
 
   context.push(
     '/unity-experience',
     extra: {
       'title': title,
-      'sceneName': resolvedScene,
-      'durationSeconds': durationSeconds,
+      'sceneName': bundle.sceneName,
+      'durationSeconds': bundle.durationSeconds,
       'isVrMode': isVrMode,
+      'voicePath': bundle.voicePath,
+      'ambientPath': bundle.ambientPath,
     },
   );
 }
@@ -98,24 +108,30 @@ class SessionLaunchDialog extends ConsumerWidget {
   void _startFlatSession(BuildContext context, WidgetRef ref) {
     ref.read(settingsProvider.notifier).toggleVrMode(false);
     context.pop();
-    if (breathingAudioPath != null) {
-      context.push(
-        '/breathing',
-        extra: {
-          'title': title,
-          'audioPath': breathingAudioPath!,
-        },
-      );
-    } else {
-      context.push(
-        '/meditation',
-        extra: {
-          'title': title,
-          'voicePath': voicePath,
-          'ambientPath': ambientPath,
-        },
-      );
-    }
+
+    final settings = ref.read(settingsProvider);
+    final bundle = AudioResolverService.resolveBundle(
+      title: title,
+      sceneName: sceneName,
+      voiceSex: settings.voiceSex,
+      language: settings.language,
+      customVoicePath:
+          voicePath.isNotEmpty ? voicePath : (breathingAudioPath ?? ''),
+      customAmbientPath: ambientPath,
+      durationSeconds: durationSeconds,
+    );
+
+    context.push(
+      '/unity-experience',
+      extra: {
+        'title': title,
+        'sceneName': bundle.sceneName,
+        'durationSeconds': bundle.durationSeconds,
+        'isVrMode': false,
+        'voicePath': bundle.voicePath,
+        'ambientPath': bundle.ambientPath,
+      },
+    );
   }
 
   void _goToVrConfirm(BuildContext context, WidgetRef ref) {
@@ -392,40 +408,44 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
     if (_sessionStarting) return;
     _sessionStarting = true;
     ref.read(settingsProvider.notifier).toggleVrMode(true);
-    if (widget.breathingAudioPath != null) {
-      Navigator.of(context)
-          .pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => BreathingView(
-                title: widget.title,
-                audioPath: widget.breathingAudioPath!,
-              ),
+
+    final settings = ref.read(settingsProvider);
+    final bundle = AudioResolverService.resolveBundle(
+      title: widget.title,
+      sceneName: widget.sceneName,
+      voiceSex: settings.voiceSex,
+      language: settings.language,
+      customVoicePath: widget.voicePath.isNotEmpty
+          ? widget.voicePath
+          : (widget.breathingAudioPath ?? ''),
+      customAmbientPath: widget.ambientPath,
+      durationSeconds: widget.durationSeconds,
+    );
+
+    Navigator.of(context)
+        .pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => UnityExperienceScreen(
+              title: widget.title,
+              sceneName: bundle.sceneName,
+              durationSeconds: bundle.durationSeconds,
+              isVrMode: true,
+              voicePath: bundle.voicePath,
+              ambientPath: bundle.ambientPath,
             ),
-          )
-          .then((_) async {
-            ref.read(settingsProvider.notifier).toggleVrMode(false);
-            await ref
-                .read(userRepositoryProvider)
-                .recordSession(widget.title, "Respirazione");
-          });
-    } else {
-      Navigator.of(context)
-          .pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => MeditationView(
-                title: widget.title,
-                voicePath: widget.voicePath,
-                ambientPath: widget.ambientPath,
-              ),
-            ),
-          )
-          .then((_) async {
-            ref.read(settingsProvider.notifier).toggleVrMode(false);
-            await ref
-                .read(userRepositoryProvider)
-                .recordSession(widget.title, "Meditazione");
-          });
-    }
+          ),
+        )
+        .then((_) async {
+          ref.read(settingsProvider.notifier).toggleVrMode(false);
+          await ref
+              .read(userRepositoryProvider)
+              .recordSession(
+                widget.title,
+                bundle.sceneName.contains('resp')
+                    ? "Respirazione"
+                    : "Meditazione",
+              );
+        });
   }
 
   @override
