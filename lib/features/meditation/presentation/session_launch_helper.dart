@@ -27,7 +27,17 @@ void launchZenSession({
   String? breathingAudioPath,
   String? sceneName,
   double durationSeconds = 300.0,
+  bool isPremium = false,
 }) {
+  final settings = ref.read(settingsProvider);
+
+  // Guard centralizzata: se l'esperienza è premium e l'utente non ha sbloccato il pacchetto premium,
+  // apre direttamente il paywall e blocca l'apertura di ExplanationScreen.
+  if (isPremium && !settings.isUnlocked) {
+    context.push('/premium');
+    return;
+  }
+
   final resolvedScene = UnityScenes.resolveSceneName(
     explicitSceneName: sceneName,
     title: title,

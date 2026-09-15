@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../../core/theme/custom_button_widget.dart';
@@ -31,8 +32,8 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
       body: Stack(
         children: [
           // Sfondo Gradiente Animato
-          RepaintBoundary(
-            child: Positioned.fill(
+          Positioned.fill(
+            child: RepaintBoundary(
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -51,8 +52,8 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
           ),
 
           // Pattern in background (opzionale)
-          RepaintBoundary(
-            child: Positioned.fill(
+          Positioned.fill(
+            child: RepaintBoundary(
               child: Opacity(
                 opacity: 0.03,
                 child: Image.asset(
@@ -233,11 +234,32 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                               text: AppLocalizations.of(
                                 context,
                               )!.premiumActivateNow,
-                              onTap: () {
-                                ref
+                              requireHold: false,
+                              onTap: () async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                await ref
                                     .read(settingsProvider.notifier)
                                     .unlockPremium();
-                                Navigator.of(context).pop();
+                                if (context.mounted) {
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        settings.language == 0
+                                            ? "Pacchetto Premium attivato con successo! Tutte le esperienze sono sbloccate."
+                                            : "Premium package activated successfully! All experiences unlocked.",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      backgroundColor: AppColors.successAccent,
+                                      behavior: SnackBarBehavior.floating,
+                                      duration: const Duration(seconds: 3),
+                                    ),
+                                  );
+                                  if (context.canPop()) {
+                                    context.pop();
+                                  }
+                                }
                               },
                               accentColor: AppColors.successAccent,
                               width: double.infinity,
@@ -258,7 +280,60 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                               ),
                         ).animate().fadeIn(delay: 800.ms),
 
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 12),
+
+                        // Pulsante Ripristina Acquisti
+                        Semantics(
+                          button: true,
+                          label: "Ripristina acquisti",
+                          child: GestureDetector(
+                            onTap: () async {
+                              final messenger = ScaffoldMessenger.of(context);
+                              await ref
+                                  .read(settingsProvider.notifier)
+                                  .unlockPremium();
+                              if (context.mounted) {
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      settings.language == 0
+                                          ? "Acquisti ripristinati con successo! Tutte le esperienze sono sbloccate."
+                                          : "Purchases restored successfully! All experiences unlocked.",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    backgroundColor: AppColors.successAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                                if (context.canPop()) {
+                                  context.pop();
+                                }
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                                horizontal: 16.0,
+                              ),
+                              child: Text(
+                                settings.language == 0
+                                    ? "Ripristina acquisti"
+                                    : "Restore Purchases",
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: subTextColor.withValues(alpha: 0.85),
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ).animate().fadeIn(delay: 850.ms),
+
+                        const SizedBox(height: 30),
                       ],
                     ),
                   ),

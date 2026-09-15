@@ -9,6 +9,7 @@ class CustomUnityButton extends StatefulWidget {
   final bool isLocked;
   final double width;
   final Color accentColor;
+  final bool requireHold;
 
   const CustomUnityButton({
     super.key,
@@ -17,6 +18,7 @@ class CustomUnityButton extends StatefulWidget {
     this.isLocked = false,
     this.width = 220.0,
     this.accentColor = AppColors.successAccent,
+    this.requireHold = true,
   });
 
   @override
@@ -46,8 +48,8 @@ class _CustomUnityButtonState extends State<CustomUnityButton>
   }
 
   void _onTapDown(TapDownDetails details) {
-    if (widget.isLocked) {
-      // Se bloccato, aprirebbe il paywall
+    if (widget.isLocked || !widget.requireHold) {
+      // Se bloccato o non richiede hold, esegui subito onTap
       widget.onTap();
       return;
     }
@@ -86,9 +88,10 @@ class _CustomUnityButtonState extends State<CustomUnityButton>
       button: true,
       label: "Interactive element",
       child: GestureDetector(
-        onTapDown: _onTapDown,
-        onTapUp: _onTapUp,
-        onTapCancel: _onTapCancel,
+        onTap: !widget.requireHold ? widget.onTap : null,
+        onTapDown: widget.requireHold ? _onTapDown : null,
+        onTapUp: widget.requireHold ? _onTapUp : null,
+        onTapCancel: widget.requireHold ? _onTapCancel : null,
         child: AnimatedScale(
           scale: _isPressing ? 0.96 : 1.0,
           duration: const Duration(milliseconds: 100),

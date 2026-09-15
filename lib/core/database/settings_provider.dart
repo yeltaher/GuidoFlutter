@@ -209,6 +209,12 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs?.setBool("IsUnlocked", true);
   }
 
+  /// Blocca la versione Premium dell'app (re-imposta stato Free)
+  Future<void> lockPremium() async {
+    state = state.copyWith(isUnlocked: false);
+    await _prefs?.setBool("IsUnlocked", false);
+  }
+
   /// Commuta lo stato di sblocco dell'app per test e sviluppo con persistenza
   Future<void> togglePremiumSimulation([bool? forceState]) async {
     final next = forceState ?? !state.isUnlocked;

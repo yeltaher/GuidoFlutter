@@ -582,6 +582,7 @@ class HomeJapandiTab extends ConsumerWidget {
                                 subTextColor: subTextColor,
                                 sceneName: UnityScenes.waterMeditation,
                                 durationSeconds: 900.0,
+                                isPremium: false,
                               ),
                               const SizedBox(width: 16),
                               _buildDeckCard(
@@ -601,6 +602,7 @@ class HomeJapandiTab extends ConsumerWidget {
                                 subTextColor: subTextColor,
                                 sceneName: UnityScenes.waterMeditation,
                                 durationSeconds: 900.0,
+                                isPremium: false,
                               ),
                               const SizedBox(width: 16),
                               _buildDeckCard(
@@ -620,6 +622,61 @@ class HomeJapandiTab extends ConsumerWidget {
                                 subTextColor: subTextColor,
                                 sceneName: UnityScenes.waterMeditation,
                                 durationSeconds: 1500.0,
+                                isPremium: false,
+                              ),
+                              const SizedBox(width: 16),
+                              _buildDeckCard(
+                                context: context,
+                                ref: ref,
+                                title: "Percorso Fuoco",
+                                desc: "Trasforma la tensione in forza",
+                                time: "15 min",
+                                tag: "ENERGIA",
+                                voice: '',
+                                ambient: '',
+                                isDark: isDark,
+                                accentColor: const Color(0xFFF97316),
+                                textColor: textColor,
+                                subTextColor: subTextColor,
+                                sceneName: UnityScenes.fireMeditation,
+                                durationSeconds: 900.0,
+                                isPremium: true,
+                              ),
+                              const SizedBox(width: 16),
+                              _buildDeckCard(
+                                context: context,
+                                ref: ref,
+                                title: "Percorso Aria",
+                                desc: "Eleva la mente con leggerezza",
+                                time: "15 min",
+                                tag: "ESPANSIONE",
+                                voice: '',
+                                ambient: '',
+                                isDark: isDark,
+                                accentColor: const Color(0xFF06B6D4),
+                                textColor: textColor,
+                                subTextColor: subTextColor,
+                                sceneName: UnityScenes.airMeditation,
+                                durationSeconds: 900.0,
+                                isPremium: true,
+                              ),
+                              const SizedBox(width: 16),
+                              _buildDeckCard(
+                                context: context,
+                                ref: ref,
+                                title: "Percorso Terra",
+                                desc: "Radicamento e stabilità",
+                                time: "20 min",
+                                tag: "STABILITÀ",
+                                voice: '',
+                                ambient: '',
+                                isDark: isDark,
+                                accentColor: const Color(0xFF84CC16),
+                                textColor: textColor,
+                                subTextColor: subTextColor,
+                                sceneName: UnityScenes.earthMeditation,
+                                durationSeconds: 1200.0,
+                                isPremium: true,
                               ),
                             ],
                           ),
@@ -775,6 +832,20 @@ class HomeJapandiTab extends ConsumerWidget {
     );
   }
 
+  bool _isElementPremium(String title, String? sceneName) {
+    final lowerTitle = title.toLowerCase();
+    final lowerScene = sceneName?.toLowerCase() ?? '';
+    return lowerTitle.contains('aria') ||
+        lowerTitle.contains('fuoco') ||
+        lowerTitle.contains('terra') ||
+        lowerTitle.contains('fire') ||
+        lowerTitle.contains('air') ||
+        lowerTitle.contains('earth') ||
+        lowerScene.contains('aria') ||
+        lowerScene.contains('fuoco') ||
+        lowerScene.contains('terra');
+  }
+
   /// Costruisce una card sfogliabile per il deck consigliato
   Widget _buildDeckCard({
     required BuildContext context,
@@ -791,21 +862,30 @@ class HomeJapandiTab extends ConsumerWidget {
     required Color subTextColor,
     String? sceneName,
     double durationSeconds = 900.0,
+    bool isPremium = false,
   }) {
+    final settings = ref.watch(settingsProvider);
+    final isLocked = (isPremium || _isElementPremium(title, sceneName)) && !settings.isUnlocked;
+
     return Semantics(
       button: true,
-      label: "Interactive element",
+      label: title,
       child: GestureDetector(
         onTap: () {
-          launchZenSession(
-            context: context,
-            ref: ref,
-            title: title,
-            voicePath: voice,
-            ambientPath: ambient,
-            sceneName: sceneName,
-            durationSeconds: durationSeconds,
-          );
+          if (isLocked) {
+            context.push('/premium');
+          } else {
+            launchZenSession(
+              context: context,
+              ref: ref,
+              title: title,
+              voicePath: voice,
+              ambientPath: ambient,
+              sceneName: sceneName,
+              durationSeconds: durationSeconds,
+              isPremium: isPremium,
+            );
+          }
         },
         child: Container(
           width: 220,
@@ -814,7 +894,7 @@ class HomeJapandiTab extends ConsumerWidget {
             borderRadius: 24.0,
             opacity: 0.55,
           ),
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -822,27 +902,39 @@ class HomeJapandiTab extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Tag badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: accentColor.withValues(
-                        alpha: isDark ? 0.08 : 0.15,
+                  // Tag badge + Lucchetto
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: (isLocked ? AppColors.goldAccent : accentColor)
+                              .withValues(
+                            alpha: isDark ? 0.08 : 0.15,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          tag,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 8.0,
+                            fontWeight: FontWeight.bold,
+                            color: isLocked ? AppColors.goldAccent : accentColor,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      tag,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 8.0,
-                        fontWeight: FontWeight.bold,
-                        color: accentColor,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+                      if (isLocked)
+                        const Icon(
+                          Icons.lock_outline_rounded,
+                          color: AppColors.goldAccent,
+                          size: 16,
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -890,20 +982,24 @@ class HomeJapandiTab extends ConsumerWidget {
                     ],
                   ),
 
-                  // Pulsante Play minimal
+                  // Pulsante Play o Lucchetto minimal
                   Container(
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: textColor.withValues(alpha: 0.8),
+                        color: isLocked
+                            ? AppColors.goldAccent.withValues(alpha: 0.8)
+                            : textColor.withValues(alpha: 0.8),
                         width: 1.0,
                       ),
                     ),
                     child: Icon(
-                      Icons.play_arrow_rounded,
-                      color: textColor,
+                      isLocked
+                          ? Icons.lock_outline_rounded
+                          : Icons.play_arrow_rounded,
+                      color: isLocked ? AppColors.goldAccent : textColor,
                       size: 16,
                     ),
                   ),
