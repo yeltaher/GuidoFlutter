@@ -11,7 +11,6 @@ import '../../../core/database/settings_provider.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
 import '../../../core/unity/unity_session_controller.dart';
 import '../../meditation/meditation_feature.dart';
-import '../../splash/splash_feature.dart';
 
 class SettingsTab extends ConsumerStatefulWidget {
   const SettingsTab({super.key});
@@ -855,14 +854,9 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
         const SizedBox(height: 12),
         _buildActionBtn(
           label: "LOGOUT",
-          onTap: () async {
-            final prefs = ref.read(sharedPrefsProvider);
-            await prefs.setBool("IsOnboarded", false);
+          onTap: () {
             if (context.mounted) {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const SplashView()),
-                (route) => false,
-              );
+              context.go('/login');
             }
           },
           isDark: isDark,

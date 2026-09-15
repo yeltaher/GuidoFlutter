@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../menu/menu_feature.dart';
 
 class OnboardingWizardView extends ConsumerStatefulWidget {
   const OnboardingWizardView({super.key});
@@ -128,16 +128,7 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
     await prefs.setBool("IsOnboarded", true);
 
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const HomeContainerView(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 700),
-        ),
-      );
+      context.go('/home');
     }
   }
 

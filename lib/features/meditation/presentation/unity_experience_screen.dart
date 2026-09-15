@@ -181,11 +181,7 @@ class _UnityExperienceScreenState
       }
     } else {
       if (mounted) {
-        if (context.canPop()) {
-          context.pop();
-        } else {
-          context.go('/home');
-        }
+        context.go('/home');
       }
     }
   }
