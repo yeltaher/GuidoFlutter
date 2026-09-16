@@ -1,7 +1,5 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -40,60 +38,26 @@ class BootSplashView extends ConsumerWidget {
   }
 }
 
-class _BootBackground extends ConsumerWidget {
+class _BootBackground extends StatelessWidget {
   const _BootBackground();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
-    final isDark = settings.isDarkTheme;
-    final accentColor = AppColors.getActiveAccentColor(isDark);
-
+  Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF070A18),
       body: Stack(
         children: [
           Positioned.fill(
-            child: RepaintBoundary(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: AppColors.getGradientByTime(isDark),
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: -80,
-            right: -80,
-            child: RepaintBoundary(
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: accentColor.withValues(
-                    alpha: isDark ? 0.05 : 0.08,
-                  ),
-                ),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-                  child: const SizedBox.shrink(),
-                ),
-              ),
+            child: Container(
+              color: const Color(0xFF070A18),
             ),
           ),
           SafeArea(
             child: Center(
               child: Image.asset(
-                'assets/images/logo_transparent.png',
-                height: 120,
-              )
-              .animate()
-              .fadeIn(duration: 600.ms)
-              .scale(begin: const Offset(0.8, 0.8)),
+                'assets/images/sfondo_new.png',
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ],
