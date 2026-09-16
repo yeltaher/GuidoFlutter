@@ -784,6 +784,10 @@ extern "C" void OnUnitySceneLoaded(const char* name, const int* buildIndex, cons
     }
 }
 
+extern "C" void SendMessageToFlutterNative(const char* message) {
+    OnUnityMessage(message);
+}
+
 
 bool LogToNSLogHandler(LogType logType, const char* log, va_list list)
 {

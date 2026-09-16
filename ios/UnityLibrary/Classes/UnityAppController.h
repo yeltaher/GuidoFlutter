@@ -138,6 +138,14 @@ extern UnityAppController* GetAppController(void);
 } // extern "C"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+void SendMessageToFlutterNative(const char* message);
+#ifdef __cplusplus
+}
+#endif
+
 // Put this into mm file with your subclass implementation
 // pass subclass name to define
 
