@@ -121,6 +121,8 @@ __attribute__ ((visibility("default")))
 @property (readonly) bool                                   didResignActive;
 @property (nonatomic, retain) id                            renderDelegate;
 @property (nonatomic, copy)                                 void (^quitHandler)(void);
+@property (nonatomic, copy) unityMessageCallbackType        unityMessageHandler;
+@property (nonatomic, copy) unitySceneLoadedCallbackType   unitySceneLoadedHandler;
 
 @end
 

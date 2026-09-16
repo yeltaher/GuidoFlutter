@@ -89,6 +89,8 @@ NSInteger _forceInterfaceOrientationMask = 0;
 @synthesize engineLoadState         = _engineLoadState;
 @synthesize renderDelegate          = _renderDelegate;
 @synthesize quitHandler             = _quitHandler;
+@synthesize unityMessageHandler     = _unityMessageHandler;
+@synthesize unitySceneLoadedHandler = _unitySceneLoadedHandler;
 
 #if UNITY_SUPPORT_ROTATION
 @synthesize interfaceOrientation    = _curOrientation;
@@ -769,6 +771,18 @@ extern "C" UIView*              UnityGetGLView()            { return UnityGetUni
 
 
 extern "C" ScreenOrientation    UnityCurrentOrientation()   { return GetAppController().unityView.contentOrientation; }
+
+extern "C" void OnUnityMessage(const char* message) {
+    if (GetAppController().unityMessageHandler) {
+        GetAppController().unityMessageHandler(message);
+    }
+}
+
+extern "C" void OnUnitySceneLoaded(const char* name, const int* buildIndex, const bool* isLoaded, const bool* IsValid) {
+    if (GetAppController().unitySceneLoadedHandler) {
+        GetAppController().unitySceneLoadedHandler(name, buildIndex, isLoaded, IsValid);
+    }
+}
 
 
 bool LogToNSLogHandler(LogType logType, const char* log, va_list list)
