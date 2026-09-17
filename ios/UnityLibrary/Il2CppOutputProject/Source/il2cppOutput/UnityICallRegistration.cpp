@@ -1142,6 +1142,10 @@ void RegisterAllStrippedInternalCalls()
 		void Register_UnityEngine_Application_Quit();
 		Register_UnityEngine_Application_Quit();
 
+		//System.Void UnityEngine.Application::Unload()
+		void Register_UnityEngine_Application_Unload();
+		Register_UnityEngine_Application_Unload();
+
 		//System.Void UnityEngine.Application::get_cloudProjectId_Injected(UnityEngine.Bindings.ManagedSpanWrapper&)
 		void Register_UnityEngine_Application_get_cloudProjectId_Injected();
 		Register_UnityEngine_Application_get_cloudProjectId_Injected();
@@ -7290,6 +7294,10 @@ void RegisterAllStrippedInternalCalls()
 		void Register_UnityEngine_SceneManagement_Scene_IsValidInternal_Injected();
 		Register_UnityEngine_SceneManagement_Scene_IsValidInternal_Injected();
 
+		//System.Int32 UnityEngine.SceneManagement.Scene::GetBuildIndexInternal_Injected(UnityEngine.SceneManagement.SceneHandle&)
+		void Register_UnityEngine_SceneManagement_Scene_GetBuildIndexInternal_Injected();
+		Register_UnityEngine_SceneManagement_Scene_GetBuildIndexInternal_Injected();
+
 		//System.Int32 UnityEngine.SceneManagement.Scene::GetRootCountInternal_Injected(UnityEngine.SceneManagement.SceneHandle&)
 		void Register_UnityEngine_SceneManagement_Scene_GetRootCountInternal_Injected();
 		Register_UnityEngine_SceneManagement_Scene_GetRootCountInternal_Injected();
@@ -8657,6 +8665,10 @@ void RegisterAllStrippedInternalCalls()
 		//System.Void UnityEngine.Time::get_timeAsRational_Injected(Unity.IntegerTime.RationalTime&)
 		void Register_UnityEngine_Time_get_timeAsRational_Injected();
 		Register_UnityEngine_Time_get_timeAsRational_Injected();
+
+		//System.Void UnityEngine.Time::set_timeScale(System.Single)
+		void Register_UnityEngine_Time_set_timeScale();
+		Register_UnityEngine_Time_set_timeScale();
 
 	//End Registrations for type : UnityEngine.Time
 

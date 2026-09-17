@@ -13,14 +13,18 @@
 
 #import <UnityFramework/RenderPluginDelegate.h>
 
-// [GuidoFlutter-UaaL-Bridge]
+// Edited by https://github.com/juicycleff/flutter-unity-view-widget
+
+// Added by https://github.com/juicycleff/flutter-unity-view-widget
+typedef void(^unitySceneLoadedCallbackType)(const char* name, const int* buildIndex, const bool* isLoaded, const bool* IsValid);
+
+typedef void(^unityMessageCallbackType)(const char* message);
+
+// Added by https://github.com/juicycleff/flutter-unity-view-widget
 @protocol UnityEventListener <NSObject>
 - (void)onSceneLoaded:(NSString *)name buildIndex:(NSInteger *)bIndex loaded:(bool *)isLoaded valid:(bool *)IsValid;
 - (void)onMessage:(NSString *)message;
 @end
-
-typedef void(^unitySceneLoadedCallbackType)(const char* name, const int* buildIndex, const bool* isLoaded, const bool* IsValid);
-typedef void(^unityMessageCallbackType)(const char* message);
 
 @class UnityView;
 @class UnityViewControllerBase;
@@ -121,9 +125,8 @@ __attribute__ ((visibility("default")))
 @property (readonly) bool                                   didResignActive;
 @property (nonatomic, retain) id                            renderDelegate;
 @property (nonatomic, copy)                                 void (^quitHandler)(void);
-@property (nonatomic, copy) unityMessageCallbackType        unityMessageHandler;
-@property (nonatomic, copy) unitySceneLoadedCallbackType   unitySceneLoadedHandler;
-
+@property (nonatomic, copy)                                 void(^unitySceneLoadedHandler)(const char* name, const int* buildIndex, const bool* isLoaded, const bool* IsValid);
+@property (nonatomic, copy)                                 void(^unityMessageHandler)(const char* message);
 @end
 
 // accessing app controller
@@ -136,14 +139,6 @@ extern UnityAppController* GetAppController(void);
 
 #ifdef __cplusplus
 } // extern "C"
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-void SendMessageToFlutterNative(const char* message);
-#ifdef __cplusplus
-}
 #endif
 
 // Put this into mm file with your subclass implementation

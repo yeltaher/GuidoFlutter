@@ -17,20 +17,20 @@ struct VirtualFuncInvoker0
 };
 
 struct Action_1_tE8693FF0E67CDBA52BAFB211BFF1844D076ABAFB;
+struct Action_1_t6F9EB113EB3F16226AEF811A2744F4111C116C87;
 struct Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE;
 struct Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A;
 struct Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A;
-struct Action_1_t923A20D1D4F6B55B2ED5AE21B90F1A0CE0450D99;
+struct Dictionary_2_t14FE4A752A83D53771C584E4C8D14E01F2AFD7BA;
 struct Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D;
-struct Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E;
 struct GenericEventChannelSO_1_t5AC28C96BE6309EA31ADB7FB6DAAE59DBE4AAFEA;
+struct GenericEventChannelSO_1_t7AA1E6B5B1F35AC20DCF0153393ACB7C39DC0EDD;
 struct GenericEventChannelSO_1_tFDABE3C9DDB21BA0C689D8B649DD8B4B3F3E6F38;
 struct GenericEventChannelSO_1_t1528D7562A7DD5A29C3BC75392614AD313020A27;
 struct GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783;
 struct GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA;
-struct GenericEventChannelSO_1_t82BDD65F27E341CDD32A08BE4386ABB75CDB94F3;
+struct IEqualityComparer_1_t2CA7720C7ADCCDECD3B02E45878B4478619D5347;
 struct IEqualityComparer_1_tAE94C8F24AD5B94D4EE85CA9FC59E3409D41CAF7;
-struct IEqualityComparer_1_t47CC0B235E693652D181B679FF6D61A469ECC122;
 struct KeyCollection_tDC9905DAB7B3D843994B8AF143B97B5C1D5B6936;
 struct List_1_t1380C530A5D2929C738AA31853B9EA4A6757EA30;
 struct List_1_t4B1084108031EF9530DD18F6C30A4BAF00462C0B;
@@ -649,6 +649,10 @@ struct Exception_t_marshaled_com
 	Il2CppSafeArray* ___native_trace_ips;
 	int32_t ___caught_in_unmanaged;
 };
+struct Int32Enum_tCBAC8BA2BFF3A845FA599F303093BBBA374B6F0C 
+{
+	int32_t ___value__;
+};
 struct LoadSceneMode_t3E17ADA25A3C4F14ECF6026741219437DA054963 
 {
 	int32_t ___value__;
@@ -710,6 +714,9 @@ struct ScriptableObject_tB3BFDB921A1B1795B38A5417D3B97A89A140436A_marshaled_com 
 struct SystemException_tCC48D868298F4C0705279823E34B00F4FBDB7295  : public Exception_t
 {
 };
+struct Action_1_t6F9EB113EB3F16226AEF811A2744F4111C116C87  : public MulticastDelegate_t
+{
+};
 struct Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE  : public MulticastDelegate_t
 {
 };
@@ -717,9 +724,6 @@ struct Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A  : public MulticastDel
 {
 };
 struct Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A  : public MulticastDelegate_t
-{
-};
-struct Action_1_t923A20D1D4F6B55B2ED5AE21B90F1A0CE0450D99  : public MulticastDelegate_t
 {
 };
 struct GenericEventChannelSO_1_t5AC28C96BE6309EA31ADB7FB6DAAE59DBE4AAFEA  : public ScriptableObject_tB3BFDB921A1B1795B38A5417D3B97A89A140436A
@@ -993,18 +997,27 @@ struct ObjectU5BU5D_t8061030B0A12A55D5AD8652A20C922FE99450918  : public RuntimeA
 };
 
 
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Action_1__ctor_m685A441EC9FAC9D554B26FA83A08F4BEF96DFF0E_gshared (Action_1_t923A20D1D4F6B55B2ED5AE21B90F1A0CE0450D99* __this, RuntimeObject* ___0_object, intptr_t ___1_method, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1_RegisterListener_mDE814C8A5A5A55811F3923FFC5A239AC9E53318D_gshared (GenericEventChannelSO_1_t82BDD65F27E341CDD32A08BE4386ABB75CDB94F3* __this, Action_1_t923A20D1D4F6B55B2ED5AE21B90F1A0CE0450D99* ___0_listener, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1_UnregisterListener_mC0875E85A16311B0D008F448A7EEDB9698D9EC41_gshared (GenericEventChannelSO_1_t82BDD65F27E341CDD32A08BE4386ABB75CDB94F3* __this, Action_1_t923A20D1D4F6B55B2ED5AE21B90F1A0CE0450D99* ___0_listener, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void JsonUtility_FromJson_TisIl2CppFullySharedGenericAny_mCA9E8A2C7BF60F5C6F2FE4812F33F4C06E5B44D0_gshared (String_t* ___0_json, Il2CppFullySharedGenericAny* il2cppRetVal, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1_Raise_mC5A91FAB72259D0E30623855FA3BB4E139637E3F_gshared (GenericEventChannelSO_1_t82BDD65F27E341CDD32A08BE4386ABB75CDB94F3* __this, Il2CppFullySharedGenericAny ___0_value, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1__ctor_m3DBCB0D9A789C0A3B734D946F00822A540C4400E_gshared (GenericEventChannelSO_1_t82BDD65F27E341CDD32A08BE4386ABB75CDB94F3* __this, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Dictionary_2__ctor_mCC4C1AFB623AE154F67437E7FC549449FF598526_gshared (Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E* __this, int32_t ___0_capacity, RuntimeObject* ___1_comparer, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Dictionary_2_set_Item_m4C6841170DD11AED683D2D71919F362A4CFF4A80_gshared (Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E* __this, Il2CppFullySharedGenericAny ___0_key, Il2CppFullySharedGenericAny ___1_value, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Dictionary_2_Remove_m583C4F0E2926B584BE6EC6008195360FC631C14C_gshared (Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E* __this, Il2CppFullySharedGenericAny ___0_key, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Dictionary_2_TryGetValue_m7519D765EAF1E8A7D3137C2F1B7B3A01D15A1692_gshared (Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E* __this, Il2CppFullySharedGenericAny ___0_key, Il2CppFullySharedGenericAny* ___1_value, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Action_1_Invoke_m5A038831CEB84A7E374FE59D43444412629F833F_gshared_inline (Action_1_t923A20D1D4F6B55B2ED5AE21B90F1A0CE0450D99* __this, Il2CppFullySharedGenericAny ___0_obj, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Dictionary_2_Clear_m935B3F117860376DC854C9E0C80CBD99BE77EEA4_gshared (Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Action_1__ctor_mB1D15ABB19F5BF1AB896EEEDF3E674A9E9377BFF_gshared (Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE* __this, RuntimeObject* ___0_object, intptr_t ___1_method, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1_RegisterListener_mEA3F7C33922161355E3BB50C5A17C7CB0E485190_gshared (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783* __this, Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE* ___0_listener, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Action_1__ctor_m46A4A4693AB817C08666D30B777B25F22073D096_gshared (Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A* __this, RuntimeObject* ___0_object, intptr_t ___1_method, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1_RegisterListener_mB0DB720FBE67D7B447A447FB0B32C39588FE99E7_gshared (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA* __this, Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A* ___0_listener, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1_UnregisterListener_m6D32A26CA1573666E499289EC55D405D43454BB6_gshared (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783* __this, Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE* ___0_listener, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1_UnregisterListener_m18A9E3D1286D77706EF47914E25594DCA3D3D69B_gshared (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA* __this, Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A* ___0_listener, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Action_1__ctor_m2E1DFA67718FC1A0B6E5DFEB78831FFE9C059EB4_gshared (Action_1_t6F9EB113EB3F16226AEF811A2744F4111C116C87* __this, RuntimeObject* ___0_object, intptr_t ___1_method, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR JsonRpcRequestDto_tD7A2FE0878B250CF69310C6F27DC5C5A5F3D482C JsonUtility_FromJson_TisJsonRpcRequestDto_tD7A2FE0878B250CF69310C6F27DC5C5A5F3D482C_mB04B465E19251A3BC4B09D8A65B8714BDBB578EA_gshared (String_t* ___0_json, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR SessionConfigDto_t381F72EFB717FCC12E14C2526C2500909A13F52B JsonUtility_FromJson_TisSessionConfigDto_t381F72EFB717FCC12E14C2526C2500909A13F52B_mC9FA3EF719B7C99A0EF775950F22130F92BA4754_gshared (String_t* ___0_json, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1_Raise_mB45888E78C86BF9ADEB87D931F007C1826B3B91D_gshared (GenericEventChannelSO_1_t7AA1E6B5B1F35AC20DCF0153393ACB7C39DC0EDD* __this, int32_t ___0_value, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1_Raise_mD627226EF033400947E3223A52D6578336CD7127_gshared (GenericEventChannelSO_1_t1528D7562A7DD5A29C3BC75392614AD313020A27* __this, SessionConfigDto_t381F72EFB717FCC12E14C2526C2500909A13F52B ___0_value, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1_Raise_mF43AD9149A122ABA94FDC76606D15515550E1A08_gshared (GenericEventChannelSO_1_t5AC28C96BE6309EA31ADB7FB6DAAE59DBE4AAFEA* __this, int32_t ___0_value, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1__ctor_mD5649E84933071F8BEEBBD5378E1113E493177A2_gshared (GenericEventChannelSO_1_t1528D7562A7DD5A29C3BC75392614AD313020A27* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1__ctor_m6F8DF0E8C102FF0972DD8FF2ADC807BE43927FCC_gshared (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GenericEventChannelSO_1__ctor_mF2306F87EE3C08FFB9052E9B2678C93A5D31E109_gshared (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Dictionary_2__ctor_mF67467217142A79C407188798209E4524D74D34F_gshared (Dictionary_2_t14FE4A752A83D53771C584E4C8D14E01F2AFD7BA* __this, int32_t ___0_capacity, RuntimeObject* ___1_comparer, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Dictionary_2_set_Item_m1A840355E8EDAECEA9D0C6F5E51B248FAA449CBD_gshared (Dictionary_2_t14FE4A752A83D53771C584E4C8D14E01F2AFD7BA* __this, RuntimeObject* ___0_key, RuntimeObject* ___1_value, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Dictionary_2_Remove_m5C7C45E75D951A75843F3F7AADD56ECD64F6BC86_gshared (Dictionary_2_t14FE4A752A83D53771C584E4C8D14E01F2AFD7BA* __this, RuntimeObject* ___0_key, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Dictionary_2_TryGetValue_mD15380A4ED7CDEE99EA45881577D26BA9CE1B849_gshared (Dictionary_2_t14FE4A752A83D53771C584E4C8D14E01F2AFD7BA* __this, RuntimeObject* ___0_key, RuntimeObject** ___1_value, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Action_1_Invoke_mF2422B2DD29F74CE66F791C3F68E288EC7C3DB9E_gshared_inline (Action_1_t6F9EB113EB3F16226AEF811A2744F4111C116C87* __this, RuntimeObject* ___0_obj, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Dictionary_2_Clear_mCFB5EA7351D5860D2B91592B91A84CA265A41433_gshared (Dictionary_2_t14FE4A752A83D53771C584E4C8D14E01F2AFD7BA* __this, const RuntimeMethod* method) ;
 
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Attribute__ctor_m79ED1BF1EE36D1E417BA89A0D9F91F8AAD8D19E2 (Attribute_tFDA8EFEFB0711976D22474794576DAF28F7440AA* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RuntimeHelpers_InitializeArray_m751372AA3F24FBF6DA9B9D687CBFA2DE436CAB9B (RuntimeArray* ___0_array, RuntimeFieldHandle_t6E4C45B6D2EA12FC99185805A7E77527899B25C5 ___1_fldHandle, const RuntimeMethod* method) ;
@@ -1017,31 +1030,31 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Object_op_Inequality_mD0BE578448EAA61948
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C* ___0_obj, const RuntimeMethod* method) ;
 inline void Action_1__ctor_mB1D15ABB19F5BF1AB896EEEDF3E674A9E9377BFF (Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE* __this, RuntimeObject* ___0_object, intptr_t ___1_method, const RuntimeMethod* method)
 {
-	((  void (*) (Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE*, RuntimeObject*, intptr_t, const RuntimeMethod*))Action_1__ctor_m685A441EC9FAC9D554B26FA83A08F4BEF96DFF0E_gshared)(__this, ___0_object, ___1_method, method);
+	((  void (*) (Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE*, RuntimeObject*, intptr_t, const RuntimeMethod*))Action_1__ctor_mB1D15ABB19F5BF1AB896EEEDF3E674A9E9377BFF_gshared)(__this, ___0_object, ___1_method, method);
 }
 inline void GenericEventChannelSO_1_RegisterListener_mEA3F7C33922161355E3BB50C5A17C7CB0E485190 (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783* __this, Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE* ___0_listener, const RuntimeMethod* method)
 {
-	((  void (*) (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783*, Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE*, const RuntimeMethod*))GenericEventChannelSO_1_RegisterListener_mDE814C8A5A5A55811F3923FFC5A239AC9E53318D_gshared)(__this, ___0_listener, method);
+	((  void (*) (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783*, Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE*, const RuntimeMethod*))GenericEventChannelSO_1_RegisterListener_mEA3F7C33922161355E3BB50C5A17C7CB0E485190_gshared)(__this, ___0_listener, method);
 }
 inline void Action_1__ctor_m46A4A4693AB817C08666D30B777B25F22073D096 (Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A* __this, RuntimeObject* ___0_object, intptr_t ___1_method, const RuntimeMethod* method)
 {
-	((  void (*) (Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A*, RuntimeObject*, intptr_t, const RuntimeMethod*))Action_1__ctor_m685A441EC9FAC9D554B26FA83A08F4BEF96DFF0E_gshared)(__this, ___0_object, ___1_method, method);
+	((  void (*) (Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A*, RuntimeObject*, intptr_t, const RuntimeMethod*))Action_1__ctor_m46A4A4693AB817C08666D30B777B25F22073D096_gshared)(__this, ___0_object, ___1_method, method);
 }
 inline void GenericEventChannelSO_1_RegisterListener_mB0DB720FBE67D7B447A447FB0B32C39588FE99E7 (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA* __this, Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A* ___0_listener, const RuntimeMethod* method)
 {
-	((  void (*) (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA*, Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A*, const RuntimeMethod*))GenericEventChannelSO_1_RegisterListener_mDE814C8A5A5A55811F3923FFC5A239AC9E53318D_gshared)(__this, ___0_listener, method);
+	((  void (*) (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA*, Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A*, const RuntimeMethod*))GenericEventChannelSO_1_RegisterListener_mB0DB720FBE67D7B447A447FB0B32C39588FE99E7_gshared)(__this, ___0_listener, method);
 }
 inline void GenericEventChannelSO_1_UnregisterListener_m6D32A26CA1573666E499289EC55D405D43454BB6 (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783* __this, Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE* ___0_listener, const RuntimeMethod* method)
 {
-	((  void (*) (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783*, Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE*, const RuntimeMethod*))GenericEventChannelSO_1_UnregisterListener_mC0875E85A16311B0D008F448A7EEDB9698D9EC41_gshared)(__this, ___0_listener, method);
+	((  void (*) (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783*, Action_1_t86F042CD395329704188562D4A8E05CDC81F95EE*, const RuntimeMethod*))GenericEventChannelSO_1_UnregisterListener_m6D32A26CA1573666E499289EC55D405D43454BB6_gshared)(__this, ___0_listener, method);
 }
 inline void GenericEventChannelSO_1_UnregisterListener_m18A9E3D1286D77706EF47914E25594DCA3D3D69B (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA* __this, Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A* ___0_listener, const RuntimeMethod* method)
 {
-	((  void (*) (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA*, Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A*, const RuntimeMethod*))GenericEventChannelSO_1_UnregisterListener_mC0875E85A16311B0D008F448A7EEDB9698D9EC41_gshared)(__this, ___0_listener, method);
+	((  void (*) (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA*, Action_1_t13FADC5A0398A2B1AB25311A2C7F2374295D254A*, const RuntimeMethod*))GenericEventChannelSO_1_UnregisterListener_m18A9E3D1286D77706EF47914E25594DCA3D3D69B_gshared)(__this, ___0_listener, method);
 }
 inline void Action_1__ctor_m9DC2953C55C4D7D4B7BEFE03D84DA1F9362D652C (Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A* __this, RuntimeObject* ___0_object, intptr_t ___1_method, const RuntimeMethod* method)
 {
-	((  void (*) (Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A*, RuntimeObject*, intptr_t, const RuntimeMethod*))Action_1__ctor_m685A441EC9FAC9D554B26FA83A08F4BEF96DFF0E_gshared)(__this, ___0_object, ___1_method, method);
+	((  void (*) (Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A*, RuntimeObject*, intptr_t, const RuntimeMethod*))Action_1__ctor_m2E1DFA67718FC1A0B6E5DFEB78831FFE9C059EB4_gshared)(__this, ___0_object, ___1_method, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BridgeEventDispatcher_RegisterHandler_mFE60553A8915BE43B5CDBFFA6CCB4563C5E9B288 (BridgeEventDispatcher_t174D5A291D52607E251735A5B7C93B66ED2D8A88* __this, String_t* ___0_methodName, Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A* ___1_handler, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool String_IsNullOrEmpty_mEA9E3FB005AC28FE02E69FCF95A7B8456192B478 (String_t* ___0_value, const RuntimeMethod* method) ;
@@ -1049,9 +1062,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Debug_LogWarning_m33EF1B897E0C7C6FF53898
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool String_Contains_m6D77B121FADA7CA5F397C0FABB65DA62DF03B6C3 (String_t* __this, String_t* ___0_value, const RuntimeMethod* method) ;
 inline JsonRpcRequestDto_tD7A2FE0878B250CF69310C6F27DC5C5A5F3D482C JsonUtility_FromJson_TisJsonRpcRequestDto_tD7A2FE0878B250CF69310C6F27DC5C5A5F3D482C_mB04B465E19251A3BC4B09D8A65B8714BDBB578EA (String_t* ___0_json, const RuntimeMethod* method)
 {
-	JsonRpcRequestDto_tD7A2FE0878B250CF69310C6F27DC5C5A5F3D482C il2cppRetVal;
-	((  void (*) (String_t*, Il2CppFullySharedGenericAny*, const RuntimeMethod*))JsonUtility_FromJson_TisIl2CppFullySharedGenericAny_mCA9E8A2C7BF60F5C6F2FE4812F33F4C06E5B44D0_gshared)(___0_json, (Il2CppFullySharedGenericAny*)&il2cppRetVal, method);
-	return il2cppRetVal;
+	return ((  JsonRpcRequestDto_tD7A2FE0878B250CF69310C6F27DC5C5A5F3D482C (*) (String_t*, const RuntimeMethod*))JsonUtility_FromJson_TisJsonRpcRequestDto_tD7A2FE0878B250CF69310C6F27DC5C5A5F3D482C_mB04B465E19251A3BC4B09D8A65B8714BDBB578EA_gshared)(___0_json, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BridgeEventDispatcher_Dispatch_mD14E80000A1D77AD1A6B647F0199829C35C5C40C (BridgeEventDispatcher_t174D5A291D52607E251735A5B7C93B66ED2D8A88* __this, String_t* ___0_methodName, String_t* ___1_payload, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* String_Concat_m9E3155FB84015C823606188F53B47CB44C444991 (String_t* ___0_str0, String_t* ___1_str1, const RuntimeMethod* method) ;
@@ -1080,9 +1091,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* String_TrimStart_m69C2400B208C8F3D1
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool String_StartsWith_mF75DBA1EB709811E711B44E26FF919C88A8E65C0 (String_t* __this, String_t* ___0_value, const RuntimeMethod* method) ;
 inline SessionConfigDto_t381F72EFB717FCC12E14C2526C2500909A13F52B JsonUtility_FromJson_TisSessionConfigDto_t381F72EFB717FCC12E14C2526C2500909A13F52B_mC9FA3EF719B7C99A0EF775950F22130F92BA4754 (String_t* ___0_json, const RuntimeMethod* method)
 {
-	SessionConfigDto_t381F72EFB717FCC12E14C2526C2500909A13F52B il2cppRetVal;
-	((  void (*) (String_t*, Il2CppFullySharedGenericAny*, const RuntimeMethod*))JsonUtility_FromJson_TisIl2CppFullySharedGenericAny_mCA9E8A2C7BF60F5C6F2FE4812F33F4C06E5B44D0_gshared)(___0_json, (Il2CppFullySharedGenericAny*)&il2cppRetVal, method);
-	return il2cppRetVal;
+	return ((  SessionConfigDto_t381F72EFB717FCC12E14C2526C2500909A13F52B (*) (String_t*, const RuntimeMethod*))JsonUtility_FromJson_TisSessionConfigDto_t381F72EFB717FCC12E14C2526C2500909A13F52B_mC9FA3EF719B7C99A0EF775950F22130F92BA4754_gshared)(___0_json, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* String_Trim_m81BD35659E6F89DDD56816975E6E05390D023FE5 (String_t* __this, CharU5BU5D_t799905CF001DD5F13F7DBB310181FC4D8B7D0AAB* ___0_trimChars, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR AsyncOperation_tD2789250E4B098DEDA92B366A577E500A92D2D3C* FlutterBridgeManager_LoadSceneDirect_m01D228E406078A37AD08C02C46E47CDA8A0D0EC0 (FlutterBridgeManager_t58BB01568EA9632856160FC015FD7B06EDD1F667* __this, String_t* ___0_sceneNameOrPath, const RuntimeMethod* method) ;
@@ -1091,20 +1100,20 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t SessionConfigDto_get_Qual
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* String_Format_m918500C1EFB475181349A79989BB79BB36102894 (String_t* ___0_format, ObjectU5BU5D_t8061030B0A12A55D5AD8652A20C922FE99450918* ___1_args, const RuntimeMethod* method) ;
 inline void GenericEventChannelSO_1_Raise_m7F6270FF7DAA438D8A1F38278F9CBEC019F4E64F (GenericEventChannelSO_1_tFDABE3C9DDB21BA0C689D8B649DD8B4B3F3E6F38* __this, int32_t ___0_value, const RuntimeMethod* method)
 {
-	((  void (*) (GenericEventChannelSO_1_t82BDD65F27E341CDD32A08BE4386ABB75CDB94F3*, Il2CppFullySharedGenericAny, const RuntimeMethod*))GenericEventChannelSO_1_Raise_mC5A91FAB72259D0E30623855FA3BB4E139637E3F_gshared)((GenericEventChannelSO_1_t82BDD65F27E341CDD32A08BE4386ABB75CDB94F3*)__this, (Il2CppFullySharedGenericAny)&___0_value, method);
+	((  void (*) (GenericEventChannelSO_1_tFDABE3C9DDB21BA0C689D8B649DD8B4B3F3E6F38*, int32_t, const RuntimeMethod*))GenericEventChannelSO_1_Raise_mB45888E78C86BF9ADEB87D931F007C1826B3B91D_gshared)(__this, ___0_value, method);
 }
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR QualityPresetManager_tBFBFA6C2A9727DF776C14F7A498EC11D7AA66854* QualityPresetManager_get_Instance_m59D5532FEF41C092D1B4C598F4DBF7021BC22FED_inline (const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void QualityPresetManager_ApplyPreset_mA58952F4BDEBD0023C772E67D67F869CF9C638A4 (QualityPresetManager_tBFBFA6C2A9727DF776C14F7A498EC11D7AA66854* __this, int32_t ___0_preset, const RuntimeMethod* method) ;
 inline void GenericEventChannelSO_1_Raise_mD627226EF033400947E3223A52D6578336CD7127 (GenericEventChannelSO_1_t1528D7562A7DD5A29C3BC75392614AD313020A27* __this, SessionConfigDto_t381F72EFB717FCC12E14C2526C2500909A13F52B ___0_value, const RuntimeMethod* method)
 {
-	((  void (*) (GenericEventChannelSO_1_t82BDD65F27E341CDD32A08BE4386ABB75CDB94F3*, Il2CppFullySharedGenericAny, const RuntimeMethod*))GenericEventChannelSO_1_Raise_mC5A91FAB72259D0E30623855FA3BB4E139637E3F_gshared)((GenericEventChannelSO_1_t82BDD65F27E341CDD32A08BE4386ABB75CDB94F3*)__this, (Il2CppFullySharedGenericAny)&___0_value, method);
+	((  void (*) (GenericEventChannelSO_1_t1528D7562A7DD5A29C3BC75392614AD313020A27*, SessionConfigDto_t381F72EFB717FCC12E14C2526C2500909A13F52B, const RuntimeMethod*))GenericEventChannelSO_1_Raise_mD627226EF033400947E3223A52D6578336CD7127_gshared)(__this, ___0_value, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void VoidEventChannelSO_Raise_mDD64B346C922626E69A9826E0D33D75804DA3531 (VoidEventChannelSO_t7B8C8B745B4CECD72ED207873592D98E07BE5347* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Int32_TryParse_mC928DE2FEC1C35ED5298BDDCA9868076E94B8A21 (String_t* ___0_s, int32_t* ___1_result, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* String_Format_mA8DBB4C2516B9723C5A41E6CB1E2FAF4BBE96DD8 (String_t* ___0_format, RuntimeObject* ___1_arg0, const RuntimeMethod* method) ;
 inline void GenericEventChannelSO_1_Raise_mF43AD9149A122ABA94FDC76606D15515550E1A08 (GenericEventChannelSO_1_t5AC28C96BE6309EA31ADB7FB6DAAE59DBE4AAFEA* __this, int32_t ___0_value, const RuntimeMethod* method)
 {
-	((  void (*) (GenericEventChannelSO_1_t82BDD65F27E341CDD32A08BE4386ABB75CDB94F3*, Il2CppFullySharedGenericAny, const RuntimeMethod*))GenericEventChannelSO_1_Raise_mC5A91FAB72259D0E30623855FA3BB4E139637E3F_gshared)((GenericEventChannelSO_1_t82BDD65F27E341CDD32A08BE4386ABB75CDB94F3*)__this, (Il2CppFullySharedGenericAny)&___0_value, method);
+	((  void (*) (GenericEventChannelSO_1_t5AC28C96BE6309EA31ADB7FB6DAAE59DBE4AAFEA*, int32_t, const RuntimeMethod*))GenericEventChannelSO_1_Raise_mF43AD9149A122ABA94FDC76606D15515550E1A08_gshared)(__this, ___0_value, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void JsonRpcRequestDto__ctor_m03DA699E553FBCEA1FBAFF71D4D68AEEF4016D12 (JsonRpcRequestDto_tD7A2FE0878B250CF69310C6F27DC5C5A5F3D482C* __this, String_t* ___0_method, String_t* ___1_params, int32_t ___2_id, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FlutterBridgeManager_SendMessageToFlutterNative_m28783E11C9F73C13873EA76C56D13A7ACA61ECC7 (String_t* ___0_message, const RuntimeMethod* method) ;
@@ -1115,42 +1124,42 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FlutterBridgeManager_HandleResumeSession
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FlutterBridgeManager_HandleRecalibrateVR_mBF32BAFF7BCD5A0D21A9D14DA4E62E3F95208DDA (FlutterBridgeManager_t58BB01568EA9632856160FC015FD7B06EDD1F667* __this, const RuntimeMethod* method) ;
 inline void GenericEventChannelSO_1__ctor_mD5649E84933071F8BEEBBD5378E1113E493177A2 (GenericEventChannelSO_1_t1528D7562A7DD5A29C3BC75392614AD313020A27* __this, const RuntimeMethod* method)
 {
-	((  void (*) (GenericEventChannelSO_1_t1528D7562A7DD5A29C3BC75392614AD313020A27*, const RuntimeMethod*))GenericEventChannelSO_1__ctor_m3DBCB0D9A789C0A3B734D946F00822A540C4400E_gshared)(__this, method);
+	((  void (*) (GenericEventChannelSO_1_t1528D7562A7DD5A29C3BC75392614AD313020A27*, const RuntimeMethod*))GenericEventChannelSO_1__ctor_mD5649E84933071F8BEEBBD5378E1113E493177A2_gshared)(__this, method);
 }
 inline void GenericEventChannelSO_1__ctor_m6F8DF0E8C102FF0972DD8FF2ADC807BE43927FCC (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783* __this, const RuntimeMethod* method)
 {
-	((  void (*) (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783*, const RuntimeMethod*))GenericEventChannelSO_1__ctor_m3DBCB0D9A789C0A3B734D946F00822A540C4400E_gshared)(__this, method);
+	((  void (*) (GenericEventChannelSO_1_tEBF02D80C2166507E44B5DC401CF7520BBE98783*, const RuntimeMethod*))GenericEventChannelSO_1__ctor_m6F8DF0E8C102FF0972DD8FF2ADC807BE43927FCC_gshared)(__this, method);
 }
 inline void GenericEventChannelSO_1__ctor_mF2306F87EE3C08FFB9052E9B2678C93A5D31E109 (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA* __this, const RuntimeMethod* method)
 {
-	((  void (*) (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA*, const RuntimeMethod*))GenericEventChannelSO_1__ctor_m3DBCB0D9A789C0A3B734D946F00822A540C4400E_gshared)(__this, method);
+	((  void (*) (GenericEventChannelSO_1_t2184010CABAA1F35D26B954487EB4FEB0809FBCA*, const RuntimeMethod*))GenericEventChannelSO_1__ctor_mF2306F87EE3C08FFB9052E9B2678C93A5D31E109_gshared)(__this, method);
 }
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR StringComparer_t6268F19CA34879176651429C0D8A3D0002BB8E06* StringComparer_get_Ordinal_m77A8C28E78759556E06A6925E949737A45599E26_inline (const RuntimeMethod* method) ;
 inline void Dictionary_2__ctor_m79705460EE1FB5238593C696C923B079EF907E5B (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D* __this, int32_t ___0_capacity, RuntimeObject* ___1_comparer, const RuntimeMethod* method)
 {
-	((  void (*) (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D*, int32_t, RuntimeObject*, const RuntimeMethod*))Dictionary_2__ctor_mCC4C1AFB623AE154F67437E7FC549449FF598526_gshared)(__this, ___0_capacity, ___1_comparer, method);
+	((  void (*) (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D*, int32_t, RuntimeObject*, const RuntimeMethod*))Dictionary_2__ctor_mF67467217142A79C407188798209E4524D74D34F_gshared)(__this, ___0_capacity, ___1_comparer, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ArgumentNullException__ctor_m444AE141157E333844FC1A9500224C2F9FD24F4B (ArgumentNullException_t327031E412FAB2351B0022DD5DAD47E67E597129* __this, String_t* ___0_paramName, const RuntimeMethod* method) ;
 inline void Dictionary_2_set_Item_m712233828B73716AD094E3EDD334AE3F214A6189 (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D* __this, String_t* ___0_key, Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A* ___1_value, const RuntimeMethod* method)
 {
-	((  void (*) (Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E*, Il2CppFullySharedGenericAny, Il2CppFullySharedGenericAny, const RuntimeMethod*))Dictionary_2_set_Item_m4C6841170DD11AED683D2D71919F362A4CFF4A80_gshared)((Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E*)__this, (Il2CppFullySharedGenericAny)___0_key, (Il2CppFullySharedGenericAny)___1_value, method);
+	((  void (*) (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D*, String_t*, Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A*, const RuntimeMethod*))Dictionary_2_set_Item_m1A840355E8EDAECEA9D0C6F5E51B248FAA449CBD_gshared)(__this, ___0_key, ___1_value, method);
 }
 inline bool Dictionary_2_Remove_m19848C4C5164C8994AB698E1DBC7009C49BE0171 (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D* __this, String_t* ___0_key, const RuntimeMethod* method)
 {
-	return ((  bool (*) (Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E*, Il2CppFullySharedGenericAny, const RuntimeMethod*))Dictionary_2_Remove_m583C4F0E2926B584BE6EC6008195360FC631C14C_gshared)((Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E*)__this, (Il2CppFullySharedGenericAny)___0_key, method);
+	return ((  bool (*) (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D*, String_t*, const RuntimeMethod*))Dictionary_2_Remove_m5C7C45E75D951A75843F3F7AADD56ECD64F6BC86_gshared)(__this, ___0_key, method);
 }
 inline bool Dictionary_2_TryGetValue_mAAC2986FF3FEBDB371049A71433F9357ED88F30C (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D* __this, String_t* ___0_key, Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A** ___1_value, const RuntimeMethod* method)
 {
-	return ((  bool (*) (Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E*, Il2CppFullySharedGenericAny, Il2CppFullySharedGenericAny*, const RuntimeMethod*))Dictionary_2_TryGetValue_m7519D765EAF1E8A7D3137C2F1B7B3A01D15A1692_gshared)((Dictionary_2_t5C32AF17A5801FB3109E5B0E622BA8402A04E08E*)__this, (Il2CppFullySharedGenericAny)___0_key, (Il2CppFullySharedGenericAny*)___1_value, method);
+	return ((  bool (*) (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D*, String_t*, Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A**, const RuntimeMethod*))Dictionary_2_TryGetValue_mD15380A4ED7CDEE99EA45881577D26BA9CE1B849_gshared)(__this, ___0_key, ___1_value, method);
 }
 inline void Action_1_Invoke_m690438AAE38F9762172E3AE0A33D0B42ACD35790_inline (Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A* __this, String_t* ___0_obj, const RuntimeMethod* method)
 {
-	((  void (*) (Action_1_t923A20D1D4F6B55B2ED5AE21B90F1A0CE0450D99*, Il2CppFullySharedGenericAny, const RuntimeMethod*))Action_1_Invoke_m5A038831CEB84A7E374FE59D43444412629F833F_gshared_inline)((Action_1_t923A20D1D4F6B55B2ED5AE21B90F1A0CE0450D99*)__this, (Il2CppFullySharedGenericAny)___0_obj, method);
+	((  void (*) (Action_1_t3CB5D1A819C3ED3F99E9E39F890F18633253949A*, String_t*, const RuntimeMethod*))Action_1_Invoke_mF2422B2DD29F74CE66F791C3F68E288EC7C3DB9E_gshared_inline)(__this, ___0_obj, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* String_Format_mFB7DA489BD99F4670881FF50EC017BFB0A5C0987 (String_t* ___0_format, RuntimeObject* ___1_arg0, RuntimeObject* ___2_arg1, const RuntimeMethod* method) ;
 inline void Dictionary_2_Clear_mA5A15D3371EB3F783D87AB1148CA7D2EFFAF0EFB (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D* __this, const RuntimeMethod* method)
 {
-	((  void (*) (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D*, const RuntimeMethod*))Dictionary_2_Clear_m935B3F117860376DC854C9E0C80CBD99BE77EEA4_gshared)(__this, method);
+	((  void (*) (Dictionary_2_t599EFBA58C4F1673138C703D60976BB1FAACE83D*, const RuntimeMethod*))Dictionary_2_Clear_mCFB5EA7351D5860D2B91592B91A84CA265A41433_gshared)(__this, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void SessionConfigDto__ctor_m1A605CB1FC2F3D49D6C87BF1E9BBCFED35DCF63A (SessionConfigDto_t381F72EFB717FCC12E14C2526C2500909A13F52B* __this, String_t* ___0_sceneName, int32_t ___1_language, float ___2_durationSeconds, bool ___3_isVrMode, int32_t ___4_qualityPreset, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void SessionProgressDto__ctor_m6B7EBC31B4D67E1B7ACCD7A9D7765B2839B99F47 (SessionProgressDto_tD41F046B8C121B2C1FDF8148DBEE61D4B30326E5* __this, String_t* ___0_sessionId, String_t* ___1_sceneName, float ___2_elapsedSeconds, float ___3_totalDurationSeconds, float ___4_progressNormalized, String_t* ___5_currentPhase, int32_t ___6_userHeartRateOrState, const RuntimeMethod* method) ;
@@ -3864,8 +3873,8 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR StringComparer_t6268F19CA34879176
 		return L_0;
 	}
 }
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Action_1_Invoke_m5A038831CEB84A7E374FE59D43444412629F833F_gshared_inline (Action_1_t923A20D1D4F6B55B2ED5AE21B90F1A0CE0450D99* __this, Il2CppFullySharedGenericAny ___0_obj, const RuntimeMethod* method) 
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Action_1_Invoke_mF2422B2DD29F74CE66F791C3F68E288EC7C3DB9E_gshared_inline (Action_1_t6F9EB113EB3F16226AEF811A2744F4111C116C87* __this, RuntimeObject* ___0_obj, const RuntimeMethod* method) 
 {
-	typedef void (*FunctionPointerType) (RuntimeObject*, Il2CppFullySharedGenericAny, const RuntimeMethod*);
+	typedef void (*FunctionPointerType) (RuntimeObject*, RuntimeObject*, const RuntimeMethod*);
 	((FunctionPointerType)__this->___invoke_impl)((Il2CppObject*)__this->___method_code, ___0_obj, reinterpret_cast<RuntimeMethod*>(__this->___method));
 }

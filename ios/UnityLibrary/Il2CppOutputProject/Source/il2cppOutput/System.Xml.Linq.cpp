@@ -105,11 +105,11 @@ struct InterfaceFuncInvoker0
 struct Dictionary_2_t9FA6D82CAFC18769F7515BB51D1C56DAE09381C3;
 struct Dictionary_2_tE1603CE612C16451D1E56FF4D4859D4FE4087C28;
 struct Dictionary_2_t5C8F46F5D57502270DD9E1DA8303B23C7FE85588;
+struct EventHandler_1_tD8C4A5BE1F7C91B1A7E99AE87AFD2F5432C38746;
 struct EventHandler_1_tE0D84DF4C8C855490459A777E36FC3EABB3BDED3;
-struct EventHandler_1_t5629179164803EFAE40F6023484C1674B4493577;
+struct ExtractKeyDelegate_t9BADAD4BDEEE5FEB8CBD095F1EA307C3DA921583;
 struct ExtractKeyDelegate_tF846F349E00D201712A8EEA75D152D36A0BA7FEB;
 struct ExtractKeyDelegate_t2CB1F734FE7BBA8353A1EB62ED27544C812D4424;
-struct ExtractKeyDelegate_t0FCB0690B76E40F52DC9D05708A8FC488624E3CD;
 struct IEnumerable_1_t148EAB2068C5F48E82A9E0C643BB154B8BB34257;
 struct IEnumerable_1_t3CF62242A258E986307D7CCF84A4C03FB96055D8;
 struct IEnumerator_1_t48AB7213FE0C045660B7F1D0FEA232BA22210BC4;
@@ -117,9 +117,9 @@ struct IEnumerator_1_t14D6DCE9D9AA35992A6A7A1E7E89CCF8C2A477BF;
 struct List_1_t43EC7C138A17FAAD7120408F039923082A70301A;
 struct XHashtableState_tFAC50B260A012F2C1081F1809F2C832FC6D37766;
 struct XHashtableState_tE5B2A2A8CF765BB629E8F6A37F5847751D6CA93C;
+struct XHashtable_1_t4C208624C5DAFD8858B7794DF15C5747BE4B3072;
 struct XHashtable_1_t2CF715088068F7F6D5D06152C3D4A892E5B07E46;
 struct XHashtable_1_t2D08921459BE574EC1B2D723734AB79BE4CBE4B5;
-struct XHashtable_1_t781B821CC6AC13BED190536310819EB7FD1463D0;
 struct ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031;
 struct CharU5BU5D_t799905CF001DD5F13F7DBB310181FC4D8B7D0AAB;
 struct DelegateU5BU5D_tC5AB7E8F745616680F337909D3A8E6C722CDF771;
@@ -130,7 +130,6 @@ struct StackTraceU5BU5D_t32FBCB20930EAF5BAE3F450FF75228E5450DA0DF;
 struct StringU5BU5D_t7674CD946EC0CE7B3AE0BE70E6EE85F2ECD9F248;
 struct TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB;
 struct XmlAttributeU5BU5D_tFC0CF817A6D2131D94AB6387E4EAE7D97B3FFC40;
-struct __Il2CppFullySharedGenericTypeU5BU5D_tCAB6D060972DD49223A834B7EEFEB9FE2D003BEC;
 struct ArgumentException_tAD90411542A20A9C72D5CDA3A84181D8B947A263;
 struct ArgumentNullException_t327031E412FAB2351B0022DD5DAD47E67E597129;
 struct ArrayList_t7A8E5AF0C4378015B5731ABE2BED8F2782FEEF8A;
@@ -1154,10 +1153,10 @@ struct XmlWriterSettings_t4C33BC8989A2AF592E88EAE69930915E6D960674  : public Run
 	bool ___autoXmlDecl;
 	bool ___isReadOnly;
 };
-struct EventHandler_1_tE0D84DF4C8C855490459A777E36FC3EABB3BDED3  : public MulticastDelegate_t
+struct EventHandler_1_tD8C4A5BE1F7C91B1A7E99AE87AFD2F5432C38746  : public MulticastDelegate_t
 {
 };
-struct EventHandler_1_t5629179164803EFAE40F6023484C1674B4493577  : public MulticastDelegate_t
+struct EventHandler_1_tE0D84DF4C8C855490459A777E36FC3EABB3BDED3  : public MulticastDelegate_t
 {
 };
 struct ExtractKeyDelegate_tF846F349E00D201712A8EEA75D152D36A0BA7FEB  : public MulticastDelegate_t
@@ -1343,13 +1342,13 @@ IL2CPP_EXTERN_C void NamespaceResolver_tD689E47F9BD1966D743E2401E5C7D387FC5A4E46
 IL2CPP_EXTERN_C void NamespaceResolver_tD689E47F9BD1966D743E2401E5C7D387FC5A4E46_marshal_com_cleanup(NamespaceResolver_tD689E47F9BD1966D743E2401E5C7D387FC5A4E46_marshaled_com& marshaled);
 
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* XDocument_GetFirstNode_TisRuntimeObject_mB6611AFC4A5D605253FE7A3ABB8BFCB6250CA705_gshared (XDocument_tFD643046CAF39623C3D8AA1693390D5EE08E82F1* __this, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ExtractKeyDelegate__ctor_m5E13E9801D274AB1B35D7859F4ED656AA3BD1593_gshared (ExtractKeyDelegate_t0FCB0690B76E40F52DC9D05708A8FC488624E3CD* __this, RuntimeObject* ___0_object, intptr_t ___1_method, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void XHashtable_1__ctor_m76AD29BB3D4A65A3071FDFCC0AD7F927FC6051B7_gshared (XHashtable_1_t781B821CC6AC13BED190536310819EB7FD1463D0* __this, ExtractKeyDelegate_t0FCB0690B76E40F52DC9D05708A8FC488624E3CD* ___0_extractKey, int32_t ___1_capacity, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool XHashtable_1_TryGetValue_m2AE37A0F57ADCA202E17A64CCAF4D0F37A070A24_gshared (XHashtable_1_t781B821CC6AC13BED190536310819EB7FD1463D0* __this, String_t* ___0_key, int32_t ___1_index, int32_t ___2_count, Il2CppFullySharedGenericAny* ___3_value, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void XHashtable_1_Add_mB4B8BF6CA81EE97D92FEE9D365A8FFB15168AE00_gshared (XHashtable_1_t781B821CC6AC13BED190536310819EB7FD1463D0* __this, Il2CppFullySharedGenericAny ___0_value, Il2CppFullySharedGenericAny* il2cppRetVal, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ExtractKeyDelegate__ctor_m71776A39921DB2D04FFE7A628E616EB1A27D7CA4_gshared (ExtractKeyDelegate_t9BADAD4BDEEE5FEB8CBD095F1EA307C3DA921583* __this, RuntimeObject* ___0_object, intptr_t ___1_method, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void XHashtable_1__ctor_m9D005D3C7669B409F1E1B4F0863596FD91DB335C_gshared (XHashtable_1_t4C208624C5DAFD8858B7794DF15C5747BE4B3072* __this, ExtractKeyDelegate_t9BADAD4BDEEE5FEB8CBD095F1EA307C3DA921583* ___0_extractKey, int32_t ___1_capacity, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool XHashtable_1_TryGetValue_mB91947F216CD72CEE9C38FA8EF56137E42817080_gshared (XHashtable_1_t4C208624C5DAFD8858B7794DF15C5747BE4B3072* __this, String_t* ___0_key, int32_t ___1_index, int32_t ___2_count, RuntimeObject** ___3_value, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* XHashtable_1_Add_m4CE3AB9A64E8EBADEC48510932751F7C6D5581A0_gshared (XHashtable_1_t4C208624C5DAFD8858B7794DF15C5747BE4B3072* __this, RuntimeObject* ___0_value, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* XObject_Annotation_TisRuntimeObject_mA59EF6437D825A65AED4C032B09C4AAEAD53631E_gshared (XObject_t1E867FBE626AA0DC878BDDFC1ABCF19F1A4B5C29* __this, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Array_Resize_TisIl2CppFullySharedGenericAny_m263FC41C8DB989397C43C86556D63CEBE13F4712_gshared (__Il2CppFullySharedGenericTypeU5BU5D_tCAB6D060972DD49223A834B7EEFEB9FE2D003BEC** ___0_array, int32_t ___1_newSize, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void EventHandler_1_Invoke_mB8EBD394BCA1574F4FE9C1C05A4F246099C4DA48_gshared_inline (EventHandler_1_t5629179164803EFAE40F6023484C1674B4493577* __this, RuntimeObject* ___0_sender, Il2CppFullySharedGenericAny ___1_e, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Array_Resize_TisRuntimeObject_mE8D92C287251BAF8256D85E5829F749359EC334E_gshared (ObjectU5BU5D_t8061030B0A12A55D5AD8652A20C922FE99450918** ___0_array, int32_t ___1_newSize, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void EventHandler_1_Invoke_mBD72C04FF5A08A2EA93DFD21037CD1C27A48D07A_gshared_inline (EventHandler_1_tD8C4A5BE1F7C91B1A7E99AE87AFD2F5432C38746* __this, RuntimeObject* ___0_sender, RuntimeObject* ___1_e, const RuntimeMethod* method) ;
 
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR CultureInfo_t9BA817D41AD55AC8BD07480DD8AC22F8FFA378E0* CultureInfo_get_InvariantCulture_mD1E96DC845E34B10F78CB744B0CB5D7D63CEB1E6 (const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* String_Format_m3844098E7C18576D263AAF62F69BE5C70BF9A744 (RuntimeObject* ___0_provider, String_t* ___1_format, RuntimeObject* ___2_arg0, const RuntimeMethod* method) ;
@@ -1495,36 +1494,34 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR XName_tAF6D9533A7D11AC27118F656985AC325C2A50E
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void PlatformNotSupportedException__ctor_mD5DBE8E9A6FF4B75EF02671029C6D67A51EAFBD1 (PlatformNotSupportedException_tD2BD7EB9278518AA5FE8AE75AD5D0D4298A4631A* __this, const RuntimeMethod* method) ;
 inline void ExtractKeyDelegate__ctor_m4BC044526C0E86F46ECECDB20498B945328ABDC4 (ExtractKeyDelegate_t2CB1F734FE7BBA8353A1EB62ED27544C812D4424* __this, RuntimeObject* ___0_object, intptr_t ___1_method, const RuntimeMethod* method)
 {
-	((  void (*) (ExtractKeyDelegate_t2CB1F734FE7BBA8353A1EB62ED27544C812D4424*, RuntimeObject*, intptr_t, const RuntimeMethod*))ExtractKeyDelegate__ctor_m5E13E9801D274AB1B35D7859F4ED656AA3BD1593_gshared)(__this, ___0_object, ___1_method, method);
+	((  void (*) (ExtractKeyDelegate_t2CB1F734FE7BBA8353A1EB62ED27544C812D4424*, RuntimeObject*, intptr_t, const RuntimeMethod*))ExtractKeyDelegate__ctor_m71776A39921DB2D04FFE7A628E616EB1A27D7CA4_gshared)(__this, ___0_object, ___1_method, method);
 }
 inline void XHashtable_1__ctor_m2BF64564E1E2591557C43E6257A7C5A27C315CC3 (XHashtable_1_t2D08921459BE574EC1B2D723734AB79BE4CBE4B5* __this, ExtractKeyDelegate_t2CB1F734FE7BBA8353A1EB62ED27544C812D4424* ___0_extractKey, int32_t ___1_capacity, const RuntimeMethod* method)
 {
-	((  void (*) (XHashtable_1_t2D08921459BE574EC1B2D723734AB79BE4CBE4B5*, ExtractKeyDelegate_t2CB1F734FE7BBA8353A1EB62ED27544C812D4424*, int32_t, const RuntimeMethod*))XHashtable_1__ctor_m76AD29BB3D4A65A3071FDFCC0AD7F927FC6051B7_gshared)(__this, ___0_extractKey, ___1_capacity, method);
+	((  void (*) (XHashtable_1_t2D08921459BE574EC1B2D723734AB79BE4CBE4B5*, ExtractKeyDelegate_t2CB1F734FE7BBA8353A1EB62ED27544C812D4424*, int32_t, const RuntimeMethod*))XHashtable_1__ctor_m9D005D3C7669B409F1E1B4F0863596FD91DB335C_gshared)(__this, ___0_extractKey, ___1_capacity, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR XNamespace_t86B6F8515F5E20D387B83EBDE0890C4559A4012C* XNamespace_EnsureNamespace_mFBE191305CF760E4F2FC15B3E3DA1BFAD147A55C (WeakReference_tD4B0518CE911FFD9FAAB3FCD492644A354312D8E** ___0_refNmsp, String_t* ___1_namespaceName, const RuntimeMethod* method) ;
 inline bool XHashtable_1_TryGetValue_mE089B0005F28691948D766336F3F88084BBF1519 (XHashtable_1_t2D08921459BE574EC1B2D723734AB79BE4CBE4B5* __this, String_t* ___0_key, int32_t ___1_index, int32_t ___2_count, XName_tAF6D9533A7D11AC27118F656985AC325C2A50E5C** ___3_value, const RuntimeMethod* method)
 {
-	return ((  bool (*) (XHashtable_1_t2D08921459BE574EC1B2D723734AB79BE4CBE4B5*, String_t*, int32_t, int32_t, XName_tAF6D9533A7D11AC27118F656985AC325C2A50E5C**, const RuntimeMethod*))XHashtable_1_TryGetValue_m2AE37A0F57ADCA202E17A64CCAF4D0F37A070A24_gshared)(__this, ___0_key, ___1_index, ___2_count, ___3_value, method);
+	return ((  bool (*) (XHashtable_1_t2D08921459BE574EC1B2D723734AB79BE4CBE4B5*, String_t*, int32_t, int32_t, XName_tAF6D9533A7D11AC27118F656985AC325C2A50E5C**, const RuntimeMethod*))XHashtable_1_TryGetValue_mB91947F216CD72CEE9C38FA8EF56137E42817080_gshared)(__this, ___0_key, ___1_index, ___2_count, ___3_value, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* String_Substring_mB1D94F47935D22E130FF2C01DBB6A4135FBB76CE (String_t* __this, int32_t ___0_startIndex, int32_t ___1_length, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void XName__ctor_mA1D99FDB997DE7A0178011EB30EF44C9F42E35FD (XName_tAF6D9533A7D11AC27118F656985AC325C2A50E5C* __this, XNamespace_t86B6F8515F5E20D387B83EBDE0890C4559A4012C* ___0_ns, String_t* ___1_localName, const RuntimeMethod* method) ;
 inline XName_tAF6D9533A7D11AC27118F656985AC325C2A50E5C* XHashtable_1_Add_m9A73638569B4DE63ED5184845B303BC6B3AA24D1 (XHashtable_1_t2D08921459BE574EC1B2D723734AB79BE4CBE4B5* __this, XName_tAF6D9533A7D11AC27118F656985AC325C2A50E5C* ___0_value, const RuntimeMethod* method)
 {
-	XName_tAF6D9533A7D11AC27118F656985AC325C2A50E5C* il2cppRetVal;
-	((  void (*) (XHashtable_1_t781B821CC6AC13BED190536310819EB7FD1463D0*, Il2CppFullySharedGenericAny, Il2CppFullySharedGenericAny*, const RuntimeMethod*))XHashtable_1_Add_mB4B8BF6CA81EE97D92FEE9D365A8FFB15168AE00_gshared)((XHashtable_1_t781B821CC6AC13BED190536310819EB7FD1463D0*)__this, (Il2CppFullySharedGenericAny)___0_value, (Il2CppFullySharedGenericAny*)&il2cppRetVal, method);
-	return il2cppRetVal;
+	return ((  XName_tAF6D9533A7D11AC27118F656985AC325C2A50E5C* (*) (XHashtable_1_t2D08921459BE574EC1B2D723734AB79BE4CBE4B5*, XName_tAF6D9533A7D11AC27118F656985AC325C2A50E5C*, const RuntimeMethod*))XHashtable_1_Add_m4CE3AB9A64E8EBADEC48510932751F7C6D5581A0_gshared)(__this, ___0_value, method);
 }
 inline void ExtractKeyDelegate__ctor_mD091E7D1BD644B5AD183EEC9A59091552A22C99F (ExtractKeyDelegate_tF846F349E00D201712A8EEA75D152D36A0BA7FEB* __this, RuntimeObject* ___0_object, intptr_t ___1_method, const RuntimeMethod* method)
 {
-	((  void (*) (ExtractKeyDelegate_tF846F349E00D201712A8EEA75D152D36A0BA7FEB*, RuntimeObject*, intptr_t, const RuntimeMethod*))ExtractKeyDelegate__ctor_m5E13E9801D274AB1B35D7859F4ED656AA3BD1593_gshared)(__this, ___0_object, ___1_method, method);
+	((  void (*) (ExtractKeyDelegate_tF846F349E00D201712A8EEA75D152D36A0BA7FEB*, RuntimeObject*, intptr_t, const RuntimeMethod*))ExtractKeyDelegate__ctor_m71776A39921DB2D04FFE7A628E616EB1A27D7CA4_gshared)(__this, ___0_object, ___1_method, method);
 }
 inline void XHashtable_1__ctor_m2BB5A3D4757552F324DEF1DA25BF2AA0E1350B35 (XHashtable_1_t2CF715088068F7F6D5D06152C3D4A892E5B07E46* __this, ExtractKeyDelegate_tF846F349E00D201712A8EEA75D152D36A0BA7FEB* ___0_extractKey, int32_t ___1_capacity, const RuntimeMethod* method)
 {
-	((  void (*) (XHashtable_1_t2CF715088068F7F6D5D06152C3D4A892E5B07E46*, ExtractKeyDelegate_tF846F349E00D201712A8EEA75D152D36A0BA7FEB*, int32_t, const RuntimeMethod*))XHashtable_1__ctor_m76AD29BB3D4A65A3071FDFCC0AD7F927FC6051B7_gshared)(__this, ___0_extractKey, ___1_capacity, method);
+	((  void (*) (XHashtable_1_t2CF715088068F7F6D5D06152C3D4A892E5B07E46*, ExtractKeyDelegate_tF846F349E00D201712A8EEA75D152D36A0BA7FEB*, int32_t, const RuntimeMethod*))XHashtable_1__ctor_m9D005D3C7669B409F1E1B4F0863596FD91DB335C_gshared)(__this, ___0_extractKey, ___1_capacity, method);
 }
 inline bool XHashtable_1_TryGetValue_m6DCEE793F3BC47A51E07360869AC2BB4A4A8D554 (XHashtable_1_t2CF715088068F7F6D5D06152C3D4A892E5B07E46* __this, String_t* ___0_key, int32_t ___1_index, int32_t ___2_count, WeakReference_tD4B0518CE911FFD9FAAB3FCD492644A354312D8E** ___3_value, const RuntimeMethod* method)
 {
-	return ((  bool (*) (XHashtable_1_t2CF715088068F7F6D5D06152C3D4A892E5B07E46*, String_t*, int32_t, int32_t, WeakReference_tD4B0518CE911FFD9FAAB3FCD492644A354312D8E**, const RuntimeMethod*))XHashtable_1_TryGetValue_m2AE37A0F57ADCA202E17A64CCAF4D0F37A070A24_gshared)(__this, ___0_key, ___1_index, ___2_count, ___3_value, method);
+	return ((  bool (*) (XHashtable_1_t2CF715088068F7F6D5D06152C3D4A892E5B07E46*, String_t*, int32_t, int32_t, WeakReference_tD4B0518CE911FFD9FAAB3FCD492644A354312D8E**, const RuntimeMethod*))XHashtable_1_TryGetValue_mB91947F216CD72CEE9C38FA8EF56137E42817080_gshared)(__this, ___0_key, ___1_index, ___2_count, ___3_value, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t String_CompareOrdinal_m8940CFAE90021ED8DA3F2DF8226941C9EEB2E32D (String_t* ___0_strA, int32_t ___1_indexA, String_t* ___2_strB, int32_t ___3_indexB, int32_t ___4_length, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR XNamespace_t86B6F8515F5E20D387B83EBDE0890C4559A4012C* XNamespace_get_Xml_mE1966B4156DA2D168566FDC81E6327CC63E9B0EB (const RuntimeMethod* method) ;
@@ -1533,9 +1530,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void XNamespace__ctor_m9D184158922B44BBCD28D3
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void WeakReference__ctor_m5F9E2F970CD85965A003C0B37ABDBFAA1F5CF241 (WeakReference_tD4B0518CE911FFD9FAAB3FCD492644A354312D8E* __this, RuntimeObject* ___0_target, const RuntimeMethod* method) ;
 inline WeakReference_tD4B0518CE911FFD9FAAB3FCD492644A354312D8E* XHashtable_1_Add_m63A04BAFB51DFCB75B2A3C728413D5BA90546D03 (XHashtable_1_t2CF715088068F7F6D5D06152C3D4A892E5B07E46* __this, WeakReference_tD4B0518CE911FFD9FAAB3FCD492644A354312D8E* ___0_value, const RuntimeMethod* method)
 {
-	WeakReference_tD4B0518CE911FFD9FAAB3FCD492644A354312D8E* il2cppRetVal;
-	((  void (*) (XHashtable_1_t781B821CC6AC13BED190536310819EB7FD1463D0*, Il2CppFullySharedGenericAny, Il2CppFullySharedGenericAny*, const RuntimeMethod*))XHashtable_1_Add_mB4B8BF6CA81EE97D92FEE9D365A8FFB15168AE00_gshared)((XHashtable_1_t781B821CC6AC13BED190536310819EB7FD1463D0*)__this, (Il2CppFullySharedGenericAny)___0_value, (Il2CppFullySharedGenericAny*)&il2cppRetVal, method);
-	return il2cppRetVal;
+	return ((  WeakReference_tD4B0518CE911FFD9FAAB3FCD492644A354312D8E* (*) (XHashtable_1_t2CF715088068F7F6D5D06152C3D4A892E5B07E46*, WeakReference_tD4B0518CE911FFD9FAAB3FCD492644A354312D8E*, const RuntimeMethod*))XHashtable_1_Add_m4CE3AB9A64E8EBADEC48510932751F7C6D5581A0_gshared)(__this, ___0_value, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool XNamespace_op_Inequality_m72707CE08FC24456A262D7C72ECC042531A1918C (XNamespace_t86B6F8515F5E20D387B83EBDE0890C4559A4012C* ___0_left, XNamespace_t86B6F8515F5E20D387B83EBDE0890C4559A4012C* ___1_right, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void XContainer_RemoveNode_m801CAABC52F39D3BBDAAE0E091A58DD25D957467 (XContainer_tF94A2D69B11B71834E4E5531DD59E627CBFE2BBF* __this, XNode_t185C922661054AAD14F49676DD6F3CB10D652A30* ___0_n, const RuntimeMethod* method) ;
@@ -1551,7 +1546,7 @@ inline BaseUriAnnotation_t3E8EF7050D4B9D097C974B45CF5AB93DDC04A350* XObject_Anno
 }
 inline void Array_Resize_TisRuntimeObject_mE8D92C287251BAF8256D85E5829F749359EC334E (ObjectU5BU5D_t8061030B0A12A55D5AD8652A20C922FE99450918** ___0_array, int32_t ___1_newSize, const RuntimeMethod* method)
 {
-	((  void (*) (ObjectU5BU5D_t8061030B0A12A55D5AD8652A20C922FE99450918**, int32_t, const RuntimeMethod*))Array_Resize_TisIl2CppFullySharedGenericAny_m263FC41C8DB989397C43C86556D63CEBE13F4712_gshared)(___0_array, ___1_newSize, method);
+	((  void (*) (ObjectU5BU5D_t8061030B0A12A55D5AD8652A20C922FE99450918**, int32_t, const RuntimeMethod*))Array_Resize_TisRuntimeObject_mE8D92C287251BAF8256D85E5829F749359EC334E_gshared)(___0_array, ___1_newSize, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Type_t* Object_GetType_mE10A8FC1E57F3DF29972CCBC026C2DC3942263B3 (RuntimeObject* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Type_op_Equality_m99930A0E44E420A685FABA60E60BA1CC5FA0EBDC (Type_t* ___0_left, Type_t* ___1_right, const RuntimeMethod* method) ;
@@ -1565,7 +1560,7 @@ inline XObjectChangeAnnotation_t15A3BFA1AFCED540C4FDE5CD931F282377BD5AE5* XObjec
 }
 inline void EventHandler_1_Invoke_m3965D4B8E60E8C8AFE3565DF3E9081B3834E46AA_inline (EventHandler_1_tE0D84DF4C8C855490459A777E36FC3EABB3BDED3* __this, RuntimeObject* ___0_sender, XObjectChangeEventArgs_tD06978690A72B3D2B986EBA7E166B736F909B55F* ___1_e, const RuntimeMethod* method)
 {
-	((  void (*) (EventHandler_1_t5629179164803EFAE40F6023484C1674B4493577*, RuntimeObject*, Il2CppFullySharedGenericAny, const RuntimeMethod*))EventHandler_1_Invoke_mB8EBD394BCA1574F4FE9C1C05A4F246099C4DA48_gshared_inline)((EventHandler_1_t5629179164803EFAE40F6023484C1674B4493577*)__this, ___0_sender, (Il2CppFullySharedGenericAny)___1_e, method);
+	((  void (*) (EventHandler_1_tE0D84DF4C8C855490459A777E36FC3EABB3BDED3*, RuntimeObject*, XObjectChangeEventArgs_tD06978690A72B3D2B986EBA7E166B736F909B55F*, const RuntimeMethod*))EventHandler_1_Invoke_mBD72C04FF5A08A2EA93DFD21037CD1C27A48D07A_gshared_inline)(__this, ___0_sender, ___1_e, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BaseUriAnnotation__ctor_m63EAC1E4CB30B2C91C25D20C36FE9821D6F02865 (BaseUriAnnotation_t3E8EF7050D4B9D097C974B45CF5AB93DDC04A350* __this, String_t* ___0_baseUri, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Type_t* Type_GetTypeFromHandle_m6062B81682F79A4D6DF2640692EE6D9987858C57 (RuntimeTypeHandle_t332A452B8B6179E4469B69525D0FE82A88030F7B ___0_handle, const RuntimeMethod* method) ;
@@ -11955,8 +11950,8 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t XmlWriterSettings_get_Nam
 		return L_0;
 	}
 }
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void EventHandler_1_Invoke_mB8EBD394BCA1574F4FE9C1C05A4F246099C4DA48_gshared_inline (EventHandler_1_t5629179164803EFAE40F6023484C1674B4493577* __this, RuntimeObject* ___0_sender, Il2CppFullySharedGenericAny ___1_e, const RuntimeMethod* method) 
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void EventHandler_1_Invoke_mBD72C04FF5A08A2EA93DFD21037CD1C27A48D07A_gshared_inline (EventHandler_1_tD8C4A5BE1F7C91B1A7E99AE87AFD2F5432C38746* __this, RuntimeObject* ___0_sender, RuntimeObject* ___1_e, const RuntimeMethod* method) 
 {
-	typedef void (*FunctionPointerType) (RuntimeObject*, RuntimeObject*, Il2CppFullySharedGenericAny, const RuntimeMethod*);
+	typedef void (*FunctionPointerType) (RuntimeObject*, RuntimeObject*, RuntimeObject*, const RuntimeMethod*);
 	((FunctionPointerType)__this->___invoke_impl)((Il2CppObject*)__this->___method_code, ___0_sender, ___1_e, reinterpret_cast<RuntimeMethod*>(__this->___method));
 }

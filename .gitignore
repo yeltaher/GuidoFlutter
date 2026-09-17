@@ -45,3 +45,12 @@ app.*.map.json
 /android/app/release
 ios/IPA Versions/
 *Guido-Flutter-build-logs-*.txt
+
+# Unity source project (versioned in separate repo)
+unity/
+
+# Editor backup files
+*.bak
+
+# Unity export artifacts (large binary packages)
+assets/*.unitypackage
