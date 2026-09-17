@@ -39,18 +39,8 @@ target 'Runner' do
 end
 
 pre_install do |installer|
-  # Security check: verify if UnityLibrary/Data assets are Git LFS pointers (e.g. size < 500 bytes)
-  unity_data_dir = File.expand_path(File.join(File.dirname(__FILE__), 'UnityLibrary', 'Data'))
-  if Dir.exist?(unity_data_dir)
-    sample_asset = File.join(unity_data_dir, 'sharedassets0.assets')
-    lfs_pointer_detected = (File.exist?(sample_asset) && File.size(sample_asset) < 500) ||
-      Dir.glob(File.join(unity_data_dir, '*.assets')).any? { |f| File.file?(f) && File.size(f) < 500 }
-
-    if lfs_pointer_detected
-      puts '[Podfile] Detected Git LFS pointer for UnityLibrary/Data. Pulling actual binaries with git lfs pull...'
-      system('git lfs pull')
-    end
-  end
+  puts '[Podfile] Ensuring Git LFS binary assets are pulled...'
+  system('git lfs pull')
 end
 
 post_install do |installer|

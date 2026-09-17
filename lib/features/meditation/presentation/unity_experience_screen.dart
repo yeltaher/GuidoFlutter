@@ -58,6 +58,11 @@ class _UnityExperienceScreenState
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     WakelockPlus.enable();
 
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
     if (widget.isVrMode) {
       VrOrientationService.enterVr();
     }
