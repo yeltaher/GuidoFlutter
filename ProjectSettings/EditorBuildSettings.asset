@@ -4,5 +4,32 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Esperienze_Guido/Scene/Respirazioni/Acqua resp.unity
+    guid: 79ce916ef1a21f444bf628e4b190bd92
+  - enabled: 1
+    path: Assets/Esperienze_Guido/Scene/Respirazioni/Aria respirazione.unity
+    guid: 603705d14bf4f864cb901ff507b5a53a
+  - enabled: 1
+    path: Assets/Esperienze_Guido/Scene/Respirazioni/Fuoco resp.unity
+    guid: 738d398d83bd9ca48a623cca8a6a4065
+  - enabled: 1
+    path: Assets/Esperienze_Guido/Scene/Respirazioni/Respirazione terra.unity
+    guid: 6ff22b838f6c3584cb73c7bf221f113f
+  - enabled: 1
+    path: Assets/Esperienze_Guido/Scene/Meditazioni/Med generale.unity
+    guid: 410d86d6a385c6a4882ec0194f17bcc6
+  - enabled: 1
+    path: Assets/Esperienze_Guido/Scene/Meditazioni/Procedimento acqua.unity
+    guid: 317cd3d2b52ea28468973097665b26f7
+  - enabled: 1
+    path: Assets/Esperienze_Guido/Scene/Meditazioni/Procedimento aria.unity
+    guid: 57c27338d01e86848a8f3890b80fbd0d
+  - enabled: 1
+    path: Assets/Esperienze_Guido/Scene/Meditazioni/Procedimento fuoco.unity
+    guid: 5716b330ba1b21f4fbd50122cd63c899
+  - enabled: 1
+    path: Assets/Esperienze_Guido/Scene/Meditazioni/Procedimento terra.unity
+    guid: efe6f5754eefe7f41b9213b592f7d246
   m_configObjects: {}

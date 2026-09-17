@@ -57,8 +57,8 @@ flutter_native_splash:
   background_image: "assets/images/sfondo_new.png"
   android: true
   ios: true
-  ios_content_mode: scaleAspectFill
-  android_gravity: fill
+  ios_content_mode: scaleAspectFit
+  android_gravity: center
   fullscreen: true
 
 flutter:
