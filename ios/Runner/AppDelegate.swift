@@ -1,4 +1,5 @@
 import Flutter
+import flutter_unity_widget_2
 import UIKit
 
 // MARK: - Crash Handler (async-signal-safe, C-level only)
@@ -138,6 +139,9 @@ private class CrashLogManager {
     ) -> Bool {
         // Register crash handlers FIRST (before any plugin registration)
         registerCrashHandlers()
+
+        // Initialize Unity UaaL engine before plugin registration
+        InitUnityIntegrationWithOptions(argc: CommandLine.argc, argv: CommandLine.unsafeArgv, launchOptions)
 
         GeneratedPluginRegistrant.register(with: self)
 
