@@ -13,6 +13,7 @@ class SplashView extends ConsumerWidget {
 
   void _routeToHome(BuildContext context, WidgetRef ref) {
     final prefs = ref.read(sharedPrefsProvider);
+    if (prefs == null) return;
     final isOnboarded = prefs.getBool("IsOnboarded") ?? false;
 
     if (isOnboarded) {
@@ -250,7 +251,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
         return;
       }
       final prefs = ref.read(sharedPrefsProvider);
-      prefs.setString("ProfileName", _nameController.text.trim());
+      prefs?.setString("ProfileName", _nameController.text.trim());
     } else {
       if (_emailController.text.trim().isEmpty ||
           _passwordController.text.trim().isEmpty) {

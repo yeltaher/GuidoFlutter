@@ -8,7 +8,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/vr_gaze_button.dart';
 import '../../../core/vr/vr_host_screen.dart';
 import '../../../core/database/settings_provider.dart';
-import 'session_launch_helper.dart';
 
 /// Schermata di calibrazione VR.
 ///
@@ -51,8 +50,13 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
 
   StreamSubscription<GyroscopeEvent>? _gyroSub;
   Timer? _countdownTimer;
+  Timer? _gyroTimeoutTimer;
   DateTime? _phase0StartTime;
   static const double _phase0DurationMs = 2500.0;
+  /// Timeout massimo per la fase di calibrazione giroscopio.
+  /// Se il sensore non risponde entro questo intervallo, si passa
+  /// alla fase manuale (gaze) con bias zero.
+  static const Duration _gyroTimeout = Duration(seconds: 5);
 
   // Controller gaze — creato in fase 1, condiviso con VrHostScreen
   late final VrGazeController _gazeController;
@@ -76,6 +80,7 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
   void dispose() {
     _gyroSub?.cancel();
     _countdownTimer?.cancel();
+    _gyroTimeoutTimer?.cancel();
     _gazeController.dispose();
     super.dispose();
   }
@@ -83,14 +88,25 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
   void _startDriftCalibration() {
     _gyroSub?.cancel();
     _countdownTimer?.cancel();
+    _gyroTimeoutTimer?.cancel();
     _calibrationProgress = 0.0;
     _phase = 0;
     _phase0StartTime = DateTime.now();
 
-    // Campionamento per UI — il bias viene sempre impostato a 0.0 (puro giroscopio)
+    // Campionamento per UI — il bias viene sempre impostato a 0.0 (puro giroscopio).
+    // Se il sensore non è disponibile (permessi negati, hardware assente),
+    // il timeout garantisce il fallback alla calibrazione manuale.
     _gyroSub = gyroscopeEventStream(
       samplingPeriod: SensorInterval.uiInterval,
     ).listen((_) {}, onError: (_) {});
+
+    // Timeout di sicurezza: se il giroscopio non risponde entro 5 secondi,
+    // forza il completamento della fase 0 e passa alla calibrazione manuale.
+    _gyroTimeoutTimer = Timer(_gyroTimeout, () {
+      if (!mounted || _phase != 0) return;
+      _calibrationProgress = 1.0;
+      _completeDriftPhase();
+    });
 
     _countdownTimer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       if (!mounted || _phase0StartTime == null) {
@@ -113,6 +129,8 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
   void _completeDriftPhase() {
     _gyroSub?.cancel();
     _gyroSub = null;
+    _gyroTimeoutTimer?.cancel();
+    _gyroTimeoutTimer = null;
 
     // Bias sempre 0.0: il giroscopio è usato puro, senza correzione artificiale
     ref.read(settingsProvider.notifier).saveVrCalibration(0.0, 0.0);
@@ -127,21 +145,16 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
     if (widget.isFromSettings) {
       context.pop();
     } else {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              VrConfirmationScreen(
-                title: widget.title ?? '',
-                voicePath: widget.voicePath ?? '',
-                ambientPath: widget.ambientPath ?? '',
-                breathingAudioPath: widget.breathingAudioPath,
-                sceneName: widget.sceneName,
-                durationSeconds: widget.durationSeconds,
-              ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              FadeTransition(opacity: animation, child: child),
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
+      context.pushReplacement(
+        '/vr-confirmation',
+        extra: {
+          'title': widget.title ?? '',
+          'voicePath': widget.voicePath ?? '',
+          'ambientPath': widget.ambientPath ?? '',
+          'breathingAudioPath': widget.breathingAudioPath,
+          'sceneName': widget.sceneName,
+          'durationSeconds': widget.durationSeconds,
+        },
       );
     }
   }

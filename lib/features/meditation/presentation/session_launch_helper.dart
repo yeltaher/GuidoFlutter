@@ -9,12 +9,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/vr_gaze_button.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
-import '../../../core/database/repositories/user_repository.dart';
 import '../../../core/audio/audio_resolver_service.dart';
-import 'unity_experience_screen.dart';
-import 'vr_calibration_screen.dart';
-
-import 'explanation_screen.dart';
 
 /// Funzione globale di utilità per avviare qualsiasi sessione di meditazione o respirazione
 /// chiedendo prima l'esperienza Flat vs VR ed effettuando la conferma del visore.
@@ -44,17 +39,16 @@ void launchZenSession({
     isBreathing: breathingAudioPath != null,
   );
 
-  Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (context) => ExplanationScreen(
-        title: title,
-        voicePath: voicePath,
-        ambientPath: ambientPath,
-        breathingAudioPath: breathingAudioPath,
-        sceneName: resolvedScene,
-        durationSeconds: durationSeconds,
-      ),
-    ),
+  context.push(
+    '/explanation',
+    extra: {
+      'title': title,
+      'voicePath': voicePath,
+      'ambientPath': ambientPath,
+      'breathingAudioPath': breathingAudioPath,
+      'sceneName': resolvedScene,
+      'durationSeconds': durationSeconds,
+    },
   );
 }
 
@@ -156,39 +150,30 @@ class SessionLaunchDialog extends ConsumerWidget {
 
     if (!settings.vrCalibrated) {
       // Se non calibrato, prima calibrazione poi conferma
-      Navigator.of(context).push(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              VrCalibrationScreen(
-                title: title,
-                voicePath: voicePath,
-                ambientPath: ambientPath,
-                breathingAudioPath: breathingAudioPath,
-                sceneName: resolvedScene,
-                durationSeconds: durationSeconds,
-              ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              FadeTransition(opacity: animation, child: child),
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
+      context.push(
+        '/vr-calibration',
+        extra: {
+          'isFromSettings': false,
+          'title': title,
+          'voicePath': voicePath,
+          'ambientPath': ambientPath,
+          'breathingAudioPath': breathingAudioPath,
+          'sceneName': resolvedScene,
+          'durationSeconds': durationSeconds,
+        },
       );
     } else {
       // Già calibrato: vai direttamente alla conferma del visore
-      Navigator.of(context).push(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              VrConfirmationScreen(
-                title: title,
-                voicePath: voicePath,
-                ambientPath: ambientPath,
-                breathingAudioPath: breathingAudioPath,
-                sceneName: resolvedScene,
-                durationSeconds: durationSeconds,
-              ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              FadeTransition(opacity: animation, child: child),
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
+      context.push(
+        '/vr-confirmation',
+        extra: {
+          'title': title,
+          'voicePath': voicePath,
+          'ambientPath': ambientPath,
+          'breathingAudioPath': breathingAudioPath,
+          'sceneName': resolvedScene,
+          'durationSeconds': durationSeconds,
+        },
       );
     }
   }
@@ -432,30 +417,21 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
       durationSeconds: widget.durationSeconds,
     );
 
-    Navigator.of(context)
-        .pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => UnityExperienceScreen(
-              title: widget.title,
-              sceneName: bundle.sceneName,
-              durationSeconds: bundle.durationSeconds,
-              isVrMode: true,
-              voicePath: bundle.voicePath,
-              ambientPath: bundle.ambientPath,
-            ),
-          ),
-        )
-        .then((_) async {
-          ref.read(settingsProvider.notifier).toggleVrMode(false);
-          await ref
-              .read(userRepositoryProvider)
-              .recordSession(
-                widget.title,
-                bundle.sceneName.contains('resp')
-                    ? "Respirazione"
-                    : "Meditazione",
-              );
-        });
+    context.pushReplacement(
+      '/unity-experience',
+      extra: {
+        'title': widget.title,
+        'sceneName': bundle.sceneName,
+        'durationSeconds': bundle.durationSeconds,
+        'isVrMode': true,
+        'voicePath': bundle.voicePath,
+        'ambientPath': bundle.ambientPath,
+      },
+    );
+
+    // NOTE: VR mode toggle (false) and session recording are now handled
+    // by UnityExperienceScreen._confirmExit() to avoid GoRouter stack issues.
+    // The original pushReplacement .then() callback was unreliable with GoRouter.
   }
 
   @override

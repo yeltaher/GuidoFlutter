@@ -39,7 +39,7 @@ class MeTab extends ConsumerWidget {
           "🤫 Silenzio Zen",
           "🫁 Respirazione",
         ];
-        final String chosenStyle = styleNames[data.profileStyle];
+        final String chosenStyle = styleNames[data.profileStyle.clamp(0, styleNames.length - 1)];
 
         // Calcola le iniziali dell'avatar
         String avatarInitials = "OZ";
@@ -653,7 +653,7 @@ class MeTab extends ConsumerWidget {
                                   final historyStr =
                                       ref
                                           .read(sharedPrefsProvider)
-                                          .getStringList("timeline_history") ??
+                                          ?.getStringList("timeline_history") ??
                                       [];
                                   if (historyStr.isEmpty) {
                                     return Text(

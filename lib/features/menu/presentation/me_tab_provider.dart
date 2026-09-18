@@ -26,6 +26,8 @@ class MeTabData {
 
 final meTabDataProvider = FutureProvider<MeTabData>((ref) async {
   final repo = ref.watch(userRepositoryProvider);
+  if (repo == null) return MeTabData();
+
   final stats = await repo.getStats();
   final timeline = await repo.getTimeline();
 

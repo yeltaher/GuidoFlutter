@@ -104,6 +104,7 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
   // Salva le risposte locali e porta l'utente nella Home
   void _completeOnboarding() async {
     final prefs = ref.read(sharedPrefsProvider);
+    if (prefs == null) return;
 
     // Salvataggio dei dati personali in SharedPreferences
     await prefs.setString("ProfileName", _nameController.text.trim());

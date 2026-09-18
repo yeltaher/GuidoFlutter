@@ -80,7 +80,7 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
               setState(() {
                 _isSessionFinished = true;
               });
-              ref.read(userRepositoryProvider).recordSession(widget.title, "Meditazione");
+              ref.read(userRepositoryProvider)?.recordSession(widget.title, "Meditazione");
             }
           }
         });

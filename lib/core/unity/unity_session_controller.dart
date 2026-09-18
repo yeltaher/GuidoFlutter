@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_unity_widget_2/flutter_unity_widget.dart';
 import '../database/repositories/user_repository.dart';
@@ -13,6 +14,7 @@ class UnitySessionState {
   final bool isSceneLoaded;
   final bool isPlaying;
   final bool isCompleted;
+  final bool isWaitingForUnity;
   final SessionConfigDto? activeConfig;
   final SessionProgressDto? currentProgress;
   final BreathingPhase currentBreathingPhase;
@@ -27,6 +29,7 @@ class UnitySessionState {
     this.isSceneLoaded = false,
     this.isPlaying = false,
     this.isCompleted = false,
+    this.isWaitingForUnity = false,
     this.activeConfig,
     this.currentProgress,
     this.currentBreathingPhase = BreathingPhase.inhale,
@@ -42,6 +45,7 @@ class UnitySessionState {
     bool? isSceneLoaded,
     bool? isPlaying,
     bool? isCompleted,
+    bool? isWaitingForUnity,
     SessionConfigDto? activeConfig,
     SessionProgressDto? currentProgress,
     BreathingPhase? currentBreathingPhase,
@@ -56,6 +60,7 @@ class UnitySessionState {
       isSceneLoaded: isSceneLoaded ?? this.isSceneLoaded,
       isPlaying: isPlaying ?? this.isPlaying,
       isCompleted: isCompleted ?? this.isCompleted,
+      isWaitingForUnity: isWaitingForUnity ?? this.isWaitingForUnity,
       activeConfig: activeConfig ?? this.activeConfig,
       currentProgress: currentProgress ?? this.currentProgress,
       currentBreathingPhase:
@@ -71,23 +76,90 @@ class UnitySessionState {
 
 /// Riverpod Controller managing Unity UaaL lifecycle, RPC dispatching,
 /// real-time telemetry, haptic sync, and database persistence.
-class UnitySessionController extends Notifier<UnitySessionState> {
+///
+/// FIXES APPLIED:
+/// - [Bug #7] Race condition in startSession(): defers heartbeat until Unity
+///   confirms receipt via first progress message; adds ready-timeout watchdog.
+/// - [Bug #8] Force unwrap eliminated: _postToUnity captures controller in a
+///   local variable before null-check, preventing TOCTOU race with detach.
+/// - [Issue #5] Lifecycle management: WidgetsBindingObserver pauses heartbeat
+///   and watchdog when the app goes to background, resumes on foreground.
+/// - [Issue #6] Watchdog timer: tracks last message timestamp from Unity and
+///   fails the session gracefully if no message arrives within the timeout.
+/// - [Issue #7] detachUnityWidgetController() now resets isUnityLoaded,
+///   isSceneLoaded, stops heartbeat/watchdog, and clears isWaitingForUnity.
+class UnitySessionController extends Notifier<UnitySessionState>
+    with WidgetsBindingObserver {
   UnityWidgetController? _unityWidgetController;
   Timer? _heartbeatTimer;
+  Timer? _watchdogTimer;
+  Timer? _readyTimeoutTimer;
+  DateTime? _lastUnityMessageAt;
+  bool _isAppPaused = false;
 
   static const String _unityBridgeGameObjectName = 'FlutterBridgeManager';
   static const String _unityBridgeMethodName = 'OnFlutterMessage';
 
+  /// Maximum seconds to wait for Unity to acknowledge a session-start command
+  /// before failing the session.  Covers the cold-start and scene-load window.
+  static const Duration _readyTimeout = Duration(seconds: 15);
+
+  /// If no message is received from Unity for this duration the session is
+  /// considered dead (Unity crashed or hung) and will be failed gracefully.
+  static const Duration _watchdogTimeout = Duration(seconds: 30);
+
+  // ---------------------------------------------------------------------------
+  // Lifecycle
+  // ---------------------------------------------------------------------------
+
   @override
   UnitySessionState build() {
-    ref.onDispose(_stopHeartbeat);
+    ref.onDispose(_cleanup);
+    WidgetsBinding.instance.addObserver(this);
     return const UnitySessionState();
   }
+
+  void _cleanup() {
+    WidgetsBinding.instance.removeObserver(this);
+    _stopHeartbeat();
+    _stopWatchdog();
+    _stopReadyTimeout();
+    _unityWidgetController = null;
+  }
+
+  // Renamed from "state" to avoid shadowing the Notifier<UnitySessionState>.state getter.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState appLifecycleState) {
+    // Transition from non-resumed → resumed
+    if (appLifecycleState == AppLifecycleState.resumed && _isAppPaused) {
+      _isAppPaused = false;
+      if (state.isPlaying && !state.isCompleted && state.isUnityLoaded) {
+        _startHeartbeat();
+        _startWatchdog();
+        debugPrint('[UnitySessionController] App resumed — heartbeat & watchdog restarted.');
+      }
+      return;
+    }
+
+    // Transition to any non-resumed state (paused / inactive / detached / hidden)
+    if (appLifecycleState != AppLifecycleState.resumed && !_isAppPaused) {
+      _isAppPaused = true;
+      if (state.isPlaying && !state.isCompleted) {
+        _stopHeartbeat();
+        _stopWatchdog();
+        debugPrint('[UnitySessionController] App paused — heartbeat & watchdog suspended.');
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Heartbeat — session timer & breathing-phase synchronisation
+  // ---------------------------------------------------------------------------
 
   void _startHeartbeat() {
     _stopHeartbeat();
     _heartbeatTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!state.isPlaying || state.isCompleted) {
+      if (!state.isPlaying || state.isCompleted || _isAppPaused) {
         timer.cancel();
         return;
       }
@@ -144,22 +216,109 @@ class UnitySessionController extends Notifier<UnitySessionState> {
     _heartbeatTimer = null;
   }
 
+  // ---------------------------------------------------------------------------
+  // Watchdog — detects Unity crash / silence and fails the session
+  // ---------------------------------------------------------------------------
+
+  void _startWatchdog() {
+    _stopWatchdog();
+    _lastUnityMessageAt = DateTime.now();
+    _watchdogTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (!state.isPlaying || state.isCompleted || _isAppPaused) {
+        timer.cancel();
+        return;
+      }
+      final last = _lastUnityMessageAt;
+      if (last != null && DateTime.now().difference(last) > _watchdogTimeout) {
+        timer.cancel();
+        debugPrint('[UnitySessionController] Watchdog triggered — no Unity message for ${_watchdogTimeout.inSeconds}s.');
+        _failSession(
+          'Unity non risponde da ${_watchdogTimeout.inSeconds}s. Sessione interrotta.',
+        );
+      }
+    });
+  }
+
+  void _stopWatchdog() {
+    _watchdogTimer?.cancel();
+    _watchdogTimer = null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Ready timeout — fails session if Unity never becomes ready after startSession
+  // ---------------------------------------------------------------------------
+
+  void _startReadyTimeout() {
+    _stopReadyTimeout();
+    _readyTimeoutTimer = Timer(_readyTimeout, () {
+      if (state.isWaitingForUnity && !_isAppPaused) {
+        debugPrint('[UnitySessionController] Ready timeout — Unity did not respond within ${_readyTimeout.inSeconds}s.');
+        _failSession(
+          'Unity non è entro il timeout di ${_readyTimeout.inSeconds}s. Sessione annullata.',
+        );
+      }
+    });
+  }
+
+  void _stopReadyTimeout() {
+    _readyTimeoutTimer?.cancel();
+    _readyTimeoutTimer = null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Graceful failure
+  // ---------------------------------------------------------------------------
+
+  void _failSession(String message) {
+    _stopHeartbeat();
+    _stopWatchdog();
+    _stopReadyTimeout();
+    state = state.copyWith(
+      isPlaying: false,
+      isCompleted: true,
+      isWaitingForUnity: false,
+      errorMessage: message,
+    );
+    debugPrint('[UnitySessionController] Session failed: $message');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Unity Widget lifecycle callbacks
+  // ---------------------------------------------------------------------------
+
   /// Called when UnityWidget is attached and controller is ready.
   void onUnityCreated(UnityWidgetController controller) {
     _unityWidgetController = controller;
     state = state.copyWith(isUnityLoaded: true);
     debugPrint('[UnitySessionController] Unity Widget Controller attached.');
 
-    // If an activeConfig was queued before Unity finished loading, send it now
-    if (state.activeConfig != null) {
+    // If a session was queued before Unity finished loading, send it now
+    if (state.isWaitingForUnity && state.activeConfig != null) {
+      _stopReadyTimeout();
+      state = state.copyWith(isPlaying: true, isWaitingForUnity: false);
       _sendStartSessionToUnity(state.activeConfig!);
+      _startHeartbeat();
+      _startWatchdog();
+      debugPrint('[UnitySessionController] Queued session dispatched to newly-ready Unity.');
     }
   }
 
   /// Detaches the controller reference upon screen unmount.
+  ///
+  /// FIX [Issue #7]: now fully resets loading/playing/waiting flags and
+  /// stops all timers so stale state never lingers.
   void detachUnityWidgetController() {
     _unityWidgetController = null;
-    debugPrint('[UnitySessionController] Unity Widget Controller detached.');
+    _stopHeartbeat();
+    _stopWatchdog();
+    _stopReadyTimeout();
+    state = state.copyWith(
+      isUnityLoaded: false,
+      isSceneLoaded: false,
+      isPlaying: false,
+      isWaitingForUnity: false,
+    );
+    debugPrint('[UnitySessionController] Unity Widget Controller detached — state reset.');
   }
 
   /// Called by UnityWidget onUnitySceneLoaded callback.
@@ -172,18 +331,28 @@ class UnitySessionController extends Notifier<UnitySessionState> {
   void onUnityUnloaded() {
     debugPrint('[UnitySessionController] Unity engine unloaded.');
     _stopHeartbeat();
+    _stopWatchdog();
+    _stopReadyTimeout();
     state = state.copyWith(
       isUnityLoaded: false,
       isSceneLoaded: false,
       isPlaying: false,
+      isWaitingForUnity: false,
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // Message handling (Unity → Flutter)
+  // ---------------------------------------------------------------------------
 
   /// Primary message handler parsing events and telemetry incoming from Unity.
   void onUnityMessage(dynamic message) {
     if (message == null) return;
     final String rawStr = message.toString().trim();
     if (rawStr.isEmpty) return;
+
+    // FIX [Issue #6]: refresh the watchdog timestamp on every message.
+    _lastUnityMessageAt = DateTime.now();
 
     debugPrint('[UnitySessionController <- Unity] $rawStr');
 
@@ -293,9 +462,20 @@ class UnitySessionController extends Notifier<UnitySessionState> {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // State application helpers
+  // ---------------------------------------------------------------------------
+
   void _applySessionProgress(SessionProgressDto progress) {
     final previousPhase = state.currentBreathingPhase;
     final newPhase = progress.breathingPhase;
+
+    // FIX [Bug #7]: First progress from Unity confirms the session-start
+    // command was received.  Transition from waiting → playing.
+    if (state.isWaitingForUnity) {
+      _stopReadyTimeout();
+      debugPrint('[UnitySessionController] Unity confirmed session receipt — heartbeat started.');
+    }
 
     state = state.copyWith(
       currentProgress: progress,
@@ -306,7 +486,15 @@ class UnitySessionController extends Notifier<UnitySessionState> {
       progressNormalized: progress.progressNormalized,
       currentBreathingPhase: newPhase,
       isPlaying: true,
+      isWaitingForUnity: false,
     );
+
+    // FIX [Bug #7]: Start heartbeat + watchdog on the very first progress
+    // confirmation if they weren't already running.
+    if (_heartbeatTimer == null && !_isAppPaused) {
+      _startHeartbeat();
+      _startWatchdog();
+    }
 
     if (previousPhase != newPhase) {
       _triggerHapticFeedbackForPhase(newPhase);
@@ -341,10 +529,12 @@ class UnitySessionController extends Notifier<UnitySessionState> {
   /// Automatically persists completed session into Isar DB.
   Future<void> _applySessionSummary(SessionSummaryDto summary) async {
     _stopHeartbeat();
+    _stopWatchdog();
     state = state.copyWith(
       lastSummary: summary,
       isCompleted: true,
       isPlaying: false,
+      isWaitingForUnity: false,
       progressNormalized: 1.0,
       elapsedSeconds: summary.totalDurationSeconds,
     );
@@ -357,7 +547,7 @@ class UnitySessionController extends Notifier<UnitySessionState> {
       final sessionType = isBreathing ? 'Respirazione' : 'Meditazione';
       final minutes = (summary.totalDurationSeconds / 60).ceil().clamp(1, 120);
 
-      await userRepo.recordSession(
+      await userRepo?.recordSession(
         summary.sceneName.isNotEmpty ? summary.sceneName : 'Sessione Zen 3D',
         sessionType,
         durationMinutes: minutes,
@@ -382,7 +572,7 @@ class UnitySessionController extends Notifier<UnitySessionState> {
       final sessionType = isBreathing ? 'Respirazione' : 'Meditazione';
       final minutes = (state.elapsedSeconds / 60).ceil().clamp(1, 120);
 
-      await userRepo.recordSession(
+      await userRepo?.recordSession(
         scene,
         sessionType,
         durationMinutes: minutes,
@@ -394,24 +584,47 @@ class UnitySessionController extends Notifier<UnitySessionState> {
     }
   }
 
-  // --- RPC Command Dispatchers (Flutter -> Unity) ---
+  // ---------------------------------------------------------------------------
+  // RPC Command Dispatchers (Flutter → Unity)
+  // ---------------------------------------------------------------------------
 
   /// Starts a new session by sending SessionConfigDto via JSON-RPC.
+  ///
+  /// FIX [Bug #7]: no longer sets isPlaying=true or starts the heartbeat
+  /// immediately.  If Unity is ready the command is dispatched right away and
+  /// the heartbeat + watchdog start on the first progress confirmation from
+  /// Unity.  If Unity is NOT ready the session config is queued and a
+  /// ready-timeout watchdog is started; onUnityCreated() will dispatch the
+  /// queued command once Unity attaches.
   Future<void> startSession(SessionConfigDto config) async {
+    // Always stop any previous timers
+    _stopHeartbeat();
+    _stopWatchdog();
+
     state = state.copyWith(
       activeConfig: config,
-      isPlaying: true,
+      isPlaying: false,
       isCompleted: false,
+      isWaitingForUnity: false,
       elapsedSeconds: 0.0,
       totalDurationSeconds: config.durationSeconds,
       progressNormalized: 0.0,
       errorMessage: null,
     );
 
-    _startHeartbeat();
-
     if (_unityWidgetController != null && state.isUnityLoaded) {
+      // Unity is ready — send immediately; heartbeat starts on first progress.
+      state = state.copyWith(isPlaying: true);
       _sendStartSessionToUnity(config);
+      // Start a ready-timeout so the session fails if Unity never sends back
+      // a progress message (e.g. scene load failed silently).
+      _startReadyTimeout();
+      _startWatchdog();
+    } else {
+      // Unity NOT ready — queue the config and wait for onUnityCreated.
+      state = state.copyWith(isWaitingForUnity: true);
+      _startReadyTimeout();
+      debugPrint('[UnitySessionController] Unity not ready — session config queued.');
     }
   }
 
@@ -427,6 +640,7 @@ class UnitySessionController extends Notifier<UnitySessionState> {
   /// Pauses the current active Unity session.
   Future<void> pauseSession() async {
     _stopHeartbeat();
+    _stopWatchdog();
     state = state.copyWith(isPlaying: false);
     final rpc = const JsonRpcRequestDto(method: 'pauseSession', id: 2);
     _postToUnity(rpc.toJsonString());
@@ -436,6 +650,8 @@ class UnitySessionController extends Notifier<UnitySessionState> {
   Future<void> resumeSession() async {
     state = state.copyWith(isPlaying: true);
     _startHeartbeat();
+    _startWatchdog();
+    _lastUnityMessageAt = DateTime.now();
     final rpc = const JsonRpcRequestDto(method: 'resumeSession', id: 3);
     _postToUnity(rpc.toJsonString());
   }
@@ -443,10 +659,12 @@ class UnitySessionController extends Notifier<UnitySessionState> {
   /// Stops and terminates the current Unity session.
   Future<void> stopSession() async {
     _stopHeartbeat();
+    _stopWatchdog();
+    _stopReadyTimeout();
     if (state.elapsedSeconds >= 15.0 && !state.isCompleted) {
       await recordPartialSession();
     }
-    state = state.copyWith(isPlaying: false);
+    state = state.copyWith(isPlaying: false, isWaitingForUnity: false);
     final rpc = const JsonRpcRequestDto(method: 'stopSession', id: 4);
     _postToUnity(rpc.toJsonString());
   }
@@ -480,17 +698,27 @@ class UnitySessionController extends Notifier<UnitySessionState> {
   /// Resets controller state when exiting experience.
   void resetSession() {
     _stopHeartbeat();
+    _stopWatchdog();
+    _stopReadyTimeout();
+    _lastUnityMessageAt = null;
     state = const UnitySessionState();
   }
 
+  /// Posts a JSON message to the Unity bridge via Platform Channel.
+  ///
+  /// FIX [Bug #8]: captures the controller reference in a local variable *before*
+  /// the null-check so that a concurrent [detachUnityWidgetController] on another
+  /// micro-task cannot null it out between the guard and the `.postMessage()` call
+  /// (classic TOCTOU / force-unwrap race).
   void _postToUnity(String message) {
-    if (_unityWidgetController == null) {
+    final controller = _unityWidgetController;
+    if (controller == null) {
       debugPrint('[UnitySessionController] Warning: Cannot post message, controller is null.');
       return;
     }
 
     try {
-      _unityWidgetController!.postMessage(
+      controller.postMessage(
         _unityBridgeGameObjectName,
         _unityBridgeMethodName,
         message,

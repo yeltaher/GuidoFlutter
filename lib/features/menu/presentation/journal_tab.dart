@@ -50,8 +50,18 @@ class _JournalTabState extends ConsumerState<JournalTab> {
     _loadEntries();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Retry loading entries if sharedPrefsProvider was unavailable at initState
+    if (_entries.isEmpty) {
+      _loadEntries();
+    }
+  }
+
   void _loadEntries() {
     final prefs = ref.read(sharedPrefsProvider);
+    if (prefs == null) return;
     final String? entriesJson = prefs.getString("JournalEntries");
     if (entriesJson != null) {
       try {
@@ -61,7 +71,9 @@ class _JournalTabState extends ConsumerState<JournalTab> {
               .map((e) => JournalEntry.fromJson(e as Map<String, dynamic>))
               .toList();
         });
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[JournalTab] Failed to decode entries: $e');
+      }
     }
   }
 
@@ -81,27 +93,32 @@ class _JournalTabState extends ConsumerState<JournalTab> {
     final updated = [newEntry, ..._entries];
 
     final prefs = ref.read(sharedPrefsProvider);
+    if (prefs == null) return;
     await prefs.setString(
       "JournalEntries",
       jsonEncode(updated.map((e) => e.toJson()).toList()),
     );
 
+    if (!mounted) return;
     setState(() {
       _entries = updated;
       _textController.clear();
       _selectedMood = "Peaceful";
     });
 
+    if (!mounted) return;
     FocusScope.of(context).unfocus();
   }
 
   Future<void> _deleteEntry(int index) async {
     final updated = List<JournalEntry>.from(_entries)..removeAt(index);
     final prefs = ref.read(sharedPrefsProvider);
+    if (prefs == null) return;
     await prefs.setString(
       "JournalEntries",
       jsonEncode(updated.map((e) => e.toJson()).toList()),
     );
+    if (!mounted) return;
     setState(() {
       _entries = updated;
     });

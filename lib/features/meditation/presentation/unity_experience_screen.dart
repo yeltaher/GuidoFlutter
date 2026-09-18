@@ -15,6 +15,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/vr/vr_orientation_service.dart';
 import '../../../core/database/settings_provider.dart';
+import '../../../core/database/repositories/user_repository.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
 import '../../../core/unity/unity_session_controller.dart';
 
@@ -48,6 +49,10 @@ class _UnityExperienceScreenState
   bool _showExitConfirm = false;
   bool _showLoadTimeoutDialog = false;
   Timer? _loadTimeoutTimer;
+  /// Guard against setState-after-dispose race conditions.
+  /// The timer callback may fire in the microtask queue after dispose()
+  /// has already run but before the Timer is garbage-collected.
+  bool _isDisposed = false;
 
   UnitySessionController? _sessionNotifier;
   GuidoAudioService? _audioService;
@@ -73,6 +78,8 @@ class _UnityExperienceScreenState
   }
 
   void _initializeSession({bool isRepeat = false}) {
+    if (_isDisposed) return;
+
     _loadTimeoutTimer?.cancel();
     setState(() {
       _showLoadTimeoutDialog = false;
@@ -101,15 +108,17 @@ class _UnityExperienceScreenState
     _sessionNotifier?.startSession(config);
     _startAudio(bundle, isRepeat: isRepeat);
 
-    // Timeout a 12 secondi se l'ambiente Unity non si carica
+    // Timeout a 12 secondi se l'ambiente Unity non si carica.
+    // La callback verifica _isDisposed prima di chiamare setState per
+    // prevenire la race condition dispose/setState.
     _loadTimeoutTimer = Timer(const Duration(seconds: 12), () {
-      if (mounted) {
-        final isLoaded = ref.read(unitySessionControllerProvider).isSceneLoaded;
-        if (!isLoaded) {
-          setState(() {
-            _showLoadTimeoutDialog = true;
-          });
-        }
+      if (_isDisposed || !mounted) return;
+      final isLoaded =
+          ref.read(unitySessionControllerProvider).isSceneLoaded;
+      if (!isLoaded) {
+        setState(() {
+          _showLoadTimeoutDialog = true;
+        });
       }
     });
   }
@@ -177,6 +186,14 @@ class _UnityExperienceScreenState
     final audioService = ref.read(audioServiceProvider).valueOrNull;
     await audioService?.stopAll();
 
+    // Reset VR mode and record session (moved from VrConfirmationScreen's
+    // pushReplacement .then() callback for GoRouter compatibility)
+    ref.read(settingsProvider.notifier).toggleVrMode(false);
+    await ref.read(userRepositoryProvider)?.recordSession(
+          widget.title,
+          widget.sceneName.contains('resp') ? "Respirazione" : "Meditazione",
+        );
+
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
@@ -199,6 +216,9 @@ class _UnityExperienceScreenState
 
   @override
   void dispose() {
+    // Set guard FIRST so any in-flight timer callbacks skip setState.
+    _isDisposed = true;
+
     _loadTimeoutTimer?.cancel();
     _loadTimeoutTimer = null;
 
@@ -230,6 +250,7 @@ class _UnityExperienceScreenState
   @override
   Widget build(BuildContext context) {
     ref.listen<UnitySessionState>(unitySessionControllerProvider, (prev, next) {
+      if (_isDisposed) return;
       if (next.isSceneLoaded && _loadTimeoutTimer?.isActive == true) {
         _loadTimeoutTimer?.cancel();
         if (_showLoadTimeoutDialog) {

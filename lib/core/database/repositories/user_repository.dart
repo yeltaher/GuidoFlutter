@@ -5,11 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../settings_provider.dart';
 import '../app_initializer_provider.dart';
 
-/// Provider for Isar instance
-final isarProvider = Provider<Isar>((ref) {
-  final isar = ref.watch(isarInstanceProvider);
-  if (isar == null) throw UnimplementedError('isarProvider not initialized');
-  return isar;
+/// Provider for Isar instance.
+/// Ritorna null se Isar non è ancora stato inizializzato.
+/// I consumer devono gestire il caso null (es. mostrare loading).
+final isarProvider = Provider<Isar?>((ref) {
+  return ref.watch(isarInstanceProvider);
 });
 
 class UserRepository {
@@ -80,9 +80,9 @@ class UserRepository {
   Future<void> setOnboarded(bool value) => prefs.setBool("IsOnboarded", value);
 }
 
-final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return UserRepository(
-    ref.watch(isarProvider),
-    ref.watch(sharedPrefsProvider),
-  );
+final userRepositoryProvider = Provider<UserRepository?>((ref) {
+  final isar = ref.watch(isarProvider);
+  final prefs = ref.watch(sharedPrefsProvider);
+  if (isar == null || prefs == null) return null;
+  return UserRepository(isar, prefs);
 });

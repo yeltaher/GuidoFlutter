@@ -8,7 +8,6 @@ import '../../../core/database/settings_provider.dart';
 import '../../../core/services/daily_quotes_service.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
 import '../../meditation/meditation_feature.dart';
-import 'zen_sound_mixer_view.dart';
 
 class HomeJapandiTab extends ConsumerWidget {
   final bool isActive;
@@ -25,6 +24,9 @@ class HomeJapandiTab extends ConsumerWidget {
     final dailyQuote = ref.watch(dailyQuoteProvider);
 
     final prefs = ref.watch(sharedPrefsProvider);
+    if (prefs == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
     final heroTitle =
         prefs.getString("QuizRecommendedTitle") ?? "Il Respiro dell'Alba";
     final heroDesc =
@@ -499,40 +501,7 @@ class HomeJapandiTab extends ConsumerWidget {
                             textColor,
                             subTextColor,
                             () {
-                              Navigator.of(context).push(
-                                PageRouteBuilder(
-                                  pageBuilder:
-                                      (
-                                        context,
-                                        animation,
-                                        secondaryAnimation,
-                                      ) => const ZenSoundMixerView(),
-                                  transitionsBuilder:
-                                      (
-                                        context,
-                                        animation,
-                                        secondaryAnimation,
-                                        child,
-                                      ) {
-                                        return SlideTransition(
-                                          position: animation.drive(
-                                            Tween<Offset>(
-                                              begin: const Offset(0.0, 1.0),
-                                              end: Offset.zero,
-                                            ).chain(
-                                              CurveTween(
-                                                curve: Curves.easeOutCubic,
-                                              ),
-                                            ),
-                                          ),
-                                          child: child,
-                                        );
-                                      },
-                                  transitionDuration: const Duration(
-                                    milliseconds: 500,
-                                  ),
-                                ),
-                              );
+                              context.push('/zen-sound-mixer');
                             },
                           ),
                         ),

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../audio/audio_service.dart';
@@ -253,17 +254,27 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
 // --- PROVIDERS ---
 
-/// Provider globale per SharedPreferences (inizializzato nel main)
-final sharedPrefsProvider = Provider<SharedPreferences>((ref) {
-  final prefs = ref.watch(sharedPrefsInstanceProvider);
-  if (prefs == null) throw UnimplementedError('SharedPreferences non ancora inizializzato');
-  return prefs;
+/// Provider globale per SharedPreferences (inizializzato nel main).
+/// Ritorna null se SharedPreferences non è ancora stato inizializzato.
+/// I consumer devono gestire il caso null (es. mostrare loading).
+final sharedPrefsProvider = Provider<SharedPreferences?>((ref) {
+  return ref.watch(sharedPrefsInstanceProvider);
 });
 
-/// Provider globale per GuidoAudioService (inizializzato a inizio app)
+/// Provider globale per GuidoAudioService (inizializzato a inizio app).
+/// Se l'inizializzazione della sessione audio fallisce (es. conflitto audio
+/// su iOS, permessi negati), il servizio viene comunque restituito per
+/// consentire la riproduzione locale senza sessione di sistema configurata.
 final audioServiceProvider = FutureProvider<GuidoAudioService>((ref) async {
   final service = GuidoAudioService();
-  await service.initSession(); // Inizializza asincrono properly awaited
+  try {
+    await service.initSession();
+  } catch (e, st) {
+    debugPrint(
+      '[audioServiceProvider] Fallback: audio session init failed, '
+      'continuing without system audio session: $e\n$st',
+    );
+  }
   ref.onDispose(() => service.dispose()); // Previene memory leaks
   return service;
 });

@@ -8,6 +8,7 @@ import '../../features/menu/menu_feature.dart';
 import '../../features/meditation/meditation_feature.dart';
 import '../../features/breathing/breathing_feature.dart';
 import '../../features/premium/premium_feature.dart';
+import '../../features/menu/presentation/zen_sound_mixer_view.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -29,11 +30,57 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/vr-calibration',
-        builder: (context, state) => const VrCalibrationScreen(),
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>? ?? {};
+          final isFromSettings = args['isFromSettings'] as bool? ?? true;
+          if (isFromSettings) {
+            return const VrCalibrationScreen(isFromSettings: true);
+          }
+          return VrCalibrationScreen(
+            isFromSettings: false,
+            title: args['title'] as String?,
+            voicePath: args['voicePath'] as String?,
+            ambientPath: args['ambientPath'] as String?,
+            breathingAudioPath: args['breathingAudioPath'] as String?,
+            sceneName: args['sceneName'] as String?,
+            durationSeconds:
+                (args['durationSeconds'] as num?)?.toDouble() ?? 300.0,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/vr-confirmation',
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>? ?? {};
+          return VrConfirmationScreen(
+            title: args['title'] as String? ?? '',
+            voicePath: args['voicePath'] as String? ?? '',
+            ambientPath: args['ambientPath'] as String? ?? '',
+            breathingAudioPath: args['breathingAudioPath'] as String?,
+            sceneName: args['sceneName'] as String?,
+            durationSeconds:
+                (args['durationSeconds'] as num?)?.toDouble() ?? 300.0,
+          );
+        },
       ),
       GoRoute(
         path: '/remove-vr-headset',
         builder: (context, state) => const RemoveVrHeadsetView(),
+      ),
+      GoRoute(
+        path: '/explanation',
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>? ?? {};
+          return ExplanationScreen(
+            title: args['title'] as String? ?? '',
+            voicePath: args['voicePath'] as String? ?? '',
+            ambientPath: args['ambientPath'] as String? ?? '',
+            breathingAudioPath: args['breathingAudioPath'] as String?,
+            sceneName: args['sceneName'] as String?,
+            durationSeconds:
+                (args['durationSeconds'] as num?)?.toDouble() ?? 300.0,
+          );
+        },
       ),
       GoRoute(
         path: '/breathing',
@@ -83,6 +130,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ambientPath: args['ambientPath'] as String?,
           );
         },
+      ),
+      GoRoute(
+        path: '/zen-sound-mixer',
+        builder: (context, state) => const ZenSoundMixerView(),
       ),
     ],
   );
