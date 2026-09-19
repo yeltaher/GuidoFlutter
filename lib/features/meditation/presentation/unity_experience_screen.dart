@@ -224,8 +224,10 @@ class _UnityExperienceScreenState
 
     final sessionNotifier = _sessionNotifier;
     if (sessionNotifier != null) {
-      sessionNotifier.detachUnityWidgetController();
-      Future.microtask(() => sessionNotifier.stopSession());
+      Future.microtask(() {
+        sessionNotifier.detachUnityWidgetController();
+        sessionNotifier.stopSession();
+      });
     }
     _audioService?.stopAll();
 

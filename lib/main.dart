@@ -41,7 +41,7 @@ Future<void> _showCrashNotification() async {
     );
     const initSettings = InitializationSettings(android: androidSettings, iOS: iosSettings);
 
-    await flutterLocalNotificationsPlugin.initialize(initSettings);
+    await flutterLocalNotificationsPlugin.initialize(settings: initSettings);
 
     const androidDetails = AndroidNotificationDetails(
       'crash_channel',
@@ -59,10 +59,10 @@ Future<void> _showCrashNotification() async {
     const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await flutterLocalNotificationsPlugin.show(
-      0,
-      'Crash Rilevato',
-      'Lapp si e chiusa in modo anomalo. Tocca per i dettagli.',
-      details,
+      id: 0,
+      title: 'Crash Rilevato',
+      body: 'Lapp si e chiusa in modo anomalo. Tocca per i dettagli.',
+      notificationDetails: details,
     );
   } catch (e) {
     debugPrint('[CrashLog] Notification error: $e');

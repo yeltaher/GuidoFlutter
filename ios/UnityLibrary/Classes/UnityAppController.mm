@@ -38,8 +38,6 @@
 #include <os/log.h>
 #include <RedefinePlatforms.h>
 
-// Edited by https://github.com/juicycleff/flutter-unity-view-widget
-
 // we assume that app delegate is never changed and we can cache it, instead of re-query UIApplication every time
 UnityAppController* _UnityAppController = nil;
 UnityAppController* GetAppController()
@@ -746,21 +744,6 @@ extern "C" void UnityCleanupTrampoline()
     return YES;
 }
 
-
-// Added by https://github.com/juicycleff/flutter-unity-view-widget
-extern "C" void OnUnityMessage(const char* message)
-{
-    if (GetAppController().unityMessageHandler) {
-        GetAppController().unityMessageHandler(message);
-    }
-}
-
-extern "C" void OnUnitySceneLoaded(const char* name, const int* buildIndex, const bool* isLoaded, const bool* IsValid)
-{
-    if (GetAppController().unitySceneLoadedHandler) {
-        GetAppController().unitySceneLoadedHandler(name, buildIndex, isLoaded, IsValid);
-    }
-}
 @end
 
 

@@ -312,13 +312,15 @@ class UnitySessionController extends Notifier<UnitySessionState>
     _stopHeartbeat();
     _stopWatchdog();
     _stopReadyTimeout();
-    state = state.copyWith(
-      isUnityLoaded: false,
-      isSceneLoaded: false,
-      isPlaying: false,
-      isWaitingForUnity: false,
-    );
-    debugPrint('[UnitySessionController] Unity Widget Controller detached — state reset.');
+    Future.microtask(() {
+      state = state.copyWith(
+        isUnityLoaded: false,
+        isSceneLoaded: false,
+        isPlaying: false,
+        isWaitingForUnity: false,
+      );
+      debugPrint('[UnitySessionController] Unity Widget Controller detached — state reset.');
+    });
   }
 
   /// Called by UnityWidget onUnitySceneLoaded callback.
@@ -333,12 +335,14 @@ class UnitySessionController extends Notifier<UnitySessionState>
     _stopHeartbeat();
     _stopWatchdog();
     _stopReadyTimeout();
-    state = state.copyWith(
-      isUnityLoaded: false,
-      isSceneLoaded: false,
-      isPlaying: false,
-      isWaitingForUnity: false,
-    );
+    Future.microtask(() {
+      state = state.copyWith(
+        isUnityLoaded: false,
+        isSceneLoaded: false,
+        isPlaying: false,
+        isWaitingForUnity: false,
+      );
+    });
   }
 
   // ---------------------------------------------------------------------------

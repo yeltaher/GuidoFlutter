@@ -157,6 +157,15 @@ void main() {
             path: '/premium',
             builder: (context, state) => const Scaffold(body: Text('Premium Paywall')),
           ),
+          GoRoute(
+            path: '/explanation',
+            builder: (context, state) => const ExplanationScreen(
+              title: 'Test',
+              sceneName: 'TestScene',
+              voicePath: '',
+              ambientPath: '',
+            ),
+          ),
         ],
       );
 
@@ -210,6 +219,15 @@ void main() {
           GoRoute(
             path: '/premium',
             builder: (context, state) => const Scaffold(body: Text('Premium Paywall')),
+          ),
+          GoRoute(
+            path: '/explanation',
+            builder: (context, state) => const ExplanationScreen(
+              title: 'Test',
+              sceneName: 'TestScene',
+              voicePath: '',
+              ambientPath: '',
+            ),
           ),
         ],
       );

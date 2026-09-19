@@ -189,8 +189,8 @@ void main() {
       await notifier.startSession(config);
 
       final state = container.read(unitySessionControllerProvider);
-      expect(state.isPlaying, true);
-      expect(state.isCompleted, false);
+      expect(state.isWaitingForUnity, true);
+      expect(state.isPlaying, false);
       expect(state.activeConfig?.sceneName, UnityScenes.fireBreathing);
       expect(state.totalDurationSeconds, 300.0);
 
