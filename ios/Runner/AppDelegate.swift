@@ -1,3 +1,4 @@
+import Darwin
 import Flutter
 import flutter_unity_widget_2
 import UIKit
@@ -8,23 +9,30 @@ import UIKit
 private var previousExceptionHandler: NSUncaughtExceptionHandler?
 
 /// Writes crash info using ONLY async-signal-safe C operations.
-/// This function must NEVER use: Swift strings, FileManager, DateFormatter,
-/// Thread.callStackSymbols, malloc, or any Foundation/UIKit API.
-private func writeCrashLogC(_ message: UnsafePointer<CChar>) {
+private func writeCrashLogC(_ messageC: UnsafePointer<CChar>) {
     let path = "/Documents/crash_log.txt"  // Relative to home
-    let home = getenv("HOME")
-    guard let home = home else { return }
+    guard let home = getenv("HOME") else { return }
 
     // Build full path using C string operations
     var fullPath = [CChar](repeating: 0, count: 1024)
-    snprintf(&fullPath, fullPath.count, "%s%s", home, path)
+    _ = strlcpy(&fullPath, home, 1024)
+    path.withCString { docPath in
+        _ = strlcat(&fullPath, docPath, 1024)
+    }
 
     let fd = fullPath.withUnsafeBufferPointer { buf in
         return open(buf.baseAddress!, O_WRONLY | O_CREAT | O_TRUNC, 0o644)
     }
     if fd >= 0 {
-        _ = write(fd, message, strlen(message))
+        _ = write(fd, messageC, strlen(messageC))
         close(fd)
+    }
+}
+
+/// Convenience overload accepting Swift String
+private func writeCrashLogC(_ message: String) {
+    message.withCString { msgC in
+        writeCrashLogC(msgC)
     }
 }
 
@@ -33,27 +41,18 @@ private func uncaughtExceptionHandler(exception: NSException) {
     let name = exception.name.rawValue
     let reason = exception.reason ?? "No reason"
 
-    // Build a C-safe message using snprintf
-    var buffer = [CChar](repeating: 0, count: 4096)
-    name.withCString { nameC in
-        reason.withCString { reasonC in
-            snprintf(&buffer, buffer.count,
-                "=== CRASH LOG ===\nType: UncaughtException\nException: %s\nReason: %s\n==================\n",
-                nameC, reasonC)
-        }
-    }
-    writeCrashLogC(buffer)
+    let message = "=== CRASH LOG ===\nType: UncaughtException\nException: \(name)\nReason: \(reason)\n==================\n"
+    writeCrashLogC(message)
 
     previousExceptionHandler?(exception)
 }
 
 /// Signal handler (C-callable, async-signal-safe).
-/// Uses ONLY: signal-safe writes, strlen, snprintf — no Swift objects.
 @_cdecl("guidoSignalHandler")
-private func guidoSignalHandler(_ signal: Int32) {
-    // Get signal name using C-level switch
-    let signalName: UnsafePointer<CChar>
-    switch signal {
+private func guidoSignalHandler(_ sig: Int32) {
+    // Get signal name
+    let signalName: String
+    switch sig {
     case SIGABRT: signalName = "SIGABRT"
     case SIGSEGV: signalName = "SIGSEGV"
     case SIGBUS:  signalName = "SIGBUS"
@@ -63,18 +62,13 @@ private func guidoSignalHandler(_ signal: Int32) {
     default:      signalName = "UNKNOWN"
     }
 
-    // Build crash message using ONLY C-level operations
-    var buffer = [CChar](repeating: 0, count: 512)
-    snprintf(&buffer, buffer.count,
-        "=== CRASH LOG ===\nType: Signal(%s)\nSignal: %d (%s)\n==================\n",
-        signalName, signal, signalName)
-
-    // Write using async-signal-safe operations only
-    writeCrashLogC(buffer)
+    // Build crash message using string interpolation
+    let message = "=== CRASH LOG ===\nType: Signal(\(signalName))\nSignal: \(sig) (\(signalName))\n==================\n"
+    writeCrashLogC(message)
 
     // Restore default handler and re-raise
-    signal(signal, SIG_DFL)
-    raise(signal)
+    Darwin.signal(sig, SIG_DFL)
+    raise(sig)
 }
 
 // MARK: - Crash Log Manager
