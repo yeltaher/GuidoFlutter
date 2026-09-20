@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -127,13 +126,12 @@ class UnitySessionController extends Notifier<UnitySessionState>
     _unityWidgetController = null;
   }
 
-  // Renamed from "state" to avoid shadowing the Notifier<UnitySessionState>.state getter.
   @override
-  void didChangeAppLifecycleState(AppLifecycleState appLifecycleState) {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
     // Transition from non-resumed → resumed
-    if (appLifecycleState == AppLifecycleState.resumed && _isAppPaused) {
+    if (state == AppLifecycleState.resumed && _isAppPaused) {
       _isAppPaused = false;
-      if (state.isPlaying && !state.isCompleted && state.isUnityLoaded) {
+      if (this.state.isPlaying && !this.state.isCompleted && this.state.isUnityLoaded) {
         _startHeartbeat();
         _startWatchdog();
         debugPrint('[UnitySessionController] App resumed — heartbeat & watchdog restarted.');
@@ -142,9 +140,9 @@ class UnitySessionController extends Notifier<UnitySessionState>
     }
 
     // Transition to any non-resumed state (paused / inactive / detached / hidden)
-    if (appLifecycleState != AppLifecycleState.resumed && !_isAppPaused) {
+    if (state != AppLifecycleState.resumed && !_isAppPaused) {
       _isAppPaused = true;
-      if (state.isPlaying && !state.isCompleted) {
+      if (this.state.isPlaying && !this.state.isCompleted) {
         _stopHeartbeat();
         _stopWatchdog();
         debugPrint('[UnitySessionController] App paused — heartbeat & watchdog suspended.');

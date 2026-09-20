@@ -89,6 +89,8 @@ NSInteger _forceInterfaceOrientationMask = 0;
 @synthesize engineLoadState         = _engineLoadState;
 @synthesize renderDelegate          = _renderDelegate;
 @synthesize quitHandler             = _quitHandler;
+@synthesize unitySceneLoadedHandler = _unitySceneLoadedHandler;
+@synthesize unityMessageHandler     = _unityMessageHandler;
 
 #if UNITY_SUPPORT_ROTATION
 @synthesize interfaceOrientation    = _curOrientation;
@@ -201,6 +203,8 @@ NSInteger _forceInterfaceOrientationMask = 0;
 
     InitUnityReplayKit();
 #endif
+
+    [[NSNotificationCenter defaultCenter] postNotificationName: @"UnityReady" object:self];
 }
 
 extern "C" void UnityDestroyDisplayLink()
@@ -235,6 +239,27 @@ extern "C" void UnityEngineDidQuit(unsigned level)
                 exit(0);
             break;
     }
+}
+
+extern "C" void OnUnityMessage(const char* message)
+{
+    if (GetAppController().unityMessageHandler)
+    {
+        GetAppController().unityMessageHandler(message);
+    }
+}
+
+extern "C" void OnUnitySceneLoaded(const char* name, const int* buildIndex, const bool* isLoaded, const bool* IsValid)
+{
+    if (GetAppController().unitySceneLoadedHandler)
+    {
+        GetAppController().unitySceneLoadedHandler(name, buildIndex, isLoaded, IsValid);
+    }
+}
+
+extern "C" void SendMessageToFlutterNative(const char* message)
+{
+    OnUnityMessage(message);
 }
 
 extern void SensorsCleanup();
