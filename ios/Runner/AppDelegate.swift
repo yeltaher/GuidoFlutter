@@ -1,129 +1,11 @@
-import Darwin
 import Flutter
 import flutter_unity_widget_2
 import UIKit
-
-// MARK: - Crash Handler (async-signal-safe, C-level only)
-
-/// Previous exception handler to chain
-private var previousExceptionHandler: NSUncaughtExceptionHandler?
-
-/// Writes crash info using ONLY async-signal-safe C operations.
-private func writeCrashLogC(_ messageC: UnsafePointer<CChar>) {
-    let path = "/Documents/crash_log.txt"  // Relative to home
-    guard let home = getenv("HOME") else { return }
-
-    // Build full path using C string operations
-    var fullPath = [CChar](repeating: 0, count: 1024)
-    _ = strlcpy(&fullPath, home, 1024)
-    path.withCString { docPath in
-        _ = strlcat(&fullPath, docPath, 1024)
-    }
-
-    let fd = fullPath.withUnsafeBufferPointer { buf in
-        return open(buf.baseAddress!, O_WRONLY | O_CREAT | O_TRUNC, 0o644)
-    }
-    if fd >= 0 {
-        _ = write(fd, messageC, strlen(messageC))
-        close(fd)
-    }
-}
-
-/// Convenience overload accepting Swift String
-private func writeCrashLogC(_ message: String) {
-    message.withCString { msgC in
-        writeCrashLogC(msgC)
-    }
-}
-
-/// Uncaught exception handler (ObjC exceptions) — runs outside signal context
-private func uncaughtExceptionHandler(exception: NSException) {
-    let name = exception.name.rawValue
-    let reason = exception.reason ?? "No reason"
-
-    let message = "=== CRASH LOG ===\nType: UncaughtException\nException: \(name)\nReason: \(reason)\n==================\n"
-    writeCrashLogC(message)
-
-    previousExceptionHandler?(exception)
-}
-
-/// Signal handler (C-callable, async-signal-safe).
-@_cdecl("guidoSignalHandler")
-private func guidoSignalHandler(_ sig: Int32) {
-    // Get signal name
-    let signalName: String
-    switch sig {
-    case SIGABRT: signalName = "SIGABRT"
-    case SIGSEGV: signalName = "SIGSEGV"
-    case SIGBUS:  signalName = "SIGBUS"
-    case SIGFPE:  signalName = "SIGFPE"
-    case SIGILL:  signalName = "SIGILL"
-    case SIGPIPE: signalName = "SIGPIPE"
-    default:      signalName = "UNKNOWN"
-    }
-
-    // Build crash message using string interpolation
-    let message = "=== CRASH LOG ===\nType: Signal(\(signalName))\nSignal: \(sig) (\(signalName))\n==================\n"
-    writeCrashLogC(message)
-
-    // Restore default handler and re-raise
-    Darwin.signal(sig, SIG_DFL)
-    raise(sig)
-}
-
-// MARK: - Crash Log Manager
-
-/// Thread-safe crash log manager for Flutter method channel
-private class CrashLogManager {
-    static let shared = CrashLogManager()
-
-    private let crashLogURL: URL?
-
-    private init() {
-        let fileManager = FileManager.default
-        crashLogURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("crash_log.txt")
-    }
-
-    func checkCrashLog() -> String? {
-        guard let url = crashLogURL,
-              FileManager.default.fileExists(atPath: url.path),
-              let content = try? String(contentsOf: url, encoding: .utf8),
-              !content.isEmpty else {
-            return nil
-        }
-        return content
-    }
-
-    func clearCrashLog() {
-        guard let url = crashLogURL,
-              FileManager.default.fileExists(atPath: url.path) else {
-            return
-        }
-        try? FileManager.default.removeItem(at: url)
-    }
-}
 
 // MARK: - AppDelegate
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
-
-    // MARK: - Crash Handler Registration
-
-    private func registerCrashHandlers() {
-        // 1. Register uncaught exception handler (ObjC exceptions)
-        previousExceptionHandler = NSGetUncaughtExceptionHandler()
-        NSSetUncaughtExceptionHandler { exception in
-            uncaughtExceptionHandler(exception: exception)
-        }
-
-        // 2. Register signal handlers for native crashes
-        let signals = [SIGABRT, SIGSEGV, SIGBUS, SIGFPE, SIGILL, SIGPIPE]
-        for sig in signals {
-            signal(sig, guidoSignalHandler)
-        }
-    }
 
     // MARK: - Application Lifecycle
 
@@ -131,9 +13,6 @@ private class CrashLogManager {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // Register crash handlers FIRST (before any plugin registration)
-        registerCrashHandlers()
-
         // Initialize Unity UaaL engine before plugin registration
         InitUnityIntegrationWithOptions(argc: CommandLine.argc, argv: CommandLine.unsafeArgv, launchOptions)
 
@@ -154,25 +33,9 @@ private class CrashLogManager {
                     result(FlutterMethodNotImplemented)
                 }
             }
-
-            // Crash log channel
-            let crashLogChannel = FlutterMethodChannel(
-                name: "com.codepulse.guido/crash-log",
-                binaryMessenger: controller.binaryMessenger
-            )
-            crashLogChannel.setMethodCallHandler { call, result in
-                switch call.method {
-                case "checkCrashLog":
-                    result(CrashLogManager.shared.checkCrashLog())
-                case "clearCrashLog":
-                    CrashLogManager.shared.clearCrashLog()
-                    result(nil)
-                default:
-                    result(FlutterMethodNotImplemented)
-                }
-            }
         }
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 }
+
