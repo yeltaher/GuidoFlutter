@@ -53,6 +53,7 @@ class _UnityExperienceScreenState
   /// The timer callback may fire in the microtask queue after dispose()
   /// has already run but before the Timer is garbage-collected.
   bool _isDisposed = false;
+  bool _isRecoveryDialogOpen = false;
 
   UnitySessionController? _sessionNotifier;
   GuidoAudioService? _audioService;
@@ -60,16 +61,20 @@ class _UnityExperienceScreenState
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    WakelockPlus.enable();
+    try {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      WakelockPlus.enable();
 
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
 
-    if (widget.isVrMode) {
-      VrOrientationService.enterVr();
+      if (widget.isVrMode) {
+        VrOrientationService.enterVr();
+      }
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore configurazione orientamento: $e');
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -108,10 +113,8 @@ class _UnityExperienceScreenState
     _sessionNotifier?.startSession(config);
     _startAudio(bundle, isRepeat: isRepeat);
 
-    // Timeout a 12 secondi se l'ambiente Unity non si carica.
-    // La callback verifica _isDisposed prima di chiamare setState per
-    // prevenire la race condition dispose/setState.
-    _loadTimeoutTimer = Timer(const Duration(seconds: 12), () {
+    // Watchdog timer di 10 secondi per il caricamento dell'ambiente 3D
+    _loadTimeoutTimer = Timer(const Duration(seconds: 10), () {
       if (_isDisposed || !mounted) return;
       final isLoaded =
           ref.read(unitySessionControllerProvider).isSceneLoaded;
@@ -119,8 +122,138 @@ class _UnityExperienceScreenState
         setState(() {
           _showLoadTimeoutDialog = true;
         });
+        _showRecoveryDialog(
+          errorMessage: ref.read(settingsProvider).language == 0
+              ? 'Timeout caricamento 3D: la sessione non ha risposto entro 10 secondi.'
+              : '3D loading timeout: the session did not respond within 10 seconds.',
+        );
       }
     });
+  }
+
+  void _showRecoveryDialog({String? errorMessage}) {
+    if (_isDisposed || !mounted || _isRecoveryDialogOpen) return;
+    _isRecoveryDialogOpen = true;
+    _loadTimeoutTimer?.cancel();
+
+    final isIt = ref.read(settingsProvider).language == 0;
+    final message = errorMessage ??
+        (isIt
+            ? 'Timeout caricamento 3D: l\'esperienza non ha risposto entro il tempo limite.'
+            : '3D loading timeout: the session did not respond within the time limit.');
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: Row(
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: AppColors.goldAccent,
+                size: 28,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                isIt ? 'Attenzione' : 'Warning',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            message,
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.white70,
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _isRecoveryDialogOpen = false;
+                _retryLoading();
+              },
+              child: Text(
+                isIt ? 'Riprova' : 'Retry',
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppColors.goldAccent,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _isRecoveryDialogOpen = false;
+                _restoreOrientationAndGoHome();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.dangerAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                isIt ? 'Torna alla Home' : 'Back to Home',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    ).then((_) {
+      _isRecoveryDialogOpen = false;
+    });
+  }
+
+  void _restoreOrientationAndGoHome() async {
+    _loadTimeoutTimer?.cancel();
+    try {
+      final controller = ref.read(unitySessionControllerProvider.notifier);
+      controller.stopSession();
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore stop sessione: $e');
+    }
+
+    try {
+      final audioService = ref.read(audioServiceProvider).valueOrNull;
+      await audioService?.stopAll();
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore stop audio: $e');
+    }
+
+    try {
+      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore ripristino orientamento: $e');
+    }
+
+    if (widget.isVrMode) {
+      try {
+        VrOrientationService.exitVr();
+      } catch (e) {
+        debugPrint('[UnityExperienceScreen] Errore uscita VR: $e');
+      }
+    }
+
+    if (mounted) {
+      context.go('/home');
+    }
   }
 
   void _retryLoading() {
@@ -180,22 +313,38 @@ class _UnityExperienceScreenState
 
   void _confirmExit() async {
     _loadTimeoutTimer?.cancel();
-    final controller = ref.read(unitySessionControllerProvider.notifier);
-    controller.stopSession();
+    try {
+      final controller = ref.read(unitySessionControllerProvider.notifier);
+      controller.stopSession();
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore stop sessione in exit: $e');
+    }
 
-    final audioService = ref.read(audioServiceProvider).valueOrNull;
-    await audioService?.stopAll();
+    try {
+      final audioService = ref.read(audioServiceProvider).valueOrNull;
+      await audioService?.stopAll();
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore stop audio in exit: $e');
+    }
 
-    // Reset VR mode and record session (moved from VrConfirmationScreen's
-    // pushReplacement .then() callback for GoRouter compatibility)
-    ref.read(settingsProvider.notifier).toggleVrMode(false);
-    await ref.read(userRepositoryProvider)?.recordSession(
-          widget.title,
-          widget.sceneName.contains('resp') ? "Respirazione" : "Meditazione",
-        );
+    try {
+      // Reset VR mode and record session (moved from VrConfirmationScreen's
+      // pushReplacement .then() callback for GoRouter compatibility)
+      ref.read(settingsProvider.notifier).toggleVrMode(false);
+      await ref.read(userRepositoryProvider)?.recordSession(
+            widget.title,
+            widget.sceneName.contains('resp') ? "Respirazione" : "Meditazione",
+          );
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore salvataggio sessione: $e');
+    }
 
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    try {
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore ripristino orientamento in exit: $e');
+    }
 
     if (widget.isVrMode) {
       if (mounted) {
@@ -225,18 +374,37 @@ class _UnityExperienceScreenState
     final sessionNotifier = _sessionNotifier;
     if (sessionNotifier != null) {
       Future.microtask(() {
-        sessionNotifier.detachUnityWidgetController();
-        sessionNotifier.stopSession();
+        try {
+          sessionNotifier.detachUnityWidgetController();
+          sessionNotifier.stopSession();
+        } catch (e) {
+          debugPrint('[UnityExperienceScreen] Errore cleanup sessione in dispose: $e');
+        }
       });
     }
-    _audioService?.stopAll();
+    try {
+      _audioService?.stopAll();
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore stop audio in dispose: $e');
+    }
 
-    WakelockPlus.disable();
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    try {
+      WakelockPlus.disable();
+    } catch (_) {}
+
+    try {
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore orientamento in dispose: $e');
+    }
 
     if (widget.isVrMode) {
-      VrOrientationService.exitVr();
+      try {
+        VrOrientationService.exitVr();
+      } catch (e) {
+        debugPrint('[UnityExperienceScreen] Errore uscita VR in dispose: $e');
+      }
     }
 
     super.dispose();
@@ -290,10 +458,40 @@ class _UnityExperienceScreenState
             // 1. Embedded Unity Widget
             Positioned.fill(
               child: UnityWidget(
-                onUnityCreated: sessionNotifier.onUnityCreated,
-                onUnityMessage: sessionNotifier.onUnityMessage,
-                onUnitySceneLoaded: sessionNotifier.onUnitySceneLoaded,
-                onUnityUnloaded: sessionNotifier.onUnityUnloaded,
+                onUnityCreated: (controller) {
+                  try {
+                    sessionNotifier.onUnityCreated(controller);
+                  } catch (e) {
+                    debugPrint('[UnityExperienceScreen] Errore in onUnityCreated: $e');
+                    _showRecoveryDialog(
+                      errorMessage: 'Errore inizializzazione 3D: $e',
+                    );
+                  }
+                },
+                onUnityMessage: (message) {
+                  try {
+                    sessionNotifier.onUnityMessage(message);
+                  } catch (e) {
+                    debugPrint('[UnityExperienceScreen] Errore in onUnityMessage: $e');
+                  }
+                },
+                onUnitySceneLoaded: (scene) {
+                  try {
+                    sessionNotifier.onUnitySceneLoaded(scene);
+                  } catch (e) {
+                    debugPrint('[UnityExperienceScreen] Errore in onUnitySceneLoaded: $e');
+                    _showRecoveryDialog(
+                      errorMessage: 'Errore caricamento scena 3D: $e',
+                    );
+                  }
+                },
+                onUnityUnloaded: () {
+                  try {
+                    sessionNotifier.onUnityUnloaded();
+                  } catch (e) {
+                    debugPrint('[UnityExperienceScreen] Errore in onUnityUnloaded: $e');
+                  }
+                },
                 fullscreen: true,
                 useAndroidViewSurface: true,
               ),

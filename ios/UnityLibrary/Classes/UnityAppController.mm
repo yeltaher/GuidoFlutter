@@ -243,23 +243,81 @@ extern "C" void UnityEngineDidQuit(unsigned level)
 
 extern "C" void OnUnityMessage(const char* message)
 {
-    if (GetAppController().unityMessageHandler)
+    @try
     {
-        GetAppController().unityMessageHandler(message);
+        NSString* safeMessage = message ? [NSString stringWithUTF8String:message] : @"";
+        dispatch_async(dispatch_get_main_queue(), ^{
+            @try
+            {
+                if (GetAppController() && GetAppController().unityMessageHandler)
+                {
+                    GetAppController().unityMessageHandler([safeMessage UTF8String]);
+                }
+            }
+            @catch (NSException *exception)
+            {
+                NSLog(@"[UnityAppController] Exception in unityMessageHandler: %@", exception.reason);
+            }
+        });
+    }
+    @catch (NSException *exception)
+    {
+        NSLog(@"[UnityAppController] Exception in OnUnityMessage: %@", exception.reason);
     }
 }
 
 extern "C" void OnUnitySceneLoaded(const char* name, const int* buildIndex, const bool* isLoaded, const bool* IsValid)
 {
-    if (GetAppController().unitySceneLoadedHandler)
+    @try
     {
-        GetAppController().unitySceneLoadedHandler(name, buildIndex, isLoaded, IsValid);
+        NSString* safeName = name ? [NSString stringWithUTF8String:name] : @"";
+        int safeBuildIndex = buildIndex ? *buildIndex : 0;
+        bool safeIsLoaded = isLoaded ? *isLoaded : false;
+        bool safeIsValid = IsValid ? *IsValid : false;
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            @try
+            {
+                if (GetAppController() && GetAppController().unitySceneLoadedHandler)
+                {
+                    GetAppController().unitySceneLoadedHandler([safeName UTF8String], &safeBuildIndex, &safeIsLoaded, &safeIsValid);
+                }
+            }
+            @catch (NSException *exception)
+            {
+                NSLog(@"[UnityAppController] Exception in unitySceneLoadedHandler: %@", exception.reason);
+            }
+        });
+    }
+    @catch (NSException *exception)
+    {
+        NSLog(@"[UnityAppController] Exception in OnUnitySceneLoaded: %@", exception.reason);
     }
 }
 
 extern "C" void SendMessageToFlutterNative(const char* message)
 {
-    OnUnityMessage(message);
+    @try
+    {
+        NSString* safeMessage = message ? [NSString stringWithUTF8String:message] : @"";
+        dispatch_async(dispatch_get_main_queue(), ^{
+            @try
+            {
+                if (GetAppController() && GetAppController().unityMessageHandler)
+                {
+                    GetAppController().unityMessageHandler([safeMessage UTF8String]);
+                }
+            }
+            @catch (NSException *exception)
+            {
+                NSLog(@"[UnityAppController] Exception in SendMessageToFlutterNative handler: %@", exception.reason);
+            }
+        });
+    }
+    @catch (NSException *exception)
+    {
+        NSLog(@"[UnityAppController] Exception in SendMessageToFlutterNative: %@", exception.reason);
+    }
 }
 
 extern void SensorsCleanup();

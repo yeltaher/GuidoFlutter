@@ -18,24 +18,26 @@ import UIKit
 
         GeneratedPluginRegistrant.register(with: self)
 
+        let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
+
         if let controller = window?.rootViewController as? FlutterViewController {
             // Orientation channel
             let orientationChannel = FlutterMethodChannel(
                 name: "com.codepulse.guido/orientation",
                 binaryMessenger: controller.binaryMessenger
             )
-            orientationChannel.setMethodCallHandler { call, result in
+            orientationChannel.setMethodCallHandler { call, channelResult in
                 if call.method == "forceLandscape" {
-                    result(nil)
+                    channelResult(nil)
                 } else if call.method == "forcePortrait" {
-                    result(nil)
+                    channelResult(nil)
                 } else {
-                    result(FlutterMethodNotImplemented)
+                    channelResult(FlutterMethodNotImplemented)
                 }
             }
         }
 
-        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+        return result
     }
 }
 
