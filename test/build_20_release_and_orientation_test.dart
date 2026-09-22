@@ -39,11 +39,11 @@ void main() {
   });
 
   group('Build 20: 1. Pubspec Version & Configuration Quality Gates', () {
-    test('pubspec.yaml has version 0.1.0+26', () {
+    test('pubspec.yaml has version 0.1.0+27', () {
       final pubspecFile = File('pubspec.yaml');
       expect(pubspecFile.existsSync(), isTrue);
       final content = pubspecFile.readAsStringSync();
-      expect(content.contains('version: 0.1.0+26'), isTrue);
+      expect(content.contains('version: 0.1.0+27'), isTrue);
     });
 
     test('iOS Info.plist contains required camera, motion, audio and orientation keys', () {

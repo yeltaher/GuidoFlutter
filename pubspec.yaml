@@ -1,7 +1,7 @@
 name: guido
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0+26
+version: 0.1.0+27
 
 environment:
   sdk: ^3.11.5
@@ -32,7 +32,8 @@ dependencies:
   video_player: ^2.11.1
   animated_text_kit: ^4.3.0
   go_router: ^17.3.0
-  flutter_unity_widget_2: ^6000.1.0
+  flutter_unity_widget_2:
+    path: packages/flutter_unity_widget_2
 
 
 dev_dependencies:
