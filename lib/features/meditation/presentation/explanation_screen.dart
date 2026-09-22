@@ -1,4 +1,3 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -59,7 +58,6 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
   }
 
   void _onProceed() {
-    context.pop(); // Chiude la ExplanationScreen
     showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.4),

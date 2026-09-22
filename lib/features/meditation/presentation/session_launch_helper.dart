@@ -110,8 +110,8 @@ class SessionLaunchDialog extends ConsumerWidget {
   });
 
   void _startFlatSession(BuildContext context, WidgetRef ref) {
+    final router = GoRouter.of(context);
     ref.read(settingsProvider.notifier).toggleVrMode(false);
-    context.pop();
 
     final settings = ref.read(settingsProvider);
     final bundle = AudioResolverService.resolveBundle(
@@ -125,7 +125,9 @@ class SessionLaunchDialog extends ConsumerWidget {
       durationSeconds: durationSeconds,
     );
 
-    context.push(
+    router.pop();
+
+    router.pushReplacement(
       '/unity-experience',
       extra: {
         'title': title,
@@ -139,40 +141,48 @@ class SessionLaunchDialog extends ConsumerWidget {
   }
 
   void _goToVrConfirm(BuildContext context, WidgetRef ref) {
-    context.pop();
+    final router = GoRouter.of(context);
+    ref.read(settingsProvider.notifier).toggleVrMode(true);
 
     final settings = ref.read(settingsProvider);
-    final resolvedScene = UnityScenes.resolveSceneName(
-      explicitSceneName: sceneName,
+    final bundle = AudioResolverService.resolveBundle(
       title: title,
-      isBreathing: breathingAudioPath != null,
+      sceneName: sceneName,
+      voiceSex: settings.voiceSex,
+      language: settings.language,
+      customVoicePath:
+          voicePath.isNotEmpty ? voicePath : (breathingAudioPath ?? ''),
+      customAmbientPath: ambientPath,
+      durationSeconds: durationSeconds,
     );
+
+    router.pop();
 
     if (!settings.vrCalibrated) {
       // Se non calibrato, prima calibrazione poi conferma
-      context.push(
+      router.pushReplacement(
         '/vr-calibration',
         extra: {
           'isFromSettings': false,
           'title': title,
-          'voicePath': voicePath,
-          'ambientPath': ambientPath,
+          'voicePath': bundle.voicePath,
+          'ambientPath': bundle.ambientPath,
           'breathingAudioPath': breathingAudioPath,
-          'sceneName': resolvedScene,
-          'durationSeconds': durationSeconds,
+          'sceneName': bundle.sceneName,
+          'durationSeconds': bundle.durationSeconds,
         },
       );
     } else {
       // Già calibrato: vai direttamente alla conferma del visore
-      context.push(
+      router.pushReplacement(
         '/vr-confirmation',
         extra: {
           'title': title,
-          'voicePath': voicePath,
-          'ambientPath': ambientPath,
+          'voicePath': bundle.voicePath,
+          'ambientPath': bundle.ambientPath,
           'breathingAudioPath': breathingAudioPath,
-          'sceneName': resolvedScene,
-          'durationSeconds': durationSeconds,
+          'sceneName': bundle.sceneName,
+          'durationSeconds': bundle.durationSeconds,
         },
       );
     }
