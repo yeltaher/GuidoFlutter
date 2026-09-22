@@ -1,7 +1,7 @@
 name: guido
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0+29
+version: 0.1.0+30
 
 environment:
   sdk: ^3.11.5
@@ -50,6 +50,7 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/images/icona_new.png"
   min_sdk_android: 21
+  remove_alpha_ios: true
 
 flutter_native_splash:
   color: "#070A18"

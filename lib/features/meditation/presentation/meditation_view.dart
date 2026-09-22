@@ -67,25 +67,31 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
       );
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final audioServiceAsync = ref.read(audioServiceProvider);
-      if (audioServiceAsync is AsyncData) {
-        final audio = audioServiceAsync.value!;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final audio = await ref.read(audioServiceProvider.future);
+        if (!mounted) return;
         audio.playAmbient(widget.ambientPath);
         audio.playVoice(widget.voicePath);
 
+        _voiceSub?.cancel();
         _voiceSub = audio.voicePlayerStateStream.listen((state) {
           if (state.processingState == ProcessingState.completed) {
             if (mounted && !_isSessionFinished) {
               setState(() {
                 _isSessionFinished = true;
               });
+              WakelockPlus.disable();
               ref.read(userRepositoryProvider)?.recordSession(widget.title, "Meditazione");
             }
           }
         });
+      } catch (e) {
+        debugPrint('[MeditationView] Errore inizializzazione audio: $e');
       }
-      _startTypewriter();
+      if (mounted) {
+        _startTypewriter();
+      }
     });
   }
 
@@ -112,13 +118,13 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
   }
 
   void _togglePlay() {
-    final audioServiceAsync = ref.read(audioServiceProvider);
-    if (audioServiceAsync is AsyncData) {
-      if (_isPlaying) {
-        audioServiceAsync.value!.pauseAll();
-      } else {
-        audioServiceAsync.value!.resumeAll();
-      }
+    final audio = ref.read(audioServiceProvider).valueOrNull;
+    if (_isPlaying) {
+      audio?.pauseAll();
+      WakelockPlus.disable();
+    } else {
+      audio?.resumeAll();
+      WakelockPlus.enable();
     }
     setState(() => _isPlaying = !_isPlaying);
   }
@@ -128,12 +134,11 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
       _isSessionFinished = false;
       _isPlaying = true;
     });
-    final audioServiceAsync = ref.read(audioServiceProvider);
-    if (audioServiceAsync is AsyncData) {
-      // Modalità Ripeti: prosegue nell'ambiente immersivo con musica d'atmosfera senza ripetere la voce guida
-      audioServiceAsync.value!.stopVoice();
-      audioServiceAsync.value!.playAmbient(widget.ambientPath);
-    }
+    WakelockPlus.enable();
+    final audio = ref.read(audioServiceProvider).valueOrNull;
+    // Modalità Ripeti: prosegue nell'ambiente immersivo con musica d'atmosfera senza ripetere la voce guida
+    audio?.stopVoice();
+    audio?.playAmbient(widget.ambientPath);
   }
 
   void _requestExit() {
@@ -151,10 +156,9 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
   void _confirmExit() {
     _typewriterTimer?.cancel();
     _voiceSub?.cancel();
-    final audioServiceAsync = ref.read(audioServiceProvider);
-    if (audioServiceAsync is AsyncData) {
-      audioServiceAsync.value!.stopAll();
-    }
+    WakelockPlus.disable();
+    final audio = ref.read(audioServiceProvider).valueOrNull;
+    audio?.stopAll();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);

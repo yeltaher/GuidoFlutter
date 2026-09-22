@@ -21,11 +21,16 @@ echo "Step 2: Copying UnityFramework"
 echo "=========================================="
 
 # Navigate to repository root
-cd "$AC_REPOSITORY_DIR"
+if [ -n "${AC_REPOSITORY_DIR:-}" ]; then
+  cd "$AC_REPOSITORY_DIR"
+fi
 
 # Define source and destination paths
 SOURCE_PATH="ios/UnityLibrary/DerivedData/Build/Products/Release-iphoneos/UnityFramework.framework"
 DEST_PATH="ios/UnityLibrary/Frameworks/UnityFramework.framework"
+
+SOURCE_DSYM="ios/UnityLibrary/DerivedData/Build/Products/Release-iphoneos/UnityFramework.framework.dSYM"
+DEST_DSYM="ios/UnityLibrary/Frameworks/UnityFramework.framework.dSYM"
 
 # Check if source exists
 if [ ! -d "$SOURCE_PATH" ]; then
@@ -75,6 +80,41 @@ echo ""
 echo "Contents of $DEST_PATH:"
 ls -la "$DEST_PATH"
 echo ""
+
+# Copy dSYM bundle if present in build folder
+if [ -d "$SOURCE_DSYM" ]; then
+  echo "=========================================="
+  echo "Copying UnityFramework.framework.dSYM"
+  echo "=========================================="
+  echo "Source dSYM: $SOURCE_DSYM"
+  echo "Destination dSYM: $DEST_DSYM"
+
+  if [ -d "$DEST_DSYM" ]; then
+    echo "Removing old UnityFramework.framework.dSYM..."
+    rm -rf "$DEST_DSYM"
+  fi
+
+  cp -R "$SOURCE_DSYM" "$DEST_DSYM"
+
+  if [ -d "$DEST_DSYM" ]; then
+    echo "✓ UnityFramework.framework.dSYM copied successfully"
+  else
+    echo "WARNING: Failed to copy UnityFramework.framework.dSYM"
+  fi
+else
+  # Search for dSYM in DerivedData if not at standard path
+  FOUND_DSYM=$(find ios/UnityLibrary/DerivedData -name "UnityFramework.framework.dSYM" -type d 2>/dev/null | head -1)
+  if [ -n "$FOUND_DSYM" ]; then
+    echo "Found dSYM at: $FOUND_DSYM"
+    if [ -d "$DEST_DSYM" ]; then
+      rm -rf "$DEST_DSYM"
+    fi
+    cp -R "$FOUND_DSYM" "$DEST_DSYM"
+    echo "✓ UnityFramework.framework.dSYM copied to $DEST_DSYM"
+  else
+    echo "Note: dSYM bundle not found in DerivedData (skipping dSYM copy)"
+  fi
+fi
 
 # Verify key files exist
 REQUIRED_FILES=(

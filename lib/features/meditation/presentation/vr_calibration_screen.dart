@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/vr_gaze_button.dart';
 import '../../../core/vr/vr_host_screen.dart';
 import '../../../core/database/settings_provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 /// Schermata di calibrazione VR.
 ///
@@ -64,6 +65,9 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
   @override
   void initState() {
     super.initState();
+    try {
+      WakelockPlus.enable();
+    } catch (_) {}
     // Crea il controller subito — VrHostScreen lo userà quando mountato.
     // Il controller NON avvia il giroscopio finché VrGazeScope.initState non
     // chiama controller.start(). La calibrazione usa il proprio _gyroSub.
@@ -78,6 +82,9 @@ class _VrCalibrationScreenState extends ConsumerState<VrCalibrationScreen> {
 
   @override
   void dispose() {
+    try {
+      WakelockPlus.disable();
+    } catch (_) {}
     _gyroSub?.cancel();
     _countdownTimer?.cancel();
     _gyroTimeoutTimer?.cancel();

@@ -21,6 +21,7 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final settings = ref.watch(settingsProvider);
     final isDark = settings.isDarkTheme;
     final accentColor = AppColors.getActiveAccentColor(isDark);
@@ -135,7 +136,7 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
 
                         // Titolo
                         Text(
-                              AppLocalizations.of(context)!.premiumTitle,
+                              loc?.premiumTitle ?? 'Sblocca Guido Premium',
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.headlineLarge
                                   ?.copyWith(
@@ -152,7 +153,8 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
 
                         // Sottotitolo
                         Text(
-                              AppLocalizations.of(context)!.premiumSubtitle,
+                              loc?.premiumSubtitle ??
+                                  "L'esperienza definitiva. Accedi a tutte le meditazioni guidate, esercizi di respirazione e audio spaziale 3D binaurale.",
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
@@ -170,13 +172,9 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                         // Opzioni di Abbonamento
                         _buildSubscriptionCard(
                               index: 0,
-                              title: AppLocalizations.of(
-                                context,
-                              )!.premium1Month,
+                              title: loc?.premium1Month ?? '1 Mese',
                               price: "9,99€",
-                              period: AppLocalizations.of(
-                                context,
-                              )!.premiumPerMonth,
+                              period: loc?.premiumPerMonth ?? '/mese',
                               isDark: isDark,
                               textColor: textColor,
                               subTextColor: subTextColor,
@@ -189,17 +187,11 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
 
                         _buildSubscriptionCard(
                               index: 1,
-                              title: AppLocalizations.of(context)!.premium1Year,
+                              title: loc?.premium1Year ?? '1 Anno',
                               price: "49,99€",
-                              period: AppLocalizations.of(
-                                context,
-                              )!.premiumPerYear,
-                              badgeText: AppLocalizations.of(
-                                context,
-                              )!.premiumRecommended,
-                              discountText: AppLocalizations.of(
-                                context,
-                              )!.premiumSave58,
+                              period: loc?.premiumPerYear ?? '/anno',
+                              badgeText: loc?.premiumRecommended ?? 'CONSIGLIATO',
+                              discountText: loc?.premiumSave58 ?? 'Risparmi il 58%',
                               isDark: isDark,
                               textColor: textColor,
                               subTextColor: subTextColor,
@@ -212,13 +204,9 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
 
                         _buildSubscriptionCard(
                               index: 2,
-                              title: AppLocalizations.of(
-                                context,
-                              )!.premiumLifetime,
+                              title: loc?.premiumLifetime ?? 'A Vita',
                               price: "149,99€",
-                              period: AppLocalizations.of(
-                                context,
-                              )!.premiumOneTime,
+                              period: loc?.premiumOneTime ?? ' una tantum',
                               isDark: isDark,
                               textColor: textColor,
                               subTextColor: subTextColor,
@@ -231,9 +219,7 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
 
                         // Pulsante di Checkout
                         CustomUnityButton(
-                              text: AppLocalizations.of(
-                                context,
-                              )!.premiumActivateNow,
+                              text: loc?.premiumActivateNow ?? 'ATTIVA ORA (GRATIS)',
                               requireHold: false,
                               onTap: () async {
                                 final messenger = ScaffoldMessenger.of(context);
@@ -271,7 +257,8 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                         const SizedBox(height: 16),
 
                         Text(
-                          AppLocalizations.of(context)!.premiumCancelAnytime,
+                          loc?.premiumCancelAnytime ??
+                              'Annulla in qualsiasi momento dalle impostazioni del tuo account.',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(

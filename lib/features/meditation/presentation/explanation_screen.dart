@@ -5,6 +5,7 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'session_launch_helper.dart';
 
 class ExplanationScreen extends ConsumerStatefulWidget {
@@ -31,6 +32,22 @@ class ExplanationScreen extends ConsumerStatefulWidget {
 
 class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
   bool _isTextFinished = false;
+
+  @override
+  void initState() {
+    super.initState();
+    try {
+      WakelockPlus.enable();
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    try {
+      WakelockPlus.disable();
+    } catch (_) {}
+    super.dispose();
+  }
 
   String _getExplanation(bool isIt) {
     final t = widget.title.toLowerCase();

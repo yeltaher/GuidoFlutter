@@ -18,7 +18,9 @@ echo "Step 1: Building UnityFramework"
 echo "=========================================="
 
 # Navigate to repository root
-cd "$AC_REPOSITORY_DIR"
+if [ -n "${AC_REPOSITORY_DIR:-}" ]; then
+  cd "$AC_REPOSITORY_DIR"
+fi
 
 # Check if Unity-iPhone.xcodeproj exists
 if [ ! -d "ios/UnityLibrary/Unity-iPhone.xcodeproj" ]; then
@@ -29,11 +31,12 @@ if [ ! -d "ios/UnityLibrary/Unity-iPhone.xcodeproj" ]; then
 fi
 
 echo "Found Unity-iPhone.xcodeproj"
-echo "Building UnityFramework target..."
+echo "Building UnityFramework target with dSYM debugging symbols..."
 
 # Build UnityFramework
 # - Use iphoneos SDK for device builds
 # - Use Release configuration
+# - Generate full dSYM debug symbols for symbolication
 # - Disable code signing (Flutter/Xcode will handle it later)
 # - Use derivedDataPath to keep build artifacts organized
 xcodebuild -project ios/UnityLibrary/Unity-iPhone.xcodeproj \
@@ -41,6 +44,8 @@ xcodebuild -project ios/UnityLibrary/Unity-iPhone.xcodeproj \
   -sdk iphoneos \
   -configuration Release \
   -derivedDataPath ios/UnityLibrary/DerivedData \
+  DEBUG_INFORMATION_FORMAT="dwarf-with-dsym" \
+  GCC_GENERATE_DEBUGGING_SYMBOLS=YES \
   CODE_SIGN_IDENTITY="-" \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGNING_ALLOWED=NO \
@@ -57,8 +62,10 @@ echo "=========================================="
 echo "UnityFramework build completed successfully"
 echo "=========================================="
 
-# Verify the framework was built
+# Verify the framework and dSYM were built
 FRAMEWORK_PATH="ios/UnityLibrary/DerivedData/Build/Products/Release-iphoneos/UnityFramework.framework"
+DSYM_PATH="ios/UnityLibrary/DerivedData/Build/Products/Release-iphoneos/UnityFramework.framework.dSYM"
+
 if [ -d "$FRAMEWORK_PATH" ]; then
   echo "UnityFramework.framework found at: $FRAMEWORK_PATH"
   echo "Contents:"
@@ -67,4 +74,10 @@ else
   echo "WARNING: UnityFramework.framework not found at expected path"
   echo "Searching for framework in DerivedData..."
   find ios/UnityLibrary/DerivedData -name "*.framework" -type d 2>/dev/null
+fi
+
+if [ -d "$DSYM_PATH" ]; then
+  echo "✓ UnityFramework.framework.dSYM found at: $DSYM_PATH"
+else
+  echo "WARNING: UnityFramework.framework.dSYM not found at expected path"
 fi

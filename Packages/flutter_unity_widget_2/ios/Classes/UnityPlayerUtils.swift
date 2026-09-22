@@ -74,7 +74,7 @@ var sharedApplication: UIApplication?
 }
 
 @objc public class UnityPlayerUtils: UIResponder, UIApplicationDelegate, UnityFrameworkListener {
-    var ufw: UnityFramework!
+    var ufw: UnityFramework?
     private var _isUnityPaused = false
     private var _isUnityReady = false
     private var _isUnityLoaded = false

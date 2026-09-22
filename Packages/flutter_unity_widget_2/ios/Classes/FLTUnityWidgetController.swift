@@ -121,7 +121,9 @@ public class FLTUnityWidgetController: NSObject, FLTUnityOptionsSink, FlutterPla
                 unityView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
                 _rootView.addSubview(unityView)
                 _rootView.layoutIfNeeded()
-                self.channel?.invokeMethod("events#onViewReattached", arguments: "")
+                DispatchQueue.main.async { [weak self] in
+                    self?.channel?.invokeMethod("events#onViewReattached", arguments: "")
+                }
             }
         }
         GetUnityPlayerUtils().resume()
@@ -151,7 +153,11 @@ public class FLTUnityWidgetController: NSObject, FLTUnityOptionsSink, FlutterPla
                 globalControllers.last?.reattachView()
             }
         }
-        GetUnityPlayerUtils().resume()
+        if globalControllers.isEmpty {
+            GetUnityPlayerUtils().pause()
+        } else {
+            GetUnityPlayerUtils().resume()
+        }
     }
 
     func dispose() {
@@ -171,13 +177,17 @@ public class FLTUnityWidgetController: NSObject, FLTUnityOptionsSink, FlutterPla
     
     /// Handles messages from unity in the current view
     func handleMessage(message: String) {
-        self.channel?.invokeMethod("events#onUnityMessage", arguments: message)
+        DispatchQueue.main.async { [weak self] in
+            self?.channel?.invokeMethod("events#onUnityMessage", arguments: message)
+        }
     }
     
     
     /// Handles scene changed event from unity in the current view
     func handleSceneChangeEvent(info: Dictionary<String, Any>) {
-        self.channel?.invokeMethod("events#onUnitySceneLoaded", arguments: info)
+        DispatchQueue.main.async { [weak self] in
+            self?.channel?.invokeMethod("events#onUnitySceneLoaded", arguments: info)
+        }
     }
     
     /// Post messages to unity from flutter

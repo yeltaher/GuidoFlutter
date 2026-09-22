@@ -56,20 +56,36 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
     )..repeat(reverse: true);
   }
 
+  double _clampVolume(double val) {
+    if (!val.isFinite) return 0.5;
+    return val.clamp(0.0, 1.0);
+  }
+
   Future<void> _initPlayers() async {
     try {
+      if (!mounted) return;
       await _waterPlayer.setAsset('assets/audio/ambient/acqua.mp3');
+      if (!mounted) return;
       await _waterPlayer.setLoopMode(LoopMode.one);
-      await _waterPlayer.setVolume(_waterVolume);
+      if (!mounted) return;
+      await _waterPlayer.setVolume(_clampVolume(_waterVolume));
 
+      if (!mounted) return;
       await _windPlayer.setAsset('assets/audio/respirazioni/vento.m4a');
+      if (!mounted) return;
       await _windPlayer.setLoopMode(LoopMode.one);
-      await _windPlayer.setVolume(_windVolume);
+      if (!mounted) return;
+      await _windPlayer.setVolume(_clampVolume(_windVolume));
 
+      if (!mounted) return;
       await _musicPlayer.setAsset('assets/audio/ambient/musica_eterea.m4a');
+      if (!mounted) return;
       await _musicPlayer.setLoopMode(LoopMode.one);
-      await _musicPlayer.setVolume(_musicVolume);
-    } catch (_) {}
+      if (!mounted) return;
+      await _musicPlayer.setVolume(_clampVolume(_musicVolume));
+    } catch (e) {
+      debugPrint('[ZenSoundMixerView] Errore inizializzazione player: $e');
+    }
   }
 
   @override
@@ -83,6 +99,7 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
   }
 
   void _toggleWater() {
+    if (!mounted) return;
     setState(() {
       _isWaterPlaying = !_isWaterPlaying;
       if (_isWaterPlaying) {
@@ -94,6 +111,7 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
   }
 
   void _toggleWind() {
+    if (!mounted) return;
     setState(() {
       _isWindPlaying = !_isWindPlaying;
       if (_isWindPlaying) {
@@ -105,6 +123,7 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
   }
 
   void _toggleMusic() {
+    if (!mounted) return;
     setState(() {
       _isMusicPlaying = !_isMusicPlaying;
       if (_isMusicPlaying) {
@@ -263,9 +282,10 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
                               cardColor: cardColor,
                               onToggle: _toggleWater,
                               onVolumeChanged: (val) {
+                                final safeVal = _clampVolume(val);
                                 setState(() {
-                                  _waterVolume = val;
-                                  _waterPlayer.setVolume(_waterVolume);
+                                  _waterVolume = safeVal;
+                                  _waterPlayer.setVolume(safeVal);
                                 });
                               },
                             )
@@ -289,9 +309,10 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
                               cardColor: cardColor,
                               onToggle: _toggleWind,
                               onVolumeChanged: (val) {
+                                final safeVal = _clampVolume(val);
                                 setState(() {
-                                  _windVolume = val;
-                                  _windPlayer.setVolume(_windVolume);
+                                  _windVolume = safeVal;
+                                  _windPlayer.setVolume(safeVal);
                                 });
                               },
                             )
@@ -315,9 +336,10 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
                               cardColor: cardColor,
                               onToggle: _toggleMusic,
                               onVolumeChanged: (val) {
+                                final safeVal = _clampVolume(val);
                                 setState(() {
-                                  _musicVolume = val;
-                                  _musicPlayer.setVolume(_musicVolume);
+                                  _musicVolume = safeVal;
+                                  _musicPlayer.setVolume(safeVal);
                                 });
                               },
                             )

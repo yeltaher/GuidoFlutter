@@ -139,8 +139,19 @@ class MainApp extends ConsumerWidget {
       title: 'Guido Meditation',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.themeData(settings.isDarkTheme),
+      locale: Locale(settings.language == 0 ? 'it' : 'en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      localeResolutionCallback: (locale, supportedLocales) {
+        if (locale != null) {
+          for (final supportedLocale in supportedLocales) {
+            if (supportedLocale.languageCode == locale.languageCode) {
+              return supportedLocale;
+            }
+          }
+        }
+        return const Locale('it');
+      },
       routerConfig: ref.watch(appRouterProvider),
     );
   }

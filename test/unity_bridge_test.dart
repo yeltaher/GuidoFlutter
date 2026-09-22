@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:guido/app/router/app_router.dart';
 import 'package:guido/core/unity/unity_bridge_dto.dart';
 import 'package:guido/core/unity/unity_session_controller.dart';
+import 'package:guido/features/meditation/presentation/unity_experience_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -202,6 +205,45 @@ void main() {
 
       await notifier.stopSession();
       expect(container.read(unitySessionControllerProvider).isPlaying, false);
+
+      notifier.resetSession();
+      final resetState = container.read(unitySessionControllerProvider);
+      expect(resetState.isPlaying, false);
+      expect(resetState.isUnityLoaded, false);
+      expect(resetState.elapsedSeconds, 0.0);
+    });
+
+    test('onUnityMessage handles JSON string tokens resiliently ("READY", "SCENE_LOADED")', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final notifier = container.read(unitySessionControllerProvider.notifier);
+
+      // JSON encoded string token '"READY"'
+      notifier.onUnityMessage('"READY"');
+      expect(container.read(unitySessionControllerProvider).isUnityLoaded, true);
+
+      // JSON encoded string token '"SCENE_LOADED"'
+      notifier.onUnityMessage('"SCENE_LOADED"');
+      expect(container.read(unitySessionControllerProvider).isSceneLoaded, true);
+
+      // JSON encoded string breathing token '"inhale"'
+      notifier.onUnityMessage('"inhale"');
+      expect(
+        container.read(unitySessionControllerProvider).currentBreathingPhase,
+        BreathingPhase.inhale,
+      );
+
+      // Plain raw string tokens without JSON quotes
+      notifier.onUnityMessage('holdIn');
+      expect(
+        container.read(unitySessionControllerProvider).currentBreathingPhase,
+        BreathingPhase.holdIn,
+      );
+
+      // Malformed string should not throw and degrade gracefully
+      notifier.onUnityMessage('{invalid json string}');
+      expect(container.read(unitySessionControllerProvider).isSceneLoaded, true);
     });
   });
 
@@ -299,6 +341,84 @@ void main() {
         UnityScenes.resolveSceneName(title: 'Meditazione Generale'),
         UnityScenes.generalMeditation,
       );
+    });
+  });
+
+  group('GoRouter Defensive Route Parameter Extraction Tests', () {
+    testWidgets('Builds /unity-experience with string parameters from deep links without TypeError', (tester) async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final router = container.read(appRouterProvider);
+      router.go('/unity-experience?isVrMode=true&title=DeepLink+Session&durationSeconds=180&sceneName=Procedimento+acqua');
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final screen = tester.widget<UnityExperienceScreen>(find.byType(UnityExperienceScreen));
+      expect(screen.title, 'DeepLink Session');
+      expect(screen.isVrMode, true);
+      expect(screen.durationSeconds, 180.0);
+      expect(screen.sceneName, 'Procedimento acqua');
+    });
+
+    testWidgets('Builds /unity-experience with boolean string "1" and fallback defaults', (tester) async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final router = container.read(appRouterProvider);
+      router.go('/unity-experience?isVrMode=1');
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final screen = tester.widget<UnityExperienceScreen>(find.byType(UnityExperienceScreen));
+      expect(screen.title, 'Esperienza Immersiva');
+      expect(screen.isVrMode, true);
+      expect(screen.durationSeconds, 300.0);
+      expect(screen.sceneName, 'Scena Zen 3D');
+    });
+
+    testWidgets('Builds /unity-experience with Map<dynamic, dynamic> extra', (tester) async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final router = container.read(appRouterProvider);
+      router.go('/unity-experience', extra: <dynamic, dynamic>{
+        'title': 'Dynamic Map Title',
+        'isVrMode': false,
+        'durationSeconds': 600,
+      });
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final screen = tester.widget<UnityExperienceScreen>(find.byType(UnityExperienceScreen));
+      expect(screen.title, 'Dynamic Map Title');
+      expect(screen.isVrMode, false);
+      expect(screen.durationSeconds, 600.0);
+      expect(screen.sceneName, 'Scena Zen 3D');
     });
   });
 }

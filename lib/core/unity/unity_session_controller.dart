@@ -94,6 +94,8 @@ class UnitySessionController extends Notifier<UnitySessionState>
   Timer? _watchdogTimer;
   Timer? _readyTimeoutTimer;
   DateTime? _lastUnityMessageAt;
+  DateTime? _startTime;
+  double _accumulatedElapsedSeconds = 0.0;
   bool _isAppPaused = false;
 
   static const String _unityBridgeGameObjectName = 'FlutterBridgeManager';
@@ -123,6 +125,8 @@ class UnitySessionController extends Notifier<UnitySessionState>
     _stopHeartbeat();
     _stopWatchdog();
     _stopReadyTimeout();
+    _startTime = null;
+    _accumulatedElapsedSeconds = 0.0;
     _unityWidgetController = null;
   }
 
@@ -132,6 +136,7 @@ class UnitySessionController extends Notifier<UnitySessionState>
     if (state == AppLifecycleState.resumed && _isAppPaused) {
       _isAppPaused = false;
       if (this.state.isPlaying && !this.state.isCompleted && this.state.isUnityLoaded) {
+        _startTime = DateTime.now();
         _startHeartbeat();
         _startWatchdog();
         debugPrint('[UnitySessionController] App resumed — heartbeat & watchdog restarted.');
@@ -143,6 +148,11 @@ class UnitySessionController extends Notifier<UnitySessionState>
     if (state != AppLifecycleState.resumed && !_isAppPaused) {
       _isAppPaused = true;
       if (this.state.isPlaying && !this.state.isCompleted) {
+        if (_startTime != null) {
+          _accumulatedElapsedSeconds +=
+              DateTime.now().difference(_startTime!).inMicroseconds / 1000000.0;
+          _startTime = null;
+        }
         _stopHeartbeat();
         _stopWatchdog();
         debugPrint('[UnitySessionController] App paused — heartbeat & watchdog suspended.');
@@ -156,12 +166,18 @@ class UnitySessionController extends Notifier<UnitySessionState>
 
   void _startHeartbeat() {
     _stopHeartbeat();
+    if (_startTime == null && state.isPlaying && !_isAppPaused) {
+      _startTime = DateTime.now();
+    }
     _heartbeatTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!state.isPlaying || state.isCompleted || _isAppPaused) {
         timer.cancel();
         return;
       }
-      final newElapsed = state.elapsedSeconds + 1.0;
+      final double currentDelta = _startTime != null
+          ? DateTime.now().difference(_startTime!).inMicroseconds / 1000000.0
+          : 0.0;
+      final newElapsed = _accumulatedElapsedSeconds + currentDelta;
       final total = state.totalDurationSeconds > 0
           ? state.totalDurationSeconds
           : 300.0;
@@ -287,13 +303,15 @@ class UnitySessionController extends Notifier<UnitySessionState>
   /// Called when UnityWidget is attached and controller is ready.
   void onUnityCreated(UnityWidgetController controller) {
     _unityWidgetController = controller;
-    state = state.copyWith(isUnityLoaded: true);
+    state = state.copyWith(isUnityLoaded: true, isSceneLoaded: true);
     debugPrint('[UnitySessionController] Unity Widget Controller attached.');
 
     // If a session was queued before Unity finished loading, send it now
     if (state.isWaitingForUnity && state.activeConfig != null) {
       _stopReadyTimeout();
       state = state.copyWith(isPlaying: true, isWaitingForUnity: false);
+      _startTime = DateTime.now();
+      _accumulatedElapsedSeconds = 0.0;
       _sendStartSessionToUnity(state.activeConfig!);
       _startHeartbeat();
       _startWatchdog();
@@ -304,21 +322,21 @@ class UnitySessionController extends Notifier<UnitySessionState>
   /// Detaches the controller reference upon screen unmount.
   ///
   /// FIX [Issue #7]: now fully resets loading/playing/waiting flags and
-  /// stops all timers so stale state never lingers.
+  /// stops all timers so stale state never lingers synchronously without nested microtasks.
   void detachUnityWidgetController() {
     _unityWidgetController = null;
     _stopHeartbeat();
     _stopWatchdog();
     _stopReadyTimeout();
-    Future.microtask(() {
-      state = state.copyWith(
-        isUnityLoaded: false,
-        isSceneLoaded: false,
-        isPlaying: false,
-        isWaitingForUnity: false,
-      );
-      debugPrint('[UnitySessionController] Unity Widget Controller detached — state reset.');
-    });
+    _startTime = null;
+    _accumulatedElapsedSeconds = 0.0;
+    state = state.copyWith(
+      isUnityLoaded: false,
+      isSceneLoaded: false,
+      isPlaying: false,
+      isWaitingForUnity: false,
+    );
+    debugPrint('[UnitySessionController] Unity Widget Controller detached — state reset.');
   }
 
   /// Called by UnityWidget onUnitySceneLoaded callback.
@@ -333,14 +351,14 @@ class UnitySessionController extends Notifier<UnitySessionState>
     _stopHeartbeat();
     _stopWatchdog();
     _stopReadyTimeout();
-    Future.microtask(() {
-      state = state.copyWith(
-        isUnityLoaded: false,
-        isSceneLoaded: false,
-        isPlaying: false,
-        isWaitingForUnity: false,
-      );
-    });
+    _startTime = null;
+    _accumulatedElapsedSeconds = 0.0;
+    state = state.copyWith(
+      isUnityLoaded: false,
+      isSceneLoaded: false,
+      isPlaying: false,
+      isWaitingForUnity: false,
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -360,30 +378,34 @@ class UnitySessionController extends Notifier<UnitySessionState>
 
     try {
       final decoded = jsonDecode(rawStr);
-      if (decoded is Map<String, dynamic>) {
+      if (decoded is Map) {
+        final map = Map<String, dynamic>.from(decoded);
         // 1. JSON-RPC 2.0 format
-        if (decoded.containsKey('method')) {
+        if (map.containsKey('method')) {
           _handleRpcMethod(
-            decoded['method'] as String? ?? '',
-            decoded['params'] ?? '',
+            map['method'] as String? ?? '',
+            map['params'] ?? '',
           );
           return;
         }
 
         // 2. Direct telemetry format
-        if (decoded.containsKey('sessionId') &&
-            decoded.containsKey('progressNormalized')) {
-          final progress = SessionProgressDto.fromJson(decoded);
+        if (map.containsKey('sessionId') &&
+            map.containsKey('progressNormalized')) {
+          final progress = SessionProgressDto.fromJson(map);
           _applySessionProgress(progress);
           return;
         }
 
         // 3. Direct summary format
-        if (decoded.containsKey('completedSuccessfully')) {
-          final summary = SessionSummaryDto.fromJson(decoded);
+        if (map.containsKey('completedSuccessfully')) {
+          final summary = SessionSummaryDto.fromJson(map);
           _applySessionSummary(summary);
           return;
         }
+      } else if (decoded is String) {
+        _handleSimpleStringMessage(decoded);
+        return;
       }
     } catch (e) {
       // Non-JSON simple string tokens
@@ -602,6 +624,8 @@ class UnitySessionController extends Notifier<UnitySessionState>
     // Always stop any previous timers
     _stopHeartbeat();
     _stopWatchdog();
+    _startTime = null;
+    _accumulatedElapsedSeconds = 0.0;
 
     state = state.copyWith(
       activeConfig: config,
@@ -643,6 +667,11 @@ class UnitySessionController extends Notifier<UnitySessionState>
   Future<void> pauseSession() async {
     _stopHeartbeat();
     _stopWatchdog();
+    if (_startTime != null) {
+      _accumulatedElapsedSeconds +=
+          DateTime.now().difference(_startTime!).inMicroseconds / 1000000.0;
+      _startTime = null;
+    }
     state = state.copyWith(isPlaying: false);
     final rpc = const JsonRpcRequestDto(method: 'pauseSession', id: 2);
     _postToUnity(rpc.toJsonString());
@@ -650,6 +679,7 @@ class UnitySessionController extends Notifier<UnitySessionState>
 
   /// Resumes the paused Unity session.
   Future<void> resumeSession() async {
+    _startTime = DateTime.now();
     state = state.copyWith(isPlaying: true);
     _startHeartbeat();
     _startWatchdog();
@@ -666,6 +696,8 @@ class UnitySessionController extends Notifier<UnitySessionState>
     if (state.elapsedSeconds >= 15.0 && !state.isCompleted) {
       await recordPartialSession();
     }
+    _startTime = null;
+    _accumulatedElapsedSeconds = 0.0;
     state = state.copyWith(isPlaying: false, isWaitingForUnity: false);
     final rpc = const JsonRpcRequestDto(method: 'stopSession', id: 4);
     _postToUnity(rpc.toJsonString());
@@ -703,6 +735,8 @@ class UnitySessionController extends Notifier<UnitySessionState>
     _stopWatchdog();
     _stopReadyTimeout();
     _lastUnityMessageAt = null;
+    _startTime = null;
+    _accumulatedElapsedSeconds = 0.0;
     state = const UnitySessionState();
   }
 

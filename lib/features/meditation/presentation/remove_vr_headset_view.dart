@@ -63,6 +63,7 @@ class RemoveVrHeadsetView extends ConsumerWidget {
                   },
                   accentColor: AppColors.sageAccent,
                   width: 250,
+                  requireHold: false,
                 ).animate().fadeIn(delay: 600.ms, duration: 400.ms),
               ],
             ),

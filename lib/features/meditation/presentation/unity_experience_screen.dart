@@ -223,6 +223,9 @@ class _UnityExperienceScreenState
   void _restoreOrientationAndGoHome() async {
     _loadTimeoutTimer?.cancel();
     try {
+      WakelockPlus.disable();
+    } catch (_) {}
+    try {
       final controller = ref.read(unitySessionControllerProvider.notifier);
       controller.stopSession();
     } catch (e) {
@@ -238,7 +241,10 @@ class _UnityExperienceScreenState
 
     try {
       await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      await SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
+      );
     } catch (e) {
       debugPrint('[UnityExperienceScreen] Errore ripristino orientamento: $e');
     }
@@ -293,9 +299,15 @@ class _UnityExperienceScreenState
     if (sessionState.isPlaying) {
       controller.pauseSession();
       await audioService?.pauseAll();
+      try {
+        WakelockPlus.disable();
+      } catch (_) {}
     } else {
       controller.resumeSession();
       await audioService?.resumeAll();
+      try {
+        WakelockPlus.enable();
+      } catch (_) {}
     }
   }
 
@@ -314,6 +326,11 @@ class _UnityExperienceScreenState
   void _confirmExit() async {
     _loadTimeoutTimer?.cancel();
     try {
+      WakelockPlus.disable();
+    } catch (_) {}
+    final elapsedSeconds =
+        ref.read(unitySessionControllerProvider).elapsedSeconds;
+    try {
       final controller = ref.read(unitySessionControllerProvider.notifier);
       controller.stopSession();
     } catch (e) {
@@ -331,17 +348,24 @@ class _UnityExperienceScreenState
       // Reset VR mode and record session (moved from VrConfirmationScreen's
       // pushReplacement .then() callback for GoRouter compatibility)
       ref.read(settingsProvider.notifier).toggleVrMode(false);
-      await ref.read(userRepositoryProvider)?.recordSession(
-            widget.title,
-            widget.sceneName.contains('resp') ? "Respirazione" : "Meditazione",
-          );
+      if (elapsedSeconds >= 60) {
+        final minutes = elapsedSeconds ~/ 60;
+        await ref.read(userRepositoryProvider)?.recordSession(
+              widget.title,
+              widget.sceneName.contains('resp') ? "Respirazione" : "Meditazione",
+              durationMinutes: minutes,
+            );
+      }
     } catch (e) {
       debugPrint('[UnityExperienceScreen] Errore salvataggio sessione: $e');
     }
 
     try {
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
+      );
     } catch (e) {
       debugPrint('[UnityExperienceScreen] Errore ripristino orientamento in exit: $e');
     }
@@ -358,6 +382,9 @@ class _UnityExperienceScreenState
   }
 
   void _repeatSession() async {
+    try {
+      WakelockPlus.enable();
+    } catch (_) {}
     final audioService = ref.read(audioServiceProvider).valueOrNull;
     await audioService?.stopVoice();
     _initializeSession(isRepeat: true);
@@ -373,10 +400,10 @@ class _UnityExperienceScreenState
 
     final sessionNotifier = _sessionNotifier;
     if (sessionNotifier != null) {
-      Future.microtask(() {
+      Future.microtask(() async {
         try {
+          await sessionNotifier.stopSession();
           sessionNotifier.detachUnityWidgetController();
-          sessionNotifier.stopSession();
         } catch (e) {
           debugPrint('[UnityExperienceScreen] Errore cleanup sessione in dispose: $e');
         }
@@ -394,7 +421,10 @@ class _UnityExperienceScreenState
 
     try {
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
+      );
     } catch (e) {
       debugPrint('[UnityExperienceScreen] Errore orientamento in dispose: $e');
     }
@@ -429,6 +459,11 @@ class _UnityExperienceScreenState
           });
         }
       }
+      if (next.isCompleted && !(prev?.isCompleted ?? false)) {
+        try {
+          WakelockPlus.disable();
+        } catch (_) {}
+      }
     });
 
     final sessionState = ref.watch(unitySessionControllerProvider);
@@ -460,7 +495,15 @@ class _UnityExperienceScreenState
               child: UnityWidget(
                 onUnityCreated: (controller) {
                   try {
+                    _loadTimeoutTimer?.cancel();
+                    _loadTimeoutTimer = null;
+                    if (_showLoadTimeoutDialog) {
+                      setState(() {
+                        _showLoadTimeoutDialog = false;
+                      });
+                    }
                     sessionNotifier.onUnityCreated(controller);
+                    sessionNotifier.onUnitySceneLoaded(null);
                   } catch (e) {
                     debugPrint('[UnityExperienceScreen] Errore in onUnityCreated: $e');
                     _showRecoveryDialog(
@@ -892,6 +935,7 @@ class _UnityExperienceScreenState
                                 onTap: _repeatSession,
                                 accentColor: accentColor,
                                 width: 130,
+                                requireHold: false,
                               ),
                               const SizedBox(width: 16),
                               CustomUnityButton(
@@ -899,6 +943,7 @@ class _UnityExperienceScreenState
                                 onTap: _confirmExit,
                                 accentColor: AppColors.successAccent,
                                 width: 130,
+                                requireHold: false,
                               ),
                             ],
                           ),
@@ -963,6 +1008,7 @@ class _UnityExperienceScreenState
                                   text: isIt ? 'RIPROVA' : 'RETRY',
                                   onTap: _retryLoading,
                                   accentColor: accentColor,
+                                  requireHold: false,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -971,6 +1017,7 @@ class _UnityExperienceScreenState
                                   text: isIt ? 'HOME' : 'HOME',
                                   onTap: _confirmExit,
                                   accentColor: AppColors.dangerAccent,
+                                  requireHold: false,
                                 ),
                               ),
                             ],
@@ -1035,6 +1082,7 @@ class _UnityExperienceScreenState
                                   text: isIt ? 'CONTINUA' : 'STAY',
                                   onTap: _cancelExit,
                                   accentColor: accentColor,
+                                  requireHold: false,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -1043,6 +1091,7 @@ class _UnityExperienceScreenState
                                   text: isIt ? 'ESCI' : 'EXIT',
                                   onTap: _confirmExit,
                                   accentColor: AppColors.dangerAccent,
+                                  requireHold: false,
                                 ),
                               ),
                             ],
@@ -1068,14 +1117,15 @@ class _UnityExperienceScreenState
       button: true,
       label: "Interactive button",
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
-              width: 44,
-              height: 44,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.black.withValues(alpha: 0.4),

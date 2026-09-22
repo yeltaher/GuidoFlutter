@@ -110,24 +110,27 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                 horizontal: 24.0,
                 vertical: 8.0,
               ),
-              child: Row(
-                children: [
-                  _buildCategoryPill("ALL", 0, isDark, accentColor),
-                  const SizedBox(width: 8),
-                  _buildCategoryPill(
-                    settings.language == 0 ? "MEDITAZIONI" : "MEDITATIONS",
-                    1,
-                    isDark,
-                    accentColor,
-                  ),
-                  const SizedBox(width: 8),
-                  _buildCategoryPill(
-                    settings.language == 0 ? "RESPIRAZIONI" : "BREATHINGS",
-                    2,
-                    isDark,
-                    accentColor,
-                  ),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildCategoryPill("ALL", 0, isDark, accentColor),
+                    const SizedBox(width: 8),
+                    _buildCategoryPill(
+                      settings.language == 0 ? "MEDITAZIONI" : "MEDITATIONS",
+                      1,
+                      isDark,
+                      accentColor,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildCategoryPill(
+                      settings.language == 0 ? "RESPIRAZIONI" : "BREATHINGS",
+                      2,
+                      isDark,
+                      accentColor,
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -185,7 +188,7 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                               ? "Meditazione Generale"
                               : "General Meditation",
                           voicePath: settings.language == 0
-                              ? 'assets/audio/voci/it/meditazione_generale.m4a'
+                              ? 'assets/audio/voci/it/meditazione_percorso_acqua_procedimento_it.m4a'
                               : 'assets/audio/voci/en/meditazione_generale.m4a',
                           ambientPath: 'assets/audio/ambient/musica_eterea.m4a',
                           sceneName: UnityScenes.generalMeditation,

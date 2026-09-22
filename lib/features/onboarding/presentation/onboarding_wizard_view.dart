@@ -49,7 +49,7 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
 
   void _nextPage() {
     if (_currentPage == 0) {
-      if (!_formKey.currentState!.validate()) {
+      if (!(_formKey.currentState?.validate() ?? false)) {
         return;
       }
     }
@@ -170,7 +170,15 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
     final textColor = AppColors.getTextColor(isDark);
     final subTextColor = AppColors.getSubTextColor(isDark);
 
-    return Scaffold(
+    return PopScope(
+      canPop: _currentPage == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_currentPage > 0 && _currentPage != 8) {
+          _prevPage();
+        }
+      },
+      child: Scaffold(
       extendBody: true,
       bottomNavigationBar: _currentPage < 8
           ? Container(
@@ -487,7 +495,8 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   // --- WIDGET DI CONFIGURAZIONE DEGLI STEP ---
@@ -547,6 +556,7 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                     ),
                     child: TextFormField(
                       controller: _nameController,
+                      maxLength: 25,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 16,
                         color: textColor,
@@ -557,11 +567,20 @@ class _OnboardingWizardViewState extends ConsumerState<OnboardingWizardView> {
                         hintStyle: GoogleFonts.plusJakartaSans(
                           color: subTextColor.withValues(alpha: 0.5),
                         ),
+                        counterText: "",
                         border: InputBorder.none,
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return "Per favore, inserisci un nome per il profilo";
+                        }
+                        if (value.trim().length > 25) {
+                          return "Il nome non può superare 25 caratteri";
+                        }
+                        final nameRegex =
+                            RegExp(r"^[a-zA-Z0-9\s\u00C0-\u024F\-']+$");
+                        if (!nameRegex.hasMatch(value.trim())) {
+                          return "Il nome contiene caratteri non validi";
                         }
                         return null;
                       },

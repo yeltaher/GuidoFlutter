@@ -191,7 +191,7 @@ class HomeTab extends ConsumerWidget {
                       },
                       child: Container(
                         width: double.infinity,
-                        height: 146,
+                        constraints: const BoxConstraints(minHeight: 146),
                         decoration: AppColors.japandiCardDecoration(
                           isDark,
                           borderRadius: 24.0,
@@ -499,7 +499,7 @@ class HomeTab extends ConsumerWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          height: 140,
+          constraints: const BoxConstraints(minHeight: 140),
           decoration: AppColors.japandiCardDecoration(
             isDark,
             borderRadius: 24.0,

@@ -14,6 +14,7 @@ import '../../../core/vr/vr_host_screen.dart';
 import '../../../core/vr/vr_orientation_service.dart';
 import '../../../core/vr/shared_sbs_video_widget.dart';
 import '../../../core/database/settings_provider.dart';
+import '../../../core/database/repositories/user_repository.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:just_audio/just_audio.dart';
@@ -35,6 +36,8 @@ class BreathingView extends ConsumerStatefulWidget {
 class _BreathingViewState extends ConsumerState<BreathingView>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
+  late final CurvedAnimation _curvedPulseAnimation;
+  late final Animation<double> _glowScaleAnimation;
   Timer? _timer;
   int _secondsElapsed = 0;
   String _phaseText = '';
@@ -76,6 +79,13 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
+    );
+    _curvedPulseAnimation = CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOutSine,
+    );
+    _glowScaleAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      _curvedPulseAnimation,
     );
     _pulseController.repeat(reverse: true);
 
@@ -133,40 +143,47 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     });
   }
 
-  void _startExperience() {
-    final audioServiceAsync = ref.read(audioServiceProvider);
-    if (audioServiceAsync is! AsyncData) return;
-    final audioService = audioServiceAsync.value!;
-    audioService.playEffect(
-      widget.audioPath,
-      loop: false,
-    ); // L'audio detta la durata della sessione
-    _updatePhase();
+  Future<void> _startExperience() async {
+    try {
+      final audioService = await ref.read(audioServiceProvider.future);
+      if (!mounted) return;
+      audioService.playEffect(
+        widget.audioPath,
+        loop: false,
+      ); // L'audio detta la durata della sessione
+      _updatePhase();
 
-    if (_videoController != null) {
-      _videoController!.play();
-    }
+      if (_videoController != null && mounted) {
+        _videoController!.play();
+      }
 
-    _audioStateSub = audioService.effectsPlayerStateStream.listen((state) {
-      if (state.processingState == ProcessingState.completed) {
-        if (mounted && !_isSessionFinished) {
+      _audioStateSub?.cancel();
+      _audioStateSub = audioService.effectsPlayerStateStream.listen((state) {
+        if (state.processingState == ProcessingState.completed) {
+          if (mounted && !_isSessionFinished) {
+            setState(() {
+              _isSessionFinished = true;
+              _isPlaying = false;
+              _pulseController.stop();
+            });
+            WakelockPlus.disable();
+            ref.read(userRepositoryProvider)?.recordSession(widget.title, "Respirazione");
+          }
+        }
+      });
+
+      _timer?.cancel();
+      _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
+        if (mounted && _isPlaying && !_isSessionFinished) {
           setState(() {
-            _isSessionFinished = true;
-            _isPlaying = false;
-            _pulseController.stop();
+            _secondsElapsed += 4;
+            _updatePhase();
           });
         }
-      }
-    });
-
-    _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
-      if (mounted && _isPlaying && !_isSessionFinished) {
-        setState(() {
-          _secondsElapsed += 4;
-          _updatePhase();
-        });
-      }
-    });
+      });
+    } catch (e) {
+      debugPrint('[BreathingView] Errore avvio audio: $e');
+    }
   }
 
   void _repeatSession() {
@@ -177,31 +194,30 @@ class _BreathingViewState extends ConsumerState<BreathingView>
       _updatePhase();
       _pulseController.repeat(reverse: true);
     });
+    WakelockPlus.enable();
     // Modalità Ripeti: prosegue nell'ambiente immersivo con audio d'atmosfera/video
     // e visual respiro, senza ripetere la voce guida
     _videoController?.play();
-    final audioServiceAsync = ref.read(audioServiceProvider);
-    if (audioServiceAsync is AsyncData) {
-      audioServiceAsync.value!.playAmbient(
-        'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
-      );
-    }
+    final audioService = ref.read(audioServiceProvider).valueOrNull;
+    audioService?.playAmbient(
+      'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
+    );
   }
 
   void _togglePlay() {
-    final audioServiceAsync = ref.read(audioServiceProvider);
-    if (audioServiceAsync is! AsyncData) return;
-    final audioService = audioServiceAsync.value!;
+    final audioService = ref.read(audioServiceProvider).valueOrNull;
     setState(() {
       _isPlaying = !_isPlaying;
       if (_isPlaying) {
-        audioService.resumeAll();
+        audioService?.resumeAll();
         _pulseController.repeat(reverse: true);
         _videoController?.play();
+        WakelockPlus.enable();
       } else {
-        audioService.pauseAll();
+        audioService?.pauseAll();
         _pulseController.stop();
         _videoController?.pause();
+        WakelockPlus.disable();
       }
     });
   }
@@ -228,15 +244,14 @@ class _BreathingViewState extends ConsumerState<BreathingView>
   }
 
   void _confirmExit() {
+    WakelockPlus.disable();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     final isVr = ref.read(settingsProvider).isVrMode;
-    final audioServiceAsync = ref.read(audioServiceProvider);
-    if (audioServiceAsync is AsyncData) {
-      audioServiceAsync.value!.stopAll();
-    }
+    final audioService = ref.read(audioServiceProvider).valueOrNull;
+    audioService?.stopAll();
     if (isVr) {
       ref.read(settingsProvider.notifier).toggleVrMode(false);
       context.go('/remove-vr-headset');
@@ -251,6 +266,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
     _audioStateSub?.cancel();
     _timer?.cancel();
     _countdownTimer?.cancel();
+    _curvedPulseAnimation.dispose();
     _pulseController.dispose();
     _gazeController?.dispose();
     WakelockPlus.disable();
@@ -473,12 +489,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
             right: 0,
             child: Center(
               child: ScaleTransition(
-                scale: Tween<double>(begin: 1.0, end: 1.15).animate(
-                  CurvedAnimation(
-                    parent: _pulseController,
-                    curve: Curves.easeInOutSine,
-                  ),
-                ),
+                scale: _glowScaleAnimation,
                 child: Container(
                   key: ValueKey('breathing_ambient_glow_$isLeft'),
                   width: balloonSize * 1.5,

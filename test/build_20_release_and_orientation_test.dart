@@ -39,19 +39,24 @@ void main() {
   });
 
   group('Build 20: 1. Pubspec Version & Configuration Quality Gates', () {
-    test('pubspec.yaml has version 0.1.0+29', () {
+    test('pubspec.yaml has version 0.1.0+30', () {
       final pubspecFile = File('pubspec.yaml');
       expect(pubspecFile.existsSync(), isTrue);
       final content = pubspecFile.readAsStringSync();
-      expect(content.contains('version: 0.1.0+29'), isTrue);
+      expect(content.contains('version: 0.1.0+30'), isTrue);
     });
 
-    test('iOS Info.plist contains required camera, motion, audio and orientation keys', () {
+    test('iOS Info.plist conforms to App Store guidelines with motion, audio, ATS and encryption exempt', () {
       final infoPlistFile = File('ios/Runner/Info.plist');
       expect(infoPlistFile.existsSync(), isTrue);
       final content = infoPlistFile.readAsStringSync();
-      expect(content.contains('NSCameraUsageDescription'), isTrue);
+      expect(content.contains('NSCameraUsageDescription'), isFalse);
+      expect(content.contains('NSMicrophoneUsageDescription'), isFalse);
       expect(content.contains('NSMotionUsageDescription'), isTrue);
+      expect(content.contains('NSAppTransportSecurity'), isTrue);
+      expect(content.contains('NSAllowsArbitraryLoads'), isTrue);
+      expect(content.contains('NSAllowsLocalNetworking'), isTrue);
+      expect(content.contains('ITSAppUsesNonExemptEncryption'), isTrue);
       expect(content.contains('UIBackgroundModes'), isTrue);
       expect(content.contains('<string>audio</string>'), isTrue);
       expect(content.contains('UIInterfaceOrientationPortrait'), isTrue);

@@ -211,81 +211,83 @@ class SessionLaunchDialog extends ConsumerWidget {
             opacity: 0.85,
           ),
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Icon(Icons.spa_outlined, color: accentColor, size: 32),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                isIt ? "SCEGLI L'ESPERIENZA" : 'CHOOSE EXPERIENCE',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  color: textColor,
-                  letterSpacing: 0.5,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Icon(Icons.spa_outlined, color: accentColor, size: 32),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                isIt
-                    ? 'Come preferisci vivere questa meditazione?'
-                    : 'How would you like to experience this session?',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13.0,
-                  fontWeight: FontWeight.w500,
-                  color: subTextColor.withValues(alpha: 0.9),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              _buildChoiceCard(
-                icon: Icons.phone_android_rounded,
-                title: isIt ? 'Modalità Standard' : 'Standard Mode',
-                desc: isIt
-                    ? 'Segui la meditazione direttamente sullo schermo dello smartphone.'
-                    : 'Follow the meditation directly on your smartphone screen.',
-                isDark: isDark,
-                accentColor: accentColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-                onTap: () => _startFlatSession(context, ref),
-              ),
-
-              const SizedBox(height: 14),
-
-              _buildChoiceCard(
-                icon: Icons.view_in_ar_rounded,
-                title: isIt ? 'Modalità Visore VR 3D' : 'VR 3D Headset Mode',
-                desc: isIt
-                    ? 'Immergiti a 360° nel giardino zen inserendo il telefono in un visore VR Cardboard.'
-                    : 'Immerse yourself 360° in the zen garden using a VR Cardboard headset.',
-                isDark: isDark,
-                accentColor: accentColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-                onTap: () => _goToVrConfirm(context, ref),
-              ),
-
-              const SizedBox(height: 20),
-
-              TextButton(
-                onPressed: () => context.pop(),
-                child: Text(
-                  isIt ? 'ANNULLA' : 'CANCEL',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: subTextColor.withValues(alpha: 0.7),
+                const SizedBox(height: 12),
+                Text(
+                  isIt ? "SCEGLI L'ESPERIENZA" : 'CHOOSE EXPERIENCE',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: textColor,
                     letterSpacing: 0.5,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  isIt
+                      ? 'Come preferisci vivere questa meditazione?'
+                      : 'How would you like to experience this session?',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.w500,
+                    color: subTextColor.withValues(alpha: 0.9),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                _buildChoiceCard(
+                  icon: Icons.phone_android_rounded,
+                  title: isIt ? 'Modalità Standard' : 'Standard Mode',
+                  desc: isIt
+                      ? 'Segui la meditazione direttamente sullo schermo dello smartphone.'
+                      : 'Follow the meditation directly on your smartphone screen.',
+                  isDark: isDark,
+                  accentColor: accentColor,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  onTap: () => _startFlatSession(context, ref),
+                ),
+
+                const SizedBox(height: 14),
+
+                _buildChoiceCard(
+                  icon: Icons.view_in_ar_rounded,
+                  title: isIt ? 'Modalità Visore VR 3D' : 'VR 3D Headset Mode',
+                  desc: isIt
+                      ? 'Immergiti a 360° nel giardino zen inserendo il telefono in un visore VR Cardboard.'
+                      : 'Immerse yourself 360° in the zen garden using a VR Cardboard headset.',
+                  isDark: isDark,
+                  accentColor: accentColor,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  onTap: () => _goToVrConfirm(context, ref),
+                ),
+
+                const SizedBox(height: 20),
+
+                TextButton(
+                  onPressed: () => context.pop(),
+                  child: Text(
+                    isIt ? 'ANNULLA' : 'CANCEL',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: subTextColor.withValues(alpha: 0.7),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -18,7 +18,7 @@ class CustomUnityButton extends StatefulWidget {
     this.isLocked = false,
     this.width = 220.0,
     this.accentColor = AppColors.successAccent,
-    this.requireHold = true,
+    this.requireHold = false,
   });
 
   @override
@@ -88,8 +88,8 @@ class _CustomUnityButtonState extends State<CustomUnityButton>
       button: true,
       label: "Interactive element",
       child: GestureDetector(
-        onTap: !widget.requireHold ? widget.onTap : null,
-        onTapDown: widget.requireHold ? _onTapDown : null,
+        behavior: HitTestBehavior.opaque,
+        onTapDown: _onTapDown,
         onTapUp: widget.requireHold ? _onTapUp : null,
         onTapCancel: widget.requireHold ? _onTapCancel : null,
         child: AnimatedScale(

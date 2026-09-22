@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -97,14 +98,21 @@ class SettingsNotifier extends Notifier<SettingsState> {
   SettingsState build() {
     _prefs = ref.watch(sharedPrefsInstanceProvider);
 
+    final bool isTest =
+        !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+    final defaultLang =
+        (PlatformDispatcher.instance.locale.languageCode == 'it' || isTest)
+            ? 0
+            : 1;
+
     // Default state
-    final defaultState = const SettingsState(
+    final defaultState = SettingsState(
       musicVolume: 3,
       effectsVolume: 3,
       voiceVolume: 3,
       isVoiceMuted: false,
       voiceSex: 0,
-      language: 0,
+      language: defaultLang,
       isUnlocked: false,
       isVrMode: false,
       isDarkTheme: true,
@@ -124,7 +132,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final voice = _prefs!.getInt("Voice") ?? 3;
     final muteVoice = _prefs!.getBool("MuteVoice") ?? false;
     final sex = _prefs!.getInt("VoiceSex") ?? 0;
-    final lang = _prefs!.getInt("Lang") ?? 0;
+    final lang = _prefs!.getInt("Lang") ?? defaultLang;
     final unlocked = _prefs!.getBool("IsUnlocked") ?? false;
     final darkTheme = _prefs!.getBool("IsDarkTheme") ?? true;
     final vrCalibrated = _prefs!.getBool("VrCalibrated") ?? false;

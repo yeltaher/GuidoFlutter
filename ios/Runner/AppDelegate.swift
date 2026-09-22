@@ -39,5 +39,23 @@ import UIKit
 
         return result
     }
+
+    // MARK: - Memory Pressure Handling
+
+    override func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
+        super.applicationDidReceiveMemoryWarning(application)
+
+        // Under memory pressure, notify Flutter to trigger image cache purge (PaintingBinding.instance.imageCache.clear())
+        // and reduce memory footprint to prevent iOS Jetsam SIGKILL
+        if let controller = window?.rootViewController as? FlutterViewController {
+            let memoryChannel = FlutterMethodChannel(
+                name: "com.codepulse.guido/memory",
+                binaryMessenger: controller.binaryMessenger
+            )
+            DispatchQueue.main.async {
+                memoryChannel.invokeMethod("onMemoryWarning", arguments: nil)
+            }
+        }
+    }
 }
 
