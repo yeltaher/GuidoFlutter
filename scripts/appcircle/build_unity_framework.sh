@@ -12,15 +12,38 @@ set -euo pipefail
 # - Set "Execute With" to "Bash"
 # - Paste this script
 # ============================================================================
+# Navigate to repository root if AC_REPOSITORY_DIR is defined
+if [ -n "${AC_REPOSITORY_DIR:-}" ]; then
+  cd "$AC_REPOSITORY_DIR"
+fi
+
+# ============================================================================
+# Step 0: Ensure Git LFS Binaries
+# ============================================================================
+echo "=========================================="
+echo "Step 0: Ensuring Git LFS Binaries"
+echo "=========================================="
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || pwd)"
+
+if [ -f "$SCRIPT_DIR/ensure_git_lfs.sh" ]; then
+  echo "Invoking ensure_git_lfs.sh from $SCRIPT_DIR/ensure_git_lfs.sh..."
+  bash "$SCRIPT_DIR/ensure_git_lfs.sh"
+elif [ -f "scripts/appcircle/ensure_git_lfs.sh" ]; then
+  echo "Invoking ensure_git_lfs.sh from repo relative path..."
+  bash "scripts/appcircle/ensure_git_lfs.sh"
+elif [ -n "${AC_REPOSITORY_DIR:-}" ] && [ -f "$AC_REPOSITORY_DIR/scripts/appcircle/ensure_git_lfs.sh" ]; then
+  echo "Invoking ensure_git_lfs.sh from \$AC_REPOSITORY_DIR..."
+  bash "$AC_REPOSITORY_DIR/scripts/appcircle/ensure_git_lfs.sh"
+else
+  echo "WARNING: ensure_git_lfs.sh not found. Running direct fallback git lfs commands..."
+  git lfs install --local || true
+  git lfs pull
+fi
 
 echo "=========================================="
 echo "Step 1: Building UnityFramework"
 echo "=========================================="
-
-# Navigate to repository root
-if [ -n "${AC_REPOSITORY_DIR:-}" ]; then
-  cd "$AC_REPOSITORY_DIR"
-fi
 
 # Check if Unity-iPhone.xcodeproj exists
 if [ ! -d "ios/UnityLibrary/Unity-iPhone.xcodeproj" ]; then
