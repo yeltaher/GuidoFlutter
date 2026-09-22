@@ -220,24 +220,33 @@ class _UnityExperienceScreenState
     });
   }
 
-  void _restoreOrientationAndGoHome() async {
+  Future<void> _teardownAudioAndSession() async {
     _loadTimeoutTimer?.cancel();
     try {
-      WakelockPlus.disable();
-    } catch (_) {}
-    try {
-      final controller = ref.read(unitySessionControllerProvider.notifier);
-      controller.stopSession();
+      await _audioService?.stopAll();
     } catch (e) {
-      debugPrint('[UnityExperienceScreen] Errore stop sessione: $e');
+      debugPrint('[UnityExperienceScreen] Errore stop _audioService: $e');
     }
 
     try {
       final audioService = ref.read(audioServiceProvider).valueOrNull;
       await audioService?.stopAll();
     } catch (e) {
-      debugPrint('[UnityExperienceScreen] Errore stop audio: $e');
+      debugPrint('[UnityExperienceScreen] Errore stop audioServiceProvider: $e');
     }
+
+    try {
+      await ref.read(unitySessionControllerProvider.notifier).stopSession();
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore stopSession: $e');
+    }
+  }
+
+  void _restoreOrientationAndGoHome() async {
+    await _teardownAudioAndSession();
+    try {
+      WakelockPlus.disable();
+    } catch (_) {}
 
     try {
       await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -324,25 +333,13 @@ class _UnityExperienceScreenState
   }
 
   void _confirmExit() async {
-    _loadTimeoutTimer?.cancel();
     try {
       WakelockPlus.disable();
     } catch (_) {}
     final elapsedSeconds =
         ref.read(unitySessionControllerProvider).elapsedSeconds;
-    try {
-      final controller = ref.read(unitySessionControllerProvider.notifier);
-      controller.stopSession();
-    } catch (e) {
-      debugPrint('[UnityExperienceScreen] Errore stop sessione in exit: $e');
-    }
 
-    try {
-      final audioService = ref.read(audioServiceProvider).valueOrNull;
-      await audioService?.stopAll();
-    } catch (e) {
-      debugPrint('[UnityExperienceScreen] Errore stop audio in exit: $e');
-    }
+    await _teardownAudioAndSession();
 
     try {
       // Reset VR mode and record session (moved from VrConfirmationScreen's
@@ -398,6 +395,12 @@ class _UnityExperienceScreenState
     _loadTimeoutTimer?.cancel();
     _loadTimeoutTimer = null;
 
+    try {
+      _audioService?.stopAll();
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore stop audio in dispose: $e');
+    }
+
     final sessionNotifier = _sessionNotifier;
     if (sessionNotifier != null) {
       Future.microtask(() async {
@@ -408,11 +411,6 @@ class _UnityExperienceScreenState
           debugPrint('[UnityExperienceScreen] Errore cleanup sessione in dispose: $e');
         }
       });
-    }
-    try {
-      _audioService?.stopAll();
-    } catch (e) {
-      debugPrint('[UnityExperienceScreen] Errore stop audio in dispose: $e');
     }
 
     try {
@@ -438,13 +436,6 @@ class _UnityExperienceScreenState
     }
 
     super.dispose();
-  }
-
-  String _formatDuration(double seconds) {
-    final int totalSec = seconds.toInt();
-    final int min = totalSec ~/ 60;
-    final int sec = totalSec % 60;
-    return '${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -774,71 +765,6 @@ class _UnityExperienceScreenState
                           end: const Offset(1.0, 1.0),
                           duration: 300.ms,
                         ),
-
-                        const SizedBox(height: 16),
-
-                        // Progress Bar & Timer
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.35),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: Colors.white10,
-                                  width: 0.8,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    _formatDuration(
-                                      sessionState.elapsedSeconds,
-                                    ),
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: LinearProgressIndicator(
-                                        value: sessionState.progressNormalized
-                                            .clamp(0.0, 1.0),
-                                        backgroundColor: Colors.white12,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                          accentColor,
-                                        ),
-                                        minHeight: 4,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    _formatDuration(
-                                      sessionState.totalDurationSeconds,
-                                    ),
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white54,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -1091,7 +1017,7 @@ class _UnityExperienceScreenState
                                   text: isIt ? 'ESCI' : 'EXIT',
                                   onTap: _confirmExit,
                                   accentColor: AppColors.dangerAccent,
-                                  requireHold: false,
+                                  requireHold: true,
                                 ),
                               ),
                             ],

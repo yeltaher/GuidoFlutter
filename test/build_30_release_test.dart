@@ -7,6 +7,8 @@ import 'package:guido/core/database/settings_provider.dart';
 import 'package:guido/core/database/app_initializer_provider.dart';
 import 'package:guido/features/onboarding/presentation/onboarding_wizard_view.dart';
 import 'package:guido/features/premium/presentation/premium_paywall_view.dart';
+import 'package:guido/core/unity/unity_bridge_dto.dart';
+import 'package:guido/core/theme/custom_button_widget.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -185,6 +187,105 @@ void main() {
       final unitySource = File('lib/features/meditation/presentation/unity_experience_screen.dart').readAsStringSync();
       expect(unitySource.contains('if (elapsedSeconds >= 60)'), isTrue);
       expect(unitySource.contains('durationMinutes: minutes'), isTrue);
+    });
+  });
+
+  group('Build 30 Quality Gate 5.6: Canonical Unity Scenes Alignment', () {
+    test('UnityScenes canonical names match EditorBuildSettings.asset exactly', () {
+      expect(UnityScenes.waterBreathing, 'Respirazione acqua');
+      expect(UnityScenes.waterMeditation, 'Procedimento acqua');
+      expect(UnityScenes.airBreathing, 'Respirazione aria');
+      expect(UnityScenes.airMeditation, 'Procedimento aria');
+      expect(UnityScenes.fireBreathing, 'Respirazione fuoco');
+      expect(UnityScenes.fireMeditation, 'Procedimento fuoco');
+      expect(UnityScenes.earthBreathing, 'Respirazione terra');
+      expect(UnityScenes.earthMeditation, 'Procedimento terra');
+      expect(UnityScenes.generalMeditation, 'Meditazione generale');
+
+      expect(UnityScenes.allScenes, contains('Respirazione acqua'));
+      expect(UnityScenes.allScenes, contains('Respirazione aria'));
+      expect(UnityScenes.allScenes, contains('Respirazione fuoco'));
+      expect(UnityScenes.allScenes, contains('Meditazione generale'));
+    });
+  });
+
+  group('Build 30 Quality Gate 5.7: CustomUnityButton Tap Up & Lock Protection', () {
+    testWidgets('CustomUnityButton executes onTap on tap-up when not locked, and ignores taps when locked', (tester) async {
+      int tapCount = 0;
+      bool isLocked = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: StatefulBuilder(
+            builder: (context, setState) {
+              return Scaffold(
+                body: CustomUnityButton(
+                  text: 'START',
+                  isLocked: isLocked,
+                  requireHold: false,
+                  onTap: () {
+                    tapCount++;
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+      );
+
+      final buttonFinder = find.byType(CustomUnityButton);
+      expect(buttonFinder, findsOneWidget);
+
+      // 1. Gesture down should not invoke onTap yet
+      final gesture = await tester.startGesture(tester.getCenter(buttonFinder));
+      await tester.pump();
+      expect(tapCount, 0);
+
+      // AnimatedScale should scale down to 0.96
+      final scaleFinder = find.descendant(
+        of: buttonFinder,
+        matching: find.byType(AnimatedScale),
+      );
+      final scaleWidget = tester.widget<AnimatedScale>(scaleFinder);
+      expect(scaleWidget.scale, 0.96);
+
+      // 2. Gesture up should invoke onTap
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(tapCount, 1);
+
+      // Scale should return to 1.0
+      final scaleWidgetAfter = tester.widget<AnimatedScale>(scaleFinder);
+      expect(scaleWidgetAfter.scale, 1.0);
+
+      // 3. Locked button should block taps completely
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CustomUnityButton(
+              text: 'START',
+              isLocked: true,
+              requireHold: false,
+              onTap: () {
+                tapCount++;
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(buttonFinder);
+      await tester.pumpAndSettle();
+      expect(tapCount, 1); // Remains 1, never triggered when locked
+    });
+  });
+
+  group('Build 30 Quality Gate 5.8: Unity HUD Duration Bar Removal & Teardown Verification', () {
+    test('unity_experience_screen.dart does not contain LinearProgressIndicator and has _teardownAudioAndSession', () {
+      final unitySource = File('lib/features/meditation/presentation/unity_experience_screen.dart').readAsStringSync();
+      expect(unitySource.contains('LinearProgressIndicator'), isFalse);
+      expect(unitySource.contains('_teardownAudioAndSession()'), isTrue);
+      expect(unitySource.contains('_audioService?.stopAll()'), isTrue);
     });
   });
 }

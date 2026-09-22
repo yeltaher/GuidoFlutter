@@ -48,19 +48,23 @@ class _CustomUnityButtonState extends State<CustomUnityButton>
   }
 
   void _onTapDown(TapDownDetails details) {
-    if (widget.isLocked || !widget.requireHold) {
-      // Se bloccato o non richiede hold, esegui subito onTap
-      widget.onTap();
-      return;
-    }
+    if (widget.isLocked) return;
     setState(() {
       _isPressing = true;
     });
-    _animationController.forward();
+    if (widget.requireHold) {
+      _animationController.forward();
+    }
   }
 
   void _onTapUp(TapUpDetails details) {
-    _resetButton();
+    if (widget.isLocked) return;
+    if (!widget.requireHold) {
+      _resetButton();
+      widget.onTap();
+    } else {
+      _resetButton();
+    }
   }
 
   void _onTapCancel() {
@@ -72,7 +76,9 @@ class _CustomUnityButtonState extends State<CustomUnityButton>
       setState(() {
         _isPressing = false;
       });
-      _animationController.reverse();
+      if (widget.requireHold) {
+        _animationController.reverse();
+      }
     }
   }
 
@@ -90,8 +96,8 @@ class _CustomUnityButtonState extends State<CustomUnityButton>
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTapDown: _onTapDown,
-        onTapUp: widget.requireHold ? _onTapUp : null,
-        onTapCancel: widget.requireHold ? _onTapCancel : null,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
         child: AnimatedScale(
           scale: _isPressing ? 0.96 : 1.0,
           duration: const Duration(milliseconds: 100),

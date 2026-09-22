@@ -249,26 +249,26 @@ void main() {
 
   group('UnityScenes 9 Canonical Scenes Mapping Tests', () {
     test('All 9 canonical scene constants match the user requirements exactly', () {
-      expect(UnityScenes.waterBreathing, 'Acqua resp');
+      expect(UnityScenes.waterBreathing, 'Respirazione acqua');
       expect(UnityScenes.waterMeditation, 'Procedimento acqua');
-      expect(UnityScenes.airBreathing, 'Aria respirazione');
+      expect(UnityScenes.airBreathing, 'Respirazione aria');
       expect(UnityScenes.airMeditation, 'Procedimento aria');
-      expect(UnityScenes.fireBreathing, 'Fuoco resp');
+      expect(UnityScenes.fireBreathing, 'Respirazione fuoco');
       expect(UnityScenes.fireMeditation, 'Procedimento fuoco');
       expect(UnityScenes.earthBreathing, 'Respirazione terra');
       expect(UnityScenes.earthMeditation, 'Procedimento terra');
-      expect(UnityScenes.generalMeditation, 'Med generale');
+      expect(UnityScenes.generalMeditation, 'Meditazione generale');
 
       expect(UnityScenes.allScenes.length, 9);
-      expect(UnityScenes.allScenes, contains('Acqua resp'));
+      expect(UnityScenes.allScenes, contains('Respirazione acqua'));
       expect(UnityScenes.allScenes, contains('Procedimento acqua'));
-      expect(UnityScenes.allScenes, contains('Aria respirazione'));
+      expect(UnityScenes.allScenes, contains('Respirazione aria'));
       expect(UnityScenes.allScenes, contains('Procedimento aria'));
-      expect(UnityScenes.allScenes, contains('Fuoco resp'));
+      expect(UnityScenes.allScenes, contains('Respirazione fuoco'));
       expect(UnityScenes.allScenes, contains('Procedimento fuoco'));
       expect(UnityScenes.allScenes, contains('Respirazione terra'));
       expect(UnityScenes.allScenes, contains('Procedimento terra'));
-      expect(UnityScenes.allScenes, contains('Med generale'));
+      expect(UnityScenes.allScenes, contains('Meditazione generale'));
     });
 
     test('resolveSceneName resolves explicitly provided scenes', () {
