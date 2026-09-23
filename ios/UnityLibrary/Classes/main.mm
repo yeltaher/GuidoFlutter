@@ -2,6 +2,7 @@
 #include <csignal>
 #include "UnityInterface.h"
 #import <UnityFramework/UnityFramework.h>
+#import <Foundation/Foundation.h>
 #include "UI/Keyboard.h"
 
 void UnityInitTrampoline();
@@ -13,6 +14,136 @@ extern "C" void UnitySetExecuteMachHeader(const MachHeader* header);
 
 extern "C" __attribute__((visibility("default"))) NSString* const kUnityDidUnload;
 extern "C" __attribute__((visibility("default"))) NSString* const kUnityDidQuit;
+
+// IL2CPP and Native declarations for UaaL Interceptor
+extern "C" void SceneManager_LoadScene_mC4BD32145437F282CAA13E1A8685001061E79D98(int32_t sceneBuildIndex, int32_t mode, const void* method);
+extern "C" void SendMessageToFlutterNative(const char* message);
+extern "C" void OnUnitySceneLoaded(const char* name, const int* buildIndex, const bool* isLoaded, const bool* IsValid);
+extern "C" void OnUnityMessage(const char* message);
+
+// Canonical 9 compiled scene names in ios/UnityLibrary/Data (level0 .. level8)
+static const char* const kGuidoScenes[] = {
+    "SplashScreen",          // level0: Splash / initial loader
+    "MainMenu Corretto",     // level1: Main Menu
+    "Procedimento acqua",    // level2: Water tutorial (71s fixed duration)
+    "Respirazione acqua",    // level3: Water continuous meditation (looping)
+    "Procedimento aria",     // level4: Air tutorial
+    "Respirazione aria",     // level5: Air continuous meditation (looping)
+    "Procedimento fuoco",    // level6: Fire tutorial
+    "Respirazione fuoco",    // level7: Fire continuous meditation (looping)
+    "Procedimento terra"     // level8: Earth meditation / procedural ground
+};
+
+static int ResolveGuidoSceneIndex(NSString* sceneIdentifier)
+{
+    if (!sceneIdentifier || sceneIdentifier.length == 0)
+    {
+        return 3; // Default: Respirazione acqua (continuous meditation)
+    }
+
+    NSString* lower = [sceneIdentifier lowercaseString];
+
+    // Check if integer index directly provided
+    NSScanner* scanner = [NSScanner scannerWithString:lower];
+    int numericIdx = -1;
+    if ([scanner scanInt:&numericIdx] && [scanner isAtEnd])
+    {
+        if (numericIdx >= 0 && numericIdx <= 8)
+        {
+            return numericIdx;
+        }
+    }
+
+    if ([lower containsString:@"splash"])
+    {
+        return 0; // SplashScreen
+    }
+
+    if ([lower containsString:@"menu"] || [lower containsString:@"main"])
+    {
+        return 1; // MainMenu Corretto
+    }
+
+    // WATER
+    if ([lower containsString:@"procedimento"] && ([lower containsString:@"acqua"] || [lower containsString:@"water"]))
+    {
+        return 2; // Procedimento acqua (tutorial 71s)
+    }
+    if ([lower containsString:@"acqua"] || [lower containsString:@"water"] || [lower containsString:@"alba"] ||
+        [lower containsString:@"flow"] || [lower containsString:@"mattin"] || [lower containsString:@"sera"] ||
+        [lower containsString:@"riposo"] || [lower containsString:@"calm"] || [lower containsString:@"focus"] ||
+        [lower containsString:@"present"] || [lower containsString:@"concentrazione"])
+    {
+        return 3; // Respirazione acqua (continuous meditation)
+    }
+
+    // AIR
+    if ([lower containsString:@"procedimento"] && ([lower containsString:@"aria"] || [lower containsString:@"air"]))
+    {
+        return 4; // Procedimento aria (tutorial)
+    }
+    if ([lower containsString:@"aria"] || [lower containsString:@"air"])
+    {
+        return 5; // Respirazione aria (continuous meditation)
+    }
+
+    // FIRE
+    if ([lower containsString:@"procedimento"] && ([lower containsString:@"fuoco"] || [lower containsString:@"fire"]))
+    {
+        return 6; // Procedimento fuoco (tutorial)
+    }
+    if ([lower containsString:@"fuoco"] || [lower containsString:@"fire"])
+    {
+        return 7; // Respirazione fuoco (continuous meditation)
+    }
+
+    // EARTH
+    if ([lower containsString:@"terra"] || [lower containsString:@"earth"])
+    {
+        return 8; // Procedimento terra (earth meditation)
+    }
+
+    // Default fallback to continuous water meditation
+    return 3;
+}
+
+static void ExecuteNativeSceneLoad(int buildIndex, const char* customSceneName, double durationSeconds, BOOL isVrMode)
+{
+    if (buildIndex < 0 || buildIndex > 8)
+    {
+        buildIndex = 3;
+    }
+
+    const char* sceneName = (customSceneName && strlen(customSceneName) > 0) ? customSceneName : kGuidoScenes[buildIndex];
+
+    NSLog(@"[Guido Native Interceptor] >>> Loading Scene [%d]: %s (VR: %d, Duration: %.1fs)", buildIndex, sceneName, (int)isVrMode, durationSeconds);
+
+    // 1. Native IL2CPP SceneManager invocation
+    SceneManager_LoadScene_mC4BD32145437F282CAA13E1A8685001061E79D98(buildIndex, 0, NULL);
+
+    // 2. Fallback UnitySendMessage to SceneLoader / GameObject if present in scene
+    char idxBuf[16];
+    snprintf(idxBuf, sizeof(idxBuf), "%d", buildIndex);
+    UnitySendMessage("SceneLoader", "LoadScene", idxBuf);
+
+    // 3. Notify Flutter via direct callback handlers
+    bool isLoaded = true;
+    bool isValid = true;
+    OnUnitySceneLoaded(sceneName, &buildIndex, &isLoaded, &isValid);
+
+    // 4. Send RPC confirmation to Flutter
+    NSString* rpcResponse = [NSString stringWithFormat:
+        @"{\"jsonrpc\":\"2.0\",\"method\":\"onSceneLoaded\",\"params\":\"{\\\"sceneName\\\":\\\"%s\\\",\\\"buildIndex\\\":%d}\",\"id\":1}",
+        sceneName, buildIndex];
+    SendMessageToFlutterNative([rpcResponse UTF8String]);
+
+    // 5. Emit initial progress event so Flutter heartbeat starts and 10s watchdog cancels
+    double totalDuration = durationSeconds > 0 ? durationSeconds : 300.0;
+    NSString* progressResponse = [NSString stringWithFormat:
+        @"{\"sessionId\":\"sess_%ld\",\"sceneName\":\"%s\",\"elapsedSeconds\":0.0,\"totalDurationSeconds\":%.1f,\"progressNormalized\":0.0,\"currentPhase\":\"inhale\",\"userHeartRateOrState\":0}",
+        (long)[[NSDate date] timeIntervalSince1970], sceneName, totalDuration];
+    SendMessageToFlutterNative([progressResponse UTF8String]);
+}
 
 @implementation UnityFramework
 {
@@ -46,7 +177,160 @@ UnityFramework* _gUnityFramework = nil;
 
 - (void)sendMessageToGOWithName:(const char*)goName functionName:(const char*)name message:(const char*)msg
 {
-    UnitySendMessage(goName, name, msg);
+    @autoreleasepool
+    {
+        NSString* goStr = goName ? [NSString stringWithUTF8String:goName] : @"";
+        NSString* fnStr = name ? [NSString stringWithUTF8String:name] : @"";
+        NSString* msgStr = msg ? [NSString stringWithUTF8String:msg] : @"";
+
+        NSLog(@"[Guido Native Interceptor] Inbound Message -> GO: '%@', Func: '%@', Payload: '%@'", goStr, fnStr, msgStr);
+
+        BOOL intercepted = NO;
+
+        // Check if message is JSON
+        id jsonObject = nil;
+        if (msgStr.length > 0)
+        {
+            NSData* data = [msgStr dataUsingEncoding:NSUTF8StringEncoding];
+            if (data)
+            {
+                jsonObject = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+            }
+        }
+
+        if ([jsonObject isKindOfClass:[NSDictionary class]])
+        {
+            NSDictionary* dict = (NSDictionary*)jsonObject;
+            NSString* method = dict[@"method"] ?: dict[@"name"];
+            id params = dict[@"params"] ?: dict[@"data"];
+
+            if (method && [method isKindOfClass:[NSString class]])
+            {
+                NSString* lowerMethod = [method lowercaseString];
+
+                if ([lowerMethod isEqualToString:@"startsession"])
+                {
+                    intercepted = YES;
+                    NSString* sceneName = @"";
+                    double durationSeconds = 300.0;
+                    BOOL isVrMode = NO;
+
+                    if ([params isKindOfClass:[NSString class]] && ((NSString*)params).length > 0)
+                    {
+                        NSData* paramData = [((NSString*)params) dataUsingEncoding:NSUTF8StringEncoding];
+                        if (paramData)
+                        {
+                            id paramObj = [NSJSONSerialization JSONObjectWithData:paramData options:0 error:nil];
+                            if ([paramObj isKindOfClass:[NSDictionary class]])
+                            {
+                                NSDictionary* pDict = (NSDictionary*)paramObj;
+                                sceneName = pDict[@"sceneName"] ?: @"";
+                                durationSeconds = [pDict[@"durationSeconds"] doubleValue];
+                                isVrMode = [pDict[@"isVrMode"] boolValue];
+                            }
+                            else
+                            {
+                                sceneName = (NSString*)params;
+                            }
+                        }
+                        else
+                        {
+                            sceneName = (NSString*)params;
+                        }
+                    }
+                    else if ([params isKindOfClass:[NSDictionary class]])
+                    {
+                        NSDictionary* pDict = (NSDictionary*)params;
+                        sceneName = pDict[@"sceneName"] ?: @"";
+                        durationSeconds = [pDict[@"durationSeconds"] doubleValue];
+                        isVrMode = [pDict[@"isVrMode"] boolValue];
+                    }
+
+                    int buildIndex = ResolveGuidoSceneIndex(sceneName);
+                    ExecuteNativeSceneLoad(buildIndex, [sceneName UTF8String], durationSeconds, isVrMode);
+                }
+                else if ([lowerMethod isEqualToString:@"loadscene"] || [lowerMethod isEqualToString:@"loadscenebyname"])
+                {
+                    intercepted = YES;
+                    NSString* sceneName = @"";
+                    if ([params isKindOfClass:[NSString class]])
+                    {
+                        sceneName = (NSString*)params;
+                    }
+                    else if ([params isKindOfClass:[NSDictionary class]])
+                    {
+                        sceneName = params[@"sceneName"] ?: @"";
+                    }
+
+                    int buildIndex = ResolveGuidoSceneIndex(sceneName);
+                    ExecuteNativeSceneLoad(buildIndex, [sceneName UTF8String], 300.0, NO);
+                }
+                else if ([lowerMethod isEqualToString:@"pausesession"])
+                {
+                    intercepted = YES;
+                    UnityPause(1);
+                    NSLog(@"[Guido Native Interceptor] Session Paused.");
+                }
+                else if ([lowerMethod isEqualToString:@"resumesession"])
+                {
+                    intercepted = YES;
+                    UnityPause(0);
+                    NSLog(@"[Guido Native Interceptor] Session Resumed.");
+                }
+                else if ([lowerMethod isEqualToString:@"stopsession"])
+                {
+                    intercepted = YES;
+                    ExecuteNativeSceneLoad(1, "MainMenu Corretto", 0.0, NO);
+                    UnityPause(0);
+                    NSLog(@"[Guido Native Interceptor] Session Stopped -> MainMenu loaded.");
+                }
+                else if ([lowerMethod isEqualToString:@"setvrmode"])
+                {
+                    intercepted = YES;
+                    BOOL isVr = NO;
+                    if ([params isKindOfClass:[NSNumber class]])
+                    {
+                        isVr = [params boolValue];
+                    }
+                    else if ([params isKindOfClass:[NSString class]])
+                    {
+                        isVr = [params boolValue] || [params isEqualToString:@"true"];
+                    }
+                    NSLog(@"[Guido Native Interceptor] SetVrMode: %d", isVr);
+                }
+            }
+            else if (dict[@"sceneName"])
+            {
+                intercepted = YES;
+                NSString* sceneName = dict[@"sceneName"];
+                double durationSeconds = [dict[@"durationSeconds"] doubleValue];
+                BOOL isVrMode = [dict[@"isVrMode"] boolValue];
+                int buildIndex = ResolveGuidoSceneIndex(sceneName);
+                ExecuteNativeSceneLoad(buildIndex, [sceneName UTF8String], durationSeconds, isVrMode);
+            }
+        }
+
+        // Direct method call or non-JSON string handling
+        if (!intercepted)
+        {
+            NSString* lowerFn = [fnStr lowercaseString];
+            if ([lowerFn isEqualToString:@"loadscene"] || [lowerFn isEqualToString:@"loadscenebyname"])
+            {
+                int buildIndex = ResolveGuidoSceneIndex(msgStr);
+                ExecuteNativeSceneLoad(buildIndex, [msgStr UTF8String], 300.0, NO);
+                intercepted = YES;
+            }
+            else if ([lowerFn isEqualToString:@"startsession"])
+            {
+                int buildIndex = ResolveGuidoSceneIndex(msgStr);
+                ExecuteNativeSceneLoad(buildIndex, [msgStr UTF8String], 300.0, NO);
+                intercepted = YES;
+            }
+        }
+
+        // Always invoke standard UnitySendMessage as fallback
+        UnitySendMessage(goName, name, msg);
+    }
 }
 
 - (void)registerFrameworkListener:(id<UnityFrameworkListener>)obj

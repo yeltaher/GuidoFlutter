@@ -68,26 +68,34 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
-    - assets/audio/voci/en/
-    - assets/audio/voci/it/
+    - assets/audio/
     - assets/audio/ambient/
     - assets/audio/respirazioni/
-    - assets/models/
+    - assets/audio/voci/
+    - assets/audio/voci/en/
+    - assets/audio/voci/it/
+    - assets/audio/real/
+    - assets/audio/real/Meditazioni/
     - assets/audio/real/Meditazioni/Acqua/
     - assets/audio/real/Meditazioni/Effetti/
     - assets/audio/real/Meditazioni/Generale/
+    - assets/audio/real/Respirazioni/
     - assets/audio/real/Respirazioni/Acqua/
     - assets/audio/real/Respirazioni/Aria/
     - assets/audio/real/Respirazioni/Fuoco/
     - assets/audio/real/Respirazioni/Terra/
+    - assets/Esperienze_Guido/Audio/
     - assets/Esperienze_Guido/Audio/Voce_Luigi/
+    - assets/Esperienze_Guido/Audio/Respirazioni/
     - assets/Esperienze_Guido/Audio/Respirazioni/Acqua/
     - assets/Esperienze_Guido/Audio/Respirazioni/Aria/
     - assets/Esperienze_Guido/Audio/Respirazioni/Fuoco/
     - assets/Esperienze_Guido/Audio/Respirazioni/Terra/
+    - assets/Esperienze_Guido/Audio/Meditazioni/
     - assets/Esperienze_Guido/Audio/Meditazioni/Acqua/
     - assets/Esperienze_Guido/Audio/Meditazioni/Effetti/
     - assets/Esperienze_Guido/Audio/Meditazioni/Generale/
+    - assets/models/
     - "assets/Esperienze_Guido/Video/"
     - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_4K_Mono.mp4"
     - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_VR360_SBS.mp4"

@@ -110,12 +110,27 @@ class GuidoAudioService {
     _effectsPlayer.setVolume(_effectsVolume);
   }
 
+  /// Normalizza il percorso dell'asset assicurandosi che sia conforme a Flutter/just_audio
+  String _normalizeAssetPath(String path) {
+    var clean = path.trim();
+    if (clean.isEmpty) return clean;
+    if (clean.startsWith('/')) {
+      clean = clean.substring(1);
+    }
+    if (!clean.startsWith('assets/')) {
+      clean = 'assets/$clean';
+    }
+    return clean;
+  }
+
   /// Avvia la riproduzione della Voce Guida (Mono/Stereo)
   Future<void> playVoice(String assetPath) async {
-    final currentSession = ++_voiceSessionId;
     _isStopped = false;
+    final currentSession = ++_voiceSessionId;
+    if (assetPath.trim().isEmpty) return;
     try {
-      await _voicePlayer.setAsset(assetPath);
+      final normalized = _normalizeAssetPath(assetPath);
+      await _voicePlayer.setAsset(normalized);
       if (_isStopped || currentSession != _voiceSessionId) {
         await _voicePlayer.stop();
         return;
@@ -133,10 +148,12 @@ class GuidoAudioService {
 
   /// Avvia la riproduzione della Musica Ambientale in loop continuo
   Future<void> playAmbient(String assetPath) async {
-    final currentSession = ++_ambientSessionId;
     _isStopped = false;
+    final currentSession = ++_ambientSessionId;
+    if (assetPath.trim().isEmpty) return;
     try {
-      await _ambientPlayer.setAsset(assetPath);
+      final normalized = _normalizeAssetPath(assetPath);
+      await _ambientPlayer.setAsset(normalized);
       if (_isStopped || currentSession != _ambientSessionId) {
         await _ambientPlayer.stop();
         return;
@@ -155,10 +172,12 @@ class GuidoAudioService {
 
   /// Avvia la riproduzione degli Effetti Sonori in loop continuo (se applicabile, es. bolle o battito)
   Future<void> playEffect(String assetPath, {bool loop = true}) async {
-    final currentSession = ++_effectsSessionId;
     _isStopped = false;
+    final currentSession = ++_effectsSessionId;
+    if (assetPath.trim().isEmpty) return;
     try {
-      await _effectsPlayer.setAsset(assetPath);
+      final normalized = _normalizeAssetPath(assetPath);
+      await _effectsPlayer.setAsset(normalized);
       if (_isStopped || currentSession != _effectsSessionId) {
         await _effectsPlayer.stop();
         return;
@@ -206,6 +225,20 @@ class GuidoAudioService {
     }
   }
 
+  /// Deattiva la sessione nativa AudioSession rilasciando il background audio
+  Future<void> deactivateAudioSession() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.setActive(
+        false,
+        avAudioSessionSetActiveOptions:
+            AVAudioSessionSetActiveOptions.notifyOthersOnDeactivation,
+      );
+    } catch (e, st) {
+      AppLogger.error('Errore deattivazione AudioSession nativa', e, st);
+    }
+  }
+
   /// Ferma e resetta simultaneamente tutti i lettori audio,
   /// deattivando la sessione nativa AudioSession su iOS per rilasciare
   /// lo stato di background audio e i controlli del blocco schermo.
@@ -234,16 +267,7 @@ class GuidoAudioService {
       AppLogger.error('Errore reset loop mode', e, st);
     }
 
-    try {
-      final session = await AudioSession.instance;
-      await session.setActive(
-        false,
-        avAudioSessionSetActiveOptions:
-            AVAudioSessionSetActiveOptions.notifyOthersOnDeactivation,
-      );
-    } catch (e, st) {
-      AppLogger.error('Errore deattivazione AudioSession nativa', e, st);
-    }
+    await deactivateAudioSession();
   }
 
   /// Libera le risorse dei lettori audio (Previene Memory Leaks)
