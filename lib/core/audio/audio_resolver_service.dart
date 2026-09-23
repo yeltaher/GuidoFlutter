@@ -122,7 +122,7 @@ class AudioResolverService {
 
     // Risoluzione voce se non esplicitata
     if (voicePath.isEmpty) {
-      if (t.contains('generale') || resolvedScene == UnityScenes.generalMeditation) {
+      if (t.contains('generale') || t.contains('general')) {
         voicePath = _michelaMedGenerale;
         actorName = 'Michela';
         ambientPath = ambientPath.isEmpty ? _ambientEtereo : ambientPath;

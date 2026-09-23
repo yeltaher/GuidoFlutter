@@ -54,6 +54,7 @@ class _UnityExperienceScreenState
   /// has already run but before the Timer is garbage-collected.
   bool _isDisposed = false;
   bool _isRecoveryDialogOpen = false;
+  bool _isTearingDown = false;
 
   UnitySessionController? _sessionNotifier;
   GuidoAudioService? _audioService;
@@ -85,6 +86,7 @@ class _UnityExperienceScreenState
   void _initializeSession({bool isRepeat = false}) {
     if (_isDisposed) return;
 
+    _isTearingDown = false;
     _loadTimeoutTimer?.cancel();
     setState(() {
       _showLoadTimeoutDialog = false;
@@ -221,24 +223,33 @@ class _UnityExperienceScreenState
   }
 
   Future<void> _teardownAudioAndSession() async {
+    if (_isTearingDown) return;
+    _isTearingDown = true;
     _loadTimeoutTimer?.cancel();
+    _loadTimeoutTimer = null;
+
+    // Inviare lo stop a Unity prima di abbandonare la route
+    try {
+      await ref.read(unitySessionControllerProvider.notifier).stopSession();
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore stopSession: $e');
+    }
+
+    // Arrestare e disattivare l'audio nativo via _audioService
     try {
       await _audioService?.stopAll();
     } catch (e) {
       debugPrint('[UnityExperienceScreen] Errore stop _audioService: $e');
     }
 
+    // Fallback Riverpod: arrestare e disattivare l'audio nativo se l'istanza è diversa
     try {
       final audioService = ref.read(audioServiceProvider).valueOrNull;
-      await audioService?.stopAll();
+      if (audioService != null && !identical(audioService, _audioService)) {
+        await audioService.stopAll();
+      }
     } catch (e) {
       debugPrint('[UnityExperienceScreen] Errore stop audioServiceProvider: $e');
-    }
-
-    try {
-      await ref.read(unitySessionControllerProvider.notifier).stopSession();
-    } catch (e) {
-      debugPrint('[UnityExperienceScreen] Errore stopSession: $e');
     }
   }
 
@@ -246,11 +257,13 @@ class _UnityExperienceScreenState
     await _teardownAudioAndSession();
     try {
       WakelockPlus.disable();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore wakelock: $e');
+    }
 
     try {
-      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-      await SystemChrome.setEnabledSystemUIMode(
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+      SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual,
         overlays: SystemUiOverlay.values,
       );
@@ -281,6 +294,7 @@ class _UnityExperienceScreenState
   }) async {
     try {
       final audioService = await ref.read(audioServiceProvider.future);
+      if (_isDisposed || !mounted) return;
       _audioService = audioService;
       final settings = ref.read(settingsProvider);
 
@@ -290,9 +304,11 @@ class _UnityExperienceScreenState
       audioService.setEffectsVolume(settings.effectsVolume);
 
       if (bundle.ambientPath.isNotEmpty) {
+        if (_isDisposed || !mounted) return;
         await audioService.playAmbient(bundle.ambientPath);
       }
       if (!isRepeat && bundle.voicePath.isNotEmpty && !settings.isVoiceMuted) {
+        if (_isDisposed || !mounted) return;
         await audioService.playVoice(bundle.voicePath);
       }
     } catch (e) {
@@ -310,13 +326,17 @@ class _UnityExperienceScreenState
       await audioService?.pauseAll();
       try {
         WakelockPlus.disable();
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[UnityExperienceScreen] Errore wakelock: $e');
+      }
     } else {
       controller.resumeSession();
       await audioService?.resumeAll();
       try {
         WakelockPlus.enable();
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[UnityExperienceScreen] Errore wakelock: $e');
+      }
     }
   }
 
@@ -335,7 +355,9 @@ class _UnityExperienceScreenState
   void _confirmExit() async {
     try {
       WakelockPlus.disable();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore wakelock: $e');
+    }
     final elapsedSeconds =
         ref.read(unitySessionControllerProvider).elapsedSeconds;
 
@@ -381,7 +403,9 @@ class _UnityExperienceScreenState
   void _repeatSession() async {
     try {
       WakelockPlus.enable();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore wakelock: $e');
+    }
     final audioService = ref.read(audioServiceProvider).valueOrNull;
     await audioService?.stopVoice();
     _initializeSession(isRepeat: true);
@@ -395,27 +419,32 @@ class _UnityExperienceScreenState
     _loadTimeoutTimer?.cancel();
     _loadTimeoutTimer = null;
 
+    // Immediate, safe, synchronous/defensive teardown call of _audioService?.stopAll()
+    // before deallocating controllers and widgets.
     try {
       _audioService?.stopAll();
     } catch (e) {
       debugPrint('[UnityExperienceScreen] Errore stop audio in dispose: $e');
     }
 
-    final sessionNotifier = _sessionNotifier;
-    if (sessionNotifier != null) {
-      Future.microtask(() async {
-        try {
-          await sessionNotifier.stopSession();
-          sessionNotifier.detachUnityWidgetController();
-        } catch (e) {
-          debugPrint('[UnityExperienceScreen] Errore cleanup sessione in dispose: $e');
-        }
-      });
+    if (!_isTearingDown) {
+      final sessionNotifier = _sessionNotifier;
+      if (sessionNotifier != null) {
+        scheduleMicrotask(() {
+          try {
+            sessionNotifier.stopSession();
+          } catch (e) {
+            debugPrint('[UnityExperienceScreen] Errore stop sessionNotifier in dispose: $e');
+          }
+        });
+      }
     }
 
     try {
       WakelockPlus.disable();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[UnityExperienceScreen] Errore disable wakelock in dispose: $e');
+    }
 
     try {
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -453,7 +482,9 @@ class _UnityExperienceScreenState
       if (next.isCompleted && !(prev?.isCompleted ?? false)) {
         try {
           WakelockPlus.disable();
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[UnityExperienceScreen] Errore disable wakelock on completed: $e');
+        }
       }
     });
 
@@ -470,7 +501,10 @@ class _UnityExperienceScreenState
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
+        if (didPop) {
+          _teardownAudioAndSession();
+          return;
+        }
         if (sessionState.isCompleted) {
           _confirmExit();
         } else {

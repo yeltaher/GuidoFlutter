@@ -193,19 +193,19 @@ void main() {
   group('Build 30 Quality Gate 5.6: Canonical Unity Scenes Alignment', () {
     test('UnityScenes canonical names match EditorBuildSettings.asset exactly', () {
       expect(UnityScenes.waterBreathing, 'Respirazione acqua');
-      expect(UnityScenes.waterMeditation, 'Procedimento acqua');
+      expect(UnityScenes.waterMeditation, 'Respirazione acqua');
       expect(UnityScenes.airBreathing, 'Respirazione aria');
-      expect(UnityScenes.airMeditation, 'Procedimento aria');
+      expect(UnityScenes.airMeditation, 'Respirazione aria');
       expect(UnityScenes.fireBreathing, 'Respirazione fuoco');
-      expect(UnityScenes.fireMeditation, 'Procedimento fuoco');
-      expect(UnityScenes.earthBreathing, 'Respirazione terra');
+      expect(UnityScenes.fireMeditation, 'Respirazione fuoco');
+      expect(UnityScenes.earthBreathing, 'Procedimento terra');
       expect(UnityScenes.earthMeditation, 'Procedimento terra');
-      expect(UnityScenes.generalMeditation, 'Meditazione generale');
+      expect(UnityScenes.generalMeditation, 'Respirazione acqua');
 
       expect(UnityScenes.allScenes, contains('Respirazione acqua'));
       expect(UnityScenes.allScenes, contains('Respirazione aria'));
       expect(UnityScenes.allScenes, contains('Respirazione fuoco'));
-      expect(UnityScenes.allScenes, contains('Meditazione generale'));
+      expect(UnityScenes.allScenes, contains('Procedimento terra'));
     });
   });
 

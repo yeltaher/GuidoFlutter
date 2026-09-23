@@ -37,6 +37,7 @@
 #include <UndefinePlatforms.h>
 #include <os/log.h>
 #include <RedefinePlatforms.h>
+#include "il2cpp-api.h"
 
 // we assume that app delegate is never changed and we can cache it, instead of re-query UIApplication every time
 UnityAppController* _UnityAppController = nil;
@@ -152,6 +153,174 @@ NSInteger _forceInterfaceOrientationMask = 0;
     return YES;
 }
 
+static void BootstrapFlutterBridgeManager()
+{
+    @autoreleasepool {
+        NSLog(@"[GuidoBridge] Starting native IL2CPP bootstrap for FlutterBridgeManager...");
+
+        Il2CppDomain* domain = il2cpp_domain_get();
+        if (!domain) {
+            NSLog(@"[GuidoBridge] ERROR: il2cpp_domain_get() returned NULL");
+            return;
+        }
+
+        il2cpp_thread_attach(domain);
+        NSLog(@"[GuidoBridge] Attached current thread to IL2CPP domain.");
+
+        // 1. Locate UnityEngine.CoreModule
+        const Il2CppAssembly* coreAssembly = il2cpp_domain_assembly_open(domain, "UnityEngine.CoreModule");
+        if (!coreAssembly) {
+            coreAssembly = il2cpp_domain_assembly_open(domain, "UnityEngine.CoreModule.dll");
+        }
+        if (!coreAssembly) {
+            NSLog(@"[GuidoBridge] ERROR: Failed to open assembly UnityEngine.CoreModule");
+            return;
+        }
+
+        const Il2CppImage* coreImage = il2cpp_assembly_get_image(coreAssembly);
+        if (!coreImage) {
+            NSLog(@"[GuidoBridge] ERROR: Failed to get image from UnityEngine.CoreModule");
+            return;
+        }
+
+        // 2. Locate UnityEngine.GameObject
+        Il2CppClass* goClass = il2cpp_class_from_name(coreImage, "UnityEngine", "GameObject");
+        if (!goClass) {
+            NSLog(@"[GuidoBridge] ERROR: Failed to find class UnityEngine.GameObject");
+            return;
+        }
+
+        // 3. Defensive check: Does FlutterBridgeManager already exist in scene?
+        const MethodInfo* findMethod = il2cpp_class_get_method_from_name(goClass, "Find", 1);
+        if (findMethod) {
+            Il2CppString* bridgeNameStr = il2cpp_string_new("FlutterBridgeManager");
+            void* findArgs[1] = { bridgeNameStr };
+            Il2CppException* exc = NULL;
+            Il2CppObject* existingGo = il2cpp_runtime_invoke(findMethod, NULL, findArgs, &exc);
+            if (!exc && existingGo != NULL) {
+                NSLog(@"[GuidoBridge] FlutterBridgeManager already exists in scene. Skipping native bootstrap.");
+                return;
+            }
+        }
+
+        NSLog(@"[GuidoBridge] FlutterBridgeManager not found in scene. Instantiating new GameObject...");
+
+        // 4. Instantiate new GameObject("FlutterBridgeManager")
+        Il2CppObject* goObj = il2cpp_object_new(goClass);
+        if (!goObj) {
+            NSLog(@"[GuidoBridge] ERROR: Failed to allocate UnityEngine.GameObject");
+            return;
+        }
+
+        const MethodInfo* goCtor = il2cpp_class_get_method_from_name(goClass, ".ctor", 1);
+        if (!goCtor) {
+            NSLog(@"[GuidoBridge] ERROR: Failed to find GameObject constructor with 1 string parameter");
+            return;
+        }
+
+        Il2CppString* goNameStr = il2cpp_string_new("FlutterBridgeManager");
+        void* ctorArgs[1] = { goNameStr };
+        Il2CppException* exc = NULL;
+        il2cpp_runtime_invoke(goCtor, goObj, ctorArgs, &exc);
+        if (exc) {
+            NSLog(@"[GuidoBridge] ERROR: Exception occurred during GameObject constructor invoke: %p", exc);
+            return;
+        }
+        NSLog(@"[GuidoBridge] GameObject 'FlutterBridgeManager' instantiated successfully.");
+
+        // 5. Locate Guido.Bridge assembly
+        const Il2CppAssembly* bridgeAssembly = il2cpp_domain_assembly_open(domain, "Guido.Bridge");
+        if (!bridgeAssembly) {
+            bridgeAssembly = il2cpp_domain_assembly_open(domain, "Guido.Bridge.dll");
+        }
+        if (!bridgeAssembly) {
+            // Fallback: search across all domain assemblies
+            size_t asmCount = 0;
+            const Il2CppAssembly** assemblies = il2cpp_domain_get_assemblies(domain, &asmCount);
+            if (assemblies) {
+                for (size_t i = 0; i < asmCount; i++) {
+                    const Il2CppImage* img = il2cpp_assembly_get_image(assemblies[i]);
+                    if (img) {
+                        const char* name = il2cpp_image_get_name(img);
+                        if (name && (strcmp(name, "Guido.Bridge") == 0 || strcmp(name, "Guido.Bridge.dll") == 0)) {
+                            bridgeAssembly = assemblies[i];
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (!bridgeAssembly) {
+            NSLog(@"[GuidoBridge] ERROR: Failed to open assembly Guido.Bridge");
+            return;
+        }
+
+        const Il2CppImage* bridgeImage = il2cpp_assembly_get_image(bridgeAssembly);
+        if (!bridgeImage) {
+            NSLog(@"[GuidoBridge] ERROR: Failed to get image from Guido.Bridge");
+            return;
+        }
+
+        // 6. Locate Guido.Bridge.FlutterBridgeManager class
+        Il2CppClass* bridgeClass = il2cpp_class_from_name(bridgeImage, "Guido.Bridge", "FlutterBridgeManager");
+        if (!bridgeClass) {
+            NSLog(@"[GuidoBridge] ERROR: Failed to find class Guido.Bridge.FlutterBridgeManager");
+            return;
+        }
+
+        // 7. Get System.Type for FlutterBridgeManager
+        const Il2CppType* bridgeType = il2cpp_class_get_type(bridgeClass);
+        if (!bridgeType) {
+            NSLog(@"[GuidoBridge] ERROR: Failed to get Il2CppType for FlutterBridgeManager");
+            return;
+        }
+
+        Il2CppObject* typeObj = il2cpp_type_get_object(bridgeType);
+        if (!typeObj) {
+            NSLog(@"[GuidoBridge] ERROR: Failed to get System.Type object for FlutterBridgeManager");
+            return;
+        }
+
+        // 8. Invoke go.AddComponent(Type) to trigger Awake() and register IPC handlers
+        const MethodInfo* addCompMethod = il2cpp_class_get_method_from_name(goClass, "AddComponent", 1);
+        if (!addCompMethod) {
+            NSLog(@"[GuidoBridge] ERROR: Failed to find GameObject.AddComponent(Type) method");
+            return;
+        }
+
+        void* addCompArgs[1] = { typeObj };
+        exc = NULL;
+        Il2CppObject* compObj = il2cpp_runtime_invoke(addCompMethod, goObj, addCompArgs, &exc);
+        if (exc) {
+            NSLog(@"[GuidoBridge] ERROR: Exception occurred during AddComponent invoke: %p", exc);
+            return;
+        }
+        NSLog(@"[GuidoBridge] FlutterBridgeManager component added successfully (%p).", compObj);
+
+        // 9. Invoke UnityEngine.Object.DontDestroyOnLoad(go)
+        Il2CppClass* objectClass = il2cpp_class_from_name(coreImage, "UnityEngine", "Object");
+        if (objectClass) {
+            const MethodInfo* ddlMethod = il2cpp_class_get_method_from_name(objectClass, "DontDestroyOnLoad", 1);
+            if (ddlMethod) {
+                void* ddlArgs[1] = { goObj };
+                exc = NULL;
+                il2cpp_runtime_invoke(ddlMethod, NULL, ddlArgs, &exc);
+                if (exc) {
+                    NSLog(@"[GuidoBridge] WARNING: Exception occurred during DontDestroyOnLoad invoke: %p", exc);
+                } else {
+                    NSLog(@"[GuidoBridge] DontDestroyOnLoad invoked successfully on FlutterBridgeManager.");
+                }
+            } else {
+                NSLog(@"[GuidoBridge] WARNING: Method DontDestroyOnLoad not found on UnityEngine.Object");
+            }
+        } else {
+            NSLog(@"[GuidoBridge] WARNING: Class UnityEngine.Object not found in UnityEngine.CoreModule");
+        }
+
+        NSLog(@"[GuidoBridge] Native bootstrap of FlutterBridgeManager completed successfully.");
+    }
+}
+
 - (void)startUnity
 {
     NSAssert(self.engineLoadState < kUnityEngineLoadStateAppReady, @"[UnityAppController startUnity:] called after Unity has been initialized");
@@ -180,6 +349,9 @@ NSInteger _forceInterfaceOrientationMask = 0;
 
     UnityLoadApplication();
     Profiler_InitProfiler();
+
+    // STEP 3: Native Bootstrap of FlutterBridgeManager before showing UI
+    BootstrapFlutterBridgeManager();
 
     [self createDisplayLink];
     [self showGameUI];

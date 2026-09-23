@@ -2,6 +2,21 @@ import 'package:just_audio/just_audio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:audio_session/audio_session.dart';
 
+/// Logger difensivo per il modulo audio
+class AppLogger {
+  static void info(String message) => debugPrint('[AudioService] $message');
+  static void error(String message, [Object? error, StackTrace? stackTrace]) {
+    if (error != null) {
+      debugPrint('[AudioService ERR] $message: $error');
+      if (stackTrace != null) {
+        debugPrint(stackTrace.toString());
+      }
+    } else {
+      debugPrint('[AudioService ERR] $message');
+    }
+  }
+}
+
 /// Servizio audio multitraccia enterprise-grade per gestire riproduzioni simultanee
 /// di voci guida e musiche ambientali offline, con controllo dei volumi indipendente.
 class GuidoAudioService {
@@ -14,6 +29,13 @@ class GuidoAudioService {
   double _ambientVolume = 1.0;
   double _effectsVolume = 1.0;
   bool _isVoiceMuted = false;
+
+  bool _isStopped = false;
+  int _voiceSessionId = 0;
+  int _ambientSessionId = 0;
+  int _effectsSessionId = 0;
+
+  bool get isStopped => _isStopped;
 
   GuidoAudioService() {
     _voicePlayer = AudioPlayer();
@@ -43,7 +65,7 @@ class GuidoAudioService {
         ),
       );
     } catch (e, st) {
-      debugPrint('[AudioService] Errore configurazione AudioSession: $e\n$st');
+      AppLogger.error('Errore configurazione AudioSession', e, st);
     }
   }
 
@@ -90,80 +112,163 @@ class GuidoAudioService {
 
   /// Avvia la riproduzione della Voce Guida (Mono/Stereo)
   Future<void> playVoice(String assetPath) async {
+    final currentSession = ++_voiceSessionId;
+    _isStopped = false;
     try {
       await _voicePlayer.setAsset(assetPath);
+      if (_isStopped || currentSession != _voiceSessionId) {
+        await _voicePlayer.stop();
+        return;
+      }
       _voicePlayer.setVolume(_isVoiceMuted ? 0.0 : _voiceVolume);
+      if (_isStopped || currentSession != _voiceSessionId) {
+        await _voicePlayer.stop();
+        return;
+      }
       await _voicePlayer.play();
-    } catch (e) {
-      debugPrint("[AudioService ERR] Errore riproduzione voce: $e");
+    } catch (e, st) {
+      AppLogger.error("Errore riproduzione voce", e, st);
     }
   }
 
   /// Avvia la riproduzione della Musica Ambientale in loop continuo
   Future<void> playAmbient(String assetPath) async {
+    final currentSession = ++_ambientSessionId;
+    _isStopped = false;
     try {
       await _ambientPlayer.setAsset(assetPath);
+      if (_isStopped || currentSession != _ambientSessionId) {
+        await _ambientPlayer.stop();
+        return;
+      }
       await _ambientPlayer.setLoopMode(LoopMode.one);
       _ambientPlayer.setVolume(_ambientVolume);
+      if (_isStopped || currentSession != _ambientSessionId) {
+        await _ambientPlayer.stop();
+        return;
+      }
       await _ambientPlayer.play();
-    } catch (e) {
-      debugPrint("[AudioService ERR] Errore riproduzione ambient: $e");
+    } catch (e, st) {
+      AppLogger.error("Errore riproduzione ambient", e, st);
     }
   }
 
   /// Avvia la riproduzione degli Effetti Sonori in loop continuo (se applicabile, es. bolle o battito)
   Future<void> playEffect(String assetPath, {bool loop = true}) async {
+    final currentSession = ++_effectsSessionId;
+    _isStopped = false;
     try {
       await _effectsPlayer.setAsset(assetPath);
+      if (_isStopped || currentSession != _effectsSessionId) {
+        await _effectsPlayer.stop();
+        return;
+      }
       if (loop) {
         await _effectsPlayer.setLoopMode(LoopMode.one);
       } else {
         await _effectsPlayer.setLoopMode(LoopMode.off);
       }
       _effectsPlayer.setVolume(_effectsVolume);
+      if (_isStopped || currentSession != _effectsSessionId) {
+        await _effectsPlayer.stop();
+        return;
+      }
       await _effectsPlayer.play();
-    } catch (e) {
-      debugPrint("[AudioService ERR] Errore riproduzione effetto: $e");
+    } catch (e, st) {
+      AppLogger.error("Errore riproduzione effetto", e, st);
     }
   }
 
   /// Mette in pausa tutte le riproduzioni contemporaneamente
   Future<void> pauseAll() async {
-    await Future.wait([
-      _voicePlayer.pause(),
-      _ambientPlayer.pause(),
-      _effectsPlayer.pause(),
-    ]);
+    try {
+      await Future.wait([
+        _voicePlayer.pause(),
+        _ambientPlayer.pause(),
+        _effectsPlayer.pause(),
+      ]);
+    } catch (e, st) {
+      AppLogger.error("Errore pauseAll", e, st);
+    }
   }
 
   /// Riprende tutte le riproduzioni messe in pausa
   Future<void> resumeAll() async {
-    await Future.wait([
-      if (_voicePlayer.duration != null) _voicePlayer.play(),
-      if (_ambientPlayer.duration != null) _ambientPlayer.play(),
-      if (_effectsPlayer.duration != null) _effectsPlayer.play(),
-    ]);
+    if (_isStopped) return;
+    try {
+      await Future.wait([
+        if (_voicePlayer.duration != null) _voicePlayer.play(),
+        if (_ambientPlayer.duration != null) _ambientPlayer.play(),
+        if (_effectsPlayer.duration != null) _effectsPlayer.play(),
+      ]);
+    } catch (e, st) {
+      AppLogger.error("Errore resumeAll", e, st);
+    }
   }
 
-  /// Ferma e resetta tutti i lettori audio
+  /// Ferma e resetta simultaneamente tutti i lettori audio,
+  /// deattivando la sessione nativa AudioSession su iOS per rilasciare
+  /// lo stato di background audio e i controlli del blocco schermo.
   Future<void> stopAll() async {
-    await Future.wait([
-      _voicePlayer.stop(),
-      _ambientPlayer.stop(),
-      _effectsPlayer.stop(),
-    ]);
+    _isStopped = true;
+    _voiceSessionId++;
+    _ambientSessionId++;
+    _effectsSessionId++;
+
+    try {
+      await Future.wait([
+        _voicePlayer.stop(),
+        _ambientPlayer.stop(),
+        _effectsPlayer.stop(),
+      ]);
+    } catch (e, st) {
+      AppLogger.error('Errore arresto contemporaneo player', e, st);
+    }
+
+    try {
+      await Future.wait([
+        _ambientPlayer.setLoopMode(LoopMode.off),
+        _effectsPlayer.setLoopMode(LoopMode.off),
+      ]);
+    } catch (e, st) {
+      AppLogger.error('Errore reset loop mode', e, st);
+    }
+
+    try {
+      final session = await AudioSession.instance;
+      await session.setActive(
+        false,
+        avAudioSessionSetActiveOptions:
+            AVAudioSessionSetActiveOptions.notifyOthersOnDeactivation,
+      );
+    } catch (e, st) {
+      AppLogger.error('Errore deattivazione AudioSession nativa', e, st);
+    }
   }
 
   /// Libera le risorse dei lettori audio (Previene Memory Leaks)
   void dispose() {
-    _voicePlayer.dispose();
-    _ambientPlayer.dispose();
-    _effectsPlayer.dispose();
+    _isStopped = true;
+    _voiceSessionId++;
+    _ambientSessionId++;
+    _effectsSessionId++;
+    try {
+      _voicePlayer.dispose();
+      _ambientPlayer.dispose();
+      _effectsPlayer.dispose();
+    } catch (e, st) {
+      AppLogger.error('Errore dispose player', e, st);
+    }
   }
 
   /// Ferma la voce guida lasciando intatta la musica ambientale
   Future<void> stopVoice() async {
-    await _voicePlayer.stop();
+    _voiceSessionId++;
+    try {
+      await _voicePlayer.stop();
+    } catch (e, st) {
+      AppLogger.error('Errore stopVoice', e, st);
+    }
   }
 
   /// Espone lo stream dello stato del player degli effetti per sapere quando finisce

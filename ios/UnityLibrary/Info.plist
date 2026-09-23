@@ -28,6 +28,8 @@
     <string>0</string>
     <key>LSRequiresIPhoneOS</key>
     <true />
+    <key>NSMotionUsageDescription</key>
+    <string>L'app necessita dell'accesso ai sensori di movimento e giroscopio per tracciare la testa nella modalità VR 3D.</string>
     <key>UIApplicationSceneManifest</key>
     <dict>
       <key>UIApplicationSupportsMultipleScenes</key>

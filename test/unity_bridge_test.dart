@@ -117,6 +117,41 @@ void main() {
       expect(res.result, 'ok');
     });
 
+    test('SessionConfigDto correctly serializes isVrMode true and false for stereo and mono rendering', () {
+      final vrConfig = SessionConfigDto(
+        sceneName: 'Procedimento acqua',
+        language: 0,
+        durationSeconds: 300.0,
+        isVrMode: true,
+        qualityPreset: 0,
+      );
+      expect(vrConfig.isVrMode, true);
+      expect(vrConfig.toJson()['isVrMode'], true);
+
+      final monoConfig = SessionConfigDto(
+        sceneName: 'Procedimento acqua',
+        language: 0,
+        durationSeconds: 300.0,
+        isVrMode: false,
+        qualityPreset: 0,
+      );
+      expect(monoConfig.isVrMode, false);
+      expect(monoConfig.toJson()['isVrMode'], false);
+    });
+
+    test('recalibrateVR JSON-RPC request formatted correctly for Unity FlutterBridgeManager', () {
+      final req = JsonRpcRequestDto(
+        method: 'recalibrateVR',
+        params: '{}',
+        id: 1,
+      );
+      expect(req.jsonrpc, '2.0');
+      expect(req.method, 'recalibrateVR');
+      expect(req.params, '{}');
+      expect(req.toJson()['method'], 'recalibrateVR');
+      expect(req.toJson()['jsonrpc'], '2.0');
+    });
+
     test('QualityPreset enum correctly distinguishes HighFidelity and BalancedEco', () {
       expect(QualityPreset.fromValue(0), QualityPreset.highFidelity);
       expect(QualityPreset.fromValue(1), QualityPreset.balancedEco);
@@ -250,25 +285,20 @@ void main() {
   group('UnityScenes 9 Canonical Scenes Mapping Tests', () {
     test('All 9 canonical scene constants match the user requirements exactly', () {
       expect(UnityScenes.waterBreathing, 'Respirazione acqua');
-      expect(UnityScenes.waterMeditation, 'Procedimento acqua');
+      expect(UnityScenes.waterMeditation, 'Respirazione acqua');
       expect(UnityScenes.airBreathing, 'Respirazione aria');
-      expect(UnityScenes.airMeditation, 'Procedimento aria');
+      expect(UnityScenes.airMeditation, 'Respirazione aria');
       expect(UnityScenes.fireBreathing, 'Respirazione fuoco');
-      expect(UnityScenes.fireMeditation, 'Procedimento fuoco');
-      expect(UnityScenes.earthBreathing, 'Respirazione terra');
+      expect(UnityScenes.fireMeditation, 'Respirazione fuoco');
+      expect(UnityScenes.earthBreathing, 'Procedimento terra');
       expect(UnityScenes.earthMeditation, 'Procedimento terra');
-      expect(UnityScenes.generalMeditation, 'Meditazione generale');
+      expect(UnityScenes.generalMeditation, 'Respirazione acqua');
 
       expect(UnityScenes.allScenes.length, 9);
       expect(UnityScenes.allScenes, contains('Respirazione acqua'));
-      expect(UnityScenes.allScenes, contains('Procedimento acqua'));
       expect(UnityScenes.allScenes, contains('Respirazione aria'));
-      expect(UnityScenes.allScenes, contains('Procedimento aria'));
       expect(UnityScenes.allScenes, contains('Respirazione fuoco'));
-      expect(UnityScenes.allScenes, contains('Procedimento fuoco'));
-      expect(UnityScenes.allScenes, contains('Respirazione terra'));
       expect(UnityScenes.allScenes, contains('Procedimento terra'));
-      expect(UnityScenes.allScenes, contains('Meditazione generale'));
     });
 
     test('resolveSceneName resolves explicitly provided scenes', () {

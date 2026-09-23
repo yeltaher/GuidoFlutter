@@ -379,14 +379,14 @@ class JsonRpcResponseDto {
 /// Canonical scene names for the 9 Unity UaaL meditation and breathing environments.
 class UnityScenes {
   static const String waterBreathing = 'Respirazione acqua';
-  static const String waterMeditation = 'Procedimento acqua';
+  static const String waterMeditation = 'Respirazione acqua';
   static const String airBreathing = 'Respirazione aria';
-  static const String airMeditation = 'Procedimento aria';
+  static const String airMeditation = 'Respirazione aria';
   static const String fireBreathing = 'Respirazione fuoco';
-  static const String fireMeditation = 'Procedimento fuoco';
-  static const String earthBreathing = 'Respirazione terra';
+  static const String fireMeditation = 'Respirazione fuoco';
+  static const String earthBreathing = 'Procedimento terra';
   static const String earthMeditation = 'Procedimento terra';
-  static const String generalMeditation = 'Meditazione generale';
+  static const String generalMeditation = 'Respirazione acqua';
 
   static const List<String> allScenes = [
     waterBreathing,
