@@ -450,3 +450,22 @@ class UnityScenes {
   }
 }
 
+/// Pan/drag delta coordinates sent from Flutter to Unity for 2D look around.
+class CameraRotationDto {
+  final double dx;
+  final double dy;
+
+  const CameraRotationDto({required this.dx, required this.dy});
+
+  Map<String, dynamic> toJson() => {'dx': dx, 'dy': dy};
+
+  factory CameraRotationDto.fromJson(Map<String, dynamic> json) {
+    return CameraRotationDto(
+      dx: (json['dx'] as num?)?.toDouble() ?? 0.0,
+      dy: (json['dy'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  String toJsonString() => jsonEncode(toJson());
+}
+

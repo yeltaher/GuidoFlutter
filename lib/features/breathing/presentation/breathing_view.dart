@@ -223,6 +223,7 @@ class _BreathingViewState extends ConsumerState<BreathingView>
   }
 
   void _updatePhase() {
+    HapticFeedback.mediumImpact();
     final isIt = ref.read(settingsProvider).language == 0;
     if (_secondsElapsed % 8 == 0) {
       _phaseText = isIt ? 'INSPIRA...' : 'BREATHE IN...';

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:audio_session/audio_session.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 
@@ -63,6 +64,26 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
 
   Future<void> _initPlayers() async {
     try {
+      final session = await AudioSession.instance;
+      await session.configure(
+        AudioSessionConfiguration(
+          avAudioSessionCategory: AVAudioSessionCategory.playback,
+          avAudioSessionCategoryOptions:
+              AVAudioSessionCategoryOptions.mixWithOthers |
+                  AVAudioSessionCategoryOptions.defaultToSpeaker,
+          avAudioSessionMode: AVAudioSessionMode.defaultMode,
+          avAudioSessionRouteSharingPolicy:
+              AVAudioSessionRouteSharingPolicy.defaultPolicy,
+          avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+          androidAudioAttributes: const AndroidAudioAttributes(
+            contentType: AndroidAudioContentType.music,
+            usage: AndroidAudioUsage.media,
+          ),
+          androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+          androidWillPauseWhenDucked: true,
+        ),
+      );
+
       if (!mounted) return;
       await _waterPlayer.setAsset('assets/audio/ambient/acqua.mp3');
       if (!mounted) return;
@@ -98,10 +119,19 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
     super.dispose();
   }
 
-  void _toggleWater() {
+  Future<void> _toggleWater() async {
     if (!mounted) return;
+    final nextState = !_isWaterPlaying;
+    if (nextState) {
+      try {
+        final session = await AudioSession.instance;
+        await session.setActive(true);
+      } catch (e) {
+        debugPrint('[ZenSoundMixerView] AudioSession error: $e');
+      }
+    }
     setState(() {
-      _isWaterPlaying = !_isWaterPlaying;
+      _isWaterPlaying = nextState;
       if (_isWaterPlaying) {
         _waterPlayer.play();
       } else {
@@ -110,10 +140,19 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
     });
   }
 
-  void _toggleWind() {
+  Future<void> _toggleWind() async {
     if (!mounted) return;
+    final nextState = !_isWindPlaying;
+    if (nextState) {
+      try {
+        final session = await AudioSession.instance;
+        await session.setActive(true);
+      } catch (e) {
+        debugPrint('[ZenSoundMixerView] AudioSession error: $e');
+      }
+    }
     setState(() {
-      _isWindPlaying = !_isWindPlaying;
+      _isWindPlaying = nextState;
       if (_isWindPlaying) {
         _windPlayer.play();
       } else {
@@ -122,10 +161,19 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
     });
   }
 
-  void _toggleMusic() {
+  Future<void> _toggleMusic() async {
     if (!mounted) return;
+    final nextState = !_isMusicPlaying;
+    if (nextState) {
+      try {
+        final session = await AudioSession.instance;
+        await session.setActive(true);
+      } catch (e) {
+        debugPrint('[ZenSoundMixerView] AudioSession error: $e');
+      }
+    }
     setState(() {
-      _isMusicPlaying = !_isMusicPlaying;
+      _isMusicPlaying = nextState;
       if (_isMusicPlaying) {
         _musicPlayer.play();
       } else {
@@ -356,34 +404,31 @@ class _ZenSoundMixerViewState extends ConsumerState<ZenSoundMixerView>
                   Semantics(
                     button: true,
                     label: "Interactive element",
-                    child: GestureDetector(
-                      onTapDown: (_) {},
-                      child: OnboardingSpringButton(
-                        onTap: () => context.pop(),
-                        child: Container(
-                          width: double.infinity,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.06)
-                                : Colors.black.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(26),
-                            border: Border.all(
-                              color: isDark ? Colors.white12 : Colors.black12,
-                              width: 1.0,
-                            ),
+                    child: OnboardingSpringButton(
+                      onTap: () => context.pop(),
+                      child: Container(
+                        width: double.infinity,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.06)
+                              : Colors.black.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(26),
+                          border: Border.all(
+                            color: isDark ? Colors.white12 : Colors.black12,
+                            width: 1.0,
                           ),
-                          child: Center(
-                            child: Text(
-                              settings.language == 0
-                                  ? "RITORNA AL GIARDINO"
-                                  : "RETURN TO GARDEN",
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                color: textColor,
-                                letterSpacing: 0.8,
-                              ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            settings.language == 0
+                                ? "RITORNA AL GIARDINO"
+                                : "RETURN TO GARDEN",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: textColor,
+                              letterSpacing: 0.8,
                             ),
                           ),
                         ),

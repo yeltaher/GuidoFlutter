@@ -10,6 +10,7 @@ import '../../../core/theme/vr_gaze_button.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
 import '../../../core/audio/audio_resolver_service.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 /// Funzione globale di utilità per avviare qualsiasi sessione di meditazione o respirazione
 /// chiedendo prima l'esperienza Flat vs VR ed effettuando la conferma del visore.
@@ -398,6 +399,9 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
   @override
   void initState() {
     super.initState();
+    try {
+      WakelockPlus.enable();
+    } catch (_) {}
     _gazeController = VrGazeController(
       sensitivity: 220.0,
       dwellTime: const Duration(seconds: 2),
@@ -408,6 +412,9 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
   @override
   void dispose() {
     _gazeController.dispose();
+    try {
+      WakelockPlus.disable();
+    } catch (_) {}
     super.dispose();
   }
 

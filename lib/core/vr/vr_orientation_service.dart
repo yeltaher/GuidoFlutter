@@ -51,24 +51,8 @@ class VrOrientationService {
     _activeVrScreens = (_activeVrScreens - 1).clamp(0, 999);
 
     if (_activeVrScreens == 0) {
-      // Ultima schermata VR chiusa: ripristina portrait + barre di sistema
-      // Usa SystemUiMode.manual (non edgeToEdge) per evitare che il contenuto
-      // Flutter si estenda sotto la system nav bar e tagli la floating bar
-      await SystemChrome.setEnabledSystemUIMode(
-        SystemUiMode.manual,
-        overlays: SystemUiOverlay.values, // ripristina top + bottom bar
-      );
-      try {
-        await _channel.invokeMethod('forcePortrait');
-      } catch (e) {
-        debugPrint('[VR] forcePortrait error: $e');
-      }
-
-      if (Platform.isIOS) {
-        await SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-        ]);
-      }
+      // Ultima schermata VR chiusa: ripristina portrait deterministico + barre di sistema
+      await resetToPortrait();
     }
     // Se count > 0: ci sono ancora schermate VR attive, non uscire
   }
@@ -76,5 +60,33 @@ class VrOrientationService {
   /// Forza il reset del counter (usato in caso di errori/crash imprevisti)
   static void resetCounter() {
     _activeVrScreens = 0;
+  }
+
+  /// Ripristina in modo deterministico l'orientamento Portrait su iOS e Android,
+  /// forzando DeviceOrientation.portraitUp su iOS e riabilitando la status bar
+  /// con SystemUiMode.edgeToEdge.
+  static Future<void> resetToPortrait() async {
+    _activeVrScreens = 0;
+    try {
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    } catch (e) {
+      debugPrint('[VR] setEnabledSystemUIMode edgeToEdge error: $e');
+    }
+
+    try {
+      await _channel.invokeMethod('forcePortrait');
+    } catch (e) {
+      debugPrint('[VR] forcePortrait error: $e');
+    }
+
+    if (Platform.isIOS) {
+      try {
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+        ]);
+      } catch (e) {
+        debugPrint('[VR] setPreferredOrientations portraitUp error: $e');
+      }
+    }
   }
 }

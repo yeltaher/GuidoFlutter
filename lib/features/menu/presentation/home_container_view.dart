@@ -51,6 +51,7 @@ class _HomeContainerViewState extends ConsumerState<HomeContainerView> {
     final subColor = AppColors.getSubTextColor(isDark);
 
     final currentIndex = ref.watch(activeTabProvider);
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     // Ascolta i cambi di tab per animare la pagina con scorrimento a molla 3D
     ref.listen<int>(activeTabProvider, (previous, next) {
@@ -150,7 +151,7 @@ class _HomeContainerViewState extends ConsumerState<HomeContainerView> {
             Positioned(
               left: 24,
               right: 24,
-              bottom: 24,
+              bottom: 24.0 + bottomPadding,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(30),
                 child: BackdropFilter(
@@ -291,6 +292,8 @@ class _HomeContainerViewState extends ConsumerState<HomeContainerView> {
             // Testo etichetta minimal in Plus Jakarta Sans
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
                 fontSize: 11,

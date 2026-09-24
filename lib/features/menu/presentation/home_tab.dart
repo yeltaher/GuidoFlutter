@@ -114,15 +114,19 @@ class HomeTab extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    settings.language == 0
-                        ? "I 4 Percorsi Naturali"
-                        : "4 Natural Paths",
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16.5,
-                      fontWeight: FontWeight.w800,
-                      color: textColor,
-                      letterSpacing: -0.2,
+                  Expanded(
+                    child: Text(
+                      settings.language == 0
+                          ? "I 4 Percorsi Naturali"
+                          : "4 Natural Paths",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
+                        letterSpacing: -0.2,
+                      ),
                     ),
                   ),
                   IconButton(
@@ -230,6 +234,8 @@ class HomeTab extends ConsumerWidget {
                                     children: [
                                       Text(
                                         "Morning Flow",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.plusJakartaSans(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w800,
@@ -239,6 +245,8 @@ class HomeTab extends ConsumerWidget {
                                       const SizedBox(height: 1),
                                       Text(
                                         "15 min",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.plusJakartaSans(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -253,6 +261,8 @@ class HomeTab extends ConsumerWidget {
                                     children: [
                                       Text(
                                         "Inizia la giornata con calma",
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.plusJakartaSans(
                                           fontSize: 19,
                                           fontWeight: FontWeight.w700,
@@ -263,6 +273,8 @@ class HomeTab extends ConsumerWidget {
                                       const SizedBox(height: 2),
                                       Text(
                                         "Sabbia",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.plusJakartaSans(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -437,13 +449,18 @@ class HomeTab extends ConsumerWidget {
                               const SizedBox(
                                 width: 24,
                               ), // Spacer per centrare il testo
-                              Text(
-                                "Inizia Sessione",
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 16.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: textColor,
-                                  letterSpacing: -0.2,
+                              Expanded(
+                                child: Text(
+                                  "Inizia Sessione",
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 16.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: textColor,
+                                    letterSpacing: -0.2,
+                                  ),
                                 ),
                               ),
                               Container(
@@ -540,17 +557,23 @@ class HomeTab extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(
-                        activity,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: textColor,
+                      Expanded(
+                        child: Text(
+                          activity,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: textColor,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         time,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w600,
@@ -595,17 +618,24 @@ class HomeTab extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                name,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: textColor,
-                  letterSpacing: -0.2,
+              Expanded(
+                child: Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: textColor,
+                    letterSpacing: -0.2,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
                 time,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -656,13 +686,17 @@ class HomeTab extends ConsumerWidget {
                 child: Icon(Icons.format_quote_rounded, color: accentColor, size: 16),
               ),
               const SizedBox(width: 8),
-              Text(
-                quote.subtitle ?? "IL RESPIRO DI OGGI",
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  color: accentColor,
-                  letterSpacing: 1.2,
+              Expanded(
+                child: Text(
+                  quote.subtitle ?? "IL RESPIRO DI OGGI",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: accentColor,
+                    letterSpacing: 1.2,
+                  ),
                 ),
               ),
             ],
@@ -683,6 +717,8 @@ class HomeTab extends ConsumerWidget {
             alignment: Alignment.centerRight,
             child: Text(
               "— ${quote.author}",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
@@ -866,6 +902,8 @@ class HomeTab extends ConsumerWidget {
               const SizedBox(height: 12),
               Text(
                 title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14.5,
                   fontWeight: FontWeight.w800,
@@ -876,6 +914,8 @@ class HomeTab extends ConsumerWidget {
               const SizedBox(height: 4),
               Text(
                 subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w500,
@@ -893,6 +933,8 @@ class HomeTab extends ConsumerWidget {
                 ),
                 child: Text(
                   badgeText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w800,

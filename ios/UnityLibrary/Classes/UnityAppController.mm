@@ -359,9 +359,9 @@ static void BootstrapFlutterBridgeManager()
     UnitySetPlayerFocus(1);
 
     AVAudioSession* audioSession = [AVAudioSession sharedInstance];
-    // Ensure Unity audio includes AVAudioSessionCategoryOptionMixWithOthers to prevent audio session mutex contention with Flutter
+    // Ensure Unity audio includes AVAudioSessionCategoryOptionMixWithOthers and Playback category to prevent muting on silent switch and mutex contention with Flutter
     NSError* audioError = nil;
-    [audioSession setCategory: AVAudioSessionCategoryAmbient withOptions: AVAudioSessionCategoryOptionMixWithOthers error: &audioError];
+    [audioSession setCategory: AVAudioSessionCategoryPlayback withOptions: AVAudioSessionCategoryOptionMixWithOthers error: &audioError];
     [audioSession setActive: YES error: nil];
     [audioSession addObserver: self forKeyPath: @"outputVolume" options: 0 context: nil];
     UnityUpdateMuteState([audioSession outputVolume] < 0.01f ? 1 : 0);

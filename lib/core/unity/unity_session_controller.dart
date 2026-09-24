@@ -729,6 +729,27 @@ class UnitySessionController extends Notifier<UnitySessionState>
     _postToUnity(rpc.toJsonString());
   }
 
+  /// Forwards 2D touch drag delta to Unity camera controller for pan look around.
+  /// [dx] is horizontal delta (yaw), [dy] is vertical delta (pitch).
+  void rotateCamera(double dx, double dy) {
+    final rpc = JsonRpcRequestDto(
+      method: 'rotateCamera',
+      params: jsonEncode({'dx': dx, 'dy': dy}),
+      id: 8,
+    );
+    _postToUnity(rpc.toJsonString());
+  }
+
+  /// Sets VR Side-by-Side stereo mode or 2D monoscopic mode in Unity.
+  Future<void> setVrMode(bool isVrMode) async {
+    final rpc = JsonRpcRequestDto(
+      method: 'setVrMode',
+      params: isVrMode ? 'true' : 'false',
+      id: 9,
+    );
+    _postToUnity(rpc.toJsonString());
+  }
+
   /// Resets controller state when exiting experience.
   void resetSession() {
     _stopHeartbeat();

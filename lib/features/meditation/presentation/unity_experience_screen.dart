@@ -515,53 +515,64 @@ class _UnityExperienceScreenState
         backgroundColor: Colors.black,
         body: Stack(
           children: [
-            // 1. Embedded Unity Widget
+            // 1. Embedded Unity Widget with 2D Touch Drag Look Around
             Positioned.fill(
-              child: UnityWidget(
-                onUnityCreated: (controller) {
-                  try {
-                    _loadTimeoutTimer?.cancel();
-                    _loadTimeoutTimer = null;
-                    if (_showLoadTimeoutDialog) {
-                      setState(() {
-                        _showLoadTimeoutDialog = false;
-                      });
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onPanUpdate: widget.isVrMode
+                    ? null
+                    : (details) {
+                        sessionNotifier.rotateCamera(
+                          details.delta.dx,
+                          details.delta.dy,
+                        );
+                      },
+                child: UnityWidget(
+                  onUnityCreated: (controller) {
+                    try {
+                      _loadTimeoutTimer?.cancel();
+                      _loadTimeoutTimer = null;
+                      if (_showLoadTimeoutDialog) {
+                        setState(() {
+                          _showLoadTimeoutDialog = false;
+                        });
+                      }
+                      sessionNotifier.onUnityCreated(controller);
+                      sessionNotifier.onUnitySceneLoaded(null);
+                    } catch (e) {
+                      debugPrint('[UnityExperienceScreen] Errore in onUnityCreated: $e');
+                      _showRecoveryDialog(
+                        errorMessage: 'Errore inizializzazione 3D: $e',
+                      );
                     }
-                    sessionNotifier.onUnityCreated(controller);
-                    sessionNotifier.onUnitySceneLoaded(null);
-                  } catch (e) {
-                    debugPrint('[UnityExperienceScreen] Errore in onUnityCreated: $e');
-                    _showRecoveryDialog(
-                      errorMessage: 'Errore inizializzazione 3D: $e',
-                    );
-                  }
-                },
-                onUnityMessage: (message) {
-                  try {
-                    sessionNotifier.onUnityMessage(message);
-                  } catch (e) {
-                    debugPrint('[UnityExperienceScreen] Errore in onUnityMessage: $e');
-                  }
-                },
-                onUnitySceneLoaded: (scene) {
-                  try {
-                    sessionNotifier.onUnitySceneLoaded(scene);
-                  } catch (e) {
-                    debugPrint('[UnityExperienceScreen] Errore in onUnitySceneLoaded: $e');
-                    _showRecoveryDialog(
-                      errorMessage: 'Errore caricamento scena 3D: $e',
-                    );
-                  }
-                },
-                onUnityUnloaded: () {
-                  try {
-                    sessionNotifier.onUnityUnloaded();
-                  } catch (e) {
-                    debugPrint('[UnityExperienceScreen] Errore in onUnityUnloaded: $e');
-                  }
-                },
-                fullscreen: true,
-                useAndroidViewSurface: true,
+                  },
+                  onUnityMessage: (message) {
+                    try {
+                      sessionNotifier.onUnityMessage(message);
+                    } catch (e) {
+                      debugPrint('[UnityExperienceScreen] Errore in onUnityMessage: $e');
+                    }
+                  },
+                  onUnitySceneLoaded: (scene) {
+                    try {
+                      sessionNotifier.onUnitySceneLoaded(scene);
+                    } catch (e) {
+                      debugPrint('[UnityExperienceScreen] Errore in onUnitySceneLoaded: $e');
+                      _showRecoveryDialog(
+                        errorMessage: 'Errore caricamento scena 3D: $e',
+                      );
+                    }
+                  },
+                  onUnityUnloaded: () {
+                    try {
+                      sessionNotifier.onUnityUnloaded();
+                    } catch (e) {
+                      debugPrint('[UnityExperienceScreen] Errore in onUnityUnloaded: $e');
+                    }
+                  },
+                  fullscreen: true,
+                  useAndroidViewSurface: true,
+                ),
               ),
             ),
 

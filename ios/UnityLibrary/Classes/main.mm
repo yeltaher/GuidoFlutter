@@ -64,20 +64,7 @@ static int ResolveGuidoSceneIndex(NSString* sceneIdentifier)
         return 1; // MainMenu Corretto
     }
 
-    // WATER
-    if ([lower containsString:@"procedimento"] && ([lower containsString:@"acqua"] || [lower containsString:@"water"]))
-    {
-        return 2; // Procedimento acqua (tutorial 71s)
-    }
-    if ([lower containsString:@"acqua"] || [lower containsString:@"water"] || [lower containsString:@"alba"] ||
-        [lower containsString:@"flow"] || [lower containsString:@"mattin"] || [lower containsString:@"sera"] ||
-        [lower containsString:@"riposo"] || [lower containsString:@"calm"] || [lower containsString:@"focus"] ||
-        [lower containsString:@"present"] || [lower containsString:@"concentrazione"])
-    {
-        return 3; // Respirazione acqua (continuous meditation)
-    }
-
-    // AIR
+    // 1. AIR / ARIA (Resolved first to prevent false water match)
     if ([lower containsString:@"procedimento"] && ([lower containsString:@"aria"] || [lower containsString:@"air"]))
     {
         return 4; // Procedimento aria (tutorial)
@@ -87,7 +74,7 @@ static int ResolveGuidoSceneIndex(NSString* sceneIdentifier)
         return 5; // Respirazione aria (continuous meditation)
     }
 
-    // FIRE
+    // 2. FIRE / FUOCO
     if ([lower containsString:@"procedimento"] && ([lower containsString:@"fuoco"] || [lower containsString:@"fire"]))
     {
         return 6; // Procedimento fuoco (tutorial)
@@ -97,10 +84,24 @@ static int ResolveGuidoSceneIndex(NSString* sceneIdentifier)
         return 7; // Respirazione fuoco (continuous meditation)
     }
 
-    // EARTH
-    if ([lower containsString:@"terra"] || [lower containsString:@"earth"])
+    // 3. EARTH / TERRA
+    if ([lower containsString:@"terra"] || [lower containsString:@"earth"] || [lower containsString:@"ground"])
     {
         return 8; // Procedimento terra (earth meditation)
+    }
+
+    // 4. WATER / ACQUA
+    if ([lower containsString:@"procedimento"] && ([lower containsString:@"acqua"] || [lower containsString:@"water"]))
+    {
+        return 2; // Procedimento acqua (tutorial 71s)
+    }
+    if ([lower containsString:@"acqua"] || [lower containsString:@"water"] || [lower containsString:@"alba"] ||
+        [lower containsString:@"flow"] || [lower containsString:@"mattin"] || [lower containsString:@"sera"] ||
+        [lower containsString:@"riposo"] || [lower containsString:@"calm"] || [lower containsString:@"focus"] ||
+        [lower containsString:@"present"] || [lower containsString:@"concentrazione"] ||
+        [lower containsString:@"pomeriggio"] || [lower containsString:@"starlight"])
+    {
+        return 3; // Respirazione acqua (continuous meditation)
     }
 
     // Default fallback to continuous water meditation
@@ -126,18 +127,23 @@ static void ExecuteNativeSceneLoad(int buildIndex, const char* customSceneName, 
     snprintf(idxBuf, sizeof(idxBuf), "%d", buildIndex);
     UnitySendMessage("SceneLoader", "LoadScene", idxBuf);
 
-    // 3. Notify Flutter via direct callback handlers
+    // 3. Forward VR mode configuration to VRStereoCameraRig & FlutterBridgeManager
+    const char* vrModeStr = isVrMode ? "1" : "0";
+    UnitySendMessage("VRStereoCameraRig", "SetVrModeFromMessage", vrModeStr);
+    UnitySendMessage("FlutterBridgeManager", "SetVrModeFromMessage", vrModeStr);
+
+    // 4. Notify Flutter via direct callback handlers
     bool isLoaded = true;
     bool isValid = true;
     OnUnitySceneLoaded(sceneName, &buildIndex, &isLoaded, &isValid);
 
-    // 4. Send RPC confirmation to Flutter
+    // 5. Send RPC confirmation to Flutter
     NSString* rpcResponse = [NSString stringWithFormat:
         @"{\"jsonrpc\":\"2.0\",\"method\":\"onSceneLoaded\",\"params\":\"{\\\"sceneName\\\":\\\"%s\\\",\\\"buildIndex\\\":%d}\",\"id\":1}",
         sceneName, buildIndex];
     SendMessageToFlutterNative([rpcResponse UTF8String]);
 
-    // 5. Emit initial progress event so Flutter heartbeat starts and 10s watchdog cancels
+    // 6. Emit initial progress event so Flutter heartbeat starts and 10s watchdog cancels
     double totalDuration = durationSeconds > 0 ? durationSeconds : 300.0;
     NSString* progressResponse = [NSString stringWithFormat:
         @"{\"sessionId\":\"sess_%ld\",\"sceneName\":\"%s\",\"elapsedSeconds\":0.0,\"totalDurationSeconds\":%.1f,\"progressNormalized\":0.0,\"currentPhase\":\"inhale\",\"userHeartRateOrState\":0}",
@@ -294,9 +300,50 @@ UnityFramework* _gUnityFramework = nil;
                     }
                     else if ([params isKindOfClass:[NSString class]])
                     {
-                        isVr = [params boolValue] || [params isEqualToString:@"true"];
+                        isVr = [params boolValue] || [params isEqualToString:@"true"] || [params isEqualToString:@"1"];
                     }
-                    NSLog(@"[Guido Native Interceptor] SetVrMode: %d", isVr);
+                    else if ([params isKindOfClass:[NSDictionary class]])
+                    {
+                        isVr = [params[@"isVrMode"] boolValue];
+                    }
+                    NSLog(@"[Guido Native Interceptor] SetVrMode: %d", (int)isVr);
+                    const char* vrModeStr = isVr ? "1" : "0";
+                    UnitySendMessage("VRStereoCameraRig", "SetVrModeFromMessage", vrModeStr);
+                    UnitySendMessage("FlutterBridgeManager", "SetVrModeFromMessage", vrModeStr);
+                }
+                else if ([lowerMethod isEqualToString:@"rotatecamera"])
+                {
+                    intercepted = YES;
+                    float dx = 0.0f;
+                    float dy = 0.0f;
+                    if ([params isKindOfClass:[NSDictionary class]])
+                    {
+                        dx = [params[@"dx"] floatValue];
+                        dy = [params[@"dy"] floatValue];
+                    }
+                    else if ([params isKindOfClass:[NSString class]])
+                    {
+                        NSData* pData = [((NSString*)params) dataUsingEncoding:NSUTF8StringEncoding];
+                        if (pData)
+                        {
+                            id pObj = [NSJSONSerialization JSONObjectWithData:pData options:0 error:nil];
+                            if ([pObj isKindOfClass:[NSDictionary class]])
+                            {
+                                dx = [pObj[@"dx"] floatValue];
+                                dy = [pObj[@"dy"] floatValue];
+                            }
+                        }
+                    }
+                    NSString* rotPayload = [NSString stringWithFormat:@"{\"dx\":%f,\"dy\":%f}", dx, dy];
+                    UnitySendMessage("VRStereoCameraRig", "RotateCameraFromMessage", [rotPayload UTF8String]);
+                    UnitySendMessage("FlutterBridgeManager", "RotateCameraFromMessage", [rotPayload UTF8String]);
+                }
+                else if ([lowerMethod isEqualToString:@"recalibratevr"] || [lowerMethod isEqualToString:@"recalibrate"])
+                {
+                    intercepted = YES;
+                    NSLog(@"[Guido Native Interceptor] Recalibrate VR requested.");
+                    UnitySendMessage("VRStereoCameraRig", "RecalibrateFromMessage", "");
+                    UnitySendMessage("FlutterBridgeManager", "RecalibrateFromMessage", "");
                 }
             }
             else if (dict[@"sceneName"])
@@ -325,6 +372,24 @@ UnityFramework* _gUnityFramework = nil;
                 int buildIndex = ResolveGuidoSceneIndex(msgStr);
                 ExecuteNativeSceneLoad(buildIndex, [msgStr UTF8String], 300.0, NO);
                 intercepted = YES;
+            }
+            else if ([lowerFn isEqualToString:@"rotatecamera"])
+            {
+                intercepted = YES;
+                UnitySendMessage("VRStereoCameraRig", "RotateCameraFromMessage", [msgStr UTF8String]);
+                UnitySendMessage("FlutterBridgeManager", "RotateCameraFromMessage", [msgStr UTF8String]);
+            }
+            else if ([lowerFn isEqualToString:@"setvrmode"])
+            {
+                intercepted = YES;
+                UnitySendMessage("VRStereoCameraRig", "SetVrModeFromMessage", [msgStr UTF8String]);
+                UnitySendMessage("FlutterBridgeManager", "SetVrModeFromMessage", [msgStr UTF8String]);
+            }
+            else if ([lowerFn isEqualToString:@"recalibratevr"] || [lowerFn isEqualToString:@"recalibrate"])
+            {
+                intercepted = YES;
+                UnitySendMessage("VRStereoCameraRig", "RecalibrateFromMessage", "");
+                UnitySendMessage("FlutterBridgeManager", "RecalibrateFromMessage", "");
             }
         }
 

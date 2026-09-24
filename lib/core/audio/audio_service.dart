@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:audio_session/audio_session.dart';
@@ -35,6 +36,9 @@ class GuidoAudioService {
   int _ambientSessionId = 0;
   int _effectsSessionId = 0;
 
+  StreamSubscription<AudioInterruptionEvent>? _interruptionSubscription;
+  StreamSubscription<void>? _becomingNoisySubscription;
+
   bool get isStopped => _isStopped;
 
   GuidoAudioService() {
@@ -44,19 +48,21 @@ class GuidoAudioService {
   }
 
   /// Inizializza la sessione audio a livello di sistema operativo
-  /// per consentire la riproduzione in background a schermo spento.
+  /// per consentire la riproduzione in background a schermo spento e in modalità silenziosa.
   Future<void> initSession() async {
     try {
       final session = await AudioSession.instance;
       await session.configure(
-        const AudioSessionConfiguration(
+        AudioSessionConfiguration(
           avAudioSessionCategory: AVAudioSessionCategory.playback,
-          avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.none,
+          avAudioSessionCategoryOptions:
+              AVAudioSessionCategoryOptions.mixWithOthers |
+                  AVAudioSessionCategoryOptions.defaultToSpeaker,
           avAudioSessionMode: AVAudioSessionMode.defaultMode,
           avAudioSessionRouteSharingPolicy:
               AVAudioSessionRouteSharingPolicy.defaultPolicy,
           avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
-          androidAudioAttributes: AndroidAudioAttributes(
+          androidAudioAttributes: const AndroidAudioAttributes(
             contentType: AndroidAudioContentType.music,
             usage: AndroidAudioUsage.media,
           ),
@@ -64,6 +70,43 @@ class GuidoAudioService {
           androidWillPauseWhenDucked: true,
         ),
       );
+
+      _interruptionSubscription?.cancel();
+      _interruptionSubscription =
+          session.interruptionEventStream.listen((event) {
+        if (event.begin) {
+          switch (event.type) {
+            case AudioInterruptionType.duck:
+              _voicePlayer.setVolume(_voiceVolume * 0.5);
+              _ambientPlayer.setVolume(_ambientVolume * 0.5);
+              _effectsPlayer.setVolume(_effectsVolume * 0.5);
+              break;
+            case AudioInterruptionType.pause:
+            case AudioInterruptionType.unknown:
+              pauseAll();
+              break;
+          }
+        } else {
+          switch (event.type) {
+            case AudioInterruptionType.duck:
+              _voicePlayer.setVolume(_isVoiceMuted ? 0.0 : _voiceVolume);
+              _ambientPlayer.setVolume(_ambientVolume);
+              _effectsPlayer.setVolume(_effectsVolume);
+              break;
+            case AudioInterruptionType.pause:
+              resumeAll();
+              break;
+            case AudioInterruptionType.unknown:
+              break;
+          }
+        }
+      });
+
+      _becomingNoisySubscription?.cancel();
+      _becomingNoisySubscription =
+          session.becomingNoisyEventStream.listen((_) {
+        pauseAll();
+      });
     } catch (e, st) {
       AppLogger.error('Errore configurazione AudioSession', e, st);
     }
@@ -129,6 +172,8 @@ class GuidoAudioService {
     final currentSession = ++_voiceSessionId;
     if (assetPath.trim().isEmpty) return;
     try {
+      final session = await AudioSession.instance;
+      await session.setActive(true);
       final normalized = _normalizeAssetPath(assetPath);
       await _voicePlayer.setAsset(normalized);
       if (_isStopped || currentSession != _voiceSessionId) {
@@ -152,6 +197,8 @@ class GuidoAudioService {
     final currentSession = ++_ambientSessionId;
     if (assetPath.trim().isEmpty) return;
     try {
+      final session = await AudioSession.instance;
+      await session.setActive(true);
       final normalized = _normalizeAssetPath(assetPath);
       await _ambientPlayer.setAsset(normalized);
       if (_isStopped || currentSession != _ambientSessionId) {
@@ -176,6 +223,8 @@ class GuidoAudioService {
     final currentSession = ++_effectsSessionId;
     if (assetPath.trim().isEmpty) return;
     try {
+      final session = await AudioSession.instance;
+      await session.setActive(true);
       final normalized = _normalizeAssetPath(assetPath);
       await _effectsPlayer.setAsset(normalized);
       if (_isStopped || currentSession != _effectsSessionId) {
@@ -276,6 +325,8 @@ class GuidoAudioService {
     _voiceSessionId++;
     _ambientSessionId++;
     _effectsSessionId++;
+    _interruptionSubscription?.cancel();
+    _becomingNoisySubscription?.cancel();
     try {
       _voicePlayer.dispose();
       _ambientPlayer.dispose();

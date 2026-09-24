@@ -165,12 +165,16 @@ class HomeJapandiTab extends ConsumerWidget {
                             size: 16,
                           ),
                           const SizedBox(width: 4),
-                          Text(
-                            "$currentStreak giorni streak • $totalSessions sessioni totali",
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                              color: subTextColor,
+                          Expanded(
+                            child: Text(
+                              "$currentStreak giorni streak • $totalSessions sessioni totali",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: subTextColor,
+                              ),
                             ),
                           ),
                         ],
