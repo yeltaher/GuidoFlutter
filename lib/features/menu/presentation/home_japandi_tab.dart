@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
+import '../../../core/database/repositories/user_repository.dart';
 import '../../../core/services/daily_quotes_service.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
 import '../../meditation/meditation_feature.dart';
@@ -35,9 +36,10 @@ class HomeJapandiTab extends ConsumerWidget {
     final heroBadge =
         prefs.getString("QuizRecommendedBadge") ?? "RITUALE DEL GIORNO";
 
-    final historyStr = prefs.getStringList("timeline_history") ?? [];
-    final int totalSessions = historyStr.length;
-    final int currentStreak = prefs.getInt("current_streak") ?? 0;
+    final statsAsync = ref.watch(userStatsStreamProvider);
+    final stats = statsAsync.valueOrNull;
+    final int totalSessions = stats?.totalSessions ?? 0;
+    final int currentStreak = stats?.currentStreak ?? 0;
 
     return Container(
       color: Colors
@@ -92,66 +94,81 @@ class HomeJapandiTab extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Image.asset(
-                                'assets/images/logo_transparent.png',
-                                height: 34,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Guido",
-                                style: GoogleFonts.playfairDisplay(
-                                  fontSize: 34,
-                                  fontWeight: FontWeight.w800,
-                                  color: textColor,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? Colors.white.withValues(alpha: 0.04)
-                                  : Colors.black.withValues(alpha: 0.04),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isDark ? Colors.white10 : Colors.black12,
-                                width: 1.0,
-                              ),
-                            ),
+                          Flexible(
                             child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: AppColors.successAccent,
-                                      ),
-                                    )
-                                    .animate(
-                                      onPlay: (controller) =>
-                                          controller.repeat(reverse: true),
-                                    )
-                                    .fadeIn(duration: 1.seconds)
-                                    .fadeOut(duration: 1.seconds),
-                                const SizedBox(width: 6),
-                                Text(
-                                  "ARIA LIBERA • 18°C",
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.bold,
-                                    color: subTextColor.withValues(alpha: 0.9),
-                                    letterSpacing: 0.6,
+                                Image.asset(
+                                  'assets/images/logo_transparent.png',
+                                  height: 34,
+                                ),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    "Guido",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.playfairDisplay(
+                                      fontSize: 34,
+                                      fontWeight: FontWeight.w800,
+                                      color: textColor,
+                                      letterSpacing: -0.5,
+                                    ),
                                   ),
                                 ),
                               ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.04)
+                                    : Colors.black.withValues(alpha: 0.04),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isDark ? Colors.white10 : Colors.black12,
+                                  width: 1.0,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                        width: 6,
+                                        height: 6,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: AppColors.successAccent,
+                                        ),
+                                      )
+                                      .animate(
+                                        onPlay: (controller) =>
+                                            controller.repeat(reverse: true),
+                                      )
+                                      .fadeIn(duration: 1.seconds)
+                                      .fadeOut(duration: 1.seconds),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      "ARIA LIBERA • 18°C",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: subTextColor.withValues(alpha: 0.9),
+                                        letterSpacing: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -530,7 +547,7 @@ class HomeJapandiTab extends ConsumerWidget {
 
                         // 7. DECK ORIZZONTALE DI CARDS (Scorrevole a bordo schermo!)
                         SizedBox(
-                          height: 190,
+                          height: 200,
                           child: ListView(
                             scrollDirection: Axis.horizontal,
                             physics: const BouncingScrollPhysics(),
@@ -872,65 +889,75 @@ class HomeJapandiTab extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Tag badge + Lucchetto
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: (isLocked ? AppColors.goldAccent : accentColor)
-                              .withValues(
-                            alpha: isDark ? 0.08 : 0.15,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Tag badge + Lucchetto
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: (isLocked ? AppColors.goldAccent : accentColor)
+                                  .withValues(
+                                alpha: isDark ? 0.08 : 0.15,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              tag,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 8.0,
+                                fontWeight: FontWeight.bold,
+                                color: isLocked ? AppColors.goldAccent : accentColor,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
                           ),
-                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          tag,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 8.0,
-                            fontWeight: FontWeight.bold,
-                            color: isLocked ? AppColors.goldAccent : accentColor,
-                            letterSpacing: 0.5,
+                        if (isLocked)
+                          const Icon(
+                            Icons.lock_outline_rounded,
+                            color: AppColors.goldAccent,
+                            size: 16,
                           ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.w700,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Expanded(
+                      child: Text(
+                        desc,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: subTextColor.withValues(alpha: 0.9),
+                          height: 1.35,
                         ),
                       ),
-                      if (isLocked)
-                        const Icon(
-                          Icons.lock_outline_rounded,
-                          color: AppColors.goldAccent,
-                          size: 16,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    title,
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 19.5,
-                      fontWeight: FontWeight.w700,
-                      color: textColor,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    desc,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                      color: subTextColor.withValues(alpha: 0.9),
-                      height: 1.35,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
 
               Row(

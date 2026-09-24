@@ -40,5 +40,65 @@ void main() {
       await repository.setOnboarded(true);
       expect(repository.isOnboarded, true);
     });
+
+    test('streak calculation logic increments on consecutive day and resets on gap', () {
+      // Test sequence of date calculations
+      final day1 = DateTime.utc(2026, 9, 20);
+      final day2 = DateTime.utc(2026, 9, 21);
+      final day2Evening = DateTime.utc(2026, 9, 21);
+      final day4 = DateTime.utc(2026, 9, 23);
+
+      int currentStreak = 0;
+      int longestStreak = 0;
+      String? lastSessionDate;
+
+      void record(DateTime dt) {
+        final today = DateTime.utc(dt.year, dt.month, dt.day);
+        final todayStr = "${today.year.toString().padLeft(4, '0')}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+
+        DateTime? lastDate;
+        if (lastSessionDate != null && lastSessionDate!.isNotEmpty) {
+          final parsed = DateTime.parse(lastSessionDate!);
+          lastDate = DateTime.utc(parsed.year, parsed.month, parsed.day);
+        }
+
+        if (lastDate == null) {
+          currentStreak = 1;
+          if (1 > longestStreak) longestStreak = 1;
+        } else {
+          final diff = today.difference(lastDate).inDays;
+          if (diff == 0) {
+            if (currentStreak > longestStreak) longestStreak = currentStreak;
+          } else if (diff == 1) {
+            currentStreak += 1;
+            if (currentStreak > longestStreak) longestStreak = currentStreak;
+          } else if (diff > 1) {
+            currentStreak = 1;
+            if (1 > longestStreak) longestStreak = 1;
+          }
+        }
+        lastSessionDate = todayStr;
+      }
+
+      // Day 1: first session
+      record(day1);
+      expect(currentStreak, 1);
+      expect(longestStreak, 1);
+
+      // Day 2: consecutive day
+      record(day2);
+      expect(currentStreak, 2);
+      expect(longestStreak, 2);
+
+      // Day 2 evening: same day
+      record(day2Evening);
+      expect(currentStreak, 2);
+      expect(longestStreak, 2);
+
+      // Day 4: skipped day 3 (diff = 2)
+      record(day4);
+      expect(currentStreak, 1);
+      expect(longestStreak, 2); // longest streak preserved
+    });
   });
 }

@@ -109,7 +109,8 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
 
       expect(find.byType(HomeContainerView), findsOneWidget);
       expect(find.text('Home'), findsOneWidget);
@@ -164,7 +165,8 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
 
       expect(find.text('Guido'), findsOneWidget);
       expect(find.text('Morning Flow'), findsOneWidget);

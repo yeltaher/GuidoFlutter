@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:isar/isar.dart';
 import '../models/user_stats_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,10 +24,12 @@ class UserRepository {
     String sessionType, {
     int? durationMinutes,
     int? xp,
+    DateTime? now,
   }) async {
     final int minutes =
         durationMinutes ?? (sessionType == "Respirazione" ? 8 : 15);
     final int xpEarned = xp ?? (minutes * 2);
+    final currentTime = now ?? DateTime.now();
 
     await isar.writeTxn(() async {
       var stats = await isar.userStatsModels.where().findFirst();
@@ -36,11 +39,49 @@ class UserRepository {
       stats.totalSessions += 1;
       stats.profileXp += xpEarned;
 
-      final todayStr = DateTime.now().toIso8601String().substring(0, 10);
-      if (stats.lastSessionDate != todayStr) {
-        stats.currentStreak += 1;
-        stats.lastSessionDate = todayStr;
+      // Normalizzazione della data odierna (midnight UTC per evitare anomalie DST)
+      final today =
+          DateTime.utc(currentTime.year, currentTime.month, currentTime.day);
+      final todayStr =
+          "${today.year.toString().padLeft(4, '0')}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+
+      DateTime? lastDate;
+      if (stats.lastSessionDate != null && stats.lastSessionDate!.isNotEmpty) {
+        try {
+          final parsed = DateTime.parse(stats.lastSessionDate!);
+          lastDate = DateTime.utc(parsed.year, parsed.month, parsed.day);
+        } catch (_) {
+          lastDate = null;
+        }
       }
+
+      if (lastDate == null) {
+        // Nessuna sessione precedente: streak = 1
+        stats.currentStreak = 1;
+        stats.longestStreak = math.max(stats.longestStreak, 1);
+      } else {
+        final diff = today.difference(lastDate).inDays;
+        if (diff == 0) {
+          // Stesso giorno (diff == 0): non incrementare ulteriormente la streak
+          stats.longestStreak =
+              math.max(stats.longestStreak, stats.currentStreak);
+        } else if (diff == 1) {
+          // Giorno successivo (diff == 1): incrementa streak
+          stats.currentStreak += 1;
+          stats.longestStreak =
+              math.max(stats.longestStreak, stats.currentStreak);
+        } else if (diff > 1) {
+          // Giorni saltati (diff > 1): reset streak a 1
+          stats.currentStreak = 1;
+          stats.longestStreak = math.max(stats.longestStreak, 1);
+        } else {
+          // Data passata / anomalie clock: preserva streak
+          stats.longestStreak =
+              math.max(stats.longestStreak, stats.currentStreak);
+        }
+      }
+
+      stats.lastSessionDate = todayStr;
 
       await isar.userStatsModels.put(stats);
 
@@ -48,7 +89,7 @@ class UserRepository {
         ..title = sessionTitle
         ..type = sessionType
         ..duration = "$minutes MIN"
-        ..timestamp = DateTime.now().millisecondsSinceEpoch;
+        ..timestamp = currentTime.millisecondsSinceEpoch;
 
       await isar.timelineRecordModels.put(record);
 
@@ -68,8 +109,21 @@ class UserRepository {
     return isar.userStatsModels.where().findFirst();
   }
 
+  Stream<UserStatsModel?> watchStats() {
+    return isar.userStatsModels.where().watch(fireImmediately: true).map(
+      (list) => list.isNotEmpty ? list.first : null,
+    );
+  }
+
   Future<List<TimelineRecordModel>> getTimeline() async {
     return isar.timelineRecordModels.where().sortByTimestampDesc().findAll();
+  }
+
+  Stream<List<TimelineRecordModel>> watchTimeline() {
+    return isar.timelineRecordModels
+        .where()
+        .sortByTimestampDesc()
+        .watch(fireImmediately: true);
   }
 
   String get profileName => prefs.getString("ProfileName") ?? "";
@@ -85,4 +139,17 @@ final userRepositoryProvider = Provider<UserRepository?>((ref) {
   final prefs = ref.watch(sharedPrefsProvider);
   if (isar == null || prefs == null) return null;
   return UserRepository(isar, prefs);
+});
+
+final userStatsStreamProvider = StreamProvider<UserStatsModel?>((ref) {
+  final repo = ref.watch(userRepositoryProvider);
+  if (repo == null) return Stream.value(null);
+  return repo.watchStats();
+});
+
+final userTimelineStreamProvider =
+    StreamProvider<List<TimelineRecordModel>>((ref) {
+  final repo = ref.watch(userRepositoryProvider);
+  if (repo == null) return Stream.value([]);
+  return repo.watchTimeline();
 });

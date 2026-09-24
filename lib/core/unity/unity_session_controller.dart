@@ -586,6 +586,7 @@ class UnitySessionController extends Notifier<UnitySessionState>
   /// Persists partial progress if user terminates session early but spent at least 15s.
   Future<void> recordPartialSession() async {
     if (state.elapsedSeconds < 15.0 || state.isCompleted) return;
+    state = state.copyWith(isCompleted: true);
 
     try {
       final userRepo = ref.read(userRepositoryProvider);

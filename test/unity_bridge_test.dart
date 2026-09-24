@@ -451,5 +451,112 @@ void main() {
       expect(screen.sceneName, 'Scena Zen 3D');
     });
   });
+
+  group('Phase 2 Scene Routing & 2D Look Around Tests', () {
+    test('CameraRotationDto serializes and deserializes correctly', () {
+      final dto = CameraRotationDto(dx: 12.5, dy: -8.0);
+      final json = dto.toJson();
+      expect(json['dx'], 12.5);
+      expect(json['dy'], -8.0);
+
+      final jsonStr = dto.toJsonString();
+      final restored = CameraRotationDto.fromJson(jsonDecode(jsonStr) as Map<String, dynamic>);
+      expect(restored.dx, 12.5);
+      expect(restored.dy, -8.0);
+    });
+
+    test('UnityScenes resolves elemental and themed scenes with correct priority', () {
+      // AIR
+      expect(
+        UnityScenes.resolveSceneName(title: 'Respirazione Aria Diaframmatica'),
+        UnityScenes.airBreathing,
+      );
+      expect(
+        UnityScenes.resolveSceneName(title: 'Meditazione Aria'),
+        UnityScenes.airMeditation,
+      );
+
+      // FIRE
+      expect(
+        UnityScenes.resolveSceneName(title: 'Respirazione Fuoco Quadrato'),
+        UnityScenes.fireBreathing,
+      );
+      expect(
+        UnityScenes.resolveSceneName(title: 'Meditazione Fuoco'),
+        UnityScenes.fireMeditation,
+      );
+
+      // EARTH
+      expect(
+        UnityScenes.resolveSceneName(title: 'Respirazione Terra'),
+        UnityScenes.earthBreathing,
+      );
+      expect(
+        UnityScenes.resolveSceneName(title: 'Meditazione Terra'),
+        UnityScenes.earthMeditation,
+      );
+
+      // WATER & THEMED
+      expect(
+        UnityScenes.resolveSceneName(title: 'Meditazione del Mattino'),
+        UnityScenes.waterMeditation,
+      );
+      expect(
+        UnityScenes.resolveSceneName(title: 'Calma e Presenza'),
+        UnityScenes.waterMeditation,
+      );
+      expect(
+        UnityScenes.resolveSceneName(title: 'Focus Profondo'),
+        UnityScenes.waterMeditation,
+      );
+
+      // EXPLICIT SCENE OVERRIDE
+      expect(
+        UnityScenes.resolveSceneName(
+          explicitSceneName: 'Respirazione aria',
+          title: 'Meditazione del Mattino',
+        ),
+        'Respirazione aria',
+      );
+    });
+
+    test('UnitySessionController exposes rotateCamera and setVrMode methods', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final controller = container.read(unitySessionControllerProvider.notifier);
+      // Verify methods can be called without exception
+      expect(() => controller.rotateCamera(5.0, -3.0), returnsNormally);
+      expect(() => controller.setVrMode(true), returnsNormally);
+      expect(() => controller.setVrMode(false), returnsNormally);
+    });
+
+    testWidgets('UnityExperienceScreen includes GestureDetector for 2D pan look around in 2D mode', (tester) async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: UnityExperienceScreen(
+              title: '2D Look Around Test',
+              sceneName: UnityScenes.airBreathing,
+              isVrMode: false,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // Find GestureDetectors in widget tree
+      final gestureDetectors = find.byType(GestureDetector);
+      expect(gestureDetectors, findsWidgets);
+
+      // Drag across screen in 2D mode
+      await tester.drag(find.byType(UnityExperienceScreen), const Offset(20, -15));
+      await tester.pump();
+    });
+  });
 }
 

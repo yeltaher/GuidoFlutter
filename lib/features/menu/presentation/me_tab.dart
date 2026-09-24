@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:convert';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 
@@ -650,12 +649,8 @@ class MeTab extends ConsumerWidget {
                               padding: const EdgeInsets.all(20.0),
                               child: Builder(
                                 builder: (context) {
-                                  final historyStr =
-                                      ref
-                                          .read(sharedPrefsProvider)
-                                          ?.getStringList("timeline_history") ??
-                                      [];
-                                  if (historyStr.isEmpty) {
+                                  final timeline = data.timeline;
+                                  if (timeline.isEmpty) {
                                     return Text(
                                       "Nessuna sessione completata. Inizia a meditare!",
                                       style: GoogleFonts.plusJakartaSans(
@@ -668,45 +663,39 @@ class MeTab extends ConsumerWidget {
                                   final List<Widget> timelineWidgets = [];
                                   for (
                                     int i = 0;
-                                    i < historyStr.length && i < 3;
+                                    i < timeline.length && i < 3;
                                     i++
                                   ) {
-                                    try {
-                                      final record = jsonDecode(historyStr[i]);
-                                      final ts =
-                                          DateTime.fromMillisecondsSinceEpoch(
-                                            record["timestamp"],
-                                          );
-                                      final timeStr =
-                                          "${ts.day.toString().padLeft(2, '0')}/${ts.month.toString().padLeft(2, '0')} alle ${ts.hour.toString().padLeft(2, '0')}:${ts.minute.toString().padLeft(2, '0')}";
+                                    final record = timeline[i];
+                                    final ts =
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                          record.timestamp,
+                                        );
+                                    final timeStr =
+                                        "${ts.day.toString().padLeft(2, '0')}/${ts.month.toString().padLeft(2, '0')} alle ${ts.hour.toString().padLeft(2, '0')}:${ts.minute.toString().padLeft(2, '0')}";
 
-                                      timelineWidgets.add(
-                                        _buildTimelineRow(
-                                          session:
-                                              record["title"] ?? "Sessione",
-                                          type: record["type"] ?? "Meditazione",
-                                          time: timeStr,
-                                          duration:
-                                              record["duration"] ?? "10 min",
-                                          icon: record["type"] == "Respirazione"
-                                              ? Icons.nature_people_outlined
-                                              : Icons.spa_outlined,
-                                          accentColor:
-                                              record["type"] == "Respirazione"
-                                              ? AppColors.successAccent
-                                              : accentColor,
-                                          textColor: textColor,
-                                          subTextColor: subTextColor,
-                                          isLast:
-                                              i ==
-                                              (historyStr.length > 3
-                                                  ? 2
-                                                  : historyStr.length - 1),
-                                        ),
-                                      );
-                                    } catch (e) {
-                                      // skip invalid record
-                                    }
+                                    timelineWidgets.add(
+                                      _buildTimelineRow(
+                                        session: record.title,
+                                        type: record.type,
+                                        time: timeStr,
+                                        duration: record.duration,
+                                        icon: record.type == "Respirazione"
+                                            ? Icons.nature_people_outlined
+                                            : Icons.spa_outlined,
+                                        accentColor:
+                                            record.type == "Respirazione"
+                                            ? AppColors.successAccent
+                                            : accentColor,
+                                        textColor: textColor,
+                                        subTextColor: subTextColor,
+                                        isLast:
+                                            i ==
+                                            (timeline.length > 3
+                                                ? 2
+                                                : timeline.length - 1),
+                                      ),
+                                    );
                                   }
                                   return Column(children: timelineWidgets);
                                 },

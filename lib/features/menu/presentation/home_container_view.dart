@@ -262,62 +262,67 @@ class _HomeContainerViewState extends ConsumerState<HomeContainerView> {
     final currentIndex = ref.watch(activeTabProvider);
     final isSelected = currentIndex == index;
 
-    return Semantics(
-      button: true,
-      label: "Interactive element",
-      child: GestureDetector(
-        onTap: () {
-          if (currentIndex != index) {
-            ref.read(activeTabProvider.notifier).state = index;
-          }
-        },
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Icona minimal del tab (in salvia desaturato quando selezionato)
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeInOutCubic,
-              padding: const EdgeInsets.all(4),
-              child: Icon(
-                isSelected ? iconSelected : iconOutline,
-                color: isSelected
-                    ? accentColor
-                    : subColor.withValues(alpha: 0.7),
-                size: 24,
-              ),
-            ),
-            const SizedBox(height: 3),
-            // Testo etichetta minimal in Plus Jakarta Sans
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                color: isSelected ? textColor : subColor.withValues(alpha: 0.6),
-                letterSpacing: 0.2,
-              ),
-            ),
-            const SizedBox(height: 4),
-            // Pallino indicatore attivo animato sotto l'icona (come da mockup)
-            AnimatedScale(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutBack,
-              scale: isSelected ? 1.0 : 0.0,
-              child: Container(
-                width: 4.0,
-                height: 4.0,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: index == 0 ? accentColor : accentColor,
+    return Expanded(
+      child: Semantics(
+        button: true,
+        label: "Interactive element",
+        child: GestureDetector(
+          onTap: () {
+            if (currentIndex != index) {
+              ref.read(activeTabProvider.notifier).state = index;
+            }
+          },
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icona minimal del tab (in salvia desaturato quando selezionato)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOutCubic,
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  isSelected ? iconSelected : iconOutline,
+                  color: isSelected
+                      ? accentColor
+                      : subColor.withValues(alpha: 0.7),
+                  size: 24,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 3),
+              // Testo etichetta minimal in Plus Jakarta Sans
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                    color: isSelected ? textColor : subColor.withValues(alpha: 0.6),
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              // Pallino indicatore attivo animato sotto l'icona (come da mockup)
+              AnimatedScale(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutBack,
+                scale: isSelected ? 1.0 : 0.0,
+                child: Container(
+                  width: 4.0,
+                  height: 4.0,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: index == 0 ? accentColor : accentColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

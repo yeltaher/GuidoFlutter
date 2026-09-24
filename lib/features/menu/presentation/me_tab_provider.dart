@@ -24,23 +24,32 @@ class MeTabData {
   });
 }
 
-final meTabDataProvider = FutureProvider<MeTabData>((ref) async {
+final meTabDataProvider = StreamProvider<MeTabData>((ref) async* {
   final repo = ref.watch(userRepositoryProvider);
-  if (repo == null) return MeTabData();
-
-  final stats = await repo.getStats();
-  final timeline = await repo.getTimeline();
+  if (repo == null) {
+    yield MeTabData();
+    return;
+  }
 
   final prefs = repo.prefs;
+  final userName = repo.profileName.isEmpty ? "Ospite Zen" : repo.profileName;
+  final quizProblems = prefs.getStringList("QuizProblems") ?? [];
+  final quizGoals = prefs.getStringList("QuizGoals") ?? [];
+  final quizStrengths = prefs.getStringList("QuizStrengths") ?? [];
+  final quizWeaknesses = prefs.getStringList("QuizWeaknesses") ?? [];
+  final profileStyle = prefs.getInt("ProfileStyle") ?? 0;
 
-  return MeTabData(
-    stats: stats,
-    timeline: timeline,
-    userName: repo.profileName.isEmpty ? "Ospite Zen" : repo.profileName,
-    quizProblems: prefs.getStringList("QuizProblems") ?? [],
-    quizGoals: prefs.getStringList("QuizGoals") ?? [],
-    quizStrengths: prefs.getStringList("QuizStrengths") ?? [],
-    quizWeaknesses: prefs.getStringList("QuizWeaknesses") ?? [],
-    profileStyle: prefs.getInt("ProfileStyle") ?? 0,
-  );
+  await for (final stats in repo.watchStats()) {
+    final timeline = await repo.getTimeline();
+    yield MeTabData(
+      stats: stats,
+      timeline: timeline,
+      userName: userName,
+      quizProblems: quizProblems,
+      quizGoals: quizGoals,
+      quizStrengths: quizStrengths,
+      quizWeaknesses: quizWeaknesses,
+      profileStyle: profileStyle,
+    );
+  }
 });

@@ -11,6 +11,7 @@ class UserStatsModel {
   int profileXp = 0;
 
   int currentStreak = 0;
+  int longestStreak = 0;
   String? lastSessionDate;
 }
 
@@ -21,5 +22,6 @@ class TimelineRecordModel {
   late String title;
   late String type;
   late String duration;
+  @Index()
   late int timestamp;
 }

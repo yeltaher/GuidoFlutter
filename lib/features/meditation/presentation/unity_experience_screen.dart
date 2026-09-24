@@ -364,16 +364,17 @@ class _UnityExperienceScreenState
     await _teardownAudioAndSession();
 
     try {
-      // Reset VR mode and record session (moved from VrConfirmationScreen's
-      // pushReplacement .then() callback for GoRouter compatibility)
+      // Reset VR mode and record session
       ref.read(settingsProvider.notifier).toggleVrMode(false);
       if (elapsedSeconds >= 60) {
         final minutes = elapsedSeconds ~/ 60;
-        await ref.read(userRepositoryProvider)?.recordSession(
-              widget.title,
-              widget.sceneName.contains('resp') ? "Respirazione" : "Meditazione",
-              durationMinutes: minutes,
-            );
+        if (!ref.read(unitySessionControllerProvider).isCompleted) {
+          await ref.read(userRepositoryProvider)?.recordSession(
+                widget.title,
+                widget.sceneName.contains('resp') ? "Respirazione" : "Meditazione",
+                durationMinutes: minutes,
+              );
+        }
       }
     } catch (e) {
       debugPrint('[UnityExperienceScreen] Errore salvataggio sessione: $e');
