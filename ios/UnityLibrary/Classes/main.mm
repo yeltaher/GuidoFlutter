@@ -117,10 +117,12 @@ static void ExecuteNativeSceneLoad(int buildIndex, const char* customSceneName, 
 
     const char* sceneName = (customSceneName && strlen(customSceneName) > 0) ? customSceneName : kGuidoScenes[buildIndex];
 
-    NSLog(@"[Guido Native Interceptor] >>> Loading Scene [%d]: %s (VR: %d, Duration: %.1fs)", buildIndex, sceneName, (int)isVrMode, durationSeconds);
+    NSLog(@"[Guido Native Interceptor] >>> Loading Scene [%d]: %s (VR: %d, Duration: %.1fs, Mode: Single)", buildIndex, sceneName, (int)isVrMode, durationSeconds);
 
-    // 1. Native IL2CPP SceneManager invocation
-    SceneManager_LoadScene_mC4BD32145437F282CAA13E1A8685001061E79D98(buildIndex, 0, NULL);
+    // 1. Native IL2CPP SceneManager invocation with LoadSceneMode.Single (0)
+    // LoadSceneMode.Single destroys the previous scene GameObjects, clearing RAM/VRAM
+    const int32_t kLoadSceneModeSingle = 0;
+    SceneManager_LoadScene_mC4BD32145437F282CAA13E1A8685001061E79D98(buildIndex, kLoadSceneModeSingle, NULL);
 
     // 2. Fallback UnitySendMessage to SceneLoader / GameObject if present in scene
     char idxBuf[16];
@@ -300,7 +302,31 @@ UnityFramework* _gUnityFramework = nil;
                     }
                     else if ([params isKindOfClass:[NSString class]])
                     {
-                        isVr = [params boolValue] || [params isEqualToString:@"true"] || [params isEqualToString:@"1"];
+                        NSString* pStr = (NSString*)params;
+                        if ([pStr isEqualToString:@"true"] || [pStr isEqualToString:@"1"])
+                        {
+                            isVr = YES;
+                        }
+                        else if ([pStr isEqualToString:@"false"] || [pStr isEqualToString:@"0"])
+                        {
+                            isVr = NO;
+                        }
+                        else
+                        {
+                            NSData* pData = [pStr dataUsingEncoding:NSUTF8StringEncoding];
+                            if (pData)
+                            {
+                                id pObj = [NSJSONSerialization JSONObjectWithData:pData options:0 error:nil];
+                                if ([pObj isKindOfClass:[NSDictionary class]])
+                                {
+                                    isVr = [pObj[@"isVrMode"] boolValue];
+                                }
+                                else if ([pObj isKindOfClass:[NSNumber class]])
+                                {
+                                    isVr = [pObj boolValue];
+                                }
+                            }
+                        }
                     }
                     else if ([params isKindOfClass:[NSDictionary class]])
                     {

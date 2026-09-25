@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +17,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/vr/vr_orientation_service.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../../core/database/repositories/user_repository.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
 import '../../../core/unity/unity_session_controller.dart';
 
@@ -112,7 +113,7 @@ class _UnityExperienceScreenState
     );
 
     _sessionNotifier = ref.read(unitySessionControllerProvider.notifier);
-    _sessionNotifier?.startSession(config);
+    _sessionNotifier?.startSession(config, sessionTitle: widget.title);
     _startAudio(bundle, isRepeat: isRepeat);
 
     // Watchdog timer di 10 secondi per il caricamento dell'ambiente 3D
@@ -353,31 +354,33 @@ class _UnityExperienceScreenState
   }
 
   void _confirmExit() async {
+    final elapsedSeconds =
+        ref.read(unitySessionControllerProvider).elapsedSeconds;
+
+    // Single Source of Truth: persistenza centralizzata a partire da 15s senza duplicazioni
+    if (!ref.read(unitySessionControllerProvider).isCompleted && elapsedSeconds >= 15) {
+      if (elapsedSeconds >= 60) {
+        final minutes = elapsedSeconds ~/ 60;
+        debugPrint('[UnityExperienceScreen] Salvataggio sessione: $minutes min (elapsed: ${elapsedSeconds}s)');
+        await ref.read(unitySessionControllerProvider.notifier).recordPartialSession();
+        // durationMinutes: minutes
+      } else {
+        await ref.read(unitySessionControllerProvider.notifier).recordPartialSession();
+      }
+    }
+
     try {
       WakelockPlus.disable();
     } catch (e) {
       debugPrint('[UnityExperienceScreen] Errore wakelock: $e');
     }
-    final elapsedSeconds =
-        ref.read(unitySessionControllerProvider).elapsedSeconds;
 
     await _teardownAudioAndSession();
 
     try {
-      // Reset VR mode and record session
       ref.read(settingsProvider.notifier).toggleVrMode(false);
-      if (elapsedSeconds >= 60) {
-        final minutes = elapsedSeconds ~/ 60;
-        if (!ref.read(unitySessionControllerProvider).isCompleted) {
-          await ref.read(userRepositoryProvider)?.recordSession(
-                widget.title,
-                widget.sceneName.contains('resp') ? "Respirazione" : "Meditazione",
-                durationMinutes: minutes,
-              );
-        }
-      }
     } catch (e) {
-      debugPrint('[UnityExperienceScreen] Errore salvataggio sessione: $e');
+      debugPrint('[UnityExperienceScreen] Errore reset VR: $e');
     }
 
     try {
@@ -439,6 +442,19 @@ class _UnityExperienceScreenState
           }
         });
       }
+    }
+
+    // Distacco ermetico esplicito del controller Unity UaaL via microtask per evitare
+    // notifiche sincrone su un Element in fase di unmount (_ElementLifecycle.defunct)
+    final notifierToDetach = _sessionNotifier;
+    if (notifierToDetach != null) {
+      scheduleMicrotask(() {
+        try {
+          notifierToDetach.detachUnityWidgetController();
+        } catch (e) {
+          debugPrint('[UnityExperienceScreen] Errore detachUnityWidgetController in dispose: $e');
+        }
+      });
     }
 
     try {
@@ -573,6 +589,11 @@ class _UnityExperienceScreenState
                   },
                   fullscreen: true,
                   useAndroidViewSurface: true,
+                  gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{
+                    Factory<OneSequenceGestureRecognizer>(
+                      EagerGestureRecognizer.new,
+                    ),
+                  },
                 ),
               ),
             ),

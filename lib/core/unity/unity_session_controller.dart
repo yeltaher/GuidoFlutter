@@ -15,6 +15,7 @@ class UnitySessionState {
   final bool isCompleted;
   final bool isWaitingForUnity;
   final SessionConfigDto? activeConfig;
+  final String? sessionTitle;
   final SessionProgressDto? currentProgress;
   final BreathingPhase currentBreathingPhase;
   final SessionSummaryDto? lastSummary;
@@ -30,6 +31,7 @@ class UnitySessionState {
     this.isCompleted = false,
     this.isWaitingForUnity = false,
     this.activeConfig,
+    this.sessionTitle,
     this.currentProgress,
     this.currentBreathingPhase = BreathingPhase.inhale,
     this.lastSummary,
@@ -46,6 +48,7 @@ class UnitySessionState {
     bool? isCompleted,
     bool? isWaitingForUnity,
     SessionConfigDto? activeConfig,
+    String? sessionTitle,
     SessionProgressDto? currentProgress,
     BreathingPhase? currentBreathingPhase,
     SessionSummaryDto? lastSummary,
@@ -61,6 +64,7 @@ class UnitySessionState {
       isCompleted: isCompleted ?? this.isCompleted,
       isWaitingForUnity: isWaitingForUnity ?? this.isWaitingForUnity,
       activeConfig: activeConfig ?? this.activeConfig,
+      sessionTitle: sessionTitle ?? this.sessionTitle,
       currentProgress: currentProgress ?? this.currentProgress,
       currentBreathingPhase:
           currentBreathingPhase ?? this.currentBreathingPhase,
@@ -97,6 +101,7 @@ class UnitySessionController extends Notifier<UnitySessionState>
   DateTime? _startTime;
   double _accumulatedElapsedSeconds = 0.0;
   bool _isAppPaused = false;
+  final List<String> _pendingRpcQueue = [];
 
   static const String _unityBridgeGameObjectName = 'FlutterBridgeManager';
   static const String _unityBridgeMethodName = 'OnFlutterMessage';
@@ -127,6 +132,7 @@ class UnitySessionController extends Notifier<UnitySessionState>
     _stopReadyTimeout();
     _startTime = null;
     _accumulatedElapsedSeconds = 0.0;
+    _pendingRpcQueue.clear();
     _unityWidgetController = null;
   }
 
@@ -317,12 +323,15 @@ class UnitySessionController extends Notifier<UnitySessionState>
       _startWatchdog();
       debugPrint('[UnitySessionController] Queued session dispatched to newly-ready Unity.');
     }
+
+    // Flush any pending commands queued before controller attach
+    _flushPendingRpcQueue();
   }
 
   /// Detaches the controller reference upon screen unmount.
   ///
-  /// FIX [Issue #7]: now fully resets loading/playing/waiting flags and
-  /// stops all timers so stale state never lingers synchronously without nested microtasks.
+  /// Resets loading/playing/waiting flags, stops all timers, and clears queued commands
+  /// so stale state never lingers or sends RPCs to deallocated view channels.
   void detachUnityWidgetController() {
     _unityWidgetController = null;
     _stopHeartbeat();
@@ -330,11 +339,13 @@ class UnitySessionController extends Notifier<UnitySessionState>
     _stopReadyTimeout();
     _startTime = null;
     _accumulatedElapsedSeconds = 0.0;
+    _pendingRpcQueue.clear();
     state = state.copyWith(
       isUnityLoaded: false,
       isSceneLoaded: false,
       isPlaying: false,
       isWaitingForUnity: false,
+      errorMessage: null,
     );
     debugPrint('[UnitySessionController] Unity Widget Controller detached — state reset.');
   }
@@ -570,9 +581,12 @@ class UnitySessionController extends Notifier<UnitySessionState>
           summary.sceneName.toLowerCase().contains('resp');
       final sessionType = isBreathing ? 'Respirazione' : 'Meditazione';
       final minutes = (summary.totalDurationSeconds / 60).ceil().clamp(1, 120);
+      final title = (state.sessionTitle != null && state.sessionTitle!.isNotEmpty)
+          ? state.sessionTitle!
+          : (summary.sceneName.isNotEmpty ? summary.sceneName : 'Sessione Zen 3D');
 
       await userRepo?.recordSession(
-        summary.sceneName.isNotEmpty ? summary.sceneName : 'Sessione Zen 3D',
+        title,
         sessionType,
         durationMinutes: minutes,
         xp: summary.xpEarned > 0 ? summary.xpEarned : minutes * 2,
@@ -596,9 +610,12 @@ class UnitySessionController extends Notifier<UnitySessionState>
           scene.toLowerCase().contains('resp');
       final sessionType = isBreathing ? 'Respirazione' : 'Meditazione';
       final minutes = (state.elapsedSeconds / 60).ceil().clamp(1, 120);
+      final title = (state.sessionTitle != null && state.sessionTitle!.isNotEmpty)
+          ? state.sessionTitle!
+          : scene;
 
       await userRepo?.recordSession(
-        scene,
+        title,
         sessionType,
         durationMinutes: minutes,
         xp: minutes * 2,
@@ -615,13 +632,12 @@ class UnitySessionController extends Notifier<UnitySessionState>
 
   /// Starts a new session by sending SessionConfigDto via JSON-RPC.
   ///
-  /// FIX [Bug #7]: no longer sets isPlaying=true or starts the heartbeat
-  /// immediately.  If Unity is ready the command is dispatched right away and
-  /// the heartbeat + watchdog start on the first progress confirmation from
-  /// Unity.  If Unity is NOT ready the session config is queued and a
-  /// ready-timeout watchdog is started; onUnityCreated() will dispatch the
-  /// queued command once Unity attaches.
-  Future<void> startSession(SessionConfigDto config) async {
+  /// Supports hot scene switching: if Unity is not yet mounted/ready, the
+  /// configuration is queued and dispatched atomically once onUnityCreated() fires.
+  Future<void> startSession(
+    SessionConfigDto config, {
+    String? sessionTitle,
+  }) async {
     // Always stop any previous timers
     _stopHeartbeat();
     _stopWatchdog();
@@ -630,6 +646,7 @@ class UnitySessionController extends Notifier<UnitySessionState>
 
     state = state.copyWith(
       activeConfig: config,
+      sessionTitle: sessionTitle,
       isPlaying: false,
       isCompleted: false,
       isWaitingForUnity: false,
@@ -733,12 +750,17 @@ class UnitySessionController extends Notifier<UnitySessionState>
   /// Forwards 2D touch drag delta to Unity camera controller for pan look around.
   /// [dx] is horizontal delta (yaw), [dy] is vertical delta (pitch).
   void rotateCamera(double dx, double dy) {
+    final controller = _unityWidgetController;
+    if (controller == null || !state.isUnityLoaded) {
+      debugPrint('[UnitySessionController] Warning: Cannot post message, controller is null.');
+      return;
+    }
     final rpc = JsonRpcRequestDto(
       method: 'rotateCamera',
       params: jsonEncode({'dx': dx, 'dy': dy}),
       id: 8,
     );
-    _postToUnity(rpc.toJsonString());
+    _dispatchDirectMessage(controller, rpc.toJsonString());
   }
 
   /// Sets VR Side-by-Side stereo mode or 2D monoscopic mode in Unity.
@@ -759,22 +781,28 @@ class UnitySessionController extends Notifier<UnitySessionState>
     _lastUnityMessageAt = null;
     _startTime = null;
     _accumulatedElapsedSeconds = 0.0;
+    _pendingRpcQueue.clear();
+    _unityWidgetController = null;
     state = const UnitySessionState();
+    debugPrint('[UnitySessionController] Session reset.');
   }
 
-  /// Posts a JSON message to the Unity bridge via Platform Channel.
-  ///
-  /// FIX [Bug #8]: captures the controller reference in a local variable *before*
-  /// the null-check so that a concurrent [detachUnityWidgetController] on another
-  /// micro-task cannot null it out between the guard and the `.postMessage()` call
-  /// (classic TOCTOU / force-unwrap race).
-  void _postToUnity(String message) {
+  /// Flushes all pending RPC commands queued before controller attach.
+  void _flushPendingRpcQueue() {
     final controller = _unityWidgetController;
-    if (controller == null) {
-      debugPrint('[UnitySessionController] Warning: Cannot post message, controller is null.');
-      return;
+    if (controller == null || !state.isUnityLoaded) return;
+    if (_pendingRpcQueue.isNotEmpty) {
+      debugPrint('[UnitySessionController] Flushing ${_pendingRpcQueue.length} pending RPC command(s)...');
+      final queueCopy = List<String>.from(_pendingRpcQueue);
+      _pendingRpcQueue.clear();
+      for (final rpc in queueCopy) {
+        _dispatchDirectMessage(controller, rpc);
+      }
     }
+  }
 
+  /// Dispatches a message directly to Unity via the platform bridge.
+  void _dispatchDirectMessage(UnityWidgetController controller, String message) {
     try {
       controller.postMessage(
         _unityBridgeGameObjectName,
@@ -785,6 +813,19 @@ class UnitySessionController extends Notifier<UnitySessionState>
     } catch (e) {
       debugPrint('[UnitySessionController] Error posting to Unity: $e');
     }
+  }
+
+  /// Posts a JSON message to the Unity bridge via Platform Channel.
+  /// If the controller is null or Unity is not ready, queues the command for delivery upon attachment.
+  void _postToUnity(String message) {
+    final controller = _unityWidgetController;
+    if (controller == null || !state.isUnityLoaded) {
+      debugPrint('[UnitySessionController] Warning: Cannot post message, controller is null or not loaded. Command queued.');
+      _pendingRpcQueue.add(message);
+      return;
+    }
+
+    _dispatchDirectMessage(controller, message);
   }
 }
 

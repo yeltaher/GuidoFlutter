@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:guido/core/database/models/user_stats_model.dart';
 import 'package:guido/core/database/repositories/user_repository.dart';
 import 'package:isar/isar.dart';
 
@@ -99,6 +100,29 @@ void main() {
       record(day4);
       expect(currentStreak, 1);
       expect(longestStreak, 2); // longest streak preserved
+    });
+
+    test('effectiveCurrentStreak dynamic calculation rules (diff <= 1 valid, diff >= 2 returns 0)', () {
+      final stats = UserStatsModel()
+        ..currentStreak = 4
+        ..longestStreak = 5
+        ..lastSessionDate = "2026-09-24";
+
+      // Today is same day (diff = 0) -> streak valid
+      expect(stats.effectiveStreak(DateTime.utc(2026, 9, 24)), 4);
+      expect(repository.calculateEffectiveStreak(stats, DateTime.utc(2026, 9, 24)), 4);
+
+      // Today is next day (diff = 1) -> streak valid
+      expect(stats.effectiveStreak(DateTime.utc(2026, 9, 25)), 4);
+      expect(repository.calculateEffectiveStreak(stats, DateTime.utc(2026, 9, 25)), 4);
+
+      // Today is 2 days later (diff = 2) -> streak broken, returns 0
+      expect(stats.effectiveStreak(DateTime.utc(2026, 9, 26)), 0);
+      expect(repository.calculateEffectiveStreak(stats, DateTime.utc(2026, 9, 26)), 0);
+
+      // Today is 5 days later (diff = 5) -> returns 0
+      expect(stats.effectiveStreak(DateTime.utc(2026, 9, 29)), 0);
+      expect(repository.calculateEffectiveStreak(stats, DateTime.utc(2026, 9, 29)), 0);
     });
   });
 }

@@ -39,7 +39,7 @@ class HomeJapandiTab extends ConsumerWidget {
     final statsAsync = ref.watch(userStatsStreamProvider);
     final stats = statsAsync.valueOrNull;
     final int totalSessions = stats?.totalSessions ?? 0;
-    final int currentStreak = stats?.currentStreak ?? 0;
+    final int currentStreak = stats?.effectiveCurrentStreak ?? 0;
 
     return Container(
       color: Colors

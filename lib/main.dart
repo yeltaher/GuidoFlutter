@@ -1,13 +1,17 @@
-import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'app/router/app_router.dart';
 
 import 'package:guido/l10n/app_localizations.dart';
 import 'core/database/settings_provider.dart';
 import 'core/database/app_initializer_provider.dart';
+import 'core/database/models/user_stats_model.dart';
+import 'core/database/repositories/user_repository.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -115,11 +119,44 @@ void main() async {
     debugPrint('[Main] Prefs init error: $e');
   }
 
+  Isar? isar;
+  try {
+    final dir = await getApplicationDocumentsDirectory();
+    isar = Isar.getInstance() ??
+        await Isar.open(
+          [
+            UserStatsModelSchema,
+            TimelineRecordModelSchema,
+          ],
+          directory: dir.path,
+          inspector: kDebugMode,
+        );
+  } catch (e) {
+    debugPrint('[Main] Isar init error: $e');
+    isar = Isar.getInstance();
+  }
+
+  // Pre-warming e auto-seeding atomico (id = 1)
+  if (isar != null && prefs != null) {
+    try {
+      final userRepo = UserRepository(isar, prefs);
+      await userRepo.ensureSeeded();
+    } catch (e) {
+      debugPrint('[Main] Seeding error: $e');
+    }
+  }
+
   runApp(
     ProviderScope(
       overrides: [
-        if (prefs != null)
+        if (prefs != null) ...[
           sharedPrefsInstanceProvider.overrideWith((ref) => prefs),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+        if (isar != null) ...[
+          isarInstanceProvider.overrideWith((ref) => isar),
+          isarProvider.overrideWithValue(isar),
+        ],
       ],
       child: const MainApp(),
     ),

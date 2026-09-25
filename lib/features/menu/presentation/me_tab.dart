@@ -56,7 +56,7 @@ class MeTab extends ConsumerWidget {
         final stats = data.stats;
         final int minutesMeditated = stats?.totalMinutes ?? 0;
         final int sessionsCompleted = stats?.totalSessions ?? 0;
-        final int currentStreak = stats?.currentStreak ?? 0;
+        final int currentStreak = stats?.effectiveCurrentStreak ?? 0;
         final int currentXp = stats?.profileXp ?? 0;
 
         final int currentLevel = (currentXp ~/ 600) + 1;

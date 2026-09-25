@@ -2,10 +2,23 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_unity_widget_2/flutter_unity_widget_2.dart';
 import 'package:guido/app/router/app_router.dart';
 import 'package:guido/core/unity/unity_bridge_dto.dart';
 import 'package:guido/core/unity/unity_session_controller.dart';
 import 'package:guido/features/meditation/presentation/unity_experience_screen.dart';
+
+class FakeUnityWidgetController implements UnityWidgetController {
+  final List<String> postedMessages = [];
+
+  @override
+  Future<void>? postMessage(String gameObject, dynamic methodName, dynamic message) async {
+    postedMessages.add(message.toString());
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -279,6 +292,46 @@ void main() {
       // Malformed string should not throw and degrade gracefully
       notifier.onUnityMessage('{invalid json string}');
       expect(container.read(unitySessionControllerProvider).isSceneLoaded, true);
+    });
+
+    test('Hot Scene Switching & Command Queue: queues startSession before Unity attaches, then flushes atomically on onUnityCreated', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final notifier = container.read(unitySessionControllerProvider.notifier);
+      final config = const SessionConfigDto(
+        sceneName: UnityScenes.waterMeditation,
+        durationSeconds: 900.0,
+      );
+
+      // 1. Session started before PlatformView / Unity controller is created
+      await notifier.startSession(config, sessionTitle: "Il Respiro dell'Alba");
+      var state = container.read(unitySessionControllerProvider);
+      expect(state.isWaitingForUnity, isTrue);
+      expect(state.isPlaying, isFalse);
+      expect(state.sessionTitle, "Il Respiro dell'Alba");
+
+      // 2. Also queue a quality preset command
+      await notifier.setQualityPreset(QualityPreset.balancedEco);
+
+      // 3. Unity widget attaches
+      final fakeController = FakeUnityWidgetController();
+      notifier.onUnityCreated(fakeController);
+
+      state = container.read(unitySessionControllerProvider);
+      expect(state.isWaitingForUnity, isFalse);
+      expect(state.isPlaying, isTrue);
+      expect(state.isUnityLoaded, isTrue);
+      expect(fakeController.postedMessages.length, 2);
+      expect(fakeController.postedMessages[0], contains('startSession'));
+      expect(fakeController.postedMessages[1], contains('setQualityPreset'));
+
+      // 4. Detaching resets all state ermetically
+      notifier.detachUnityWidgetController();
+      state = container.read(unitySessionControllerProvider);
+      expect(state.isUnityLoaded, isFalse);
+      expect(state.isPlaying, isFalse);
+      expect(state.isWaitingForUnity, isFalse);
     });
   });
 
@@ -556,6 +609,31 @@ void main() {
       // Drag across screen in 2D mode
       await tester.drag(find.byType(UnityExperienceScreen), const Offset(20, -15));
       await tester.pump();
+    });
+
+    testWidgets('UnityExperienceScreen equips UnityWidget with transparent gestureRecognizers for direct 120Hz touch', (tester) async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: UnityExperienceScreen(
+              title: 'Gesture Pass-through Test',
+              sceneName: UnityScenes.waterBreathing,
+              isVrMode: false,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final unityWidgetFinder = find.byType(UnityWidget);
+      expect(unityWidgetFinder, findsOneWidget);
+      final unityWidget = tester.widget<UnityWidget>(unityWidgetFinder);
+      expect(unityWidget.gestureRecognizers, isNotNull);
+      expect(unityWidget.gestureRecognizers!.isNotEmpty, isTrue);
     });
   });
 }

@@ -19,6 +19,27 @@ class UserRepository {
 
   UserRepository(this.isar, this.prefs);
 
+  /// Assicura l'esistenza atomica di un record UserStatsModel predefinito (id = 1).
+  Future<UserStatsModel> ensureSeeded() async {
+    var stats = await isar.userStatsModels.where().findFirst();
+    if (stats == null) {
+      final initialStats = UserStatsModel()..id = 1;
+      await isar.writeTxn(() async {
+        await isar.userStatsModels.put(initialStats);
+      });
+      return initialStats;
+    }
+    return stats;
+  }
+
+  /// Calcola lo streak effettivo corrente:
+  /// Se la differenza tra oggi e lastSessionDate è 0 o 1 giorno, la streak è valida;
+  /// se è maggiore o uguale a 2 giorni, restituisce 0.
+  int calculateEffectiveStreak(UserStatsModel? stats, [DateTime? now]) {
+    if (stats == null) return 0;
+    return stats.effectiveStreak(now);
+  }
+
   Future<void> recordSession(
     String sessionTitle,
     String sessionType, {
@@ -33,7 +54,7 @@ class UserRepository {
 
     await isar.writeTxn(() async {
       var stats = await isar.userStatsModels.where().findFirst();
-      stats ??= UserStatsModel();
+      stats ??= UserStatsModel()..id = 1;
 
       stats.totalMinutes += minutes;
       stats.totalSessions += 1;
