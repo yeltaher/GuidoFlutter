@@ -173,3 +173,29 @@ extern "C" int pthread_cond_timedwait$UNIX2003(pthread_cond_t *cond, pthread_mut
 { return pthread_cond_timedwait(cond, mutex, abstime); }
 
 #endif // TARGET_OS_SIMULATOR
+
+extern "C" {
+    void OnUnityMessage(const char* message)
+    {
+        if (message == nullptr) return;
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"UnityMessage" object:[NSString stringWithUTF8String:message]];
+    }
+
+    void OnUnitySceneLoaded(const char* name, int buildIndex, bool isLoaded, bool isValid)
+    {
+        if (name == nullptr) return;
+        NSDictionary *userInfo = @{
+            @"name": [NSString stringWithUTF8String:name],
+            @"buildIndex": @(buildIndex),
+            @"isLoaded": @(isLoaded),
+            @"isValid": @(isValid)
+        };
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"UnitySceneLoaded" object:nil userInfo:userInfo];
+    }
+
+    void SendMessageToFlutterNative(const char* message)
+    {
+        if (message == nullptr) return;
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"UnityMessage" object:[NSString stringWithUTF8String:message]];
+    }
+}
