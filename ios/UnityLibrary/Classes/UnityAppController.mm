@@ -89,6 +89,8 @@ NSInteger _forceInterfaceOrientationMask = 0;
 @synthesize engineLoadState         = _engineLoadState;
 @synthesize renderDelegate          = _renderDelegate;
 @synthesize quitHandler             = _quitHandler;
+@synthesize unityMessageHandler     = _unityMessageHandler;
+@synthesize unitySceneLoadedHandler = _unitySceneLoadedHandler;
 
 #if UNITY_SUPPORT_ROTATION
 @synthesize interfaceOrientation    = _curOrientation;
@@ -769,6 +771,23 @@ extern "C" UIView*              UnityGetGLView()            { return UnityGetUni
 
 
 extern "C" ScreenOrientation    UnityCurrentOrientation()   { return GetAppController().unityView.contentOrientation; }
+extern "C" {
+    void OnUnityMessage(const char* message) {
+        UnityAppController* controller = GetAppController();
+        if (controller != nil && controller.unityMessageHandler != nil) {
+            controller.unityMessageHandler(message);
+        }
+    }
+    void OnUnitySceneLoaded(const char* name, int buildIndex, bool isLoaded, bool isValid) {
+        UnityAppController* controller = GetAppController();
+        if (controller != nil && controller.unitySceneLoadedHandler != nil) {
+            controller.unitySceneLoadedHandler(name, &buildIndex, &isLoaded, &isValid);
+        }
+    }
+    void SendMessageToFlutterNative(const char* message) {
+        OnUnityMessage(message);
+    }
+}
 
 
 bool LogToNSLogHandler(LogType logType, const char* log, va_list list)
