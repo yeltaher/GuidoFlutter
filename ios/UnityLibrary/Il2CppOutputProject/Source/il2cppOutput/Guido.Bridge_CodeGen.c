@@ -14,6 +14,12 @@ extern void NullableContextAttribute__ctor_m3E2E3B391C1A39E3EE9F45C8DB4A1709452A
 extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_m87E0628BC7C2B5D0832DBE7AC7D08840EE9B9E73 (void);
 extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_m9A1D4F1CEF98D4285E8B5CA88B56A6F8F82616C7 (void);
 extern void FlutterBridgeManager_get_Instance_m50E82902D45C253F22DB0499851EE68C584CE95D (void);
+extern void FlutterBridgeManager_get_IsVrMode_mA450580EACABCA38EF1571FA4F9387946B98CDA3 (void);
+extern void FlutterBridgeManager_set_IsVrMode_m8A6A5ACC7B3A5D26831ACBD570FDE5D206C90494 (void);
+extern void FlutterBridgeManager_add_OnVrModeChanged_mF2E097CF247297339C1E885A128C3BEC46703443 (void);
+extern void FlutterBridgeManager_remove_OnVrModeChanged_m89B412D6CF248467E8167E78C9A742843A67C861 (void);
+extern void FlutterBridgeManager_add_OnRecalibrateVR_m590EB30A21E21C05337F017674A87D94F92949FB (void);
+extern void FlutterBridgeManager_remove_OnRecalibrateVR_m678E71DD23E5BFF443E088735CE6E58E8AC9ADD9 (void);
 extern void FlutterBridgeManager_get_Dispatcher_m32E34831DABF29D9944C87B7A7A5DE95C2CBDC05 (void);
 extern void FlutterBridgeManager_SendMessageToFlutterNative_m28783E11C9F73C13873EA76C56D13A7ACA61ECC7 (void);
 extern void FlutterBridgeManager_Awake_mFFD4B2ACE699D27A71FBAE6965B22BE65ADE65BA (void);
@@ -26,6 +32,9 @@ extern void FlutterBridgeManager_StartSessionFromFlutter_m6C833965EF4966538ED8E1
 extern void FlutterBridgeManager_SetQualityPresetFromFlutter_mAC2B35DBEF64F1A47D65B340518EBCC44A7C5291 (void);
 extern void FlutterBridgeManager_StopSessionFromFlutter_m2365E3F7429FD7004279C37A40168F2A46BB8232 (void);
 extern void FlutterBridgeManager_LoadSceneFromFlutter_mFD62F26CB3258D09FB7D5E2F02CD8EA1C961C60A (void);
+extern void FlutterBridgeManager_SetVrModeFromMessage_m9C45C64651B4A0CCFBEDC5FA7DEEFD4B22662349 (void);
+extern void FlutterBridgeManager_RotateCameraFromMessage_m7E525937BC7C9BB8483C3FC4AF2272D736F85D39 (void);
+extern void FlutterBridgeManager_RecalibrateFromMessage_mC02100C9EB0B2779983ECBBB550E06F5820E2766 (void);
 extern void FlutterBridgeManager_LoadSceneDirect_m01D228E406078A37AD08C02C46E47CDA8A0D0EC0 (void);
 extern void FlutterBridgeManager_HandleLoadScene_mCAF473635987B1131187532E1790CE46D5D901F4 (void);
 extern void FlutterBridgeManager_HandleStartSession_m3D1605F725619B0FEDE3121ED9A3532E0A907389 (void);
@@ -35,14 +44,18 @@ extern void FlutterBridgeManager_HandleStopSession_m7091E81432378A0E313E6170C2EC
 extern void FlutterBridgeManager_HandleSetQualityPreset_m7602E2869A4ACE91514185F43F7F7678F372358F (void);
 extern void FlutterBridgeManager_HandleSetLanguage_m0A364B2C5095447F8A00E32DF4BA5F8C934E283A (void);
 extern void FlutterBridgeManager_HandleRecalibrateVR_mBF32BAFF7BCD5A0D21A9D14DA4E62E3F95208DDA (void);
+extern void FlutterBridgeManager_HandleSetVrMode_m01306FE1DADC2E8C6E2B44B828BA2761CD6A8EF1 (void);
+extern void FlutterBridgeManager_HandleRotateCamera_m567566B54194A6C63A2014B0EE75628047530A2A (void);
 extern void FlutterBridgeManager_OnSessionProgressReceived_m6E76B66E68300FF3DD589ABF4443FBBB9DF82E90 (void);
 extern void FlutterBridgeManager_OnSessionSummaryReceived_m0B7A055FB48732DE0E178710D117A391292FD6F5 (void);
 extern void FlutterBridgeManager_SendJsonToFlutter_mE85D1C1493F46AB900D292934984B1659AB0FA34 (void);
 extern void FlutterBridgeManager__ctor_m6F0ADAF4D811F3CE5BA5C8A3F114F11BCAC9F459 (void);
-extern void FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__19_0_mF46B384C30EF9FF10B2F7932D6074A730D0BBFB1 (void);
-extern void FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__19_1_mEBAF614E74752DC2FF5D339C4EEE32C3821113A7 (void);
-extern void FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__19_2_m93F0D2EA0C95AE85E4A9AB02A51BE2980C04410D (void);
-extern void FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__19_3_mB850421E481A26BB3F897799C708D071292DC00F (void);
+extern void FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__29_0_mF464F21320D4680EB46227F9B8B76E85503ADE5D (void);
+extern void FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__29_1_mB5C7F44433C9787B441F6571511C40673DE7DEFB (void);
+extern void FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__29_2_m09655B1F506EB2A3240A3BAA288F5C79991BCE44 (void);
+extern void FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__29_3_m8151B4F3D501D914B9DA93EDD3A68CB6AA0EBFDE (void);
+extern void U3CU3Ec__DisplayClass39_0__ctor_mF258F67917B251D2B3F3E64C550179B9D2F70E64 (void);
+extern void U3CU3Ec__DisplayClass39_0_U3CLoadSceneDirectU3Eb__0_m68B0BDF418BA7B8D19ABB860B26EA68F0408CAB0 (void);
 extern void SessionConfigEventChannelSO__ctor_m456B47250C0FE510ABB8391DAE5253BE7470C200 (void);
 extern void SessionProgressEventChannelSO__ctor_m186BBDBF6A5628BA30B5921E18D56BEA663CFB36 (void);
 extern void SessionSummaryEventChannelSO__ctor_mA038AAF3F313AEEDCA680A15AD1D951DD99A984C (void);
@@ -59,7 +72,7 @@ extern void SessionConfigDto_get_QualityPreset_m48B4F76F057F141742085A7B1654BCF1
 extern void SessionConfigDto__ctor_m1A605CB1FC2F3D49D6C87BF1E9BBCFED35DCF63A (void);
 extern void SessionProgressDto__ctor_m6B7EBC31B4D67E1B7ACCD7A9D7765B2839B99F47 (void);
 extern void SessionSummaryDto__ctor_mD78D8B902C835966A0BAB5B17D4A27A6F032A326 (void);
-static Il2CppMethodPointer s_methodPointers[56] = 
+static Il2CppMethodPointer s_methodPointers[69] = 
 {
 	EmbeddedAttribute__ctor_mE4D5268B240A43B230B0D7C3BA64D4E57F4A2BA2,
 	NullableAttribute__ctor_m8905C1690E3DBB06FEBD05706981223DB4C1E2E5,
@@ -68,6 +81,12 @@ static Il2CppMethodPointer s_methodPointers[56] =
 	UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_m87E0628BC7C2B5D0832DBE7AC7D08840EE9B9E73,
 	UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_m9A1D4F1CEF98D4285E8B5CA88B56A6F8F82616C7,
 	FlutterBridgeManager_get_Instance_m50E82902D45C253F22DB0499851EE68C584CE95D,
+	FlutterBridgeManager_get_IsVrMode_mA450580EACABCA38EF1571FA4F9387946B98CDA3,
+	FlutterBridgeManager_set_IsVrMode_m8A6A5ACC7B3A5D26831ACBD570FDE5D206C90494,
+	FlutterBridgeManager_add_OnVrModeChanged_mF2E097CF247297339C1E885A128C3BEC46703443,
+	FlutterBridgeManager_remove_OnVrModeChanged_m89B412D6CF248467E8167E78C9A742843A67C861,
+	FlutterBridgeManager_add_OnRecalibrateVR_m590EB30A21E21C05337F017674A87D94F92949FB,
+	FlutterBridgeManager_remove_OnRecalibrateVR_m678E71DD23E5BFF443E088735CE6E58E8AC9ADD9,
 	FlutterBridgeManager_get_Dispatcher_m32E34831DABF29D9944C87B7A7A5DE95C2CBDC05,
 	FlutterBridgeManager_SendMessageToFlutterNative_m28783E11C9F73C13873EA76C56D13A7ACA61ECC7,
 	FlutterBridgeManager_Awake_mFFD4B2ACE699D27A71FBAE6965B22BE65ADE65BA,
@@ -80,6 +99,9 @@ static Il2CppMethodPointer s_methodPointers[56] =
 	FlutterBridgeManager_SetQualityPresetFromFlutter_mAC2B35DBEF64F1A47D65B340518EBCC44A7C5291,
 	FlutterBridgeManager_StopSessionFromFlutter_m2365E3F7429FD7004279C37A40168F2A46BB8232,
 	FlutterBridgeManager_LoadSceneFromFlutter_mFD62F26CB3258D09FB7D5E2F02CD8EA1C961C60A,
+	FlutterBridgeManager_SetVrModeFromMessage_m9C45C64651B4A0CCFBEDC5FA7DEEFD4B22662349,
+	FlutterBridgeManager_RotateCameraFromMessage_m7E525937BC7C9BB8483C3FC4AF2272D736F85D39,
+	FlutterBridgeManager_RecalibrateFromMessage_mC02100C9EB0B2779983ECBBB550E06F5820E2766,
 	FlutterBridgeManager_LoadSceneDirect_m01D228E406078A37AD08C02C46E47CDA8A0D0EC0,
 	FlutterBridgeManager_HandleLoadScene_mCAF473635987B1131187532E1790CE46D5D901F4,
 	FlutterBridgeManager_HandleStartSession_m3D1605F725619B0FEDE3121ED9A3532E0A907389,
@@ -89,14 +111,18 @@ static Il2CppMethodPointer s_methodPointers[56] =
 	FlutterBridgeManager_HandleSetQualityPreset_m7602E2869A4ACE91514185F43F7F7678F372358F,
 	FlutterBridgeManager_HandleSetLanguage_m0A364B2C5095447F8A00E32DF4BA5F8C934E283A,
 	FlutterBridgeManager_HandleRecalibrateVR_mBF32BAFF7BCD5A0D21A9D14DA4E62E3F95208DDA,
+	FlutterBridgeManager_HandleSetVrMode_m01306FE1DADC2E8C6E2B44B828BA2761CD6A8EF1,
+	FlutterBridgeManager_HandleRotateCamera_m567566B54194A6C63A2014B0EE75628047530A2A,
 	FlutterBridgeManager_OnSessionProgressReceived_m6E76B66E68300FF3DD589ABF4443FBBB9DF82E90,
 	FlutterBridgeManager_OnSessionSummaryReceived_m0B7A055FB48732DE0E178710D117A391292FD6F5,
 	FlutterBridgeManager_SendJsonToFlutter_mE85D1C1493F46AB900D292934984B1659AB0FA34,
 	FlutterBridgeManager__ctor_m6F0ADAF4D811F3CE5BA5C8A3F114F11BCAC9F459,
-	FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__19_0_mF46B384C30EF9FF10B2F7932D6074A730D0BBFB1,
-	FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__19_1_mEBAF614E74752DC2FF5D339C4EEE32C3821113A7,
-	FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__19_2_m93F0D2EA0C95AE85E4A9AB02A51BE2980C04410D,
-	FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__19_3_mB850421E481A26BB3F897799C708D071292DC00F,
+	FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__29_0_mF464F21320D4680EB46227F9B8B76E85503ADE5D,
+	FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__29_1_mB5C7F44433C9787B441F6571511C40673DE7DEFB,
+	FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__29_2_m09655B1F506EB2A3240A3BAA288F5C79991BCE44,
+	FlutterBridgeManager_U3CRegisterDefaultCommandsU3Eb__29_3_m8151B4F3D501D914B9DA93EDD3A68CB6AA0EBFDE,
+	U3CU3Ec__DisplayClass39_0__ctor_mF258F67917B251D2B3F3E64C550179B9D2F70E64,
+	U3CU3Ec__DisplayClass39_0_U3CLoadSceneDirectU3Eb__0_m68B0BDF418BA7B8D19ABB860B26EA68F0408CAB0,
 	SessionConfigEventChannelSO__ctor_m456B47250C0FE510ABB8391DAE5253BE7470C200,
 	SessionProgressEventChannelSO__ctor_m186BBDBF6A5628BA30B5921E18D56BEA663CFB36,
 	SessionSummaryEventChannelSO__ctor_mA038AAF3F313AEEDCA680A15AD1D951DD99A984C,
@@ -126,77 +152,90 @@ extern void SessionProgressDto__ctor_m6B7EBC31B4D67E1B7ACCD7A9D7765B2839B99F47_A
 extern void SessionSummaryDto__ctor_mD78D8B902C835966A0BAB5B17D4A27A6F032A326_AdjustorThunk (void);
 static Il2CppTokenAdjustorThunkPair s_adjustorThunks[6] = 
 {
-	{ 0x06000031, JsonRpcRequestDto__ctor_m03DA699E553FBCEA1FBAFF71D4D68AEEF4016D12_AdjustorThunk },
-	{ 0x06000034, SessionConfigDto_get_Language_m5A9F40C47A8A243ED98AE835C7791F39D25A98D8_AdjustorThunk },
-	{ 0x06000035, SessionConfigDto_get_QualityPreset_m48B4F76F057F141742085A7B1654BCF18A0EDD1B_AdjustorThunk },
-	{ 0x06000036, SessionConfigDto__ctor_m1A605CB1FC2F3D49D6C87BF1E9BBCFED35DCF63A_AdjustorThunk },
-	{ 0x06000037, SessionProgressDto__ctor_m6B7EBC31B4D67E1B7ACCD7A9D7765B2839B99F47_AdjustorThunk },
-	{ 0x06000038, SessionSummaryDto__ctor_mD78D8B902C835966A0BAB5B17D4A27A6F032A326_AdjustorThunk },
+	{ 0x0600003E, JsonRpcRequestDto__ctor_m03DA699E553FBCEA1FBAFF71D4D68AEEF4016D12_AdjustorThunk },
+	{ 0x06000041, SessionConfigDto_get_Language_m5A9F40C47A8A243ED98AE835C7791F39D25A98D8_AdjustorThunk },
+	{ 0x06000042, SessionConfigDto_get_QualityPreset_m48B4F76F057F141742085A7B1654BCF18A0EDD1B_AdjustorThunk },
+	{ 0x06000043, SessionConfigDto__ctor_m1A605CB1FC2F3D49D6C87BF1E9BBCFED35DCF63A_AdjustorThunk },
+	{ 0x06000044, SessionProgressDto__ctor_m6B7EBC31B4D67E1B7ACCD7A9D7765B2839B99F47_AdjustorThunk },
+	{ 0x06000045, SessionSummaryDto__ctor_mD78D8B902C835966A0BAB5B17D4A27A6F032A326_AdjustorThunk },
 };
-static const int32_t s_InvokerIndices[56] = 
+static const int32_t s_InvokerIndices[69] = 
 {
-	15384,
-	11726,
-	11928,
-	11726,
-	24134,
-	15384,
-	23993,
-	15149,
-	23493,
-	15384,
-	15384,
-	15384,
-	15384,
-	11928,
-	11928,
-	11928,
-	11928,
-	11928,
-	11928,
-	10318,
-	11928,
-	11928,
-	15384,
-	15384,
-	15384,
-	11928,
-	11928,
-	15384,
-	12023,
-	12024,
-	11928,
-	15384,
-	11928,
-	11928,
-	11928,
-	11928,
-	15384,
-	15384,
-	15384,
-	11862,
-	6258,
-	11928,
-	3843,
-	15384,
+	4478,
+	3773,
+	3865,
+	3773,
+	8752,
+	4478,
+	8636,
+	8585,
+	8422,
+	8437,
+	8437,
+	8437,
+	8437,
+	4345,
+	8437,
+	4478,
+	4478,
+	4478,
+	4478,
+	3865,
+	3865,
+	3865,
+	3865,
+	3865,
+	3865,
+	3865,
+	3865,
+	3865,
+	3443,
+	3865,
+	3865,
+	4478,
+	4478,
+	4478,
+	3865,
+	3865,
+	4478,
+	3865,
+	3865,
+	3910,
+	3911,
+	3865,
+	4478,
+	3865,
+	3865,
+	3865,
+	3865,
+	4478,
+	3865,
+	4478,
+	4478,
+	4478,
+	3841,
+	2598,
+	3865,
+	2015,
+	4478,
 	-1,
 	-1,
 	-1,
 	-1,
-	2875,
-	20479,
-	20479,
-	15078,
-	15078,
-	1024,
-	358,
-	572,
+	1764,
+	7080,
+	7080,
+	4315,
+	4315,
+	752,
+	322,
+	518,
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_Guido_Bridge_CodeGenModule;
 const Il2CppCodeGenModule g_Guido_Bridge_CodeGenModule = 
 {
 	"Guido.Bridge.dll",
-	56,
+	69,
 	s_methodPointers,
 	6,
 	s_adjustorThunks,

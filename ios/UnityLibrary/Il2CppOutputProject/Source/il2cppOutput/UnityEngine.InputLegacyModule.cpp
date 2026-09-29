@@ -9,10 +9,12 @@ struct ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031;
 struct CharU5BU5D_t799905CF001DD5F13F7DBB310181FC4D8B7D0AAB;
 struct Attribute_tFDA8EFEFB0711976D22474794576DAF28F7440AA;
 struct EmbeddedAttribute_tAAE3B998C73D50423026EDFEEA34A0377A341CE3;
+struct Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E;
 struct RefSafetyRulesAttribute_t68BC27247958DC3B1CAFB7AB11F63ED84283011B;
 struct String_t;
 struct Void_t4861ACF8F4594C3437BB48B6E56783494B843915;
 
+IL2CPP_EXTERN_C RuntimeClass* Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C const RuntimeMethod* ReadOnlySpan_1_GetPinnableReference_mB710059C1A1A30270065958DE8345808C6683638_RuntimeMethod_var;
 IL2CPP_EXTERN_C const RuntimeMethod* ReadOnlySpan_1__ctor_m0152E50B40750679B83FF9F30CA539FFBB98EEE8_RuntimeMethod_var;
@@ -32,6 +34,10 @@ struct U3CModuleU3E_t941B0EB06FD57B79F043CCA70C8AA4C0B3FB68E7
 };
 struct Attribute_tFDA8EFEFB0711976D22474794576DAF28F7440AA  : public RuntimeObject
 {
+};
+struct Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E  : public RuntimeObject
+{
+	int32_t ___m_GyroIndex;
 };
 struct Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB  : public RuntimeObject
 {
@@ -90,6 +96,13 @@ struct ManagedSpanWrapper_tE7FC4BBB631B130757F8DEB15853D98FD3D5DC0E
 	void* ___begin;
 	int32_t ___length;
 };
+struct Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 
+{
+	float ___x;
+	float ___y;
+	float ___z;
+	float ___w;
+};
 struct RefSafetyRulesAttribute_t68BC27247958DC3B1CAFB7AB11F63ED84283011B  : public Attribute_tFDA8EFEFB0711976D22474794576DAF28F7440AA
 {
 	int32_t ___Version;
@@ -131,6 +144,10 @@ struct ByReference_1_t7BA5A6CA164F770BC688F21C5978D368716465F5
 {
 	intptr_t ____value;
 };
+struct ByReference_1_t607C1F3BC28B0E21B969461CDB0720FB01A82141 
+{
+	intptr_t ____value;
+};
 struct IMECompositionMode_t91425E64935387F2A2686BDE3FA67E047794FCD0 
 {
 	int32_t ___value__;
@@ -158,6 +175,11 @@ struct TouchType_t84F82C73BC1A6012141735AD84DA67AA7F7AB43F
 struct ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1 
 {
 	ByReference_1_t7BA5A6CA164F770BC688F21C5978D368716465F5 ____pointer;
+	int32_t ____length;
+};
+struct ReadOnlySpan_1_tC416A5627E04F69CA2947A2A13F0A1DF096CABAC 
+{
+	ByReference_1_t607C1F3BC28B0E21B969461CDB0720FB01A82141 ____pointer;
 	int32_t ____length;
 };
 struct PenData_t2345B5FBD18D851528C5C18F8A667D4EF4690945 
@@ -190,6 +212,7 @@ struct Touch_t03E51455ED508492B3F278903A0114FA0E87B417
 struct Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB_StaticFields
 {
 	bool ___U3CsimulateTouchEnabledU3Ek__BackingField;
+	Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E* ___s_MainGyro;
 };
 struct String_t_StaticFields
 {
@@ -203,6 +226,10 @@ struct Boolean_t09A6377A54BE2F9E6985A8149F19234FD7DDFE22_StaticFields
 struct Char_t521A6F19B456D956AF452D926C32709DC03D6B17_StaticFields
 {
 	ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* ___s_categoryForLatin1;
+};
+struct Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974_StaticFields
+{
+	Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___identityQuaternion;
 };
 struct UIntPtr_t_StaticFields
 {
@@ -237,9 +264,9 @@ struct Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2_StaticFields
 #endif
 
 
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Il2CppChar* ReadOnlySpan_1_GetPinnableReference_mB710059C1A1A30270065958DE8345808C6683638_gshared (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1* __this, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t ReadOnlySpan_1_get_Length_m36BD32453530B535FE60A8123643219FEAABC351_gshared_inline (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1* __this, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void ReadOnlySpan_1__ctor_m0152E50B40750679B83FF9F30CA539FFBB98EEE8_gshared_inline (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1* __this, Il2CppChar* ___0_ptr, int32_t ___1_length, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Il2CppFullySharedGenericAny* ReadOnlySpan_1_GetPinnableReference_m9D6823661F0B12D72F4403789EFBE9FB85F765B0_gshared (ReadOnlySpan_1_tC416A5627E04F69CA2947A2A13F0A1DF096CABAC* __this, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t ReadOnlySpan_1_get_Length_m4430960CA0D0458B1A1106DD246CA9AB746B5DB2_gshared_inline (ReadOnlySpan_1_tC416A5627E04F69CA2947A2A13F0A1DF096CABAC* __this, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void ReadOnlySpan_1__ctor_mFA6EE52BCF39100AE30C79E73F0F972182D0CA2A_gshared_inline (ReadOnlySpan_1_tC416A5627E04F69CA2947A2A13F0A1DF096CABAC* __this, Il2CppFullySharedGenericAny* ___0_ptr, int32_t ___1_length, const RuntimeMethod* method) ;
 
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Attribute__ctor_m79ED1BF1EE36D1E417BA89A0D9F91F8AAD8D19E2 (Attribute_tFDA8EFEFB0711976D22474794576DAF28F7440AA* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t Touch_get_fingerId_mC1DCE93BFA0574960A3AE5329AE6C5F7E06962BD_inline (Touch_t03E51455ED508492B3F278903A0114FA0E87B417* __this, const RuntimeMethod* method) ;
@@ -259,6 +286,12 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Touch_get_altitudeAngle_m26
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Touch_get_azimuthAngle_m2F11532183492E608922A2F9D9EC9AC31D34F490_inline (Touch_t03E51455ED508492B3F278903A0114FA0E87B417* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Touch_get_radius_m5BC9C50DABBB17B07742BAFC6CC36A6736AE7960_inline (Touch_t03E51455ED508492B3F278903A0114FA0E87B417* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Touch_get_radiusVariance_m6F54BE964B91C3B2F8FA2A483E1FDB644B282B21_inline (Touch_t03E51455ED508492B3F278903A0114FA0E87B417* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Object__ctor_mE837C6B9FA8C6D5D109F4B2EC885D79919AC0EA2 (RuntimeObject* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Gyroscope_attitude_Internal_Injected_m550F81250B94FE9B11049C8F49DE2F8B9061A2AC (int32_t ___0_idx, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974* ___1_ret, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Gyroscope_attitude_Internal_mE673BB2C9BDCD791AD249FF307C10F83DCC5F3D2 (int32_t ___0_idx, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Gyroscope_getEnabled_Internal_m69827470009782D6CC88AA7F9EEAC66A3E5C3BCE (int32_t ___0_idx, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Gyroscope_setEnabled_Internal_mBA928BFDE5565840E372846AF9E0D0E45AD7D115 (int32_t ___0_idx, bool ___1_enabled, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Gyroscope_setUpdateInterval_Internal_m9E08181F8BF28707553BFB77A2B7697C7E33DB6D (int32_t ___0_idx, float ___1_interval, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float InputUnsafeUtility_GetAxis_m034889C00C914572B94F091E8EC646E86408A29F (String_t* ___0_axisName, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float InputUnsafeUtility_GetAxisRaw_m0EBF75200CDA664FCCD51BDB4C8C8798CDD6097B (String_t* ___0_axisName, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool InputUnsafeUtility_GetButton_mD23EF9339E147CD6081BC4A6B45F10EE5461CEE2 (String_t* ___0_buttonName, const RuntimeMethod* method) ;
@@ -277,15 +310,17 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool Input_get_simulateTouchEnabl
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Input_GetMousePresentInternal_m536954753C975FEC125D31EBD1B5A2AEE0B96120 (const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Input_GetTouchSupportedInternal_mDCA680EA815E39D9B50A029CC707A7A4EEF21560 (const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Input_get_acceleration_Injected_m09D52B38221B9D246F7DA233E0350C3FA5855C2A (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___0_ret, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t Input_GetGyroInternal_mE769DAF56501C53B38B2714742CC75E99EC696C4 (const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Gyroscope__ctor_mC476EA849DBF7705A36094F4A2609B5F6286408F (Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E* __this, int32_t ___0_index, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool StringMarshaller_TryMarshalEmptyOrNullString_m615203C511071D59295D889AB136575DFFEA90A6_inline (String_t* ___0_s, ManagedSpanWrapper_tE7FC4BBB631B130757F8DEB15853D98FD3D5DC0E* ___1_managedSpanWrapper, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1 MemoryExtensions_AsSpan_m0EB07912D71097A8B05F586158966837F5C3DB38_inline (String_t* ___0_text, const RuntimeMethod* method) ;
 inline Il2CppChar* ReadOnlySpan_1_GetPinnableReference_mB710059C1A1A30270065958DE8345808C6683638 (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1* __this, const RuntimeMethod* method)
 {
-	return ((  Il2CppChar* (*) (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1*, const RuntimeMethod*))ReadOnlySpan_1_GetPinnableReference_mB710059C1A1A30270065958DE8345808C6683638_gshared)(__this, method);
+	return ((  Il2CppChar* (*) (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1*, const RuntimeMethod*))ReadOnlySpan_1_GetPinnableReference_m9D6823661F0B12D72F4403789EFBE9FB85F765B0_gshared)(__this, method);
 }
 inline int32_t ReadOnlySpan_1_get_Length_m36BD32453530B535FE60A8123643219FEAABC351_inline (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1* __this, const RuntimeMethod* method)
 {
-	return ((  int32_t (*) (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1*, const RuntimeMethod*))ReadOnlySpan_1_get_Length_m36BD32453530B535FE60A8123643219FEAABC351_gshared_inline)(__this, method);
+	return ((  int32_t (*) (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1*, const RuntimeMethod*))ReadOnlySpan_1_get_Length_m4430960CA0D0458B1A1106DD246CA9AB746B5DB2_gshared_inline)(__this, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ManagedSpanWrapper__ctor_mB29647A21BB87EA4DF859E5C2FA2207F47E525D2 (ManagedSpanWrapper_tE7FC4BBB631B130757F8DEB15853D98FD3D5DC0E* __this, void* ___0_begin, int32_t ___1_length, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float InputUnsafeUtility_GetAxis_Injected_m7617B11C7695077D77C9C2F3F068734E5F35E12E (ManagedSpanWrapper_tE7FC4BBB631B130757F8DEB15853D98FD3D5DC0E* ___0_axisName, const RuntimeMethod* method) ;
@@ -298,7 +333,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void* UIntPtr_op_Explicit_m42C3EA82465934F505
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Il2CppChar* String_GetRawStringData_m87BC50B7B314C055E27A28032D1003D42FDE411D (String_t* __this, const RuntimeMethod* method) ;
 inline void ReadOnlySpan_1__ctor_m0152E50B40750679B83FF9F30CA539FFBB98EEE8_inline (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1* __this, Il2CppChar* ___0_ptr, int32_t ___1_length, const RuntimeMethod* method)
 {
-	((  void (*) (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1*, Il2CppChar*, int32_t, const RuntimeMethod*))ReadOnlySpan_1__ctor_m0152E50B40750679B83FF9F30CA539FFBB98EEE8_gshared_inline)(__this, ___0_ptr, ___1_length, method);
+	((  void (*) (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1*, Il2CppChar*, int32_t, const RuntimeMethod*))ReadOnlySpan_1__ctor_mFA6EE52BCF39100AE30C79E73F0F972182D0CA2A_gshared_inline)(__this, ___0_ptr, ___1_length, method);
 }
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -670,6 +705,103 @@ IL2CPP_EXTERN_C  float Touch_get_radiusVariance_m6F54BE964B91C3B2F8FA2A483E1FDB6
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Gyroscope__ctor_mC476EA849DBF7705A36094F4A2609B5F6286408F (Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E* __this, int32_t ___0_index, const RuntimeMethod* method) 
+{
+	{
+		Object__ctor_mE837C6B9FA8C6D5D109F4B2EC885D79919AC0EA2(__this, NULL);
+		int32_t L_0 = ___0_index;
+		__this->___m_GyroIndex = L_0;
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Gyroscope_attitude_Internal_mE673BB2C9BDCD791AD249FF307C10F83DCC5F3D2 (int32_t ___0_idx, const RuntimeMethod* method) 
+{
+	Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 V_0;
+	memset((&V_0), 0, sizeof(V_0));
+	{
+		int32_t L_0 = ___0_idx;
+		Gyroscope_attitude_Internal_Injected_m550F81250B94FE9B11049C8F49DE2F8B9061A2AC(L_0, (&V_0), NULL);
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_1 = V_0;
+		return L_1;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Gyroscope_getEnabled_Internal_m69827470009782D6CC88AA7F9EEAC66A3E5C3BCE (int32_t ___0_idx, const RuntimeMethod* method) 
+{
+	typedef bool (*Gyroscope_getEnabled_Internal_m69827470009782D6CC88AA7F9EEAC66A3E5C3BCE_ftn) (int32_t);
+	static Gyroscope_getEnabled_Internal_m69827470009782D6CC88AA7F9EEAC66A3E5C3BCE_ftn _il2cpp_icall_func;
+	if (!_il2cpp_icall_func)
+	_il2cpp_icall_func = (Gyroscope_getEnabled_Internal_m69827470009782D6CC88AA7F9EEAC66A3E5C3BCE_ftn)il2cpp_codegen_resolve_icall ("UnityEngine.Gyroscope::getEnabled_Internal(System.Int32)");
+	bool icallRetVal = _il2cpp_icall_func(___0_idx);
+	return icallRetVal;
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Gyroscope_setEnabled_Internal_mBA928BFDE5565840E372846AF9E0D0E45AD7D115 (int32_t ___0_idx, bool ___1_enabled, const RuntimeMethod* method) 
+{
+	typedef void (*Gyroscope_setEnabled_Internal_mBA928BFDE5565840E372846AF9E0D0E45AD7D115_ftn) (int32_t, bool);
+	static Gyroscope_setEnabled_Internal_mBA928BFDE5565840E372846AF9E0D0E45AD7D115_ftn _il2cpp_icall_func;
+	if (!_il2cpp_icall_func)
+	_il2cpp_icall_func = (Gyroscope_setEnabled_Internal_mBA928BFDE5565840E372846AF9E0D0E45AD7D115_ftn)il2cpp_codegen_resolve_icall ("UnityEngine.Gyroscope::setEnabled_Internal(System.Int32,System.Boolean)");
+	_il2cpp_icall_func(___0_idx, ___1_enabled);
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Gyroscope_setUpdateInterval_Internal_m9E08181F8BF28707553BFB77A2B7697C7E33DB6D (int32_t ___0_idx, float ___1_interval, const RuntimeMethod* method) 
+{
+	typedef void (*Gyroscope_setUpdateInterval_Internal_m9E08181F8BF28707553BFB77A2B7697C7E33DB6D_ftn) (int32_t, float);
+	static Gyroscope_setUpdateInterval_Internal_m9E08181F8BF28707553BFB77A2B7697C7E33DB6D_ftn _il2cpp_icall_func;
+	if (!_il2cpp_icall_func)
+	_il2cpp_icall_func = (Gyroscope_setUpdateInterval_Internal_m9E08181F8BF28707553BFB77A2B7697C7E33DB6D_ftn)il2cpp_codegen_resolve_icall ("UnityEngine.Gyroscope::setUpdateInterval_Internal(System.Int32,System.Single)");
+	_il2cpp_icall_func(___0_idx, ___1_interval);
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Gyroscope_get_attitude_mF6D8131ED2D0E5BF979C7FC4AAC99E87A01CBE85 (Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E* __this, const RuntimeMethod* method) 
+{
+	{
+		int32_t L_0 = __this->___m_GyroIndex;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_1;
+		L_1 = Gyroscope_attitude_Internal_mE673BB2C9BDCD791AD249FF307C10F83DCC5F3D2(L_0, NULL);
+		return L_1;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Gyroscope_get_enabled_m10F5B3F646AB1A6EEE2831010642E9E1E0BCBDB9 (Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E* __this, const RuntimeMethod* method) 
+{
+	{
+		int32_t L_0 = __this->___m_GyroIndex;
+		bool L_1;
+		L_1 = Gyroscope_getEnabled_Internal_m69827470009782D6CC88AA7F9EEAC66A3E5C3BCE(L_0, NULL);
+		return L_1;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Gyroscope_set_enabled_m2B22BC93369BA61034A80350405FE1B493822DAB (Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E* __this, bool ___0_value, const RuntimeMethod* method) 
+{
+	{
+		int32_t L_0 = __this->___m_GyroIndex;
+		bool L_1 = ___0_value;
+		Gyroscope_setEnabled_Internal_mBA928BFDE5565840E372846AF9E0D0E45AD7D115(L_0, L_1, NULL);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Gyroscope_set_updateInterval_m477CB8AF6D656813C14467CCB62EDC3BF1383925 (Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E* __this, float ___0_value, const RuntimeMethod* method) 
+{
+	{
+		int32_t L_0 = __this->___m_GyroIndex;
+		float L_1 = ___0_value;
+		Gyroscope_setUpdateInterval_Internal_m9E08181F8BF28707553BFB77A2B7697C7E33DB6D(L_0, L_1, NULL);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Gyroscope_attitude_Internal_Injected_m550F81250B94FE9B11049C8F49DE2F8B9061A2AC (int32_t ___0_idx, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974* ___1_ret, const RuntimeMethod* method) 
+{
+	typedef void (*Gyroscope_attitude_Internal_Injected_m550F81250B94FE9B11049C8F49DE2F8B9061A2AC_ftn) (int32_t, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974*);
+	static Gyroscope_attitude_Internal_Injected_m550F81250B94FE9B11049C8F49DE2F8B9061A2AC_ftn _il2cpp_icall_func;
+	if (!_il2cpp_icall_func)
+	_il2cpp_icall_func = (Gyroscope_attitude_Internal_Injected_m550F81250B94FE9B11049C8F49DE2F8B9061A2AC_ftn)il2cpp_codegen_resolve_icall ("UnityEngine.Gyroscope::attitude_Internal_Injected(System.Int32,UnityEngine.Quaternion&)");
+	_il2cpp_icall_func(___0_idx, ___1_ret);
+}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#endif
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float Input_GetAxis_m10372E6C5FF591668D2DC5F58C58D213CC598A62 (String_t* ___0_axisName, const RuntimeMethod* method) 
 {
 	{
@@ -994,6 +1126,46 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 		Input_get_acceleration_Injected_m09D52B38221B9D246F7DA233E0350C3FA5855C2A((&V_0), NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_0 = V_0;
 		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t Input_GetGyroInternal_mE769DAF56501C53B38B2714742CC75E99EC696C4 (const RuntimeMethod* method) 
+{
+	typedef int32_t (*Input_GetGyroInternal_mE769DAF56501C53B38B2714742CC75E99EC696C4_ftn) ();
+	static Input_GetGyroInternal_mE769DAF56501C53B38B2714742CC75E99EC696C4_ftn _il2cpp_icall_func;
+	if (!_il2cpp_icall_func)
+	_il2cpp_icall_func = (Input_GetGyroInternal_mE769DAF56501C53B38B2714742CC75E99EC696C4_ftn)il2cpp_codegen_resolve_icall ("UnityEngine.Input::GetGyroInternal()");
+	int32_t icallRetVal = _il2cpp_icall_func();
+	return icallRetVal;
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E* Input_get_gyro_m895498B803FE9A3124FBFE3C05966431F8840548 (const RuntimeMethod* method) 
+{
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E_il2cpp_TypeInfo_var);
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB_il2cpp_TypeInfo_var);
+		s_Il2CppMethodInitialized = true;
+	}
+	{
+		Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E* L_0 = ((Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB_StaticFields*)il2cpp_codegen_static_fields_for(Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB_il2cpp_TypeInfo_var))->___s_MainGyro;
+		if (L_0)
+		{
+			goto IL_0016;
+		}
+	}
+	{
+		int32_t L_1;
+		L_1 = Input_GetGyroInternal_mE769DAF56501C53B38B2714742CC75E99EC696C4(NULL);
+		Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E* L_2 = (Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E*)il2cpp_codegen_object_new(Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E_il2cpp_TypeInfo_var);
+		Gyroscope__ctor_mC476EA849DBF7705A36094F4A2609B5F6286408F(L_2, L_1, NULL);
+		((Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB_StaticFields*)il2cpp_codegen_static_fields_for(Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB_il2cpp_TypeInfo_var))->___s_MainGyro = L_2;
+		Il2CppCodeGenWriteBarrier((void**)(&((Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB_StaticFields*)il2cpp_codegen_static_fields_for(Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB_il2cpp_TypeInfo_var))->___s_MainGyro), (void*)L_2);
+	}
+
+IL_0016:
+	{
+		Gyroscope_tA4CEC0F47FFB4CEB90410CC6B860D052BB35BE9E* L_3 = ((Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB_StaticFields*)il2cpp_codegen_static_fields_for(Input_t47D83E2A50E6AF7F8A47AA06FBEF9EBE6BBC22BB_il2cpp_TypeInfo_var))->___s_MainGyro;
+		return L_3;
 	}
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Input_GetTouch_Injected_m04E25DD035583531339AB310FBDD4F5A30817F87 (int32_t ___0_index, Touch_t03E51455ED508492B3F278903A0114FA0E87B417* ___1_ret, const RuntimeMethod* method) 
@@ -1677,7 +1849,7 @@ IL_000d:
 		return L_6;
 	}
 }
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t ReadOnlySpan_1_get_Length_m36BD32453530B535FE60A8123643219FEAABC351_gshared_inline (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1* __this, const RuntimeMethod* method) 
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t ReadOnlySpan_1_get_Length_m4430960CA0D0458B1A1106DD246CA9AB746B5DB2_gshared_inline (ReadOnlySpan_1_tC416A5627E04F69CA2947A2A13F0A1DF096CABAC* __this, const RuntimeMethod* method) 
 {
 	{
 		int32_t L_0 = __this->____length;
@@ -1691,11 +1863,11 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t String_get_Length_m42625D
 		return L_0;
 	}
 }
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void ReadOnlySpan_1__ctor_m0152E50B40750679B83FF9F30CA539FFBB98EEE8_gshared_inline (ReadOnlySpan_1_t59614EA6E51A945A32B02AB17FBCBDF9A5C419C1* __this, Il2CppChar* ___0_ptr, int32_t ___1_length, const RuntimeMethod* method) 
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void ReadOnlySpan_1__ctor_mFA6EE52BCF39100AE30C79E73F0F972182D0CA2A_gshared_inline (ReadOnlySpan_1_tC416A5627E04F69CA2947A2A13F0A1DF096CABAC* __this, Il2CppFullySharedGenericAny* ___0_ptr, int32_t ___1_length, const RuntimeMethod* method) 
 {
 	{
-		Il2CppChar* L_0 = ___0_ptr;
-		ByReference_1_t7BA5A6CA164F770BC688F21C5978D368716465F5 L_1;
+		Il2CppFullySharedGenericAny* L_0 = ___0_ptr;
+		ByReference_1_t607C1F3BC28B0E21B969461CDB0720FB01A82141 L_1;
 		memset((&L_1), 0, sizeof(L_1));
 		il2cpp_codegen_by_reference_constructor((Il2CppByReference*)(&L_1), L_0);
 		__this->____pointer = L_1;

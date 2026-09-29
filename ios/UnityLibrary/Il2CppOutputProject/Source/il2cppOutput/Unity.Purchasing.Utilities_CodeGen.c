@@ -67,7 +67,7 @@ extern void Serializer_SerializeString_m5CEEC59CF996554A0E3813CEF4CB3B32597B99A4
 extern void Serializer_SerializeOther_m51FE1135C8A8D9392946BF974D9A714C14347D4A (void);
 extern void MiniJsonExtensions_toJson_m59EE50DD5C034B8C2DB0D47005D85EFD452D8E4F (void);
 extern void MiniJsonExtensions_ArrayListFromJson_m3D4E8672DBBBDCC0FF667CFC6F8C81EBD2EAA08A (void);
-static Il2CppMethodPointer s_methodPointers[77] = 
+static Il2CppMethodPointer s_methodPointers[84] = 
 {
 	EmbeddedAttribute__ctor_m0C9CB5C9BC1D46BCC258A0844A0643F47902B2B5,
 	NullableAttribute__ctor_m1B4DC3567712C1E7BAE473477CDC90D92F5160E0,
@@ -102,6 +102,10 @@ static Il2CppMethodPointer s_methodPointers[77] =
 	NULL,
 	NULL,
 	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
 	LoggerExtensions_LogIAP_mDB8010781858E250B955C334D7E3DD31F05E23DE,
 	LoggerExtensions_LogIAPError_m27187ABC628B25D7D0F871FE0F248A2D99275AAC,
 	LoggerExtensions_LogIAPException_m14A0B0260AEF2E6122D36988AB2CA9E0B76D55F2,
@@ -109,6 +113,9 @@ static Il2CppMethodPointer s_methodPointers[77] =
 	MiniJson_JsonEncode_m563D782D214D683C047F67EE9DF9278D89730DC1,
 	MiniJson_JsonDecode_mB2C7BA2DFF09CC1279E59CE347E54803E995F7E3,
 	TaskQueue__ctor_m8EAC52296C784D0DC45575541C86C49BC0A78B44,
+	NULL,
+	NULL,
+	NULL,
 	NULL,
 	NULL,
 	TransactionLog__ctor_m8D797879EFA4EEAD65461BFE3FFB76E71EE8ECBD,
@@ -147,95 +154,117 @@ static Il2CppMethodPointer s_methodPointers[77] =
 	MiniJsonExtensions_toJson_m59EE50DD5C034B8C2DB0D47005D85EFD452D8E4F,
 	MiniJsonExtensions_ArrayListFromJson_m3D4E8672DBBBDCC0FF667CFC6F8C81EBD2EAA08A,
 };
-static const int32_t s_InvokerIndices[77] = 
+static const int32_t s_InvokerIndices[84] = 
 {
-	15384,
-	11726,
-	11928,
-	11726,
+	4478,
+	3773,
+	3865,
+	3773,
 	-1,
 	-1,
 	-1,
 	-1,
-	24098,
-	14938,
-	10318,
-	15384,
+	8719,
+	4242,
+	3443,
+	4478,
 	-1,
-	15149,
-	4721,
-	10318,
-	15384,
-	11862,
-	15384,
-	14938,
-	15149,
-	15384,
-	15149,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
+	4345,
+	2204,
+	3443,
+	4478,
+	3841,
+	4478,
+	4242,
+	4345,
+	4478,
+	4345,
 	-1,
 	-1,
 	-1,
 	-1,
 	-1,
-	21350,
-	21350,
-	21350,
-	21350,
-	23035,
-	23035,
-	15384,
 	-1,
 	-1,
-	11928,
-	8482,
-	11928,
-	20556,
-	23035,
-	6258,
-	11928,
-	11928,
-	24098,
-	23035,
-	23035,
-	22692,
-	11928,
-	23035,
-	15384,
-	15149,
-	15149,
-	15149,
-	10309,
-	15149,
-	15149,
-	15384,
-	15362,
-	15362,
-	15149,
-	15078,
-	15384,
-	23035,
-	11928,
-	11928,
-	11928,
-	11928,
-	11928,
-	23035,
-	23035,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	7449,
+	7449,
+	7449,
+	7449,
+	7998,
+	7998,
+	4478,
+	-1,
+	-1,
+	-1,
+	-1,
+	-1,
+	3865,
+	3044,
+	3865,
+	7135,
+	7998,
+	2598,
+	3865,
+	3865,
+	8719,
+	7998,
+	7998,
+	7737,
+	3865,
+	7998,
+	4478,
+	4345,
+	4345,
+	4345,
+	3435,
+	4345,
+	4345,
+	4478,
+	4465,
+	4465,
+	4345,
+	4315,
+	4478,
+	7998,
+	3865,
+	3865,
+	3865,
+	3865,
+	3865,
+	7998,
+	7998,
 };
-static const Il2CppTokenRangePair s_rgctxIndices[2] = 
+static const Il2CppTokenRangePair s_rgctxIndices[6] = 
 {
-	{ 0x0200000C, { 4, 13 } },
-	{ 0x06000018, { 0, 4 } },
+	{ 0x0200000C, { 11, 4 } },
+	{ 0x0200000D, { 15, 13 } },
+	{ 0x02000011, { 37, 19 } },
+	{ 0x06000018, { 0, 7 } },
+	{ 0x06000019, { 7, 4 } },
+	{ 0x0600002D, { 28, 9 } },
 };
+extern const uint32_t g_rgctx_IEnumerable_1_tA0BCE6F370C5CAF5DF4BB74DC1E6A9A6FDFAD6BF;
+extern const uint32_t g_rgctx_U3CU3Ec__0_1_t4E8105F1EACB9D7A9868B9046C39B678785EA99F;
+extern const uint32_t g_rgctx_Func_2_tFB92E37D4F6FB8542E33128F9D7636B31AAC862F;
+extern const uint32_t g_rgctx_U3CU3Ec__0_1_t4E8105F1EACB9D7A9868B9046C39B678785EA99F;
+extern const uint32_t g_rgctx_U3CU3Ec__0_1_U3CNonNullU3Eb__0_0_m95B69BAE0E2B65505BA6DE17311672D0E62EDEEC;
+extern const uint32_t g_rgctx_Func_2__ctor_m4B8A534533C1041CD6246E632E2F256360FBEFD3;
+extern const uint32_t g_rgctx_Enumerable_Where_TisT_t7D89FD638CF5BF1A1B02A21BBD3F9BCAD1FAE764_mBC99EEE8CF0807447A23D5BA08A35EB00DEAFB16;
 extern const uint32_t g_rgctx_U3CIgnoreExceptionsU3Ed__1_2_t491F06873BD8F503D0BE96CA3650905F1831CCE8;
 extern const uint32_t g_rgctx_U3CIgnoreExceptionsU3Ed__1_2__ctor_m76405B9FE203E6322547C45A8AD32AD3A52CDD9D;
 extern const uint32_t g_rgctx_IEnumerable_1_tB95128EB0063BAB6736E51C4204C89198E73B5D6;
 extern const uint32_t g_rgctx_Action_1_tE5285863F388D7E24AEB1087512FC222DCCF9733;
+extern const uint32_t g_rgctx_U3CU3Ec__0_1_t0F6E436E8A18BD91C049C0D3D8FF5195E242B8B0;
+extern const uint32_t g_rgctx_U3CU3Ec__0_1__ctor_mDB46B5B1851692D7BC370DE2A539E5EC1E09D971;
+extern const uint32_t g_rgctx_U3CU3Ec__0_1_t0F6E436E8A18BD91C049C0D3D8FF5195E242B8B0;
+extern const uint32_t g_rgctx_T_tAA11F22DD21BCE7C3744E8278C4B021A3CE8CBF3;
 extern const uint32_t g_rgctx_U3CIgnoreExceptionsU3Ed__1_2_t3D36E21365A92AFB370C96FA84AC77E96E7DE1C9;
 extern const uint32_t g_rgctx_U3CIgnoreExceptionsU3Ed__1_2_U3CU3Em__Finally1_mC601AD32D8973BC495AA48135EEB4BDB7CE5226D;
 extern const uint32_t g_rgctx_TException_tC7A2C273BEA37F40FB07659A9D5F8F9B093C68CE;
@@ -249,12 +278,51 @@ extern const uint32_t g_rgctx_T_tCB1B5A057248966E22E926A8B98856D081A8D8A0;
 extern const uint32_t g_rgctx_U3CIgnoreExceptionsU3Ed__1_2_System_IDisposable_Dispose_mA8541B6D49D3AA1291775CCE1183D3B8F7A0C3F2;
 extern const uint32_t g_rgctx_U3CIgnoreExceptionsU3Ed__1_2__ctor_m6529C01CB8D07ACD6DC6959028505A2F02D7E3B9;
 extern const uint32_t g_rgctx_U3CIgnoreExceptionsU3Ed__1_2_System_Collections_Generic_IEnumerableU3CTU3E_GetEnumerator_m51F6E976492843235126DD84704AA1B29E3C1BBA;
-static const Il2CppRGCTXDefinition s_rgctxValues[17] = 
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_Create_mBCD3636735EAF3BA4F5BCBDFEBA7251F688830A5;
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_t403769CF7D7C8891A2515CCB2BEDFCAF0F5B0113;
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_t403769CF7D7C8891A2515CCB2BEDFCAF0F5B0113;
+extern const uint32_t g_rgctx_U3CEnqueueU3Ed__2_1_t5831BD9ED6E2D51EEC742AC5CA1B84FBAA869EA7;
+extern const uint32_t g_rgctx_Func_1_t17776D0EEFB001ABB486F7344BBFFB07405D21F9;
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_Start_TisU3CEnqueueU3Ed__2_1_t5831BD9ED6E2D51EEC742AC5CA1B84FBAA869EA7_m3F12F3CA3BEADA039502A8AA0B50ACF39A4F76DB;
+extern const uint32_t g_rgctx_U3CEnqueueU3Ed__2_1U26_t54528BBBC9F861540DF82A710238CB5F170C2992;
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_get_Task_m170CC14F82838ED74C66BB3866C200246A7A9BE6;
+extern const uint32_t g_rgctx_Task_1_tD3093EE85D68A2A5BD21244679917352B8DB1B58;
+extern const uint32_t g_rgctx_U3CEnqueueU3Ed__2_1_t40BC51B3F4FC60341C964C720AA455EFC3D90AC3;
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_tA875ADDA3FD2D0F6786EBE1D0947E646F3B09615;
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_AwaitUnsafeOnCompleted_TisTaskAwaiter_t9B661AC8C2EFA6BAB94C77BB24A5DDA82D61F833_TisU3CEnqueueU3Ed__2_1_t40BC51B3F4FC60341C964C720AA455EFC3D90AC3_m2F127939B8946093F2F2390C847CC4E43554C413;
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_tA875ADDA3FD2D0F6786EBE1D0947E646F3B09615;
+extern const uint32_t g_rgctx_U3CEnqueueU3Ed__2_1U26_t3931AC9DE59576081AF5CC20BFD30F65D5B9554D;
+extern const uint32_t g_rgctx_Func_1_tD8CD668092BF39FFC969CCB309FB7C096827F576;
+extern const uint32_t g_rgctx_Func_1_Invoke_m96DDBEEBF45F3353593C5CCF0C92B73A6F9D7014;
+extern const uint32_t g_rgctx_Task_1_tF43C4F985712652D1EFE26AC76368E349F8CECC0;
+extern const uint32_t g_rgctx_Task_1_GetAwaiter_mA38E6338822AEF0EDB0A495A3F6581D8031EFD63;
+extern const uint32_t g_rgctx_TaskAwaiter_1_t68E3468C1654C3E2A43892A7DD8C06DA576F8490;
+extern const uint32_t g_rgctx_TaskAwaiter_1_get_IsCompleted_m6EDE4EB29D08555C5AC4CF7299E526BD678C3367;
+extern const uint32_t g_rgctx_TaskAwaiter_1_t68E3468C1654C3E2A43892A7DD8C06DA576F8490;
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_AwaitUnsafeOnCompleted_TisTaskAwaiter_1_t68E3468C1654C3E2A43892A7DD8C06DA576F8490_TisU3CEnqueueU3Ed__2_1_t40BC51B3F4FC60341C964C720AA455EFC3D90AC3_mDCB2FDEA4DC2BD55198AF27BB79F092385200766;
+extern const uint32_t g_rgctx_TaskAwaiter_1U26_t80926ED689EEDE65D5CB413C70431E1AF3F6AFF2;
+extern const uint32_t g_rgctx_TaskAwaiter_1_GetResult_m18F2250347C91A7D9907CBD35A170D02F2A5DD41;
+extern const uint32_t g_rgctx_T_tE737F8222F0D0FC175C70916ADDE2EADD1AF33CE;
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_SetException_mF70BB05A3017C3D6A872DAF7DD9D526A6EDA9C04;
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_SetResult_m436522E11873AC3625487B10C34E9D184B39B5ED;
+extern const uint32_t g_rgctx_AsyncTaskMethodBuilder_1_SetStateMachine_m9A7F24CCCBAC390C783A61AC70073A956D61ACE9;
+static const Il2CppRGCTXDefinition s_rgctxValues[56] = 
 {
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_IEnumerable_1_tA0BCE6F370C5CAF5DF4BB74DC1E6A9A6FDFAD6BF },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_U3CU3Ec__0_1_t4E8105F1EACB9D7A9868B9046C39B678785EA99F },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Func_2_tFB92E37D4F6FB8542E33128F9D7636B31AAC862F },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_U3CU3Ec__0_1_t4E8105F1EACB9D7A9868B9046C39B678785EA99F },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_U3CU3Ec__0_1_U3CNonNullU3Eb__0_0_m95B69BAE0E2B65505BA6DE17311672D0E62EDEEC },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Func_2__ctor_m4B8A534533C1041CD6246E632E2F256360FBEFD3 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Enumerable_Where_TisT_t7D89FD638CF5BF1A1B02A21BBD3F9BCAD1FAE764_mBC99EEE8CF0807447A23D5BA08A35EB00DEAFB16 },
 	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_U3CIgnoreExceptionsU3Ed__1_2_t491F06873BD8F503D0BE96CA3650905F1831CCE8 },
 	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_U3CIgnoreExceptionsU3Ed__1_2__ctor_m76405B9FE203E6322547C45A8AD32AD3A52CDD9D },
 	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_IEnumerable_1_tB95128EB0063BAB6736E51C4204C89198E73B5D6 },
 	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Action_1_tE5285863F388D7E24AEB1087512FC222DCCF9733 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_U3CU3Ec__0_1_t0F6E436E8A18BD91C049C0D3D8FF5195E242B8B0 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_U3CU3Ec__0_1__ctor_mDB46B5B1851692D7BC370DE2A539E5EC1E09D971 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_U3CU3Ec__0_1_t0F6E436E8A18BD91C049C0D3D8FF5195E242B8B0 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_T_tAA11F22DD21BCE7C3744E8278C4B021A3CE8CBF3 },
 	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_U3CIgnoreExceptionsU3Ed__1_2_t3D36E21365A92AFB370C96FA84AC77E96E7DE1C9 },
 	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_U3CIgnoreExceptionsU3Ed__1_2_U3CU3Em__Finally1_mC601AD32D8973BC495AA48135EEB4BDB7CE5226D },
 	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TException_tC7A2C273BEA37F40FB07659A9D5F8F9B093C68CE },
@@ -268,21 +336,49 @@ static const Il2CppRGCTXDefinition s_rgctxValues[17] =
 	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_U3CIgnoreExceptionsU3Ed__1_2_System_IDisposable_Dispose_mA8541B6D49D3AA1291775CCE1183D3B8F7A0C3F2 },
 	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_U3CIgnoreExceptionsU3Ed__1_2__ctor_m6529C01CB8D07ACD6DC6959028505A2F02D7E3B9 },
 	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_U3CIgnoreExceptionsU3Ed__1_2_System_Collections_Generic_IEnumerableU3CTU3E_GetEnumerator_m51F6E976492843235126DD84704AA1B29E3C1BBA },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_Create_mBCD3636735EAF3BA4F5BCBDFEBA7251F688830A5 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_t403769CF7D7C8891A2515CCB2BEDFCAF0F5B0113 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_t403769CF7D7C8891A2515CCB2BEDFCAF0F5B0113 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_U3CEnqueueU3Ed__2_1_t5831BD9ED6E2D51EEC742AC5CA1B84FBAA869EA7 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Func_1_t17776D0EEFB001ABB486F7344BBFFB07405D21F9 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_Start_TisU3CEnqueueU3Ed__2_1_t5831BD9ED6E2D51EEC742AC5CA1B84FBAA869EA7_m3F12F3CA3BEADA039502A8AA0B50ACF39A4F76DB },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_U3CEnqueueU3Ed__2_1U26_t54528BBBC9F861540DF82A710238CB5F170C2992 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_get_Task_m170CC14F82838ED74C66BB3866C200246A7A9BE6 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Task_1_tD3093EE85D68A2A5BD21244679917352B8DB1B58 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_U3CEnqueueU3Ed__2_1_t40BC51B3F4FC60341C964C720AA455EFC3D90AC3 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_tA875ADDA3FD2D0F6786EBE1D0947E646F3B09615 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_AwaitUnsafeOnCompleted_TisTaskAwaiter_t9B661AC8C2EFA6BAB94C77BB24A5DDA82D61F833_TisU3CEnqueueU3Ed__2_1_t40BC51B3F4FC60341C964C720AA455EFC3D90AC3_m2F127939B8946093F2F2390C847CC4E43554C413 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_tA875ADDA3FD2D0F6786EBE1D0947E646F3B09615 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_U3CEnqueueU3Ed__2_1U26_t3931AC9DE59576081AF5CC20BFD30F65D5B9554D },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Func_1_tD8CD668092BF39FFC969CCB309FB7C096827F576 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Func_1_Invoke_m96DDBEEBF45F3353593C5CCF0C92B73A6F9D7014 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Task_1_tF43C4F985712652D1EFE26AC76368E349F8CECC0 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Task_1_GetAwaiter_mA38E6338822AEF0EDB0A495A3F6581D8031EFD63 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TaskAwaiter_1_t68E3468C1654C3E2A43892A7DD8C06DA576F8490 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_TaskAwaiter_1_get_IsCompleted_m6EDE4EB29D08555C5AC4CF7299E526BD678C3367 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TaskAwaiter_1_t68E3468C1654C3E2A43892A7DD8C06DA576F8490 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_AwaitUnsafeOnCompleted_TisTaskAwaiter_1_t68E3468C1654C3E2A43892A7DD8C06DA576F8490_TisU3CEnqueueU3Ed__2_1_t40BC51B3F4FC60341C964C720AA455EFC3D90AC3_mDCB2FDEA4DC2BD55198AF27BB79F092385200766 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TaskAwaiter_1U26_t80926ED689EEDE65D5CB413C70431E1AF3F6AFF2 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_TaskAwaiter_1_GetResult_m18F2250347C91A7D9907CBD35A170D02F2A5DD41 },
+	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_T_tE737F8222F0D0FC175C70916ADDE2EADD1AF33CE },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_SetException_mF70BB05A3017C3D6A872DAF7DD9D526A6EDA9C04 },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_SetResult_m436522E11873AC3625487B10C34E9D184B39B5ED },
+	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_AsyncTaskMethodBuilder_1_SetStateMachine_m9A7F24CCCBAC390C783A61AC70073A956D61ACE9 },
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_Unity_Purchasing_Utilities_CodeGenModule;
 const Il2CppCodeGenModule g_Unity_Purchasing_Utilities_CodeGenModule = 
 {
 	"Unity.Purchasing.Utilities.dll",
-	77,
+	84,
 	s_methodPointers,
 	0,
 	NULL,
 	s_InvokerIndices,
 	0,
 	NULL,
-	2,
+	6,
 	s_rgctxIndices,
-	17,
+	56,
 	s_rgctxValues,
 	NULL,
 	NULL,

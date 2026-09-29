@@ -376,28 +376,42 @@ class JsonRpcResponseDto {
   String toJsonString() => jsonEncode(toJson());
 }
 
-/// Canonical scene names for the 9 Unity UaaL meditation and breathing environments.
+/// Canonical scene names for the 14 Unity UaaL meditation and breathing environments.
 class UnityScenes {
+  // Respirazione (continuous meditation scenes)
   static const String waterBreathing = 'Respirazione acqua';
-  static const String waterMeditation = 'Respirazione acqua';
   static const String airBreathing = 'Respirazione aria';
-  static const String airMeditation = 'Respirazione aria';
   static const String fireBreathing = 'Respirazione fuoco';
-  static const String fireMeditation = 'Respirazione fuoco';
-  static const String earthBreathing = 'Procedimento terra';
-  static const String earthMeditation = 'Procedimento terra';
-  static const String generalMeditation = 'Respirazione acqua';
+  static const String earthBreathing = 'Respirazione terra';
+
+  // Meditazione (guided meditation scenes)
+  static const String waterMeditationMorning = 'Meditazione acqua matt';
+  static const String waterMeditationAfternoon = 'Meditazione acqua pom';
+  static const String waterMeditationEvening = 'Meditazione acqua sera';
+  static const String generalMeditation = 'Meditazione generale';
+
+  // Procedimento (tutorial/introduction scenes)
+  static const String waterTutorial = 'Procedimento acqua';
+  static const String airTutorial = 'Procedimento aria';
+  static const String fireTutorial = 'Procedimento fuoco';
+  static const String earthTutorial = 'Procedimento terra';
+
+  // System scenes
+  static const String mainMenu = 'MainMenu Corretto';
+  static const String splashScreen = 'SplashScreen';
+
+  // Legacy mappings to maintain backward compatibility
+  static const String waterMeditation = waterMeditationMorning;
+  static const String airMeditation = airBreathing;
+  static const String fireMeditation = fireBreathing;
+  static const String earthMeditation = earthBreathing;
 
   static const List<String> allScenes = [
-    waterBreathing,
-    waterMeditation,
-    airBreathing,
-    airMeditation,
-    fireBreathing,
-    fireMeditation,
-    earthBreathing,
-    earthMeditation,
+    waterBreathing, airBreathing, fireBreathing, earthBreathing,
+    waterMeditationMorning, waterMeditationAfternoon, waterMeditationEvening,
     generalMeditation,
+    waterTutorial, airTutorial, fireTutorial, earthTutorial,
+    mainMenu, splashScreen,
   ];
 
   /// Resolves the canonical Unity scene name based on explicit parameter, title, and session type.
@@ -411,42 +425,40 @@ class UnityScenes {
     }
 
     final t = title.toLowerCase();
-    final bool breathing = isBreathing ||
-        t.contains('respir') ||
-        t.contains('breath') ||
-        t.contains('resp');
 
-    if (t.contains('generale') || t.contains('general')) {
+    // Time-of-day water meditations
+    if (t.contains('mattin') || t.contains('morning') || t.contains('alba')) {
+      return waterMeditationMorning;
+    }
+    if (t.contains('pomeriggio') || t.contains('afternoon')) {
+      return waterMeditationAfternoon;
+    }
+    if (t.contains('sera') || t.contains('evening') || t.contains('starlight') || t.contains('riposo')) {
+      return waterMeditationEvening;
+    }
+
+    // General / focus / calm meditations
+    if (t.contains('generale') || t.contains('general') || t.contains('focus') ||
+        t.contains('concentrazione') || t.contains('calm') || t.contains('present')) {
       return generalMeditation;
     }
+
+    // Element-specific
     if (t.contains('fuoco') || t.contains('fire')) {
-      return breathing ? fireBreathing : fireMeditation;
+      return isBreathing ? fireBreathing : fireBreathing;
     }
     if (t.contains('aria') || t.contains('air')) {
-      return breathing ? airBreathing : airMeditation;
+      return isBreathing ? airBreathing : airBreathing;
     }
     if (t.contains('terra') || t.contains('earth')) {
-      return breathing ? earthBreathing : earthMeditation;
+      return isBreathing ? earthBreathing : earthBreathing;
     }
-    if (t.contains('acqua') ||
-        t.contains('water') ||
-        t.contains('alba') ||
-        t.contains('flow') ||
-        t.contains('mattin') ||
-        t.contains('pomeriggio') ||
-        t.contains('afternoon') ||
-        t.contains('sera') ||
-        t.contains('evening') ||
-        t.contains('starlight') ||
-        t.contains('riposo') ||
-        t.contains('concentrazione') ||
-        t.contains('present') ||
-        t.contains('focus') ||
-        t.contains('calm')) {
-      return breathing ? waterBreathing : waterMeditation;
+    if (t.contains('acqua') || t.contains('water') || t.contains('flow')) {
+      return isBreathing ? waterBreathing : waterBreathing;
     }
 
-    return breathing ? waterBreathing : generalMeditation;
+    // Default fallback
+    return generalMeditation;
   }
 }
 

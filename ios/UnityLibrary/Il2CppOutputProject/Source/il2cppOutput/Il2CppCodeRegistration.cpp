@@ -61,7 +61,6 @@ IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_UnityEngine_SpatialTracking_CodeGenM
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_UnityEngine_SpriteShapeModule_CodeGenModule;
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_UnityEngine_SubsystemsModule_CodeGenModule;
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_UnityEngine_TerrainModule_CodeGenModule;
-IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_UnityEngine_TerrainPhysicsModule_CodeGenModule;
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_UnityEngine_TextCoreFontEngineModule_CodeGenModule;
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_UnityEngine_TextCoreTextEngineModule_CodeGenModule;
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_UnityEngine_TextRenderingModule_CodeGenModule;
@@ -86,6 +85,7 @@ IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_Unity_Mathematics_CodeGenModule;
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_Unity_Purchasing_AppleMacosStub_CodeGenModule;
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_Unity_Purchasing_Apple_CodeGenModule;
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_Unity_Purchasing_CodeGenModule;
+IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_Unity_Purchasing_Codeless_CodeGenModule;
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_Unity_Purchasing_SecurityCore_CodeGenModule;
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_Unity_Purchasing_Security_CodeGenModule;
 IL2CPP_EXTERN_C_CONST Il2CppCodeGenModule g_Unity_Purchasing_Stores_CodeGenModule;
@@ -172,7 +172,6 @@ const Il2CppCodeGenModule* g_CodeGenModules[108] =
 	(&g_UnityEngine_SpriteShapeModule_CodeGenModule),
 	(&g_UnityEngine_SubsystemsModule_CodeGenModule),
 	(&g_UnityEngine_TerrainModule_CodeGenModule),
-	(&g_UnityEngine_TerrainPhysicsModule_CodeGenModule),
 	(&g_UnityEngine_TextCoreFontEngineModule_CodeGenModule),
 	(&g_UnityEngine_TextCoreTextEngineModule_CodeGenModule),
 	(&g_UnityEngine_TextRenderingModule_CodeGenModule),
@@ -197,6 +196,7 @@ const Il2CppCodeGenModule* g_CodeGenModules[108] =
 	(&g_Unity_Purchasing_AppleMacosStub_CodeGenModule),
 	(&g_Unity_Purchasing_Apple_CodeGenModule),
 	(&g_Unity_Purchasing_CodeGenModule),
+	(&g_Unity_Purchasing_Codeless_CodeGenModule),
 	(&g_Unity_Purchasing_SecurityCore_CodeGenModule),
 	(&g_Unity_Purchasing_Security_CodeGenModule),
 	(&g_Unity_Purchasing_Stores_CodeGenModule),
@@ -240,16 +240,16 @@ const Il2CppCodeRegistration g_CodeRegistration =
 {
 	106,
 	g_ReversePInvokeWrapperPointers,
-	122290,
+	6647,
 	g_Il2CppGenericMethodPointers,
 	g_Il2CppGenericAdjustorThunks,
-	24158,
+	8777,
 	g_Il2CppInvokerPointers,
-	4118,
+	901,
 	g_UnresolvedVirtualMethodPointers,
 	g_UnresolvedInstanceMethodPointers,
 	g_UnresolvedStaticMethodPointers,
-	1129,
+	1130,
 	g_Il2CppInteropData,
 	0,
 	NULL,
@@ -260,8 +260,8 @@ IL2CPP_EXTERN_C_CONST Il2CppMetadataRegistration g_MetadataRegistration;
 static const Il2CppCodeGenOptions s_Il2CppCodeGenOptions = 
 {
 	true,
-	7,
-	1,
+	0,
+	0,
 };
 void s_Il2CppCodegenRegistration()
 {

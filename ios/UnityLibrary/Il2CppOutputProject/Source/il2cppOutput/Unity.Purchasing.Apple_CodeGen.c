@@ -8,49 +8,85 @@
 
 
 extern void iOSStoreBindings_unityPurchasing_SetNativeCallback_m48C165929A4DFD0ABC5015941D3F46A68F46474D (void);
+extern void iOSStoreBindings_unityPurchasing_AddTransactionObserver_mF6FD8433EC4FAB82F25CBD213B03E32462B668D8 (void);
 extern void iOSStoreBindings_unityPurchasing_FetchProducts_m394B980FD20D9985D4747CE1C0847793A28CF4B7 (void);
+extern void iOSStoreBindings_unityPurchasing_PurchaseProduct_m8886EC379E68DA6DD5CD6A1F9C3416FFCBFC1858 (void);
 extern void iOSStoreBindings_unityPurchasing_DeallocateMemory_m038C009D4E37DF441F6E99D723C125A08DD3B168 (void);
+extern void iOSStoreBindings_unityPurchasing_FetchPurchases_mAFFB0F84632511BB45B80DF162D37B8ABFD00253 (void);
 extern void iOSStoreBindings_unityPurchasing_FinishTransaction_mAC15FECCFE5690F2A2564C384DA071509930D7E1 (void);
+extern void iOSStoreBindings_unityPurchasing_RestoreTransactions_m60FC0081733E7854F3439028D79C8AC3CF5B1BAF (void);
+extern void iOSStoreBindings_unityPurchasing_InterceptPromotionalPurchases_mEFD2433F7E5D3F29B6C5BDF94FC1CE33F105CDF1 (void);
 extern void iOSStoreBindings_unityPurchasing_RefreshAppReceipt_m06EF637EEE6B826AF51011D6F89E675AD09F7009 (void);
 extern void iOSStoreBindings_SetUnityPurchasingCallback_m219BD679AD861A63ED28739140610DB5DA5463D6 (void);
 extern void iOSStoreBindings_DeallocateMemory_mEBD5AACED8199802A7628078CD3396F89CC480E9 (void);
+extern void iOSStoreBindings_Connect_m33ACEC93479F2203C0D20A74BFE37568A9050868 (void);
+extern void iOSStoreBindings_AddTransactionObserver_mDE4C2E69B7C8FB368B0120240D957E89869FFE6A (void);
 extern void iOSStoreBindings_FetchProducts_m5ECD8737AF6F6849004DD88099D6FBD3132605AF (void);
+extern void iOSStoreBindings_FetchExistingPurchases_m8163D347D521F7B2E5F0BF0912233A69D5E275EE (void);
+extern void iOSStoreBindings_Purchase_mDD137547381A32459D42B5E8274F1F1F27986826 (void);
 extern void iOSStoreBindings_FinishTransaction_mDD77BBC44F32A0E5E508DEA91519F15B8F91C3F6 (void);
+extern void iOSStoreBindings_RestoreTransactions_mE4FBAAB6141F2DD5411506DF435828A22947A0AF (void);
+extern void iOSStoreBindings_InterceptPromotionalPurchases_mEBF2EA86F9E9A85F1AD4D78ADABC830A3A32110E (void);
+extern void iOSStoreBindings_Purchase_mC7E21E6F80754BB0A9169BAA577B8307A6800CD1 (void);
 extern void iOSStoreBindings_RefreshAppReceipt_mB71B723604356E85F2A7FE5A27D4ECA3723BD453 (void);
 extern void iOSStoreBindings__ctor_mE32A73607E2E7F2341870734F6EA96375BB760DB (void);
-static Il2CppMethodPointer s_methodPointers[11] = 
+static Il2CppMethodPointer s_methodPointers[23] = 
 {
 	iOSStoreBindings_unityPurchasing_SetNativeCallback_m48C165929A4DFD0ABC5015941D3F46A68F46474D,
+	iOSStoreBindings_unityPurchasing_AddTransactionObserver_mF6FD8433EC4FAB82F25CBD213B03E32462B668D8,
 	iOSStoreBindings_unityPurchasing_FetchProducts_m394B980FD20D9985D4747CE1C0847793A28CF4B7,
+	iOSStoreBindings_unityPurchasing_PurchaseProduct_m8886EC379E68DA6DD5CD6A1F9C3416FFCBFC1858,
 	iOSStoreBindings_unityPurchasing_DeallocateMemory_m038C009D4E37DF441F6E99D723C125A08DD3B168,
+	iOSStoreBindings_unityPurchasing_FetchPurchases_mAFFB0F84632511BB45B80DF162D37B8ABFD00253,
 	iOSStoreBindings_unityPurchasing_FinishTransaction_mAC15FECCFE5690F2A2564C384DA071509930D7E1,
+	iOSStoreBindings_unityPurchasing_RestoreTransactions_m60FC0081733E7854F3439028D79C8AC3CF5B1BAF,
+	iOSStoreBindings_unityPurchasing_InterceptPromotionalPurchases_mEFD2433F7E5D3F29B6C5BDF94FC1CE33F105CDF1,
 	iOSStoreBindings_unityPurchasing_RefreshAppReceipt_m06EF637EEE6B826AF51011D6F89E675AD09F7009,
 	iOSStoreBindings_SetUnityPurchasingCallback_m219BD679AD861A63ED28739140610DB5DA5463D6,
 	iOSStoreBindings_DeallocateMemory_mEBD5AACED8199802A7628078CD3396F89CC480E9,
+	iOSStoreBindings_Connect_m33ACEC93479F2203C0D20A74BFE37568A9050868,
+	iOSStoreBindings_AddTransactionObserver_mDE4C2E69B7C8FB368B0120240D957E89869FFE6A,
 	iOSStoreBindings_FetchProducts_m5ECD8737AF6F6849004DD88099D6FBD3132605AF,
+	iOSStoreBindings_FetchExistingPurchases_m8163D347D521F7B2E5F0BF0912233A69D5E275EE,
+	iOSStoreBindings_Purchase_mDD137547381A32459D42B5E8274F1F1F27986826,
 	iOSStoreBindings_FinishTransaction_mDD77BBC44F32A0E5E508DEA91519F15B8F91C3F6,
+	iOSStoreBindings_RestoreTransactions_mE4FBAAB6141F2DD5411506DF435828A22947A0AF,
+	iOSStoreBindings_InterceptPromotionalPurchases_mEBF2EA86F9E9A85F1AD4D78ADABC830A3A32110E,
+	iOSStoreBindings_Purchase_mC7E21E6F80754BB0A9169BAA577B8307A6800CD1,
 	iOSStoreBindings_RefreshAppReceipt_mB71B723604356E85F2A7FE5A27D4ECA3723BD453,
 	iOSStoreBindings__ctor_mE32A73607E2E7F2341870734F6EA96375BB760DB,
 };
-static const int32_t s_InvokerIndices[11] = 
+static const int32_t s_InvokerIndices[23] = 
 {
-	23493,
-	23493,
-	23491,
-	21332,
-	24098,
-	11928,
-	11864,
-	11928,
-	6258,
-	15384,
-	15384,
+	8437,
+	8719,
+	8437,
+	6541,
+	8435,
+	8719,
+	7436,
+	8719,
+	8719,
+	8719,
+	3865,
+	3843,
+	4478,
+	4478,
+	3865,
+	4478,
+	2598,
+	2598,
+	4478,
+	4478,
+	1768,
+	4478,
+	4478,
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_Unity_Purchasing_Apple_CodeGenModule;
 const Il2CppCodeGenModule g_Unity_Purchasing_Apple_CodeGenModule = 
 {
 	"Unity.Purchasing.Apple.dll",
-	11,
+	23,
 	s_methodPointers,
 	0,
 	NULL,

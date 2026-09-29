@@ -193,19 +193,24 @@ void main() {
   group('Build 30 Quality Gate 5.6: Canonical Unity Scenes Alignment', () {
     test('UnityScenes canonical names match EditorBuildSettings.asset exactly', () {
       expect(UnityScenes.waterBreathing, 'Respirazione acqua');
-      expect(UnityScenes.waterMeditation, 'Respirazione acqua');
       expect(UnityScenes.airBreathing, 'Respirazione aria');
-      expect(UnityScenes.airMeditation, 'Respirazione aria');
       expect(UnityScenes.fireBreathing, 'Respirazione fuoco');
-      expect(UnityScenes.fireMeditation, 'Respirazione fuoco');
-      expect(UnityScenes.earthBreathing, 'Procedimento terra');
-      expect(UnityScenes.earthMeditation, 'Procedimento terra');
-      expect(UnityScenes.generalMeditation, 'Respirazione acqua');
+      expect(UnityScenes.earthBreathing, 'Respirazione terra');
+      
+      expect(UnityScenes.waterMeditationMorning, 'Meditazione acqua matt');
+      expect(UnityScenes.waterMeditationAfternoon, 'Meditazione acqua pom');
+      expect(UnityScenes.waterMeditationEvening, 'Meditazione acqua sera');
+      expect(UnityScenes.generalMeditation, 'Meditazione generale');
 
-      expect(UnityScenes.allScenes, contains('Respirazione acqua'));
-      expect(UnityScenes.allScenes, contains('Respirazione aria'));
-      expect(UnityScenes.allScenes, contains('Respirazione fuoco'));
-      expect(UnityScenes.allScenes, contains('Procedimento terra'));
+      expect(UnityScenes.waterTutorial, 'Procedimento acqua');
+      expect(UnityScenes.airTutorial, 'Procedimento aria');
+      expect(UnityScenes.fireTutorial, 'Procedimento fuoco');
+      expect(UnityScenes.earthTutorial, 'Procedimento terra');
+
+      expect(UnityScenes.mainMenu, 'MainMenu Corretto');
+      expect(UnityScenes.splashScreen, 'SplashScreen');
+
+      expect(UnityScenes.allScenes.length, 14);
     });
   });
 

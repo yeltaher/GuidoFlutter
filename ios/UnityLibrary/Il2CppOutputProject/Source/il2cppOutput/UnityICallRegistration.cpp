@@ -1470,6 +1470,10 @@ void RegisterAllStrippedInternalCalls()
 		void Register_UnityEngine_Camera_get_orthographic_Injected();
 		Register_UnityEngine_Camera_get_orthographic_Injected();
 
+		//System.Boolean UnityEngine.Camera::get_useOcclusionCulling_Injected(System.IntPtr)
+		void Register_UnityEngine_Camera_get_useOcclusionCulling_Injected();
+		Register_UnityEngine_Camera_get_useOcclusionCulling_Injected();
+
 		//System.Boolean UnityEngine.Camera::get_usePhysicalProperties_Injected(System.IntPtr)
 		void Register_UnityEngine_Camera_get_usePhysicalProperties_Injected();
 		Register_UnityEngine_Camera_get_usePhysicalProperties_Injected();
@@ -1630,6 +1634,14 @@ void RegisterAllStrippedInternalCalls()
 		void Register_UnityEngine_Camera_get_worldToCameraMatrix_Injected();
 		Register_UnityEngine_Camera_get_worldToCameraMatrix_Injected();
 
+		//System.Void UnityEngine.Camera::set_allowHDR_Injected(System.IntPtr,System.Boolean)
+		void Register_UnityEngine_Camera_set_allowHDR_Injected();
+		Register_UnityEngine_Camera_set_allowHDR_Injected();
+
+		//System.Void UnityEngine.Camera::set_allowMSAA_Injected(System.IntPtr,System.Boolean)
+		void Register_UnityEngine_Camera_set_allowMSAA_Injected();
+		Register_UnityEngine_Camera_set_allowMSAA_Injected();
+
 		//System.Void UnityEngine.Camera::set_aspect_Injected(System.IntPtr,System.Single)
 		void Register_UnityEngine_Camera_set_aspect_Injected();
 		Register_UnityEngine_Camera_set_aspect_Injected();
@@ -1690,6 +1702,10 @@ void RegisterAllStrippedInternalCalls()
 		void Register_UnityEngine_Camera_set_targetTexture_Injected();
 		Register_UnityEngine_Camera_set_targetTexture_Injected();
 
+		//System.Void UnityEngine.Camera::set_useOcclusionCulling_Injected(System.IntPtr,System.Boolean)
+		void Register_UnityEngine_Camera_set_useOcclusionCulling_Injected();
+		Register_UnityEngine_Camera_set_useOcclusionCulling_Injected();
+
 		//System.Void UnityEngine.Camera::set_worldToCameraMatrix_Injected(System.IntPtr,UnityEngine.Matrix4x4&)
 		void Register_UnityEngine_Camera_set_worldToCameraMatrix_Injected();
 		Register_UnityEngine_Camera_set_worldToCameraMatrix_Injected();
@@ -1709,6 +1725,10 @@ void RegisterAllStrippedInternalCalls()
 		//UnityEngine.Rendering.OpaqueSortMode UnityEngine.Camera::get_opaqueSortMode_Injected(System.IntPtr)
 		void Register_UnityEngine_Camera_get_opaqueSortMode_Injected();
 		Register_UnityEngine_Camera_get_opaqueSortMode_Injected();
+
+		//UnityEngine.RenderingPath UnityEngine.Camera::get_renderingPath_Injected(System.IntPtr)
+		void Register_UnityEngine_Camera_get_renderingPath_Injected();
+		Register_UnityEngine_Camera_get_renderingPath_Injected();
 
 	//End Registrations for type : UnityEngine.Camera
 
@@ -2806,6 +2826,10 @@ void RegisterAllStrippedInternalCalls()
 		void Register_UnityEngine_GameObject_set_layer_Injected();
 		Register_UnityEngine_GameObject_set_layer_Injected();
 
+		//System.Void UnityEngine.GameObject::set_tag_Injected(System.IntPtr,UnityEngine.Bindings.ManagedSpanWrapper&)
+		void Register_UnityEngine_GameObject_set_tag_Injected();
+		Register_UnityEngine_GameObject_set_tag_Injected();
+
 		//UnityEngine.GameObject[] UnityEngine.GameObject::FindGameObjectsWithTag_Injected(UnityEngine.Bindings.ManagedSpanWrapper&)
 		void Register_UnityEngine_GameObject_FindGameObjectsWithTag_Injected();
 		Register_UnityEngine_GameObject_FindGameObjectsWithTag_Injected();
@@ -3456,6 +3480,26 @@ void RegisterAllStrippedInternalCalls()
 
 	//End Registrations for type : UnityEngine.GUIUtility
 
+	//Start Registrations for type : UnityEngine.Gyroscope
+
+		//System.Boolean UnityEngine.Gyroscope::getEnabled_Internal(System.Int32)
+		void Register_UnityEngine_Gyroscope_getEnabled_Internal();
+		Register_UnityEngine_Gyroscope_getEnabled_Internal();
+
+		//System.Void UnityEngine.Gyroscope::attitude_Internal_Injected(System.Int32,UnityEngine.Quaternion&)
+		void Register_UnityEngine_Gyroscope_attitude_Internal_Injected();
+		Register_UnityEngine_Gyroscope_attitude_Internal_Injected();
+
+		//System.Void UnityEngine.Gyroscope::setEnabled_Internal(System.Int32,System.Boolean)
+		void Register_UnityEngine_Gyroscope_setEnabled_Internal();
+		Register_UnityEngine_Gyroscope_setEnabled_Internal();
+
+		//System.Void UnityEngine.Gyroscope::setUpdateInterval_Internal(System.Int32,System.Single)
+		void Register_UnityEngine_Gyroscope_setUpdateInterval_Internal();
+		Register_UnityEngine_Gyroscope_setUpdateInterval_Internal();
+
+	//End Registrations for type : UnityEngine.Gyroscope
+
 	//Start Registrations for type : UnityEngine.Hash128
 
 		//System.Void UnityEngine.Hash128::ComputeFromPtr(System.IntPtr,System.Int32,System.Int32,System.Int32,UnityEngine.Hash128&)
@@ -3565,6 +3609,10 @@ void RegisterAllStrippedInternalCalls()
 		//System.Boolean UnityEngine.Input::get_anyKey()
 		void Register_UnityEngine_Input_get_anyKey();
 		Register_UnityEngine_Input_get_anyKey();
+
+		//System.Int32 UnityEngine.Input::GetGyroInternal()
+		void Register_UnityEngine_Input_GetGyroInternal();
+		Register_UnityEngine_Input_GetGyroInternal();
 
 		//System.Int32 UnityEngine.Input::get_touchCount()
 		void Register_UnityEngine_Input_get_touchCount();
@@ -7769,6 +7817,10 @@ void RegisterAllStrippedInternalCalls()
 		//System.Boolean UnityEngine.SystemInfo::IsFormatSupported(UnityEngine.Experimental.Rendering.GraphicsFormat,UnityEngine.Experimental.Rendering.GraphicsFormatUsage)
 		void Register_UnityEngine_SystemInfo_IsFormatSupported();
 		Register_UnityEngine_SystemInfo_IsFormatSupported();
+
+		//System.Boolean UnityEngine.SystemInfo::IsGyroAvailable()
+		void Register_UnityEngine_SystemInfo_IsGyroAvailable();
+		Register_UnityEngine_SystemInfo_IsGyroAvailable();
 
 		//System.Boolean UnityEngine.SystemInfo::SupportsComputeShaders()
 		void Register_UnityEngine_SystemInfo_SupportsComputeShaders();

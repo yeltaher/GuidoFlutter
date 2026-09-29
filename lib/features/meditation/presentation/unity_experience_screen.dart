@@ -342,12 +342,19 @@ class _UnityExperienceScreenState
   }
 
   void _requestExit() {
+    // Pause session and audio while user decides
+    _sessionNotifier?.pauseSession();
+    // Pause all audio playback
+    ref.read(audioServiceProvider).whenData((audio) => audio.pauseAll());
+
     setState(() {
       _showExitConfirm = true;
     });
   }
 
   void _cancelExit() {
+    _sessionNotifier?.resumeSession();
+    ref.read(audioServiceProvider).whenData((audio) => audio.resumeAll());
     setState(() {
       _showExitConfirm = false;
     });

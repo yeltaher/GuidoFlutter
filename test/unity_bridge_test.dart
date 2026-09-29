@@ -335,23 +335,27 @@ void main() {
     });
   });
 
-  group('UnityScenes 9 Canonical Scenes Mapping Tests', () {
-    test('All 9 canonical scene constants match the user requirements exactly', () {
+  group('UnityScenes Canonical Scenes Mapping Tests', () {
+    test('All 14 canonical scene constants match the user requirements exactly', () {
       expect(UnityScenes.waterBreathing, 'Respirazione acqua');
-      expect(UnityScenes.waterMeditation, 'Respirazione acqua');
       expect(UnityScenes.airBreathing, 'Respirazione aria');
-      expect(UnityScenes.airMeditation, 'Respirazione aria');
       expect(UnityScenes.fireBreathing, 'Respirazione fuoco');
-      expect(UnityScenes.fireMeditation, 'Respirazione fuoco');
-      expect(UnityScenes.earthBreathing, 'Procedimento terra');
-      expect(UnityScenes.earthMeditation, 'Procedimento terra');
-      expect(UnityScenes.generalMeditation, 'Respirazione acqua');
+      expect(UnityScenes.earthBreathing, 'Respirazione terra');
+      
+      expect(UnityScenes.waterMeditationMorning, 'Meditazione acqua matt');
+      expect(UnityScenes.waterMeditationAfternoon, 'Meditazione acqua pom');
+      expect(UnityScenes.waterMeditationEvening, 'Meditazione acqua sera');
+      expect(UnityScenes.generalMeditation, 'Meditazione generale');
 
-      expect(UnityScenes.allScenes.length, 9);
-      expect(UnityScenes.allScenes, contains('Respirazione acqua'));
-      expect(UnityScenes.allScenes, contains('Respirazione aria'));
-      expect(UnityScenes.allScenes, contains('Respirazione fuoco'));
-      expect(UnityScenes.allScenes, contains('Procedimento terra'));
+      expect(UnityScenes.waterTutorial, 'Procedimento acqua');
+      expect(UnityScenes.airTutorial, 'Procedimento aria');
+      expect(UnityScenes.fireTutorial, 'Procedimento fuoco');
+      expect(UnityScenes.earthTutorial, 'Procedimento terra');
+
+      expect(UnityScenes.mainMenu, 'MainMenu Corretto');
+      expect(UnityScenes.splashScreen, 'SplashScreen');
+
+      expect(UnityScenes.allScenes.length, 14);
     });
 
     test('resolveSceneName resolves explicitly provided scenes', () {
@@ -366,7 +370,7 @@ void main() {
       }
     });
 
-    test('resolveSceneName correctly infers the 9 scenes from title and session type', () {
+    test('resolveSceneName correctly infers the scenes from title and session type', () {
       // 1. Acqua respirazione
       expect(
         UnityScenes.resolveSceneName(title: 'Respirazione Acqua', isBreathing: true),
@@ -375,19 +379,19 @@ void main() {
       // 2. Acqua meditazione
       expect(
         UnityScenes.resolveSceneName(title: 'Percorso Acqua Mattina'),
-        UnityScenes.waterMeditation,
+        UnityScenes.waterMeditationMorning,
       );
       expect(
         UnityScenes.resolveSceneName(title: 'Percorso Acqua (Pomeriggio)'),
-        UnityScenes.waterMeditation,
+        UnityScenes.waterMeditationAfternoon,
       );
       expect(
         UnityScenes.resolveSceneName(title: 'Percorso Acqua (Sera)'),
-        UnityScenes.waterMeditation,
+        UnityScenes.waterMeditationEvening,
       );
       expect(
         UnityScenes.resolveSceneName(title: 'Morning Flow'),
-        UnityScenes.waterMeditation,
+        UnityScenes.waterMeditationMorning,
       );
       // 3. Aria respirazione
       expect(
@@ -397,7 +401,7 @@ void main() {
       // 4. Aria meditazione
       expect(
         UnityScenes.resolveSceneName(title: 'Percorso Aria'),
-        UnityScenes.airMeditation,
+        UnityScenes.airBreathing,
       );
       // 5. Fuoco respirazione
       expect(
@@ -407,7 +411,7 @@ void main() {
       // 6. Fuoco meditazione
       expect(
         UnityScenes.resolveSceneName(title: 'Percorso Fuoco'),
-        UnityScenes.fireMeditation,
+        UnityScenes.fireBreathing,
       );
       // 7. Terra respirazione
       expect(
@@ -417,7 +421,7 @@ void main() {
       // 8. Terra meditazione
       expect(
         UnityScenes.resolveSceneName(title: 'Percorso Terra'),
-        UnityScenes.earthMeditation,
+        UnityScenes.earthBreathing,
       );
       // 9. Meditazione generale
       expect(
@@ -526,7 +530,7 @@ void main() {
       );
       expect(
         UnityScenes.resolveSceneName(title: 'Meditazione Aria'),
-        UnityScenes.airMeditation,
+        UnityScenes.airBreathing,
       );
 
       // FIRE
@@ -536,7 +540,7 @@ void main() {
       );
       expect(
         UnityScenes.resolveSceneName(title: 'Meditazione Fuoco'),
-        UnityScenes.fireMeditation,
+        UnityScenes.fireBreathing,
       );
 
       // EARTH
@@ -546,21 +550,21 @@ void main() {
       );
       expect(
         UnityScenes.resolveSceneName(title: 'Meditazione Terra'),
-        UnityScenes.earthMeditation,
+        UnityScenes.earthBreathing,
       );
 
       // WATER & THEMED
       expect(
         UnityScenes.resolveSceneName(title: 'Meditazione del Mattino'),
-        UnityScenes.waterMeditation,
+        UnityScenes.waterMeditationMorning,
       );
       expect(
         UnityScenes.resolveSceneName(title: 'Calma e Presenza'),
-        UnityScenes.waterMeditation,
+        UnityScenes.generalMeditation,
       );
       expect(
         UnityScenes.resolveSceneName(title: 'Focus Profondo'),
-        UnityScenes.waterMeditation,
+        UnityScenes.generalMeditation,
       );
 
       // EXPLICIT SCENE OVERRIDE

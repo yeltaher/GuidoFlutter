@@ -8,6 +8,7 @@
 struct DelegateU5BU5D_tC5AB7E8F745616680F337909D3A8E6C722CDF771;
 struct DelegateData_t9B286B493293CD2D23A5B2B5EF0E5B1324C2B77E;
 struct MethodInfo_t;
+struct StorefrontChangeCallback_tFF0E50758B09B379FFAD47874880E4CEC6AFB570;
 struct String_t;
 struct UnityPurchasingCallback_t3C1333A45134D9A999AB29AEEBF05883A9A707F3;
 struct Void_t4861ACF8F4594C3437BB48B6E56783494B843915;
@@ -127,6 +128,9 @@ struct MulticastDelegate_t_marshaled_com : public Delegate_t_marshaled_com
 {
 	Delegate_t_marshaled_com** ___delegates;
 };
+struct StorefrontChangeCallback_tFF0E50758B09B379FFAD47874880E4CEC6AFB570  : public MulticastDelegate_t
+{
+};
 struct UnityPurchasingCallback_t3C1333A45134D9A999AB29AEEBF05883A9A707F3  : public MulticastDelegate_t
 {
 };
@@ -151,15 +155,26 @@ struct IntPtr_t_StaticFields
 
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_SetNativeCallback_m48C165929A4DFD0ABC5015941D3F46A68F46474D (UnityPurchasingCallback_t3C1333A45134D9A999AB29AEEBF05883A9A707F3* ___0_callbackDelegate, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_DeallocateMemory_m038C009D4E37DF441F6E99D723C125A08DD3B168 (intptr_t ___0_pointer, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_AddTransactionObserver_mF6FD8433EC4FAB82F25CBD213B03E32462B668D8 (const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_FetchProducts_m394B980FD20D9985D4747CE1C0847793A28CF4B7 (String_t* ___0_json, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_FetchPurchases_mAFFB0F84632511BB45B80DF162D37B8ABFD00253 (const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_Purchase_mC7E21E6F80754BB0A9169BAA577B8307A6800CD1 (iOSStoreBindings_t6D0B0FA1099D0078AA43F5214A8DFAE1663323B0* __this, String_t* ___0_productJson, String_t* ___1_optionsJson, StorefrontChangeCallback_tFF0E50758B09B379FFAD47874880E4CEC6AFB570* ___2_callback, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool String_IsNullOrEmpty_mEA9E3FB005AC28FE02E69FCF95A7B8456192B478 (String_t* ___0_value, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_FinishTransaction_mAC15FECCFE5690F2A2564C384DA071509930D7E1 (String_t* ___0_transactionId, bool ___1_logFinishTransaction, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_RestoreTransactions_m60FC0081733E7854F3439028D79C8AC3CF5B1BAF (const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_InterceptPromotionalPurchases_mEFD2433F7E5D3F29B6C5BDF94FC1CE33F105CDF1 (const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_PurchaseProduct_m8886EC379E68DA6DD5CD6A1F9C3416FFCBFC1858 (String_t* ___0_productJson, String_t* ___1_optionsJson, StorefrontChangeCallback_tFF0E50758B09B379FFAD47874880E4CEC6AFB570* ___2_storefrontCallbackDelegate, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_RefreshAppReceipt_m06EF637EEE6B826AF51011D6F89E675AD09F7009 (const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Object__ctor_mE837C6B9FA8C6D5D109F4B2EC885D79919AC0EA2 (RuntimeObject* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C void DEFAULT_CALL unityPurchasing_SetNativeCallback(Il2CppMethodPointer);
+IL2CPP_EXTERN_C void DEFAULT_CALL unityPurchasing_AddTransactionObserver();
 IL2CPP_EXTERN_C void DEFAULT_CALL unityPurchasing_FetchProducts(char*);
+IL2CPP_EXTERN_C void DEFAULT_CALL unityPurchasing_PurchaseProduct(char*, char*, Il2CppMethodPointer);
 IL2CPP_EXTERN_C void DEFAULT_CALL unityPurchasing_DeallocateMemory(intptr_t);
+IL2CPP_EXTERN_C void DEFAULT_CALL unityPurchasing_FetchPurchases();
 IL2CPP_EXTERN_C void DEFAULT_CALL unityPurchasing_FinishTransaction(char*, int32_t);
+IL2CPP_EXTERN_C void DEFAULT_CALL unityPurchasing_RestoreTransactions();
+IL2CPP_EXTERN_C void DEFAULT_CALL unityPurchasing_InterceptPromotionalPurchases();
 IL2CPP_EXTERN_C void DEFAULT_CALL unityPurchasing_RefreshAppReceipt();
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -184,6 +199,13 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_SetNati
 	reinterpret_cast<PInvokeFunc>(unityPurchasing_SetNativeCallback)(____0_callbackDelegate_marshaled);
 
 }
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_AddTransactionObserver_mF6FD8433EC4FAB82F25CBD213B03E32462B668D8 (const RuntimeMethod* method) 
+{
+	typedef void (DEFAULT_CALL *PInvokeFunc) ();
+
+	reinterpret_cast<PInvokeFunc>(unityPurchasing_AddTransactionObserver)();
+
+}
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_FetchProducts_m394B980FD20D9985D4747CE1C0847793A28CF4B7 (String_t* ___0_json, const RuntimeMethod* method) 
 {
 	typedef void (DEFAULT_CALL *PInvokeFunc) (char*);
@@ -197,11 +219,40 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_FetchPr
 	____0_json_marshaled = NULL;
 
 }
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_PurchaseProduct_m8886EC379E68DA6DD5CD6A1F9C3416FFCBFC1858 (String_t* ___0_productJson, String_t* ___1_optionsJson, StorefrontChangeCallback_tFF0E50758B09B379FFAD47874880E4CEC6AFB570* ___2_storefrontCallbackDelegate, const RuntimeMethod* method) 
+{
+	typedef void (DEFAULT_CALL *PInvokeFunc) (char*, char*, Il2CppMethodPointer);
+
+	char* ____0_productJson_marshaled = NULL;
+	____0_productJson_marshaled = il2cpp_codegen_marshal_string(___0_productJson);
+
+	char* ____1_optionsJson_marshaled = NULL;
+	____1_optionsJson_marshaled = il2cpp_codegen_marshal_string(___1_optionsJson);
+
+	Il2CppMethodPointer ____2_storefrontCallbackDelegate_marshaled = NULL;
+	____2_storefrontCallbackDelegate_marshaled = il2cpp_codegen_marshal_delegate(reinterpret_cast<MulticastDelegate_t*>(___2_storefrontCallbackDelegate));
+
+	reinterpret_cast<PInvokeFunc>(unityPurchasing_PurchaseProduct)(____0_productJson_marshaled, ____1_optionsJson_marshaled, ____2_storefrontCallbackDelegate_marshaled);
+
+	il2cpp_codegen_marshal_free(____0_productJson_marshaled);
+	____0_productJson_marshaled = NULL;
+
+	il2cpp_codegen_marshal_free(____1_optionsJson_marshaled);
+	____1_optionsJson_marshaled = NULL;
+
+}
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_DeallocateMemory_m038C009D4E37DF441F6E99D723C125A08DD3B168 (intptr_t ___0_pointer, const RuntimeMethod* method) 
 {
 	typedef void (DEFAULT_CALL *PInvokeFunc) (intptr_t);
 
 	reinterpret_cast<PInvokeFunc>(unityPurchasing_DeallocateMemory)(___0_pointer);
+
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_FetchPurchases_mAFFB0F84632511BB45B80DF162D37B8ABFD00253 (const RuntimeMethod* method) 
+{
+	typedef void (DEFAULT_CALL *PInvokeFunc) ();
+
+	reinterpret_cast<PInvokeFunc>(unityPurchasing_FetchPurchases)();
 
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_FinishTransaction_mAC15FECCFE5690F2A2564C384DA071509930D7E1 (String_t* ___0_transactionId, bool ___1_logFinishTransaction, const RuntimeMethod* method) 
@@ -215,6 +266,20 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_FinishT
 
 	il2cpp_codegen_marshal_free(____0_transactionId_marshaled);
 	____0_transactionId_marshaled = NULL;
+
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_RestoreTransactions_m60FC0081733E7854F3439028D79C8AC3CF5B1BAF (const RuntimeMethod* method) 
+{
+	typedef void (DEFAULT_CALL *PInvokeFunc) ();
+
+	reinterpret_cast<PInvokeFunc>(unityPurchasing_RestoreTransactions)();
+
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_InterceptPromotionalPurchases_mEFD2433F7E5D3F29B6C5BDF94FC1CE33F105CDF1 (const RuntimeMethod* method) 
+{
+	typedef void (DEFAULT_CALL *PInvokeFunc) ();
+
+	reinterpret_cast<PInvokeFunc>(unityPurchasing_InterceptPromotionalPurchases)();
 
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_unityPurchasing_RefreshAppReceipt_m06EF637EEE6B826AF51011D6F89E675AD09F7009 (const RuntimeMethod* method) 
@@ -240,11 +305,40 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_DeallocateMemory_mEBD5A
 		return;
 	}
 }
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_Connect_m33ACEC93479F2203C0D20A74BFE37568A9050868 (iOSStoreBindings_t6D0B0FA1099D0078AA43F5214A8DFAE1663323B0* __this, const RuntimeMethod* method) 
+{
+	{
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_AddTransactionObserver_mDE4C2E69B7C8FB368B0120240D957E89869FFE6A (iOSStoreBindings_t6D0B0FA1099D0078AA43F5214A8DFAE1663323B0* __this, const RuntimeMethod* method) 
+{
+	{
+		iOSStoreBindings_unityPurchasing_AddTransactionObserver_mF6FD8433EC4FAB82F25CBD213B03E32462B668D8(NULL);
+		return;
+	}
+}
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_FetchProducts_m5ECD8737AF6F6849004DD88099D6FBD3132605AF (iOSStoreBindings_t6D0B0FA1099D0078AA43F5214A8DFAE1663323B0* __this, String_t* ___0_json, const RuntimeMethod* method) 
 {
 	{
 		String_t* L_0 = ___0_json;
 		iOSStoreBindings_unityPurchasing_FetchProducts_m394B980FD20D9985D4747CE1C0847793A28CF4B7(L_0, NULL);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_FetchExistingPurchases_m8163D347D521F7B2E5F0BF0912233A69D5E275EE (iOSStoreBindings_t6D0B0FA1099D0078AA43F5214A8DFAE1663323B0* __this, const RuntimeMethod* method) 
+{
+	{
+		iOSStoreBindings_unityPurchasing_FetchPurchases_mAFFB0F84632511BB45B80DF162D37B8ABFD00253(NULL);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_Purchase_mDD137547381A32459D42B5E8274F1F1F27986826 (iOSStoreBindings_t6D0B0FA1099D0078AA43F5214A8DFAE1663323B0* __this, String_t* ___0_productJSON, String_t* ___1_developerPayload, const RuntimeMethod* method) 
+{
+	{
+		String_t* L_0 = ___0_productJSON;
+		String_t* L_1 = ___1_developerPayload;
+		iOSStoreBindings_Purchase_mC7E21E6F80754BB0A9169BAA577B8307A6800CD1(__this, L_0, L_1, (StorefrontChangeCallback_tFF0E50758B09B379FFAD47874880E4CEC6AFB570*)NULL, NULL);
 		return;
 	}
 }
@@ -256,6 +350,30 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_FinishTransaction_mDD77
 		bool L_2;
 		L_2 = String_IsNullOrEmpty_mEA9E3FB005AC28FE02E69FCF95A7B8456192B478(L_1, NULL);
 		iOSStoreBindings_unityPurchasing_FinishTransaction_mAC15FECCFE5690F2A2564C384DA071509930D7E1(L_0, (bool)((((int32_t)L_2) == ((int32_t)0))? 1 : 0), NULL);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_RestoreTransactions_mE4FBAAB6141F2DD5411506DF435828A22947A0AF (iOSStoreBindings_t6D0B0FA1099D0078AA43F5214A8DFAE1663323B0* __this, const RuntimeMethod* method) 
+{
+	{
+		iOSStoreBindings_unityPurchasing_RestoreTransactions_m60FC0081733E7854F3439028D79C8AC3CF5B1BAF(NULL);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_InterceptPromotionalPurchases_mEBF2EA86F9E9A85F1AD4D78ADABC830A3A32110E (iOSStoreBindings_t6D0B0FA1099D0078AA43F5214A8DFAE1663323B0* __this, const RuntimeMethod* method) 
+{
+	{
+		iOSStoreBindings_unityPurchasing_InterceptPromotionalPurchases_mEFD2433F7E5D3F29B6C5BDF94FC1CE33F105CDF1(NULL);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void iOSStoreBindings_Purchase_mC7E21E6F80754BB0A9169BAA577B8307A6800CD1 (iOSStoreBindings_t6D0B0FA1099D0078AA43F5214A8DFAE1663323B0* __this, String_t* ___0_productJson, String_t* ___1_optionsJson, StorefrontChangeCallback_tFF0E50758B09B379FFAD47874880E4CEC6AFB570* ___2_callback, const RuntimeMethod* method) 
+{
+	{
+		String_t* L_0 = ___0_productJson;
+		String_t* L_1 = ___1_optionsJson;
+		StorefrontChangeCallback_tFF0E50758B09B379FFAD47874880E4CEC6AFB570* L_2 = ___2_callback;
+		iOSStoreBindings_unityPurchasing_PurchaseProduct_m8886EC379E68DA6DD5CD6A1F9C3416FFCBFC1858(L_0, L_1, L_2, NULL);
 		return;
 	}
 }
