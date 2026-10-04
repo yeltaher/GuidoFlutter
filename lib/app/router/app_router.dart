@@ -8,6 +8,7 @@ import '../../features/meditation/meditation_feature.dart';
 import '../../features/breathing/breathing_feature.dart';
 import '../../features/premium/premium_feature.dart';
 import '../../features/menu/presentation/zen_sound_mixer_view.dart';
+import '../../features/meditation/presentation/native_3d_experience_screen.dart';
 
 /// Helper difensivo per l'estrazione e merge di parametri di rotta da GoRouter.
 /// Supporta `Map<String, dynamic>`, `Map<dynamic, dynamic>`, ed effettua il merge con queryParameters.
@@ -188,6 +189,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             isVrMode: isVrMode,
             voicePath: voicePath,
             ambientPath: ambientPath,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/native-3d-experience',
+        builder: (context, state) {
+          final params = _extractRouteParams(state);
+          return Native3DExperienceScreen(
+            experienceId: params['experienceId']?.toString(),
           );
         },
       ),
