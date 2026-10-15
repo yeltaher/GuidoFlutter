@@ -249,10 +249,10 @@ void main() {
                       showDialog(
                         context: ctx,
                         builder: (_) => const SessionLaunchDialog(
-                          title: 'Meditazione Acqua',
+                          title: 'Procedimento Acqua',
                           voicePath: '',
                           ambientPath: '',
-                          sceneName: UnityScenes.waterMeditation,
+                          sceneName: UnityScenes.waterTutorial,
                           durationSeconds: 300.0,
                         ),
                       );
@@ -303,7 +303,7 @@ void main() {
 
       expect(unityExtra, isNotNull);
       expect(unityExtra!['isVrMode'], isFalse);
-      expect(unityExtra!['title'], 'Meditazione Acqua');
+      expect(unityExtra!['title'], 'Procedimento Acqua');
     });
   });
 }

@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guido/core/vr/vr_host_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,6 +12,7 @@ import '../../../core/database/settings_provider.dart';
 import '../../../core/unity/unity_bridge_dto.dart';
 import '../../../core/audio/audio_resolver_service.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import '../../vr_experiences/vr_experiences_feature.dart';
 
 /// Funzione globale di utilità per avviare qualsiasi sessione di meditazione o respirazione
 /// chiedendo prima l'esperienza Flat vs VR ed effettuando la conferma del visore.
@@ -64,6 +66,24 @@ void launchUnityExperience({
   String? voicePath,
   String? ambientPath,
 }) {
+  final vrMatch = VrExperienceType.fromSceneOrTitle(
+        sceneName: sceneName,
+        title: title,
+      ) ??
+      VrExperienceType.fromSessionId(sceneName) ??
+      VrExperienceType.fromSessionId(title);
+  if (vrMatch != null) {
+    context.push(
+      '/vr-experience',
+      extra: {
+        'experienceId': vrMatch.id,
+        'isVrMode': isVrMode,
+        'autoStart': true,
+      },
+    );
+    return;
+  }
+
   final settings = ref.read(settingsProvider);
   final bundle = AudioResolverService.resolveBundle(
     title: title,
@@ -114,6 +134,34 @@ class SessionLaunchDialog extends ConsumerWidget {
     final router = GoRouter.of(context);
     ref.read(settingsProvider.notifier).toggleVrMode(false);
 
+    // Forza orientamento orizzontale e fullscreen immersivo immediato
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    final vrMatch = VrExperienceType.fromSceneOrTitle(
+          sceneName: sceneName,
+          title: title,
+        ) ??
+        VrExperienceType.fromSessionId(sceneName) ??
+        VrExperienceType.fromSessionId(title);
+
+    router.pop();
+
+    if (vrMatch != null) {
+      router.pushReplacement(
+        '/vr-experience',
+        extra: {
+          'experienceId': vrMatch.id,
+          'isVrMode': false,
+          'autoStart': true,
+        },
+      );
+      return;
+    }
+
     final settings = ref.read(settingsProvider);
     final bundle = AudioResolverService.resolveBundle(
       title: title,
@@ -125,8 +173,6 @@ class SessionLaunchDialog extends ConsumerWidget {
       customAmbientPath: ambientPath,
       durationSeconds: durationSeconds,
     );
-
-    router.pop();
 
     router.pushReplacement(
       '/unity-experience',
@@ -145,6 +191,35 @@ class SessionLaunchDialog extends ConsumerWidget {
     final router = GoRouter.of(context);
     ref.read(settingsProvider.notifier).toggleVrMode(true);
 
+    // Forza orientamento orizzontale e fullscreen immersivo immediato
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    final vrMatch = VrExperienceType.fromSceneOrTitle(
+          sceneName: sceneName,
+          title: title,
+        ) ??
+        VrExperienceType.fromSessionId(sceneName) ??
+        VrExperienceType.fromSessionId(title);
+
+    router.pop();
+
+    // Avvio rapido diretto nel visore VR: nessun passaggio intermedio bloccante
+    if (vrMatch != null) {
+      router.pushReplacement(
+        '/vr-experience',
+        extra: {
+          'experienceId': vrMatch.id,
+          'isVrMode': true,
+          'autoStart': true,
+        },
+      );
+      return;
+    }
+
     final settings = ref.read(settingsProvider);
     final bundle = AudioResolverService.resolveBundle(
       title: title,
@@ -157,36 +232,17 @@ class SessionLaunchDialog extends ConsumerWidget {
       durationSeconds: durationSeconds,
     );
 
-    router.pop();
-
-    if (!settings.vrCalibrated) {
-      // Se non calibrato, prima calibrazione poi conferma
-      router.pushReplacement(
-        '/vr-calibration',
-        extra: {
-          'isFromSettings': false,
-          'title': title,
-          'voicePath': bundle.voicePath,
-          'ambientPath': bundle.ambientPath,
-          'breathingAudioPath': breathingAudioPath,
-          'sceneName': bundle.sceneName,
-          'durationSeconds': bundle.durationSeconds,
-        },
-      );
-    } else {
-      // Già calibrato: vai direttamente alla conferma del visore
-      router.pushReplacement(
-        '/vr-confirmation',
-        extra: {
-          'title': title,
-          'voicePath': bundle.voicePath,
-          'ambientPath': bundle.ambientPath,
-          'breathingAudioPath': breathingAudioPath,
-          'sceneName': bundle.sceneName,
-          'durationSeconds': bundle.durationSeconds,
-        },
-      );
-    }
+    router.pushReplacement(
+      '/unity-experience',
+      extra: {
+        'title': title,
+        'sceneName': bundle.sceneName,
+        'durationSeconds': bundle.durationSeconds,
+        'isVrMode': true,
+        'voicePath': bundle.voicePath,
+        'ambientPath': bundle.ambientPath,
+      },
+    );
   }
 
   @override
@@ -246,11 +302,12 @@ class SessionLaunchDialog extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 _buildChoiceCard(
-                  icon: Icons.phone_android_rounded,
+                  icon: Icons.stay_current_landscape_rounded,
                   title: isIt ? 'Modalità Standard' : 'Standard Mode',
+                  actionLabel: isIt ? 'Avvia Immersiva' : 'Launch 3D',
                   desc: isIt
-                      ? 'Segui la meditazione direttamente sullo schermo dello smartphone.'
-                      : 'Follow the meditation directly on your smartphone screen.',
+                      ? 'Avvia Esperienza Immersiva a tutto schermo con controlli touch 3D.'
+                      : 'Launch Immersive Experience fullscreen on your smartphone with 3D touch.',
                   isDark: isDark,
                   accentColor: accentColor,
                   textColor: textColor,
@@ -263,9 +320,10 @@ class SessionLaunchDialog extends ConsumerWidget {
                 _buildChoiceCard(
                   icon: Icons.view_in_ar_rounded,
                   title: isIt ? 'Modalità Visore VR 3D' : 'VR 3D Headset Mode',
+                  actionLabel: isIt ? 'Avvia VR' : 'Launch VR',
                   desc: isIt
-                      ? 'Immergiti a 360° nel giardino zen inserendo il telefono in un visore VR Cardboard.'
-                      : 'Immerse yourself 360° in the zen garden using a VR Cardboard headset.',
+                      ? 'Avvia in Visore VR Cardboard stereoscopico a 360° immediato.'
+                      : 'Launch in VR Cardboard stereoscopic 360° headset immediately.',
                   isDark: isDark,
                   accentColor: accentColor,
                   textColor: textColor,
@@ -298,6 +356,7 @@ class SessionLaunchDialog extends ConsumerWidget {
   Widget _buildChoiceCard({
     required IconData icon,
     required String title,
+    String? actionLabel,
     required String desc,
     required bool isDark,
     required Color accentColor,
@@ -337,13 +396,40 @@ class SessionLaunchDialog extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+                      if (actionLabel != null) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: accentColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            actionLabel,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: accentColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -422,6 +508,25 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
     if (_sessionStarting) return;
     _sessionStarting = true;
     ref.read(settingsProvider.notifier).toggleVrMode(true);
+
+    final vrMatch = VrExperienceType.fromSceneOrTitle(
+          sceneName: widget.sceneName,
+          title: widget.title,
+        ) ??
+        VrExperienceType.fromSessionId(widget.sceneName) ??
+        VrExperienceType.fromSessionId(widget.title);
+
+    if (vrMatch != null) {
+      context.pushReplacement(
+        '/vr-experience',
+        extra: {
+          'experienceId': vrMatch.id,
+          'isVrMode': true,
+          'autoStart': true,
+        },
+      );
+      return;
+    }
 
     final settings = ref.read(settingsProvider);
     final bundle = AudioResolverService.resolveBundle(

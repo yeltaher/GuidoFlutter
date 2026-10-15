@@ -41,9 +41,30 @@
 		<dict>
 			<key>NSAllowsArbitraryLoads</key>
 			<true/>
+			<key>NSAllowsArbitraryLoadsInWebContent</key>
+			<true/>
 			<key>NSAllowsLocalNetworking</key>
 			<true/>
+			<key>NSExceptionDomains</key>
+			<dict>
+				<key>localhost</key>
+				<dict>
+					<key>NSExceptionAllowsInsecureHTTPLoads</key>
+					<true/>
+					<key>NSIncludesSubdomains</key>
+					<true/>
+				</dict>
+				<key>127.0.0.1</key>
+				<dict>
+					<key>NSExceptionAllowsInsecureHTTPLoads</key>
+					<true/>
+					<key>NSIncludesSubdomains</key>
+					<true/>
+				</dict>
+			</dict>
 		</dict>
+		<key>NSLocalNetworkUsageDescription</key>
+		<string>L'app necessita dell'accesso alla rete locale per comunicare con il server locale dei contenuti WebXR 3D immersivi.</string>
 		<key>ITSAppUsesNonExemptEncryption</key>
 		<false/>
 		<key>UIApplicationSupportsIndirectInputEvents</key>

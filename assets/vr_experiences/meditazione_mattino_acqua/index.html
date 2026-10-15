@@ -1,0 +1,3931 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Guido VR - Meditazione del Mattino (Elemento Acqua • 432 Hz)</title>
+  
+  <style>
+    :root {
+      --bg-dark: #020814;
+      --ice-cyan: #7ce8ff;
+      --arctic-blue: #1c4b75;
+      --aurora-teal: #38ef7d;
+      --sun-gold: #ffc44d;
+      --sun-amber: #ff7e1b;
+      --chakra-red: #ff3344;
+      --chakra-orange: #ff8822;
+      --chakra-yellow: #ffdd33;
+      --chakra-green: #22dd66;
+      --text-bright: #f0f8ff;
+      --text-dim: rgba(240, 248, 255, 0.72);
+      --glass-panel: rgba(6, 20, 38, 0.78);
+      --glass-border: rgba(124, 232, 255, 0.24);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text-bright);
+    }
+
+    #webgl-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: none;
+    }
+
+    /* VR Cardboard Stereo Overlay */
+    #vr-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    #vr-overlay.active {
+      display: block;
+    }
+
+    .vr-divider {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateX(-50%);
+      box-shadow: none !important;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+
+    /* Clean Floating HUD UI Layer */
+    #ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 20;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    #ui-layer.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Top Navigation Bar hidden in app */
+    .header-bar {
+      display: none !important;
+    }
+
+    /* Subtitle Container - Clean Floating Ethereal Text */
+    .subtitle-container {
+      position: absolute;
+      bottom: env(safe-area-inset-bottom, 24px);
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 24px;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    .subtitle-box {
+      max-width: 800px;
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      text-align: center;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: none !important;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    .subtitle-box.visible {
+      opacity: 1;
+    }
+
+    .subtitle-text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.95);
+      letter-spacing: 1px;
+      text-shadow: 0 0 16px rgba(124, 232, 255, 0.5), 0 2px 10px rgba(0, 0, 0, 0.9);
+    }
+
+    /* Bottom Dock Bar hidden in app */
+    .bottom-dock {
+      display: none !important;
+    }
+
+    .scrubber-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .time-tag {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      min-width: 36px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .time-tag.current {
+      color: var(--ice-cyan);
+    }
+
+    .progress-track-wrapper {
+      flex: 1;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .progress-track-bg {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-track-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--arctic-blue) 0%, var(--ice-cyan) 60%, var(--aurora-teal) 100%);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(124, 232, 255, 0.7);
+      transition: width 0.08s linear;
+    }
+
+    .scene-markers-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .scene-marker {
+      position: absolute;
+      top: 8px;
+      width: 2px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.35);
+      transform: translateX(-50%);
+    }
+
+    .controls-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .playback-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-play-pause {
+      height: 36px;
+      padding: 0 16px;
+      border-radius: 18px;
+      background: var(--ice-cyan);
+      color: #031222;
+      border: none;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(124, 232, 255, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-play-pause:hover {
+      background: #a2f0ff;
+      transform: scale(1.03);
+    }
+
+    .scene-pills-scroll {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 2px 0;
+      max-width: 60vw;
+    }
+
+    .scene-pills-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scene-btn {
+      white-space: nowrap;
+      background: var(--glass-panel);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .scene-btn:hover {
+      color: #fff;
+      border-color: var(--ice-cyan);
+      background: rgba(124, 232, 255, 0.15);
+    }
+
+    .scene-btn.active {
+      background: linear-gradient(135deg, rgba(124, 232, 255, 0.3) 0%, rgba(56, 239, 125, 0.3) 100%);
+      border-color: var(--ice-cyan);
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(124, 232, 255, 0.3);
+    }
+
+    .audio-mix-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .slider-container input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 72px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .slider-container input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--ice-cyan);
+      box-shadow: 0 0 6px rgba(124, 232, 255, 0.8);
+      cursor: pointer;
+    }
+
+    /* Initial Audio Unlock Gate bypassed in mobile app */
+    #audio-gate {
+      display: none !important;
+    }
+
+    /* Landscape Device Rotation Hint disabled: forced by OS */
+    #rotate-hint {
+      display: none !important;
+    }
+
+    /* 2D Session Completion Modal (Japandi Aesthetics) */
+    .completion-modal-backdrop {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2147483647 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(7, 12, 20, 0.94) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .completion-modal-backdrop.visible {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .completion-modal-card {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(145deg, rgba(16, 26, 42, 0.94), rgba(9, 15, 26, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 24px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(255, 215, 0, 0.08);
+      transform: scale(0.92) translateY(12px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .completion-modal-backdrop.visible .completion-modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .completion-modal-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px auto;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.22) 0%, rgba(255, 215, 0, 0.03) 70%);
+      border: 1px solid rgba(255, 215, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffd700;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+    }
+
+    .completion-modal-title {
+      font-family: inherit;
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 10px 0;
+      letter-spacing: 0.3px;
+    }
+
+    .completion-modal-desc {
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.76);
+      margin: 0 0 26px 0;
+    }
+
+    .completion-modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .btn-completion {
+      flex: 1;
+      height: 48px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      border: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-completion-exit {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.65);
+      color: #fca5a5;
+    }
+
+    .btn-completion-exit:hover, .btn-completion-exit:active {
+      background: rgba(239, 68, 68, 0.32);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-completion-repeat {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.32), rgba(5, 150, 105, 0.55));
+      border: 1px solid rgba(52, 211, 153, 0.85);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-completion-repeat:hover, .btn-completion-repeat:active {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.48), rgba(5, 150, 105, 0.72));
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+  </style>
+
+  <!-- High-Definition Pre-encoded Textures Bundle (CORS-Immune Data-URIs) -->
+  <script src="morning_water_textures.js"></script>
+
+  <!-- Local Three.js r128 Library -->
+  <script src="three.min.js"></script>
+</head>
+<body>
+
+  <!-- WebGL Three.js Viewport -->
+  <div id="webgl-container"></div>
+
+  <!-- VR Cardboard Stereo Overlay -->
+  <div id="vr-overlay">
+    <div class="vr-divider"></div>
+  </div>
+
+  <!-- Unobtrusive HUD Overlay -->
+  <div id="ui-layer">
+    <!-- Header -->
+    <header class="header-bar">
+      <div class="title-group">
+        <div class="app-title">
+          Guido VR
+          <span class="badge">432 Hz</span>
+          <span class="badge" style="background: rgba(56, 239, 125, 0.2); border-color: rgba(56, 239, 125, 0.4);">Elemento Acqua</span>
+        </div>
+        <div class="scene-name-badge" id="hud-scene-name">Scena 1 — Notte Artica & Alba con 3 Respiri</div>
+      </div>
+      <div class="top-actions">
+        <button class="btn-icon" id="btn-recenter" title="Riposiziona Visuale (R)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        </button>
+        <button class="btn-icon" id="btn-audio-mute" title="Muto (M)">
+          <svg id="icon-sound-on" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          <svg id="icon-sound-off" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" title="Schermo Intero (F)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        </button>
+        <button class="btn-vr-cardboard" id="btn-toggle-vr" title="Avvia Modalità VR Visore (V)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.73 6.3c-.47-.79-1.33-1.3-2.28-1.3H5.55c-.95 0-1.81.51-2.28 1.3L1.13 10.3c-.4.67-.18 1.54.49 1.94.24.14.5.21.77.21.46 0 .91-.21 1.2-.6l1.35-2.26.85 7.64c.1.95.91 1.67 1.87 1.67h1.56c.99 0 1.83-.75 1.92-1.74l.43-4.73c.04-.45.42-.8.88-.8h1.1c.45 0 .84.34.88.8l.43 4.73c.09.99.93 1.74 1.92 1.74h1.56c.96 0 1.77-.72 1.87-1.67l.85-7.64 1.35 2.26c.29.39.74.6 1.2.6.26 0 .53-.07.77-.21.67-.4.89-1.27.49-1.94l-2.14-4z"/></svg>
+          VR Cardboard
+        </button>
+      </div>
+    </header>
+
+    <!-- Subtitle Container -->
+    <div class="subtitle-container">
+      <div class="subtitle-box">
+        <span class="subtitle-text" id="hud-subtitle-text"></span>
+      </div>
+    </div>
+
+    <!-- Bottom Controls & Timeline Bar -->
+    <footer class="bottom-dock">
+      <!-- Scrubber -->
+      <div class="scrubber-row">
+        <div class="time-tag current" id="scrub-current-time">00:00</div>
+        <div class="progress-track-wrapper" id="progress-wrapper">
+          <div class="progress-track-bg">
+            <div class="progress-track-fill" id="progress-fill"></div>
+          </div>
+          <div class="scene-markers-overlay" id="scene-markers-bar"></div>
+        </div>
+        <div class="time-tag" id="hud-time-display">00:00 / 06:24</div>
+      </div>
+
+      <!-- Controls & Navigation Toolbar -->
+      <div class="controls-toolbar">
+        <div class="playback-group">
+          <button class="btn-play-pause" id="btn-play-pause">
+            <svg id="icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="icon-pause" style="display: none;" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <span id="play-pause-label">Avvia</span>
+          </button>
+        </div>
+
+        <!-- Fast 8 Scene Selection Pills -->
+        <div class="scene-pills-scroll">
+          <button class="scene-btn active" data-scene="1" data-time="0">1 • Alba Artica</button>
+          <button class="scene-btn" data-scene="2" data-time="75">2 • Sole Ore 9:00</button>
+          <button class="scene-btn" data-scene="3" data-time="125">3 • Lago Sacro</button>
+          <button class="scene-btn" data-scene="4" data-time="170">4 • Bagno d'Aura</button>
+          <button class="scene-btn" data-scene="5" data-time="215">5 • 4 Chakra</button>
+          <button class="scene-btn" data-scene="6" data-time="265">6 • Porta 4 Elementi</button>
+          <button class="scene-btn" data-scene="7" data-time="305">7 • Luce Arcobaleno</button>
+          <button class="scene-btn" data-scene="8" data-time="355">8 • Risveglio</button>
+        </div>
+
+        <!-- Multi-Track Volume Controls -->
+        <div class="audio-mix-group">
+          <div class="slider-container" title="Volume Voce Guida (Luigi)">
+            <span>Voce</span>
+            <input type="range" id="slider-voice" min="0" max="1" step="0.01" value="0.95">
+          </div>
+          <div class="slider-container" title="Volume Musica 432 Hz">
+            <span>432 Hz</span>
+            <input type="range" id="slider-music" min="0" max="1" step="0.01" value="0.85">
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Audio Gate / Initial Tap Overlay -->
+  <div id="audio-gate">
+    <div class="gate-card">
+      <div class="gate-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+      </div>
+      <div class="gate-title">Meditazione del Mattino</div>
+      <div class="gate-subtitle">Elemento Acqua • Frequenza 432 Hz</div>
+      <div class="gate-desc">
+        Un viaggio multisensoriale a 360° attraverso l'alba artica, il lago sacro della rigenerazione, l'attivazione dei 4 chakra e la soglia radiosa dei quattro elementi.
+      </div>
+      <div class="gate-actions">
+        <button class="btn-gate-start" id="btn-gate-enter">ENTRA NELL'ESPERIENZA</button>
+        <button class="btn-gate-vr" id="btn-gate-enter-vr">Avvia in Modalità Cardboard VR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rotate Device Hint for Cardboard -->
+  <div id="rotate-hint">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 5.39 18.23 1 12 1 9.27 1 6.79 2.01 4.88 3.68L2.4 1.2V7h5.8L5.94 4.74C7.54 3.37 9.67 2.5 12 2.5c1.61 0 3.12.44 4.48 1.02zM1.05 13H2.55c.36 3.76 2.7 6.93 5.97 8.48 1.36.58 2.87 1.02 4.48 1.02 2.33 0 4.46-.87 6.06-2.24L16.8 17H22.6v5.8l-2.48-2.48C18.21 21.99 15.73 23 12 23c-6.23 0-11.44-4.39-11.95-10z"/></svg>
+    <p style="margin-top: 16px; font-size: 16px; font-weight: 600;">Ruota lo smartphone in orizzontale</p>
+    <p style="margin-top: 8px; font-size: 13px; color: var(--text-dim);">per inserirlo nel visore VR Cardboard</p>
+  </div>
+
+  <!-- 2D Session Completion Modal (Normal / Smartphone Mode) -->
+  <div id="session-completion-modal" class="completion-modal-backdrop" style="display: none;">
+    <div class="completion-modal-card">
+      <div class="completion-modal-icon">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <h2 class="completion-modal-title">Esperienza Completata</h2>
+      <p class="completion-modal-desc">Porta questa energia di pace, presenza e rigenerazione nella tua giornata.</p>
+      <div class="completion-modal-actions">
+        <button id="btn-completion-exit" class="btn-completion btn-completion-exit" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+          <span>ESCI</span>
+        </button>
+        <button id="btn-completion-repeat" class="btn-completion btn-completion-repeat" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.95 20 14.54 20 13c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 8.74C4.46 10.05 4 11.46 4 13c0 4.42 3.58 8 8 8v4l5-5-5-5v4c-3.31 0-6-2.69-6-6z"/></svg>
+          <span>RIPETI</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Elements -->
+  <audio id="audio-voice" src="audio/voice_it.mp3" preload="auto"></audio>
+  <audio id="audio-music" src="audio/music_432hz.mp3" preload="auto"></audio>
+
+  <script>
+    /* ======================================================================
+       GUIDO VR — MEDITAZIONE DEL MATTINO (ELEMENTO ACQUA • 432 HZ)
+       Ultra-Photorealistic 360 WebXR Engine
+       ====================================================================== */
+
+    const TOTAL_DURATION_SEC = 384; // 06:24 total
+    const VOICE_DURATION_SEC = 354; // 05:54 voice
+
+    // Global State
+    const state = {
+      currentTime: 0,
+      isPlaying: false,
+      isMuted: false,
+      voiceVolume: 0.95,
+      musicVolume: 0.85,
+      currentSceneIndex: 0,
+      isVRMode: false,
+      isCompleted: false,
+      lastTimestamp: 0
+    };
+
+    // Subtitle & Narrative Script Data — Precisely Aligned to voice_it.mp3 Waveform & Storyboard
+    const SCRIPT_CUES = [
+      { start: 1.4, end: 6.8, text: "Puoi iniziare questa giornata portando l'attenzione sul tuo respiro." },
+      { start: 8.8, end: 15.0, text: "Permettiti di inspirare l'energia collegata al sorgere del sole." },
+      { start: 17.6, end: 25.1, text: "Espira, lasciando andare ogni tensione accumulata durante la notte." },
+      { start: 28.5, end: 32.4, text: "Inspira la forza vitale..." },
+      { start: 36.2, end: 48.1, text: "Ed espira, rilassando tutti i muscoli del tuo corpo, partendo dalla testa fino ad arrivare ai piedi." },
+      { start: 51.9, end: 64.1, text: "Inspira, immaginando che l'energia della terra, forte, stabile, collegata alla vita e al radicamento..." },
+      { start: 64.9, end: 69.5, text: "...possa nutrire il tuo corpo passando attraverso i tuoi piedi." },
+      { start: 70.8, end: 80.4, text: "Espira, recuperando completamente la tua integrità nella presenza di te." },
+      { start: 85.9, end: 92.4, text: "Davanti a te puoi osservare il lago sacro della rigenerazione." },
+      { start: 94.7, end: 102.4, text: "Simbolicamente l'acqua rappresenta la profondità delle emozioni, ma anche la vita." },
+      { start: 106.4, end: 116.7, text: "Lasciati accompagnare, dolcemente, nel lago della vita accogliendo il nuovo inizio di giornata." },
+      { start: 129.8, end: 136.7, text: "Accogli l'energia della luce e la forza del sole su di te." },
+      { start: 137.8, end: 149.5, text: "Lasciati rigenerare, permettendo a questa energia di forza e di bellezza di avvolgere ogni tua parte..." },
+      { start: 150.2, end: 159.6, text: "...donandoti la sensazione di essere protetto e al sicuro in ogni istante e in ogni luogo." },
+      { start: 171.2, end: 179.0, text: "Prendi contatto con la forza di madre terra per sentirti sostenuto." },
+      { start: 180.3, end: 187.5, text: "Lascia che la sua energia possa nutrire tutto il tuo corpo fisico..." },
+      { start: 188.5, end: 193.5, text: "...sostenendo e illuminando la tua mente e i tuoi pensieri." },
+      { start: 197.7, end: 210.6, text: "Ricorda che hai tutti gli strumenti per affrontare ogni evento della tua giornata e della tua vita, con semplicità ed equilibrio." },
+      { start: 217.9, end: 224.3, text: "Sei pronto per accogliere questo nuovo inizio, questa giornata..." },
+      { start: 225.1, end: 233.4, text: "...lasciandoti sostenere dagli elementi della natura e permettendo alla vita di stupirti positivamente." },
+      { start: 234.8, end: 244.2, text: "In questa giornata ricordati di dedicare del tempo anche a te, assaporando i momenti preziosi che vivrai." },
+      { start: 247.3, end: 251.7, text: "Se lo desideri, puoi ripetere queste parole:" },
+      { start: 254.1, end: 265.9, text: "«Io sono in contatto con la parte più bella e saggia di me e mi permetto di mostrarla al mondo e a me stesso...»" },
+      { start: 270.7, end: 280.2, text: "«...Io respiro la vita, io sono la vita e assaporo la sacralità di ogni mio gesto...»" },
+      { start: 283.3, end: 294.9, text: "«...Mi permetto di stare nell'ascolto e nella presenza, lasciandomi nutrire da tutto ciò che di sano e importante...»" },
+      { start: 295.3, end: 302.6, text: "«...sperimenterò durante questa giornata, onorando me stesso e la vita.»" },
+      { start: 307.8, end: 314.7, text: "Ora puoi fare un profondo respiro e cominciare a muovere il corpo." },
+      { start: 315.5, end: 324.9, text: "Se lo desideri, puoi sfregarlo con le mani per attivare la circolazione o massaggiarlo." },
+      { start: 325.8, end: 333.1, text: "Oppure puoi muovere la colonna vertebrale come se stessi ondeggiando." },
+      { start: 334.4, end: 340.3, text: "Puoi fare un profondo respiro e dolcemente..." },
+      { start: 341.5, end: 354.2, text: "...riprendere contatto con la tua realtà terrena, lasciando che l'esperienza appena vissuta possa accompagnarti positivamente per tutto il giorno." }
+    ];
+
+    const SCENES_CONFIG = [
+      { id: 1, name: "Scena 1 — Notte Artica & Alba con 3 Respiri", start: 0, end: 75 },
+      { id: 2, name: "Scena 2 — Salita del Sole a Ore 9:00", start: 75, end: 125 },
+      { id: 3, name: "Scena 3 — Immersione nel Lago Sacro (Waterline)", start: 125, end: 170 },
+      { id: 4, name: "Scena 4 — Bagno d'Aura Solare Rigenerante", start: 170, end: 215 },
+      { id: 5, name: "Scena 5 — Flusso Tellurico dei 4 Chakra", start: 215, end: 265 },
+      { id: 6, name: "Scena 6 — Porta dei 4 Elementi", start: 265, end: 305 },
+      { id: 7, name: "Scena 7 — Stanza di Luce Arcobaleno", start: 305, end: 355 },
+      { id: 8, name: "Scena 8 — Risveglio Somatico & Outro", start: 355, end: 384 }
+    ];
+
+    // DOM Elements
+    const container = document.getElementById('webgl-container');
+    const audioGate = document.getElementById('audio-gate');
+    const btnGateEnter = document.getElementById('btn-gate-enter');
+    const btnGateEnterVR = document.getElementById('btn-gate-enter-vr');
+    const vrOverlay = document.getElementById('vr-overlay');
+    const uiLayer = document.getElementById('ui-layer');
+    const hudSceneName = document.getElementById('hud-scene-name');
+    const hudTimeDisplay = document.getElementById('hud-time-display');
+    const hudSubtitleBox = document.querySelector('.subtitle-box');
+    const hudSubtitleText = document.getElementById('hud-subtitle-text');
+    const scrubCurrentTime = document.getElementById('scrub-current-time');
+    const progressWrapper = document.getElementById('progress-wrapper');
+    const progressFill = document.getElementById('progress-fill');
+    const btnPlayPause = document.getElementById('btn-play-pause');
+    const iconPlay = document.getElementById('icon-play');
+    const iconPause = document.getElementById('icon-pause');
+    const playPauseLabel = document.getElementById('play-pause-label');
+    const sliderVoice = document.getElementById('slider-voice');
+    const sliderMusic = document.getElementById('slider-music');
+    const btnAudioMute = document.getElementById('btn-audio-mute');
+    const iconSoundOn = document.getElementById('icon-sound-on');
+    const iconSoundOff = document.getElementById('icon-sound-off');
+    const btnRecenter = document.getElementById('btn-recenter');
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    const btnToggleVR = document.getElementById('btn-toggle-vr');
+    const scenePills = document.querySelectorAll('.scene-btn');
+    const audioVoice = document.getElementById('audio-voice');
+    const audioMusic = document.getElementById('audio-music');
+    const sessionCompletionModal = document.getElementById('session-completion-modal');
+    const btnCompletionExit = document.getElementById('btn-completion-exit');
+    const btnCompletionRepeat = document.getElementById('btn-completion-repeat');
+
+    /* ======================================================================
+       1. WEB AUDIO API & DUAL-TRACK AUDIO ENGINE (432 Hz Pure Carrier)
+       ====================================================================== */
+    let audioCtx = null;
+    let synthOsc432 = null;
+    let synthGain = null;
+    let isAudioEngineReady = false;
+
+    function initAudioContext() {
+      if (audioCtx) return;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        audioCtx = new AudioContextClass();
+        synthGain = audioCtx.createGain();
+        synthGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        synthGain.connect(audioCtx.destination);
+
+        synthOsc432 = audioCtx.createOscillator();
+        synthOsc432.type = 'sine';
+        synthOsc432.frequency.setValueAtTime(432.0, audioCtx.currentTime);
+        synthOsc432.connect(synthGain);
+        try {
+          synthOsc432.start();
+        } catch(e) {}
+      }
+      isAudioEngineReady = true;
+    }
+
+    function unlockAudio() {
+      initAudioContext();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      audioVoice.play().then(() => {
+        if (!state.isPlaying) audioVoice.pause();
+      }).catch(err => console.log('Voice unlock notice:', err.message));
+      audioMusic.play().then(() => {
+        if (!state.isPlaying) audioMusic.pause();
+      }).catch(err => console.log('Music unlock notice:', err.message));
+    }
+
+    function syncVolumes() {
+      const vMul = state.isMuted ? 0 : 1;
+      audioVoice.volume = state.voiceVolume * vMul;
+      audioMusic.volume = state.musicVolume * vMul;
+      if (synthGain && audioCtx) {
+        synthGain.gain.setValueAtTime(state.isMuted ? 0.0001 : 0.015, audioCtx.currentTime);
+      }
+    }
+
+    function playExperience() {
+      if (state.isCompleted) {
+        state.isCompleted = false;
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+        seekExperience(0);
+      }
+      unlockAudio();
+      state.isPlaying = true;
+      audioVoice.play().catch(e => console.warn('Voice play fallback', e));
+      audioMusic.play().catch(e => console.warn('Music play fallback', e));
+      updatePlayBtnUI();
+    }
+
+    function pauseExperience() {
+      state.isPlaying = false;
+      audioVoice.pause();
+      audioMusic.pause();
+      updatePlayBtnUI();
+    }
+
+    function togglePlay() {
+      if (state.isPlaying) {
+        pauseExperience();
+      } else {
+        playExperience();
+      }
+    }
+
+    function updatePlayBtnUI() {
+      if (state.isPlaying) {
+        iconPlay.style.display = 'none';
+        iconPause.style.display = 'block';
+        playPauseLabel.textContent = 'Pausa';
+      } else {
+        iconPlay.style.display = 'block';
+        iconPause.style.display = 'none';
+        playPauseLabel.textContent = (state.isCompleted || state.currentTime >= TOTAL_DURATION_SEC) ? 'Ricomincia' : 'Avvia';
+      }
+    }
+
+    let isAudioSeeking = false;
+    let lastSeekTime = 0;
+
+    function seekExperience(targetSec) {
+      targetSec = Math.max(0, Math.min(TOTAL_DURATION_SEC, targetSec));
+      state.currentTime = targetSec;
+      if (state.isCompleted && targetSec < TOTAL_DURATION_SEC) {
+        state.isCompleted = false;
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+      }
+      lastSeekTime = performance.now();
+      isAudioSeeking = true;
+
+      function applyAudioSeek(el, t) {
+        if (!el) return;
+        if (el.readyState >= 1) {
+          try { el.currentTime = t; } catch(e) {}
+        } else {
+          el.addEventListener('loadedmetadata', () => {
+            try { el.currentTime = t; } catch(e) {}
+          }, { once: true });
+        }
+      }
+
+      applyAudioSeek(audioVoice, Math.min(targetSec, VOICE_DURATION_SEC));
+      applyAudioSeek(audioMusic, targetSec);
+
+      setTimeout(() => { isAudioSeeking = false; }, 600);
+      updateSceneFromTime(targetSec, true);
+    }
+
+    /* ======================================================================
+       2. PROCEDURAL TEXTURE GENERATORS (Soft Spherical Alpha Motes & Flares)
+       ====================================================================== */
+    function createGlowMoteTexture(type) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+
+      if (type === 'gold') {
+        grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+        grad.addColorStop(0.18, 'rgba(255, 240, 180, 0.95)');
+        grad.addColorStop(0.42, 'rgba(255, 185, 60, 0.50)');
+        grad.addColorStop(0.72, 'rgba(255, 120, 20, 0.15)');
+        grad.addColorStop(1.0, 'rgba(255, 80, 0, 0.0)');
+      } else if (type === 'star') {
+        grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+        grad.addColorStop(0.20, 'rgba(220, 240, 255, 0.85)');
+        grad.addColorStop(0.50, 'rgba(130, 190, 255, 0.22)');
+        grad.addColorStop(1.0, 'rgba(10, 40, 90, 0.0)');
+      } else {
+        grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+        grad.addColorStop(0.20, 'rgba(255, 255, 255, 0.88)');
+        grad.addColorStop(0.48, 'rgba(255, 255, 255, 0.35)');
+        grad.addColorStop(0.78, 'rgba(255, 255, 255, 0.08)');
+        grad.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+      }
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 128, 128);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.generateMipmaps = true;
+      return tex;
+    }
+
+    function createSunCoronaTexture(size, mode) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const half = size / 2;
+      const grad = ctx.createRadialGradient(half, half, 0, half, half, half);
+
+      if (mode === 'inner') {
+        grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+        grad.addColorStop(0.20, 'rgba(255, 248, 205, 0.95)');
+        grad.addColorStop(0.48, 'rgba(255, 190, 75, 0.45)');
+        grad.addColorStop(0.78, 'rgba(255, 130, 25, 0.10)');
+        grad.addColorStop(1.0, 'rgba(255, 80, 0, 0.0)');
+      } else {
+        grad.addColorStop(0.0, 'rgba(255, 235, 175, 0.80)');
+        grad.addColorStop(0.25, 'rgba(255, 180, 75, 0.45)');
+        grad.addColorStop(0.58, 'rgba(255, 120, 35, 0.15)');
+        grad.addColorStop(0.85, 'rgba(255, 80, 10, 0.03)');
+        grad.addColorStop(1.0, 'rgba(255, 60, 0, 0.0)');
+      }
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, size, size);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.generateMipmaps = true;
+      return tex;
+    }
+
+    // Self-contained fast 2D Simplex Noise & Procedural Terrain Math
+    function createNoise2D(seed = 1337) {
+      const p = new Uint8Array(512);
+      const perm = new Uint8Array(256);
+      for (let i = 0; i < 256; i++) perm[i] = i;
+      let s = seed;
+      for (let i = 255; i > 0; i--) {
+        s = (s * 16807 + 11) % 2147483647;
+        const j = s % (i + 1);
+        const tmp = perm[i];
+        perm[i] = perm[j];
+        perm[j] = tmp;
+      }
+      for (let i = 0; i < 512; i++) p[i] = perm[i & 255];
+
+      const F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
+      const G2 = (3.0 - Math.sqrt(3.0)) / 6.0;
+
+      const grad2 = [
+        [1, 1], [-1, 1], [1, -1], [-1, -1],
+        [1, 0], [-1, 0], [0, 1], [0, -1]
+      ];
+
+      return function(x, y) {
+        const s = (x + y) * F2;
+        const i = Math.floor(x + s);
+        const j = Math.floor(y + s);
+        const t = (i + j) * G2;
+        const x0 = x - (i - t);
+        const y0 = y - (j - t);
+
+        let i1 = 0, j1 = 1;
+        if (x0 > y0) { i1 = 1; j1 = 0; }
+
+        const x1 = x0 - i1 + G2;
+        const y1 = y0 - j1 + G2;
+        const x2 = x0 - 1.0 + 2.0 * G2;
+        const y2 = y0 - 1.0 + 2.0 * G2;
+
+        const ii = i & 255;
+        const jj = j & 255;
+
+        const gi0 = p[ii + p[jj]] % 8;
+        const gi1 = p[ii + i1 + p[jj + j1]] % 8;
+        const gi2 = p[ii + 1 + p[jj + 1]] % 8;
+
+        let t0 = 0.5 - x0 * x0 - y0 * y0;
+        let n0 = 0;
+        if (t0 > 0) {
+          t0 *= t0;
+          n0 = t0 * t0 * (grad2[gi0][0] * x0 + grad2[gi0][1] * y0);
+        }
+
+        let t1 = 0.5 - x1 * x1 - y1 * y1;
+        let n1 = 0;
+        if (t1 > 0) {
+          t1 *= t1;
+          n1 = t1 * t1 * (grad2[gi1][0] * x1 + grad2[gi1][1] * y1);
+        }
+
+        let t2 = 0.5 - x2 * x2 - y2 * y2;
+        let n2 = 0;
+        if (t2 > 0) {
+          t2 *= t2;
+          n2 = t2 * t2 * (grad2[gi2][0] * x2 + grad2[gi2][1] * y2);
+        }
+
+        return 70.0 * (n0 + n1 + n2);
+      };
+    }
+
+    const _terrainNoiseA = createNoise2D(7070);
+    const _terrainNoiseB = createNoise2D(3141);
+
+    function terrainFbm(x, z, oct = 5) {
+      let v = 0, a = 0.5, f = 1.0;
+      for (let i = 0; i < oct; i++) {
+        v += a * _terrainNoiseA(x * f, z * f);
+        f *= 2.02;
+        a *= 0.5;
+      }
+      return v;
+    }
+
+    function terrainRidgedMF(x, z, oct = 5) {
+      let v = 0, a = 0.5, f = 1.0, w = 1.0;
+      for (let i = 0; i < oct; i++) {
+        let s = 1.0 - Math.abs(_terrainNoiseA(x * f, z * f));
+        s *= s;
+        v += s * a * w;
+        w = Math.min(1.0, s * 2.0);
+        f *= 2.02;
+        a *= 0.5;
+      }
+      return v;
+    }
+
+    function terrainBillow(x, z, oct = 4) {
+      let v = 0, a = 0.5, f = 1.0;
+      for (let i = 0; i < oct; i++) {
+        v += a * Math.abs(_terrainNoiseB(x * f, z * f));
+        f *= 2.0;
+        a *= 0.5;
+      }
+      return v;
+    }
+
+    function createProceduralNormalFallback() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.createImageData(256, 256);
+      for (let i = 0; i < 256 * 256 * 4; i += 4) {
+        imgData.data[i] = 128;
+        imgData.data[i + 1] = 128;
+        imgData.data[i + 2] = 255;
+        imgData.data[i + 3] = 255;
+      }
+      ctx.putImageData(imgData, 0, 0);
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    /* ======================================================================
+       3. THREE.JS SCENE SETUP & PHOTOREALISTIC ARCTIC ENVIRONMENT
+       ====================================================================== */
+    let scene, camera, renderer, stereoCamera;
+    let cameraRig;
+    let textureLoader;
+
+    // Lighting
+    let ambientLight, sunLight, auroraLight;
+
+    // Environmental 3D Meshes & Terrain
+    let skySphere, starField;
+    let waterMesh, waterSubSurfaceMesh;
+    let sunMesh, sunCorona1, sunCorona2;
+    let terrainAlpineMassives, terrainPromontoryWest, terrainPromontoryEast, terrainForegroundShore, terrainBoulders;
+    let terrainMaterial;
+
+    // Scena 4: Golden Aura Bath
+    let auraGroup, auraShellMesh, auraPhotons;
+
+    // Scena 5: Earth Kundalini Telluric Column (4 Chakras)
+    let chakraColumnGroup, chakraCoreMesh, chakraMantleMesh, chakraOuterMesh;
+    let chakraHelixGroup, chakraRipplePool, chakraSparks;
+
+    // Scena 6: 4 Elements Sacred Arch & Doors
+    let gateGroup, gateDoorLeft, gateDoorRight, gatePortalBeam, gateGodRays, gateStardust;
+
+    // Transition: Golden Light Threshold Veil (296s - 306s)
+    let thresholdMesh;
+
+    // Scena 7: 7 Chakra Rainbow Vortex Chamber
+    let rainbowChamberGroup, rainbowTunnelMesh, rainbowParticles, rainbowBeaconSprite;
+
+    // VR Floating Subtitle in 3D Space
+    let billboardMesh, billboardCanvas, billboardContext, billboardTexture;
+
+    // Camera control variables
+    let yaw = 0, pitch = 0;
+    let targetYaw = 0, targetPitch = 0;
+    let isUserDragging = false;
+    let prevMouseX = 0, prevMouseY = 0;
+    let deviceOrientationEnabled = false;
+    let orientationAlpha = 0, orientationBeta = 0, orientationGamma = 0;
+    let vrAlphaOffset = 0;
+
+    const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
+    const _q0 = new THREE.Quaternion();
+    const _q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)); // - PI/2 around X
+    const _zee = new THREE.Vector3(0, 0, 1);
+
+    // Continuous Math Easing Helpers
+    function smoothstep(min, max, value) {
+      const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+      return x * x * (3 - 2 * x);
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function initThreeScene() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x040e1c);
+      scene.fog = new THREE.FogExp2(0x040e1c, 0.0016);
+
+      cameraRig = new THREE.Group();
+      cameraRig.position.set(0, 8.2, 42.0);
+      scene.add(cameraRig);
+
+      camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 2000);
+      camera.position.set(0, 0, 0);
+      cameraRig.add(camera);
+
+      stereoCamera = new THREE.StereoCamera();
+      stereoCamera.aspect = 0.5;
+      stereoCamera.eyeSep = 0.064;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
+      container.appendChild(renderer.domElement);
+
+      textureLoader = new THREE.TextureLoader();
+
+      buildLighting();
+      buildAtmosphericSky();
+      buildAlpineTerrain();
+      buildSacredLake();
+      buildSunMesh();
+      buildAuraSolarBath();
+      buildChakraTelluricColumn();
+      buildFourElementsGate();
+      buildRainbowVortexChamber();
+      buildGoldenThresholdVeil();
+      build3DSubtitleBillboard();
+      initVRReticle();
+
+      initControls();
+      window.addEventListener('resize', onWindowResize, false);
+    }
+
+    let vrReticleGroup = null;
+    let vrReticleRing = null;
+
+    function initVRReticle() {
+      vrReticleGroup = new THREE.Group();
+      vrReticleGroup.name = 'VR_Gaze_Reticle';
+
+      // 1. Punto focale centrale dorato
+      const dotGeo = new THREE.CircleGeometry(0.012, 32);
+      const dotMat = new THREE.MeshBasicMaterial({
+        color: 0xffd700,
+        transparent: true,
+        opacity: 0.9,
+        depthTest: false,
+        depthWrite: false
+      });
+      const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+      dotMesh.renderOrder = 9999;
+      vrReticleGroup.add(dotMesh);
+
+      // 2. Anello esterno di puntamento
+      const ringGeo = new THREE.RingGeometry(0.024, 0.034, 32);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.7,
+        depthTest: false,
+        depthWrite: false
+      });
+      vrReticleRing = new THREE.Mesh(ringGeo, ringMat);
+      vrReticleRing.renderOrder = 9999;
+      vrReticleGroup.add(vrReticleRing);
+
+      // 3. Posiziona a 2.5 metri di fronte alla camera
+      vrReticleGroup.position.set(0, 0, -2.5);
+      vrReticleGroup.visible = false; // Visibile solo in modalità VR
+
+      // 4. Aggiungi come figlio diretto di camera (camera è figlia di cameraRig)
+      camera.add(vrReticleGroup);
+    }
+
+    // ----------------------------------------------------
+    // Gaze Dwell Interaction System (2.0s Dwell Timer)
+    // ----------------------------------------------------
+    const gazeRaycaster = new THREE.Raycaster();
+    const gazeIntersectTargets = [];
+    let gazeHoverTarget = null;
+    let gazeDwellTimer = 0.0;
+    const DWELL_DURATION_SEC = 2.0;
+    const _gazeForwardDir = new THREE.Vector3();
+    const _gazeOrigin = new THREE.Vector3();
+
+    function updateGazeInteraction(deltaSec) {
+      if (!state.isVRMode || !vrReticleGroup || !completionPopupGroup || !completionPopupGroup.visible || gazeIntersectTargets.length === 0) {
+        gazeHoverTarget = null;
+        gazeDwellTimer = 0.0;
+        if (vrReticleRing) {
+          vrReticleRing.scale.set(1.0, 1.0, 1.0);
+          vrReticleRing.material.opacity = 0.7;
+        }
+        return;
+      }
+
+      camera.getWorldPosition(_gazeOrigin);
+      camera.getWorldDirection(_gazeForwardDir);
+      gazeRaycaster.set(_gazeOrigin, _gazeForwardDir);
+      const hits = gazeRaycaster.intersectObjects(gazeIntersectTargets, true);
+
+      if (hits.length > 0) {
+        let hitObj = hits[0].object;
+        while (hitObj && (!hitObj.userData || typeof hitObj.userData.onDwellSelect !== 'function') && hitObj.parent && hitObj.parent !== scene) {
+          hitObj = hitObj.parent;
+        }
+
+        if (hitObj && hitObj.userData && typeof hitObj.userData.onDwellSelect === 'function') {
+          if (gazeHoverTarget === hitObj) {
+            gazeDwellTimer += deltaSec;
+            const progress = Math.min(1.0, gazeDwellTimer / DWELL_DURATION_SEC);
+
+            if (vrReticleRing) {
+              const s = 1.0 + progress * 0.75;
+              vrReticleRing.scale.set(s, s, 1.0);
+              vrReticleRing.material.opacity = 0.5 + progress * 0.5;
+            }
+
+            if (gazeDwellTimer >= DWELL_DURATION_SEC) {
+              gazeDwellTimer = 0.0;
+              if (vrReticleRing) {
+                vrReticleRing.scale.set(1.0, 1.0, 1.0);
+                vrReticleRing.material.opacity = 0.7;
+              }
+              hitObj.userData.onDwellSelect();
+            }
+          } else {
+            gazeHoverTarget = hitObj;
+            gazeDwellTimer = 0.0;
+          }
+          return;
+        }
+      }
+
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    // ----------------------------------------------------
+    // 3D Stereoscopic Completion Popup (Hands-Free Gaze)
+    // ----------------------------------------------------
+    let completionPopupGroup = null;
+
+    function createVRCompletionPopup() {
+      if (completionPopupGroup) return completionPopupGroup;
+
+      completionPopupGroup = new THREE.Group();
+      completionPopupGroup.name = 'VR_Completion_Popup';
+
+      // 1. Sfondo glassmorphic Japandi
+      const bgGeo = new THREE.PlaneGeometry(2.4, 1.4);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: 0x070c14,
+        transparent: true,
+        opacity: 0.88,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9998;
+      completionPopupGroup.add(bgMesh);
+
+      // 2. Texture con Titolo "Esperienza Completata"
+      const titleSprite = createPopupTextSprite('Esperienza Completata', 'bold 30px sans-serif', '#FFD700', 2.0, 0.4);
+      titleSprite.position.set(0, 0.38, 0.02);
+      completionPopupGroup.add(titleSprite);
+
+      const subSprite = createPopupTextSprite('Fissa un pulsante per 2s per selezionarlo', '20px sans-serif', 'rgba(255,255,255,0.75)', 2.2, 0.3);
+      subSprite.position.set(0, 0.12, 0.02);
+      completionPopupGroup.add(subSprite);
+
+      // 3. Pulsante 3D "ESCI" (Sinistra)
+      const exitBtn = create3DButton('ESCI', -0.55, -0.28, 0xef4444, () => {
+        notifyFlutter('onExitRequested', {});
+      });
+      completionPopupGroup.add(exitBtn);
+      gazeIntersectTargets.push(exitBtn);
+
+      // 4. Pulsante 3D "RIPETI" (Destra)
+      const repeatBtn = create3DButton('RIPETI', 0.55, -0.28, 0x10b981, () => {
+        hideVRCompletionPopup();
+        hide2DCompletionPopup();
+        state.isCompleted = false;
+        seekExperience(0);
+        playExperience();
+      });
+      completionPopupGroup.add(repeatBtn);
+      gazeIntersectTargets.push(repeatBtn);
+
+      completionPopupGroup.position.set(0, 0, -2.0);
+      completionPopupGroup.visible = false;
+
+      camera.add(completionPopupGroup);
+      return completionPopupGroup;
+    }
+
+    function createPopupTextSprite(text, font, color, w, h) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 512, 128);
+      ctx.font = font || 'bold 28px sans-serif';
+      ctx.fillStyle = color || '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 256, 64);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const mat = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false
+      });
+      mat.renderOrder = 9999;
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+      mesh.renderOrder = 9999;
+      return mesh;
+    }
+
+    function create3DButton(label, x, y, colorHex, onSelect) {
+      const group = new THREE.Group();
+      group.position.set(x, y, 0.02);
+
+      const bgGeo = new THREE.PlaneGeometry(0.85, 0.35);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.85,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9999;
+      bgMesh.userData = { onDwellSelect: onSelect };
+      group.add(bgMesh);
+
+      const textSprite = createPopupTextSprite(label, 'bold 32px sans-serif', '#FFFFFF', 0.8, 0.3);
+      textSprite.position.set(0, 0, 0.02);
+      textSprite.userData = { onDwellSelect: onSelect };
+      group.add(textSprite);
+
+      group.userData = { onDwellSelect: onSelect };
+      return group;
+    }
+
+    function showVRCompletionPopup() {
+      if (!completionPopupGroup) createVRCompletionPopup();
+      completionPopupGroup.visible = true;
+      if (vrReticleGroup) vrReticleGroup.visible = true;
+    }
+
+    function hideVRCompletionPopup() {
+      if (completionPopupGroup) completionPopupGroup.visible = false;
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    function show2DCompletionPopup() {
+      if (sessionCompletionModal) {
+        sessionCompletionModal.style.setProperty('display', 'flex', 'important');
+        sessionCompletionModal.style.setProperty('opacity', '1', 'important');
+        sessionCompletionModal.style.setProperty('pointer-events', 'auto', 'important');
+        sessionCompletionModal.style.setProperty('visibility', 'visible', 'important');
+        sessionCompletionModal.classList.add('visible');
+      }
+    }
+
+    function hide2DCompletionPopup() {
+      if (sessionCompletionModal) {
+        sessionCompletionModal.classList.remove('visible');
+        sessionCompletionModal.style.opacity = '0';
+        sessionCompletionModal.style.pointerEvents = 'none';
+        setTimeout(() => {
+          if (sessionCompletionModal && !sessionCompletionModal.classList.contains('visible')) {
+            sessionCompletionModal.style.display = 'none';
+          }
+        }, 350);
+      }
+    }
+
+    function onExperienceEnded() {
+      if (state.isCompleted) return;
+      state.isCompleted = true;
+
+      try {
+        pauseExperience();
+      } catch(e) {
+        console.warn('pauseExperience error:', e);
+      }
+
+      try {
+        if (typeof billboardMesh !== 'undefined' && billboardMesh) {
+          billboardMesh.visible = false;
+        }
+      } catch(e) {}
+
+      try {
+        notifyFlutter('onSessionComplete', { duration: TOTAL_DURATION_SEC });
+      } catch(e) {
+        console.warn('notifyFlutter error:', e);
+      }
+
+      if (state.isVRMode) {
+        showVRCompletionPopup();
+      } else {
+        show2DCompletionPopup();
+      }
+    }
+
+    /* --- LIGHTING --- */
+    function buildLighting() {
+      ambientLight = new THREE.AmbientLight(0x0c2036, 0.9);
+      scene.add(ambientLight);
+
+      sunLight = new THREE.DirectionalLight(0xffbe68, 1.25);
+      sunLight.position.set(25, -12, -720);
+      scene.add(sunLight);
+
+      auroraLight = new THREE.PointLight(0x38ef7d, 0.35, 300);
+      auroraLight.position.set(0, 50, -60);
+      scene.add(auroraLight);
+    }
+
+    /* --- 1. PROCEDURAL DYNAMIC ATMOSPHERIC SKY (Rayleigh & Mie Scattering) --- */
+    function buildAtmosphericSky() {
+      const domeRadius = 1200;
+      const domeGeo = new THREE.SphereGeometry(domeRadius, 64, 48);
+
+      const domeMat = new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        depthWrite: false,
+        uniforms: {
+          uSunPos: { value: new THREE.Vector3(25, -40, -720) },
+          uDawnProgress: { value: 0.0 },
+          uSunDawnColor: { value: new THREE.Color(0xff8c3b) }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          void main() {
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          varying vec3 vWorldPosition;
+          uniform vec3 uSunPos;
+          uniform float uDawnProgress;
+          uniform vec3 uSunDawnColor;
+
+          void main() {
+            vec3 viewDir = normalize(vWorldPosition);
+            vec3 sunDir = normalize(uSunPos);
+            float h = clamp(viewDir.y, 0.0, 1.0);
+
+            // Rayleigh Zenith & Horizon Tones
+            vec3 nightZenith = vec3(0.012, 0.038, 0.085);
+            vec3 dayZenith = vec3(0.07, 0.20, 0.42);
+            vec3 zenith = mix(nightZenith, dayZenith, uDawnProgress);
+
+            vec3 nightHorizon = vec3(0.03, 0.06, 0.12);
+            vec3 dawnWarmth = vec3(1.0, 0.58, 0.28);
+            vec3 dawnPeach = vec3(1.0, 0.82, 0.54);
+
+            float sunAzimuth = max(0.0, dot(normalize(vec3(viewDir.x, 0.0, viewDir.z)), normalize(vec3(sunDir.x, 0.0, sunDir.z))));
+            vec3 horizon = mix(nightHorizon, dawnWarmth, pow(sunAzimuth, 2.0) * uDawnProgress);
+            horizon = mix(horizon, dawnPeach, pow(sunAzimuth, 4.0) * uDawnProgress * 0.7);
+
+            vec3 sky = mix(horizon, zenith, pow(h, 0.52));
+
+            // Mie forward scattering solar corona
+            float cosTheta = max(0.0, dot(viewDir, sunDir));
+            float mieCorona = pow(cosTheta, 14.0) * 0.55 * uDawnProgress;
+            float mieCore = pow(cosTheta, 120.0) * 1.8 * uDawnProgress;
+
+            vec3 finalSky = sky + (uSunDawnColor * mieCorona) + (vec3(1.0, 0.98, 0.92) * mieCore);
+            gl_FragColor = vec4(finalSky, 1.0);
+          }
+        `
+      });
+
+      skySphere = new THREE.Mesh(domeGeo, domeMat);
+      scene.add(skySphere);
+
+      // Delicate celestial starfield
+      const starCount = 750;
+      const starGeo = new THREE.BufferGeometry();
+      const starPos = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount; i++) {
+        const u = Math.random();
+        const v = Math.random();
+        const theta = u * 2.0 * Math.PI;
+        const phi = Math.acos(2.0 * v - 1.0);
+        const r = 940;
+        starPos[i * 3 + 0] = r * Math.sin(phi) * Math.cos(theta);
+        starPos[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 40;
+        starPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+      }
+      starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+      const starTex = createGlowMoteTexture('star');
+      const starMat = new THREE.PointsMaterial({
+        size: 2.8,
+        map: starTex,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      starField = new THREE.Points(starGeo, starMat);
+      scene.add(starField);
+    }
+
+    /* --- 2. MULTI-LAYER HIGH-POLY 3D TERRAIN & ADVANCED PBR SNOW/BASALT SHADER --- */
+    function buildAlpineTerrain() {
+      terrainMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          uSunPos: { value: new THREE.Vector3(25, -40, -720) },
+          uSunColor: { value: new THREE.Color(0xffbe68) },
+          uSunDawnColor: { value: new THREE.Color(0xff8c3b) },
+          uDawnProgress: { value: 0.0 },
+          uSunIntensity: { value: 1.25 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying float vElevation;
+
+          void main() {
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPos.xyz;
+            vNormal = normalize(mat3(modelMatrix) * normal);
+            vElevation = worldPos.y;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying float vElevation;
+
+          uniform vec3 uSunPos;
+          uniform vec3 uSunColor;
+          uniform vec3 uSunDawnColor;
+          uniform float uDawnProgress;
+          uniform float uSunIntensity;
+
+          float hash(vec2 p) {
+            return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+          }
+
+          // Quintic Hermite interpolation curve for continuous 2nd derivative (eliminates grid artifacts)
+          float smoothNoise(vec2 p) {
+            vec2 i = floor(p);
+            vec2 f = fract(p);
+            vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+            float a = hash(i);
+            float b = hash(i + vec2(1.0, 0.0));
+            float c = hash(i + vec2(0.0, 1.0));
+            float d = hash(i + vec2(1.0, 1.0));
+            return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+          }
+
+          // Rotated multi-octave FBM ensuring isotropic geological rock textures
+          float fbmSmooth(vec2 p) {
+            mat2 rot = mat2(0.80, 0.60, -0.60, 0.80);
+            float v = 0.0;
+            float a = 0.5;
+            for (int i = 0; i < 3; i++) {
+              v += a * smoothNoise(p);
+              p = rot * p * 2.05;
+              a *= 0.5;
+            }
+            return v;
+          }
+
+          void main() {
+            vec3 baseN = normalize(vNormal);
+
+            // Natural Basalt Rock Micro-Texture (Continuous, non-grid-aligned)
+            vec2 rockUv = vWorldPosition.xz * 0.35;
+            float nFissure = fbmSmooth(rockUv * 2.5) * 0.16;
+
+            // Subtle continuous normal perturbation for organic basalt roughness
+            float eps = 0.08;
+            float nCenter = smoothNoise(rockUv * 3.0);
+            float nDx = smoothNoise(rockUv * 3.0 + vec2(eps, 0.0)) - nCenter;
+            float nDz = smoothNoise(rockUv * 3.0 + vec2(0.0, eps)) - nCenter;
+            vec3 bumpN = normalize(baseN + vec3(nDx * 0.75, 0.0, nDz * 0.75));
+
+            float slope = baseN.y;
+
+            // Organic, smooth snow distribution without grid-stepping
+            float nLedge = fbmSmooth(vWorldPosition.xz * 0.06) * 0.22;
+            float nCouloir = fbmSmooth(vec2(vWorldPosition.x * 0.12 + vWorldPosition.y * 0.04, vWorldPosition.z * 0.12)) * 0.16;
+            float effectiveSlope = slope + nLedge + nCouloir;
+
+            // Snow calculation:
+            // High alpine mountains (vElevation > 10.0m) have snow clinging to ledges and couloirs
+            float isHighMountain = smoothstep(3.5, 12.0, vElevation);
+            float mountainSnow = smoothstep(0.42, 0.62, effectiveSlope);
+            float altBonus = smoothstep(18.0, 75.0, vElevation) * 0.38;
+            mountainSnow = clamp(mountainSnow + altBonus, 0.0, 1.0);
+
+            // Glacial erratic boulders (vElevation < 10.0m):
+            // Delicate layer of pure snow settling softly on the rounded top crest (normal.y > 0.60)
+            float boulderSnow = smoothstep(0.56, 0.76, baseN.y + nLedge * 0.25);
+
+            float snowMask = mix(boulderSnow, mountainSnow, isHighMountain);
+
+            // Waterline clearing: no snow under water / right at wet shore (vElevation < 0.25)
+            float shoreClear = smoothstep(0.15, 0.55, vElevation);
+            snowMask *= shoreClear;
+            snowMask = clamp(snowMask, 0.0, 1.0);
+
+            vec3 N = normalize(mix(bumpN, baseN, snowMask * 0.80));
+            vec3 L = normalize(uSunPos - vWorldPosition);
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 H = normalize(L + V);
+
+            // Albedo: Basalt rock with wet shoreline darkening vs crisp snow
+            float wetness = clamp(1.0 - smoothstep(0.0, 1.1, vElevation), 0.0, 1.0) * (1.0 - snowMask);
+            vec3 snowAlbedo = vec3(0.96, 0.98, 1.0);
+            float strata = sin(vElevation * 0.45 + fbmSmooth(vWorldPosition.xz * 0.05) * 3.5) * 0.04;
+            vec3 dryBasalt = vec3(0.18, 0.20, 0.22) + strata + nFissure * 0.08;
+            vec3 wetBasalt = dryBasalt * 0.55; // Darker saturated volcanic basalt when wet
+            vec3 rockAlbedo = mix(dryBasalt, wetBasalt, wetness);
+
+            vec3 albedo = mix(rockAlbedo, snowAlbedo, snowMask);
+
+            float NdotL = max(0.0, dot(N, L));
+
+            float peakHeight = smoothstep(18.0, 75.0, vElevation);
+            vec3 alpenglowCol = mix(vec3(1.0, 0.50, 0.38), vec3(1.0, 0.78, 0.48), uDawnProgress);
+            float alpenglow = pow(NdotL, 1.3) * peakHeight * (1.15 - uDawnProgress * 0.45);
+
+            vec3 sunLit = uSunColor * NdotL * uSunIntensity;
+            sunLit += alpenglowCol * alpenglow * 1.35;
+
+            float rim = pow(1.0 - max(0.0, dot(V, N)), 3.5);
+            float backScatter = pow(max(0.0, dot(-V, L)), 3.2);
+            vec3 rimScatter = uSunDawnColor * rim * backScatter * snowMask * 1.6;
+
+            vec3 ambientSky = mix(vec3(0.04, 0.08, 0.16), vec3(0.12, 0.22, 0.38), uDawnProgress);
+            vec3 ambient = ambientSky * mix(0.65, 1.25, snowMask) * (0.40 + 0.60 * N.y);
+
+            // Specular: Wet rock glistens near waterline, snow sparkles in morning sun
+            float specPow = mix(mix(16.0, 60.0, wetness), 110.0, snowMask);
+            float specCoeff = mix(mix(0.05, 0.45, wetness), 0.80, snowMask);
+            float spec = pow(max(0.0, dot(N, H)), specPow) * specCoeff * NdotL;
+
+            vec3 litSurface = albedo * (ambient + sunLit) + rimScatter + uSunColor * spec;
+
+            float dist = length(cameraPosition - vWorldPosition);
+            float fogFactor = 1.0 - exp(-pow(dist * 0.0032, 1.50));
+            vec3 fogCol = mix(vec3(0.03, 0.07, 0.14), uSunDawnColor * 0.88, pow(max(0.0, dot(-V, L)), 2.2) * uDawnProgress);
+
+            vec3 finalColor = mix(litSurface, fogCol, fogFactor);
+            gl_FragColor = vec4(finalColor, 1.0);
+          }
+        `
+      });
+
+      // 1. Distant Alpine Mountain Range (360-degree Amphitheater)
+      const radialSegs = 320;
+      const ringSegs = 90;
+      const alpineGeo = new THREE.BufferGeometry();
+      const alpinePos = [];
+      const alpineUvs = [];
+      const alpineIndices = [];
+
+      for (let ri = 0; ri <= ringSegs; ri++) {
+        const tRing = ri / ringSegs;
+        const r = 135 + (440 - 135) * Math.pow(tRing, 1.35);
+
+        for (let ai = 0; ai <= radialSegs; ai++) {
+          const theta = (ai / radialSegs) * Math.PI * 2;
+          const x = r * Math.sin(theta);
+          const z = r * Math.cos(theta) - 70;
+
+          const sunAngleDiff = Math.abs(theta - Math.PI);
+
+          const qx = x * 0.0032;
+          const qz = z * 0.0032;
+          const warpX = qx + 0.28 * terrainFbm(qx * 1.5, qz * 1.5, 3);
+          const warpZ = qz + 0.28 * terrainFbm(qz * 1.5, qx * 1.5, 3);
+
+          const rmf1 = terrainRidgedMF(warpX, warpZ, 5);
+          const rmf2 = terrainRidgedMF(warpX * 2.1 + 4.2, warpZ * 2.1 + 2.7, 4);
+          const b1 = terrainBillow(warpX * 1.4, warpZ * 1.4, 3);
+          const fb = terrainFbm(warpX * 4.0, warpZ * 4.0, 3);
+
+          let mountainMass = rmf1 * 85.0 + rmf2 * 38.0 + b1 * 20.0 + fb * 10.0;
+
+          let saddleMod = 1.0;
+          let sentinelPeakBonus = 0.0;
+          if (sunAngleDiff < 0.36) {
+            saddleMod = 0.25 + (sunAngleDiff / 0.36) * 0.75;
+          }
+          if (Math.abs(sunAngleDiff - 0.45) < 0.20) {
+            sentinelPeakBonus = Math.cos((sunAngleDiff - 0.45) / 0.20 * Math.PI * 0.5) * 58.0;
+          }
+
+          const distEnvelope = Math.pow(Math.min(1.0, tRing * 1.5), 1.2);
+          let h = (mountainMass * saddleMod + sentinelPeakBonus) * distEnvelope + 3.0 * distEnvelope;
+
+          // Inner boundary submerged below water line
+          if (tRing < 0.05) {
+            const shoreT = tRing / 0.05;
+            h = (h * shoreT) - (4.0 * (1.0 - shoreT));
+          }
+
+          alpinePos.push(x, h, z);
+          alpineUvs.push(ai / radialSegs, ri / ringSegs);
+        }
+      }
+
+      for (let ri = 0; ri < ringSegs; ri++) {
+        for (let ai = 0; ai < radialSegs; ai++) {
+          const a = ri * (radialSegs + 1) + ai;
+          const b = (ri + 1) * (radialSegs + 1) + ai;
+          const c = (ri + 1) * (radialSegs + 1) + (ai + 1);
+          const d = ri * (radialSegs + 1) + (ai + 1);
+          alpineIndices.push(a, b, d);
+          alpineIndices.push(b, c, d);
+        }
+      }
+
+      alpineGeo.setAttribute('position', new THREE.Float32BufferAttribute(alpinePos, 3));
+      alpineGeo.setAttribute('uv', new THREE.Float32BufferAttribute(alpineUvs, 2));
+      alpineGeo.setIndex(alpineIndices);
+      alpineGeo.computeVertexNormals();
+
+      // Stitch seam normals perfectly across 0 and 2*PI boundary
+      const alpineNormals = alpineGeo.attributes.normal.array;
+      for (let ri = 0; ri <= ringSegs; ri++) {
+        const i0 = (ri * (radialSegs + 1) + 0) * 3;
+        const iEnd = (ri * (radialSegs + 1) + radialSegs) * 3;
+        const nx = (alpineNormals[i0] + alpineNormals[iEnd]) * 0.5;
+        const ny = (alpineNormals[i0 + 1] + alpineNormals[iEnd + 1]) * 0.5;
+        const nz = (alpineNormals[i0 + 2] + alpineNormals[iEnd + 2]) * 0.5;
+        const len = Math.hypot(nx, ny, nz) || 1.0;
+        alpineNormals[i0] = alpineNormals[iEnd] = nx / len;
+        alpineNormals[i0 + 1] = alpineNormals[iEnd + 1] = ny / len;
+        alpineNormals[i0 + 2] = alpineNormals[iEnd + 2] = nz / len;
+      }
+      alpineGeo.attributes.normal.needsUpdate = true;
+
+      terrainAlpineMassives = new THREE.Mesh(alpineGeo, terrainMaterial);
+      scene.add(terrainAlpineMassives);
+
+      // 2. Midground Fjord Promontories (West & East Headlands)
+      function createPromontoryMesh(isWest) {
+        const geo = new THREE.PlaneGeometry(130, 160, 110, 130);
+        geo.rotateX(-Math.PI / 2);
+        const pos = geo.attributes.position.array;
+
+        const sign = isWest ? -1 : 1;
+        const baseCenterX = sign * 95;
+        const baseCenterZ = -105;
+
+        for (let i = 0; i < pos.length; i += 3) {
+          const lx = pos[i];
+          const lz = pos[i + 2];
+          const wx = baseCenterX + lx;
+          const wz = baseCenterZ + lz;
+
+          const tipX = sign * 42;
+          const tipZ = -65;
+          const rootX = sign * 150;
+          const rootZ = -160;
+
+          const ridgeLen = Math.hypot(rootX - tipX, rootZ - tipZ);
+          const distFromTip = Math.hypot(wx - tipX, wz - tipZ);
+          const ridgeProg = Math.max(0.0, Math.min(1.0, distFromTip / ridgeLen));
+
+          const dirX = (rootX - tipX) / ridgeLen;
+          const dirZ = (rootZ - tipZ) / ridgeLen;
+          const perpX = -dirZ;
+          const perpZ = dirX;
+          const lateralDist = Math.abs((wx - tipX) * perpX + (wz - tipZ) * perpZ);
+
+          const rmf = terrainRidgedMF(wx * 0.012, wz * 0.012, 4);
+          const fb = terrainFbm(wx * 0.025, wz * 0.025, 3);
+
+          const ridgeWidth = 32.0 + ridgeProg * 35.0;
+          const lateralFade = Math.max(0.0, 1.0 - Math.pow(lateralDist / ridgeWidth, 2.0));
+
+          let h = (ridgeProg * 45.0 + rmf * 16.0 + fb * 6.0) * lateralFade;
+
+          const edgeDistX = 65.0 - Math.abs(lx);
+          const edgeDistZ = 80.0 - Math.abs(lz);
+          const borderDist = Math.min(edgeDistX, edgeDistZ);
+          if (borderDist < 12.0) {
+            const t = borderDist / 12.0;
+            h = (h * t) - (3.5 * (1.0 - t));
+          }
+
+          pos[i + 1] = h;
+        }
+
+        geo.attributes.position.needsUpdate = true;
+        geo.computeVertexNormals();
+        const mesh = new THREE.Mesh(geo, terrainMaterial);
+        mesh.position.set(baseCenterX, 0, baseCenterZ);
+        return mesh;
+      }
+
+      terrainPromontoryWest = createPromontoryMesh(true);
+      scene.add(terrainPromontoryWest);
+
+      terrainPromontoryEast = createPromontoryMesh(false);
+      scene.add(terrainPromontoryEast);
+
+      // 3. Foreground Elevated Panoramic Bluff & Shoreline (Observer at Z=42, Y=8.2; dry ground Y=6.5)
+      const shoreGeo = new THREE.PlaneGeometry(140, 100, 120, 90);
+      shoreGeo.rotateX(-Math.PI / 2);
+      const sPos = shoreGeo.attributes.position.array;
+
+      for (let i = 0; i < sPos.length; i += 3) {
+        const lx = sPos[i];
+        const lz = sPos[i + 2];
+        const wx = lx;
+        const wz = 52 + lz; // Spans from wz = 2 (in lake shelf) to wz = 102 (behind observer)
+
+        let h = 0.0;
+        if (wz >= 38.0) {
+          // Upper elevated dry promontory plateau where observer stands (Z=42, ground Y=6.5)
+          h = 6.5 + terrainFbm(wx * 0.04, wz * 0.04, 3) * 0.45;
+        } else if (wz >= 15.0) {
+          // Smooth, solid 23m descent from bluff (6.5m) to water edge (0m at Z=15)
+          const tSlope = (wz - 15.0) / (38.0 - 15.0); // 0 at Z=15, 1 at Z=38
+          const ramp = tSlope * tSlope * (3.0 - 2.0 * tSlope);
+          h = ramp * 6.5 + terrainFbm(wx * 0.04, wz * 0.04, 3) * (0.15 + 0.3 * ramp);
+        } else {
+          // Submerged lakebed shelf dipping below waterline (Y <= 0)
+          const tSub = Math.min(1.0, (15.0 - wz) / 10.0);
+          h = -tSub * 3.5;
+        }
+
+        // Lateral falloff towards far outer edges
+        const lateralFade = Math.max(0.0, 1.0 - Math.pow(Math.abs(lx) / 66.0, 4.0));
+        h *= lateralFade;
+        if (Math.abs(lx) > 55.0) {
+          const edgeT = (Math.abs(lx) - 55.0) / 15.0;
+          h -= edgeT * 4.0;
+        }
+        if (wz > 92.0) {
+          const rearT = (wz - 92.0) / 10.0;
+          h -= rearT * 2.0;
+        }
+
+        sPos[i + 1] = h;
+      }
+
+      shoreGeo.attributes.position.needsUpdate = true;
+      shoreGeo.computeVertexNormals();
+      terrainForegroundShore = new THREE.Mesh(shoreGeo, terrainMaterial);
+      terrainForegroundShore.position.set(0, 0, 52);
+      scene.add(terrainForegroundShore);
+
+      // 4. Photorealistic Arctic Glacial Erratics (Massi Erratici Glaciali Levigati)
+      terrainBoulders = new THREE.Group();
+
+      function createGlacialErraticGeometry(radius, detail, cfg) {
+        const rawGeo = new THREE.IcosahedronGeometry(radius, detail);
+        const rawPos = rawGeo.attributes.position.array;
+
+        // Weld duplicate vertices to create an indexed geometry with shared vertices across all triangles
+        const uniquePos = [];
+        const indices = [];
+        const vertexMap = new Map();
+        const prec = 10000;
+
+        for (let i = 0; i < rawPos.length; i += 3) {
+          const vx = rawPos[i];
+          const vy = rawPos[i + 1];
+          const vz = rawPos[i + 2];
+          const key = `${Math.round(vx * prec)}_${Math.round(vy * prec)}_${Math.round(vz * prec)}`;
+          let idx = vertexMap.get(key);
+          if (idx === undefined) {
+            idx = uniquePos.length / 3;
+            vertexMap.set(key, idx);
+            uniquePos.push(vx, vy, vz);
+          }
+          indices.push(idx);
+        }
+
+        const seed = cfg.seed || 1.0;
+        const sx = cfg.sx || 1.0;
+        const sy = cfg.sy || 1.0;
+        const sz = cfg.sz || 1.0;
+
+        // Sculpt organic weathered glacial shape on continuous welded mesh
+        for (let i = 0; i < uniquePos.length; i += 3) {
+          const vx = uniquePos[i];
+          const vy = uniquePos[i + 1];
+          const vz = uniquePos[i + 2];
+          const len = Math.hypot(vx, vy, vz) || 1.0;
+          const nx = vx / len;
+          const ny = vy / len;
+          const nz = vz / len;
+
+          // Multi-frequency continuous Simplex deformation (glacial erosion & water smoothing)
+          const n1 = _terrainNoiseA(nx * 1.5 + seed * 2.1, nz * 1.5 + seed * 1.7);
+          const n2 = _terrainNoiseB(ny * 2.1 + seed * 1.3, nx * 2.1 + seed * 0.9);
+          const n3 = _terrainNoiseA(nz * 3.6 + seed * 0.7, ny * 3.6 + seed * 1.4) * 0.35;
+
+          // Weathered glacial top shelf: gentle rounding where snow and frost settle
+          const topShelf = ny > 0.15 ? (1.0 - (ny - 0.15) * 0.12) : 1.0;
+
+          // Continuous radius modulation: velvety smooth, zero sharp spikes
+          const r = 1.0 + (n1 * 0.16 + n2 * 0.09 + n3 * 0.04);
+
+          let px = nx * r * sx;
+          let py = ny * r * sy * topShelf;
+          let pz = nz * r * sz;
+
+          // Natural grounding: flatten base so boulder rests solidly in shore sand and water
+          if (ny < -0.30) {
+            const botT = (-ny - 0.30) / 0.70;
+            py = py * (1.0 - botT * 0.25);
+          }
+
+          uniquePos[i] = px;
+          uniquePos[i + 1] = py;
+          uniquePos[i + 2] = pz;
+        }
+
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(uniquePos, 3));
+        geo.setIndex(indices);
+        geo.computeVertexNormals();
+        return geo;
+      }
+
+      const bConfigs = [
+        // 1. Foreground Dry Promontory Plateau (Tactile boulders surrounding observer at Z=42, Y=6.5)
+        { x: -4.8,  y: 6.40, z: 40.0, sx: 1.8, sy: 1.1, sz: 1.6, ry: 0.85, seed: 13.1 },
+        { x:  5.2,  y: 6.40, z: 41.5, sx: 1.9, sy: 1.2, sz: 1.7, ry: 2.10, seed: 14.5 },
+        { x: -8.5,  y: 6.45, z: 45.0, sx: 2.4, sy: 1.5, sz: 2.2, ry: 1.45, seed: 15.2 },
+        { x:  9.0,  y: 6.45, z: 46.0, sx: 2.5, sy: 1.6, sz: 2.3, ry: 0.65, seed: 16.0 },
+        { x: -2.6,  y: 5.80, z: 36.0, sx: 1.4, sy: 0.9, sz: 1.3, ry: 1.90, seed: 11.8 },
+        { x:  3.8,  y: 5.60, z: 35.5, sx: 1.5, sy: 1.0, sz: 1.4, ry: 2.75, seed: 12.3 },
+
+        // 2. Mid-Slope Sentinels (Descending from bluff to waterline along Z=24..30)
+        { x: -15.0, y: 3.20, z: 26.0, sx: 2.8, sy: 1.8, sz: 2.5, ry: 1.35, seed: 2.8 },
+        { x:  -8.5, y: 3.80, z: 28.0, sx: 2.0, sy: 1.3, sz: 1.9, ry: 2.40, seed: 3.9 },
+        { x:  14.0, y: 2.90, z: 25.0, sx: 3.0, sy: 1.9, sz: 2.6, ry: 1.80, seed: 6.3 },
+        { x:   7.5, y: 4.10, z: 29.0, sx: 1.8, sy: 1.1, sz: 1.7, ry: 3.05, seed: 9.2 },
+        { x: -18.5, y: 2.40, z: 29.5, sx: 1.5, sy: 1.0, sz: 1.4, ry: 0.85, seed: 4.6 },
+        { x:  17.5, y: 2.50, z: 28.5, sx: 1.4, sy: 0.9, sz: 1.3, ry: 0.45, seed: 10.5 },
+
+        // 3. Shoreline Water's Edge Sentinels (Nestled at waterline Z=14..17, Y=0.0..0.4)
+        { x: -22.0, y: 0.15, z: 16.0, sx: 3.6, sy: 2.3, sz: 3.2, ry: 0.62, seed: 1.4 },
+        { x: -13.5, y: 0.05, z: 15.0, sx: 2.6, sy: 1.7, sz: 2.3, ry: 1.15, seed: 5.1 },
+        { x:  19.0, y: 0.10, z: 15.5, sx: 3.4, sy: 2.2, sz: 3.0, ry: 0.95, seed: 7.7 },
+        { x:  26.0, y: 0.35, z: 17.0, sx: 4.2, sy: 2.7, sz: 3.8, ry: 2.65, seed: 8.4 },
+        { x:  -3.2, y: 0.10, z: 16.5, sx: 1.2, sy: 0.7, sz: 1.1, ry: 1.70, seed: 17.1 },
+        { x:   2.8, y: 0.05, z: 15.8, sx: 1.0, sy: 0.6, sz: 0.9, ry: 2.20, seed: 18.2 }
+      ];
+
+      bConfigs.forEach(cfg => {
+        const bGeo = createGlacialErraticGeometry(1.0, 4, cfg);
+        const bMesh = new THREE.Mesh(bGeo, terrainMaterial);
+        bMesh.position.set(cfg.x, cfg.y + cfg.sy * 0.45, cfg.z);
+        bMesh.rotation.y = cfg.ry;
+        terrainBoulders.add(bMesh);
+      });
+      scene.add(terrainBoulders);
+    }
+
+    /* --- 2. SACRED LAKE (Physical PBR Water & Majestic Sun Glitter Path) --- */
+    function buildSacredLake() {
+      const texData = window.MORNING_WATER_TEXTURES || {};
+      const waterGeo = new THREE.PlaneGeometry(1600, 860, 160, 90);
+      waterGeo.rotateX(-Math.PI / 2);
+
+      let waterNormalTex = null;
+      if (texData.waterNormal) {
+        waterNormalTex = textureLoader.load(texData.waterNormal);
+      } else {
+        waterNormalTex = createProceduralNormalFallback();
+      }
+      waterNormalTex.wrapS = THREE.RepeatWrapping;
+      waterNormalTex.wrapT = THREE.RepeatWrapping;
+
+      const waterMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0.0 },
+          uNormalMap: { value: waterNormalTex },
+          uSunPos: { value: new THREE.Vector3(25, -40, -720) },
+          uSunDawnColor: { value: new THREE.Color(0xffa244) },
+          uDawnProgress: { value: 0.0 },
+          uDeepColor: { value: new THREE.Color(0x021324) },
+          uShallowColor: { value: new THREE.Color(0x092e4e) },
+          uSkyReflectColor: { value: new THREE.Color(0x1a3d5e) }
+        },
+        vertexShader: `
+          uniform float uTime;
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+
+          void getGerstner(vec2 pos, float time, out vec3 displacedPos, out vec3 waveNormal) {
+            float x = pos.x;
+            float z = pos.y;
+            float y = 0.0;
+            
+            vec3 B = vec3(1.0, 0.0, 0.0);
+            vec3 T = vec3(0.0, 0.0, 1.0);
+
+            // Primary swell: smooth, undulating mountain lake swell
+            float k1 = 2.0 * 3.14159 / 36.0;
+            float c1 = 2.2;
+            vec2 d1 = normalize(vec2(0.25, 0.97));
+            float a1 = 0.12;
+            float phase1 = k1 * (dot(d1, pos) - c1 * time);
+            x += d1.x * (a1 * cos(phase1));
+            z += d1.y * (a1 * cos(phase1));
+            y += a1 * sin(phase1);
+            B += vec3(-d1.x * d1.x * a1 * k1 * sin(phase1), d1.x * a1 * k1 * cos(phase1), -d1.x * d1.y * a1 * k1 * sin(phase1));
+            T += vec3(-d1.x * d1.y * a1 * k1 * sin(phase1), d1.y * a1 * k1 * cos(phase1), -d1.y * d1.y * a1 * k1 * sin(phase1));
+
+            // Secondary crossing wave
+            float k2 = 2.0 * 3.14159 / 18.0;
+            float c2 = 2.8;
+            vec2 d2 = normalize(vec2(-0.55, 0.83));
+            float a2 = 0.06;
+            float phase2 = k2 * (dot(d2, pos) - c2 * time);
+            x += d2.x * (a2 * cos(phase2));
+            z += d2.y * (a2 * cos(phase2));
+            y += a2 * sin(phase2);
+            B += vec3(-d2.x * d2.x * a2 * k2 * sin(phase2), d2.x * a2 * k2 * cos(phase2), -d2.x * d2.y * a2 * k2 * sin(phase2));
+            T += vec3(-d2.x * d2.y * a2 * k2 * sin(phase2), d2.y * a2 * k2 * cos(phase2), -d2.y * d2.y * a2 * k2 * sin(phase2));
+
+            // Surface ripple chop
+            float k3 = 2.0 * 3.14159 / 8.0;
+            float c3 = 4.0;
+            vec2 d3 = normalize(vec2(0.7, 0.7));
+            float a3 = 0.024;
+            float phase3 = k3 * (dot(d3, pos) - c3 * time);
+            y += a3 * sin(phase3);
+
+            displacedPos = vec3(x, y, z);
+            waveNormal = normalize(cross(T, B));
+          }
+
+          void main() {
+            vUv = uv;
+            vec3 dispPos;
+            vec3 wNormal;
+            getGerstner(position.xz, uTime, dispPos, wNormal);
+
+            vec4 worldPos = modelMatrix * vec4(dispPos, 1.0);
+            vWorldPosition = worldPos.xyz;
+            vNormal = normalize(mat3(modelMatrix) * wNormal);
+
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform sampler2D uNormalMap;
+          uniform vec3 uSunPos;
+          uniform vec3 uSunDawnColor;
+          uniform float uDawnProgress;
+          uniform vec3 uDeepColor;
+          uniform vec3 uShallowColor;
+          uniform vec3 uSkyReflectColor;
+
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+
+          void main() {
+            // Dual-speed scrolling normal map for organic capillary ripple facets
+            vec2 uv1 = vUv * 40.0 + vec2(uTime * 0.042, uTime * 0.034);
+            vec2 uv2 = vUv * 92.0 + vec2(-uTime * 0.048, uTime * 0.044);
+            vec3 n1 = texture2D(uNormalMap, uv1).rgb * 2.0 - 1.0;
+            vec3 n2 = texture2D(uNormalMap, uv2).rgb * 2.0 - 1.0;
+            vec3 microN = normalize(n1 + n2 * 0.65);
+
+            // World-space perturbed surface normal
+            vec3 N = normalize(vec3(
+              vNormal.x + microN.x * 0.24,
+              vNormal.y + microN.z * 0.08,
+              vNormal.z + microN.y * 0.24
+            ));
+
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 L = normalize(uSunPos - vWorldPosition);
+            vec3 H = normalize(L + V);
+
+            // Fresnel reflectance
+            float cosTheta = clamp(dot(N, V), 0.0, 1.0);
+            float fresnel = 0.025 + 0.975 * pow(1.0 - cosTheta, 5.0);
+
+            // Base depth color
+            vec3 waterDepth = mix(uDeepColor, uShallowColor, 0.35);
+
+            // Sky reflection
+            float sunFacing = max(0.0, dot(reflect(-V, N), L));
+            vec3 skyRefl = mix(uSkyReflectColor, uSunDawnColor * 1.15, pow(sunFacing, 3.2) * uDawnProgress);
+            vec3 baseWater = mix(waterDepth, skyRefl, fresnel);
+
+            // Sun Glitter Path
+            float NdotH = max(0.0, dot(N, H));
+            float broadGlitter = pow(NdotH, 18.0) * 0.58;
+            float medGlitter = pow(NdotH, 80.0) * 0.88;
+
+            float microNdotH = max(0.0, dot(normalize(vNormal + microN * 0.55), H));
+            float microGlitter = pow(microNdotH, 380.0) * 2.9;
+
+            float dist = length(cameraPosition - vWorldPosition);
+            float distFade = 1.0 - smoothstep(420.0, 840.0, dist);
+
+            float totalGlitter = (broadGlitter + medGlitter + microGlitter * distFade) * uDawnProgress;
+            vec3 glitterCol = mix(uSunDawnColor * 1.35, vec3(1.0, 0.98, 0.94), clamp(microGlitter, 0.0, 1.0));
+
+            vec3 finalColor = baseWater + glitterCol * totalGlitter * 2.5;
+
+            // Fog blending seamlessly with mountain panorama waterline
+            float fog = smoothstep(220.0, 850.0, dist);
+            vec3 horizonFogCol = mix(vec3(0.03, 0.08, 0.16), uSunDawnColor * 0.72, pow(max(0.0, dot(-V, L)), 2.6) * uDawnProgress);
+            finalColor = mix(finalColor, horizonFogCol, fog * 0.80);
+
+            gl_FragColor = vec4(finalColor, 0.98);
+          }
+        `,
+        transparent: true
+      });
+
+      waterMesh = new THREE.Mesh(waterGeo, waterMat);
+      waterMesh.position.set(0, 0, -415);
+      scene.add(waterMesh);
+
+      // Deep Submerged Cerulean Volume (Terminating strictly at shoreline Z=+15)
+      const subGeo = new THREE.BoxGeometry(1400, 50, 860);
+      const subMat = new THREE.MeshBasicMaterial({
+        color: 0x01162b,
+        transparent: true,
+        opacity: 0.82,
+        side: THREE.BackSide
+      });
+      waterSubSurfaceMesh = new THREE.Mesh(subGeo, subMat);
+      waterSubSurfaceMesh.position.set(0, -25, -415);
+      scene.add(waterSubSurfaceMesh);
+    }
+
+    /* --- 3. PHOTOMETRIC INCANDESCENT SUN & REFINED ATMOSPHERIC CORONA --- */
+    function buildSunMesh() {
+      const sunGeo = new THREE.SphereGeometry(14, 32, 32);
+      const sunMat = new THREE.MeshBasicMaterial({
+        color: 0xfffae8,
+        fog: false
+      });
+      sunMesh = new THREE.Mesh(sunGeo, sunMat);
+      sunMesh.position.set(25, -40, -720);
+      scene.add(sunMesh);
+
+      // Inner Warm Golden Solar Limb Glow
+      const corona1Tex = createSunCoronaTexture(128, 'inner');
+      const corona1Mat = new THREE.SpriteMaterial({
+        map: corona1Tex,
+        color: 0xffdf88,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        opacity: 0.90,
+        depthWrite: false,
+        fog: false
+      });
+      sunCorona1 = new THREE.Sprite(corona1Mat);
+      sunCorona1.scale.set(75, 75, 1);
+      sunMesh.add(sunCorona1);
+
+      // Soft Atmospheric Dawn Mie Halo
+      const corona2Tex = createSunCoronaTexture(256, 'outer');
+      const corona2Mat = new THREE.SpriteMaterial({
+        map: corona2Tex,
+        color: 0xff9933,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        opacity: 0.38,
+        depthWrite: false,
+        fog: false
+      });
+      sunCorona2 = new THREE.Sprite(corona2Mat);
+      sunCorona2.scale.set(260, 260, 1);
+      sunMesh.add(sunCorona2);
+    }
+
+    /* --- SCENA 4: VOLUMETRIC GOLDEN AURA BATH (Zero Dark Void, Sublime Cocoon) --- */
+    function buildAuraSolarBath() {
+      auraGroup = new THREE.Group();
+      auraGroup.visible = false;
+      scene.add(auraGroup);
+
+      // Volumetric aura cocoon with soft Fresnel rim shader
+      const shellGeo = new THREE.SphereGeometry(4.2, 36, 28);
+      const shellMat = new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uGlowColor: { value: new THREE.Color(0xffbe4d) },
+          uOpacity: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec3 vNormal;
+          varying vec3 vViewDir;
+          void main() {
+            vNormal = normalize(normalMatrix * normal);
+            vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+            vViewDir = normalize(-mvPos.xyz);
+            gl_Position = projectionMatrix * mvPos;
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 uGlowColor;
+          uniform float uOpacity;
+          varying vec3 vNormal;
+          varying vec3 vViewDir;
+          void main() {
+            // Soft rim glow: inner core is transparent so landscape remains 100% visible
+            float rim = pow(1.0 - abs(dot(vNormal, vViewDir)), 2.8);
+            gl_FragColor = vec4(uGlowColor, rim * 0.45 * uOpacity);
+          }
+        `
+      });
+      auraShellMesh = new THREE.Mesh(shellGeo, shellMat);
+      auraGroup.add(auraShellMesh);
+
+      // 1200 Warm Golden Solar Photons (liquid light motes)
+      const pCount = 1200;
+      const pGeo = new THREE.BufferGeometry();
+      const pPos = new Float32Array(pCount * 3);
+      const pSpeeds = new Float32Array(pCount);
+      const pBaseAngles = new Float32Array(pCount);
+      const pBaseRadii = new Float32Array(pCount);
+      const pHeights = new Float32Array(pCount);
+
+      for (let i = 0; i < pCount; i++) {
+        const rad = 1.4 + Math.random() * 3.2;
+        const theta = Math.random() * Math.PI * 2;
+        const y = (Math.random() - 0.5) * 3.8;
+
+        pPos[i * 3] = rad * Math.cos(theta);
+        pPos[i * 3 + 1] = y;
+        pPos[i * 3 + 2] = rad * Math.sin(theta);
+
+        pBaseRadii[i] = rad;
+        pBaseAngles[i] = theta;
+        pHeights[i] = y;
+        pSpeeds[i] = 0.35 + Math.random() * 0.65;
+      }
+      pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+
+      const goldPhotonTex = createGlowMoteTexture('gold');
+      const pMat = new THREE.PointsMaterial({
+        color: 0xffe28a,
+        size: 0.11,
+        map: goldPhotonTex,
+        transparent: true,
+        opacity: 0.88,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        sizeAttenuation: true
+      });
+      auraPhotons = new THREE.Points(pGeo, pMat);
+      auraPhotons.userData = { pBaseRadii, pBaseAngles, pHeights, pSpeeds };
+      auraGroup.add(auraPhotons);
+    }
+
+    /* --- SCENA 5: TELLURIC 4 CHAKRAS ASCENDING ENERGY STREAM (Zero CAD Plastic, Pure Volumetric Plasma) --- */
+    function buildChakraTelluricColumn() {
+      chakraColumnGroup = new THREE.Group();
+      chakraColumnGroup.visible = false;
+      scene.add(chakraColumnGroup);
+
+      // 1. Concentric Volumetric Plasma Cylinders with GLSL Energy Harmonics
+      const plasmaMat = new THREE.ShaderMaterial({
+        side: THREE.DoubleSide,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uTime: { value: 0.0 },
+          uColor: { value: new THREE.Color(0xff1d38) },
+          uOpacity: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying vec3 vViewDir;
+          void main() {
+            vNormal = normalize(normalMatrix * normal);
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPos.xyz;
+            vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+            vViewDir = normalize(-mvPos.xyz);
+            gl_Position = projectionMatrix * mvPos;
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform vec3 uColor;
+          uniform float uOpacity;
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying vec3 vViewDir;
+
+          void main() {
+            // Radial Fresnel softness
+            float rim = pow(1.0 - abs(dot(vNormal, vViewDir)), 2.2);
+
+            // Upward undulating energy waves
+            float wave1 = sin(vWorldPosition.y * 2.8 - uTime * 6.0) * 0.5 + 0.5;
+            float wave2 = cos(vWorldPosition.y * 1.8 + uTime * 4.4) * 0.5 + 0.5;
+            float energy = 0.55 + 0.45 * (wave1 * wave2);
+
+            // Smooth vertical taper and atmospheric dispersion at top
+            float yFade = smoothstep(0.0, 1.4, vWorldPosition.y) * pow(1.0 - smoothstep(4.5, 11.5, vWorldPosition.y), 1.8);
+
+            float alpha = (0.22 + rim * 0.78) * energy * yFade * uOpacity;
+            vec3 glow = uColor + vec3(0.25, 0.22, 0.12) * wave1;
+            gl_FragColor = vec4(glow, alpha);
+          }
+        `
+      });
+
+      // Core luminous beam
+      const coreGeo = new THREE.CylinderGeometry(0.32, 0.48, 12.0, 32, 1, true);
+      chakraCoreMesh = new THREE.Mesh(coreGeo, plasmaMat);
+      chakraCoreMesh.position.y = 6.0;
+      chakraColumnGroup.add(chakraCoreMesh);
+
+      // Mid energy mantle
+      const mantleGeo = new THREE.CylinderGeometry(0.85, 1.15, 12.0, 32, 1, true);
+      const mantleMat = plasmaMat.clone();
+      chakraMantleMesh = new THREE.Mesh(mantleGeo, mantleMat);
+      chakraMantleMesh.position.y = 6.0;
+      chakraColumnGroup.add(chakraMantleMesh);
+
+      // Outer gaseous auric sheath
+      const outerGeo = new THREE.CylinderGeometry(1.65, 2.1, 12.0, 32, 1, true);
+      const outerMat = plasmaMat.clone();
+      chakraOuterMesh = new THREE.Mesh(outerGeo, outerMat);
+      chakraOuterMesh.position.y = 6.0;
+      chakraColumnGroup.add(chakraOuterMesh);
+
+      // 2. Double Helix Kundalini Ribbons (Caduceus)
+      chakraHelixGroup = new THREE.Group();
+      chakraColumnGroup.add(chakraHelixGroup);
+
+      const hCount = 360;
+      const hGeo = new THREE.BufferGeometry();
+      const hPos = new Float32Array(hCount * 3);
+      for (let i = 0; i < hCount; i++) {
+        hPos[i * 3 + 0] = 0;
+        hPos[i * 3 + 1] = (i / hCount) * 11.0;
+        hPos[i * 3 + 2] = 0;
+      }
+      hGeo.setAttribute('position', new THREE.BufferAttribute(hPos, 3));
+      const sparkTex = createGlowMoteTexture('gold');
+      const hMat = new THREE.PointsMaterial({
+        size: 0.22,
+        map: sparkTex,
+        color: 0xff1d38,
+        transparent: true,
+        opacity: 0.88,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      const helixPoints = new THREE.Points(hGeo, hMat);
+      chakraHelixGroup.add(helixPoints);
+      chakraHelixGroup.userData = { helixPoints, hMat };
+
+      // 3. Sacred Water Caustic Ripple Pool at base
+      const poolGeo = new THREE.PlaneGeometry(6.5, 6.5, 48, 48);
+      poolGeo.rotateX(-Math.PI / 2);
+      const poolMat = new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        uniforms: {
+          uTime: { value: 0.0 },
+          uColor: { value: new THREE.Color(0xff1d38) },
+          uOpacity: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          varying vec3 vWorldPosition;
+          void main() {
+            vUv = uv;
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform vec3 uColor;
+          uniform float uOpacity;
+          varying vec2 vUv;
+
+          void main() {
+            vec2 center = vUv * 2.0 - 1.0;
+            float dist = length(center);
+            if (dist > 1.0) discard;
+
+            // Concentric harmonic ripples with Gaussian radial fade
+            float ripple = sin(dist * 22.0 - uTime * 7.5) * 0.5 + 0.5;
+            float radialFade = pow(1.0 - dist, 1.8);
+            float alpha = ripple * radialFade * 0.65 * uOpacity;
+
+            gl_FragColor = vec4(uColor, alpha);
+          }
+        `
+      });
+      chakraRipplePool = new THREE.Mesh(poolGeo, poolMat);
+      chakraRipplePool.position.set(0, 0.05, 0);
+      chakraColumnGroup.add(chakraRipplePool);
+
+      // 4. 600 Ascending Telluric Stardust Motes
+      const sCount = 600;
+      const sGeo = new THREE.BufferGeometry();
+      const sPos = new Float32Array(sCount * 3);
+      const sYVel = new Float32Array(sCount);
+      const sTheta = new Float32Array(sCount);
+      const sRad = new Float32Array(sCount);
+
+      for (let i = 0; i < sCount; i++) {
+        sRad[i] = 0.2 + Math.random() * 1.5;
+        sTheta[i] = Math.random() * Math.PI * 2;
+        sPos[i * 3 + 0] = sRad[i] * Math.cos(sTheta[i]);
+        sPos[i * 3 + 1] = Math.random() * 11.5;
+        sPos[i * 3 + 2] = sRad[i] * Math.sin(sTheta[i]);
+        sYVel[i] = 1.2 + Math.random() * 1.8;
+      }
+      sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+      const sMat = new THREE.PointsMaterial({
+        size: 0.16,
+        map: sparkTex,
+        color: 0xff1d38,
+        transparent: true,
+        opacity: 0.88,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      chakraSparks = new THREE.Points(sGeo, sMat);
+      chakraSparks.userData = { sRad, sTheta, sYVel };
+      chakraColumnGroup.add(chakraSparks);
+    }
+
+    /* --- SCENA 6: MONUMENTAL ARCTIC PORTAL OF THE 4 ELEMENTS (Harmonious Golden Proportions & Textures) --- */
+    function buildFourElementsGate() {
+      const texData = window.MORNING_WATER_TEXTURES || {};
+      gateGroup = new THREE.Group();
+      gateGroup.position.set(0, 0, -18);
+      gateGroup.visible = false;
+      scene.add(gateGroup);
+
+      // Warm Frontal Fill Light to illuminate carved wood and reliefs of 4 Elements with rich clarity
+      const gateFrontLight = new THREE.DirectionalLight(0xfff4dc, 1.2);
+      gateFrontLight.position.set(0, 6.0, 10.0);
+      gateFrontLight.target = gateGroup;
+      gateGroup.add(gateFrontLight);
+
+      const gateAmbientFill = new THREE.PointLight(0xffe8c0, 1.1, 24);
+      gateAmbientFill.position.set(0, 4.0, 3.5);
+      gateGroup.add(gateAmbientFill);
+
+      // Stone texture
+      let stoneTex = null;
+      if (texData.portalStone) {
+        stoneTex = textureLoader.load(texData.portalStone);
+        stoneTex.encoding = THREE.sRGBEncoding;
+      }
+      const archMat = new THREE.MeshStandardMaterial({
+        color: 0xf5f9fd,
+        map: stoneTex,
+        roughness: 0.32,
+        metalness: 0.08
+      });
+
+      // Stepped Base Plinths (Widened and solid)
+      const baseGeo = new THREE.BoxGeometry(1.5, 0.6, 1.5);
+      const leftBase = new THREE.Mesh(baseGeo, archMat);
+      leftBase.position.set(-3.25, 0.3, 0);
+      gateGroup.add(leftBase);
+
+      const rightBase = new THREE.Mesh(baseGeo, archMat);
+      rightBase.position.set(3.25, 0.3, 0);
+      gateGroup.add(rightBase);
+
+      // Fluted Classical Pillars / Jambs (Monumental columns)
+      const pillarGeo = new THREE.CylinderGeometry(0.44, 0.50, 5.6, 24);
+      const leftPillar = new THREE.Mesh(pillarGeo, archMat);
+      leftPillar.position.set(-3.25, 3.4, 0);
+      gateGroup.add(leftPillar);
+
+      const rightPillar = new THREE.Mesh(pillarGeo, archMat);
+      rightPillar.position.set(3.25, 3.4, 0);
+      gateGroup.add(rightPillar);
+
+      // Capital Cornices
+      const capGeo = new THREE.BoxGeometry(1.4, 0.4, 1.4);
+      const leftCap = new THREE.Mesh(capGeo, archMat);
+      leftCap.position.set(-3.25, 6.2, 0);
+      gateGroup.add(leftCap);
+
+      const rightCap = new THREE.Mesh(capGeo, archMat);
+      rightCap.position.set(3.25, 6.2, 0);
+      gateGroup.add(rightCap);
+
+      // Pointed Ogival Arch Lintel (Harmonious classical proportions matching porta_1.jpg)
+      const archShape = new THREE.Shape();
+      // Outer gothic arch outline
+      archShape.moveTo(-3.65, 6.2);
+      archShape.quadraticCurveTo(-3.35, 9.2, 0, 9.95);
+      archShape.quadraticCurveTo(3.35, 9.2, 3.65, 6.2);
+      // Inner opening outline
+      archShape.lineTo(2.75, 6.0);
+      archShape.quadraticCurveTo(2.45, 8.25, 0, 8.70);
+      archShape.quadraticCurveTo(-2.45, 8.25, -2.75, 6.0);
+      archShape.closePath();
+
+      const extrudeSettings = {
+        depth: 0.6,
+        bevelEnabled: true,
+        bevelSegments: 3,
+        steps: 2,
+        bevelSize: 0.08,
+        bevelThickness: 0.08
+      };
+      const archGeo = new THREE.ExtrudeGeometry(archShape, extrudeSettings);
+      archGeo.translate(0, 0, -0.3);
+      const archMesh = new THREE.Mesh(archGeo, archMat);
+      archMesh.position.set(0, 0, 0);
+      gateGroup.add(archMesh);
+
+      // Left Door Leaf (Carved Sun & River - Golden Ratio: 2.75m width x 8.65m height matching natural 174:274 texture)
+      let texLeft = null;
+      if (texData.doorLeft) {
+        texLeft = textureLoader.load(texData.doorLeft);
+        texLeft.encoding = THREE.sRGBEncoding;
+      }
+      const doorGeoLeft = new THREE.BoxGeometry(2.75, 8.65, 0.16);
+      doorGeoLeft.translate(1.375, 0, 0); // Pivot at outer hinge
+
+      const doorLeftMat = new THREE.MeshStandardMaterial({
+        map: texLeft,
+        transparent: true,
+        alphaTest: 0.05,
+        roughness: 0.35,
+        metalness: 0.05
+      });
+      gateDoorLeft = new THREE.Mesh(doorGeoLeft, doorLeftMat);
+      gateDoorLeft.position.set(-2.75, 4.325, 0.02);
+      gateGroup.add(gateDoorLeft);
+
+      // Right Door Leaf (Carved Wind & Tree - 2.75m width x 8.65m height)
+      let texRight = null;
+      if (texData.doorRight) {
+        texRight = textureLoader.load(texData.doorRight);
+        texRight.encoding = THREE.sRGBEncoding;
+      }
+      const doorGeoRight = new THREE.BoxGeometry(2.75, 8.65, 0.16);
+      doorGeoRight.translate(-1.375, 0, 0); // Pivot at outer hinge
+
+      const doorRightMat = new THREE.MeshStandardMaterial({
+        map: texRight,
+        transparent: true,
+        alphaTest: 0.05,
+        roughness: 0.35,
+        metalness: 0.05
+      });
+      gateDoorRight = new THREE.Mesh(doorGeoRight, doorRightMat);
+      gateDoorRight.position.set(2.75, 4.325, 0.02);
+      gateGroup.add(gateDoorRight);
+
+      // Antique Bronze Door Handles matching porta_1.jpg
+      const handleMat = new THREE.MeshStandardMaterial({ color: 0x3d3024, roughness: 0.4, metalness: 0.7 });
+      const handleGeo = new THREE.SphereGeometry(0.12, 16, 16);
+      const leftHandle = new THREE.Mesh(handleGeo, handleMat);
+      leftHandle.position.set(2.52, -1.2, 0.12);
+      gateDoorLeft.add(leftHandle);
+
+      const rightHandle = new THREE.Mesh(handleGeo, handleMat);
+      rightHandle.position.set(-2.52, -1.2, 0.12);
+      gateDoorRight.add(rightHandle);
+
+      // Bronze/Iron Hinges on Door Leaves
+      const hingeMat = new THREE.MeshStandardMaterial({ color: 0x241d16, roughness: 0.5, metalness: 0.8 });
+      [-2.75, 2.75].forEach((hx) => {
+        [1.4, 3.8, 6.2].forEach(hy => {
+          const hingeMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.32, 12), hingeMat);
+          hingeMesh.position.set(hx, hy, 0.14);
+          gateGroup.add(hingeMesh);
+        });
+      });
+
+      // Radiant Celestial Inner Portal Light Plane
+      const lightGeo = new THREE.PlaneGeometry(5.5, 8.65);
+      const lightMat = new THREE.MeshBasicMaterial({
+        color: 0xfff6dd,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide
+      });
+      gatePortalBeam = new THREE.Mesh(lightGeo, lightMat);
+      gatePortalBeam.position.set(0, 4.325, -0.15);
+      gateGroup.add(gatePortalBeam);
+
+      // Volumetric God-Ray Light Cone emerging on open
+      const beamGeo = new THREE.ConeGeometry(7.5, 26, 24, 1, true);
+      beamGeo.rotateX(-Math.PI / 2);
+      beamGeo.translate(0, 0, 13);
+      const beamMat = new THREE.MeshBasicMaterial({
+        color: 0xffe8aa,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        fog: false
+      });
+      gateGodRays = new THREE.Mesh(beamGeo, beamMat);
+      gateGodRays.position.set(0, 4.2, -0.2);
+      gateGroup.add(gateGodRays);
+
+      // 700 Golden Stardust Motes Streaming Through Portal
+      const gCount = 700;
+      const gGeo = new THREE.BufferGeometry();
+      const gPos = new Float32Array(gCount * 3);
+      for (let i = 0; i < gCount; i++) {
+        gPos[i * 3 + 0] = (Math.random() - 0.5) * 5.2;
+        gPos[i * 3 + 1] = 0.5 + Math.random() * 7.5;
+        gPos[i * 3 + 2] = -0.5 + Math.random() * 16.0;
+      }
+      gGeo.setAttribute('position', new THREE.BufferAttribute(gPos, 3));
+      const goldTex = createGlowMoteTexture('gold');
+      const gMat = new THREE.PointsMaterial({
+        size: 0.18,
+        map: goldTex,
+        color: 0xffe090,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      gateStardust = new THREE.Points(gGeo, gMat);
+      gateGroup.add(gateStardust);
+    }
+
+    /* --- SCENA 7: 7-CHAKRA RAINBOW VORTEX CHAMBER (Transcendent Cathedral of Iridescent Light) --- */
+    function buildRainbowVortexChamber() {
+      const texData = window.MORNING_WATER_TEXTURES || {};
+      rainbowChamberGroup = new THREE.Group();
+      rainbowChamberGroup.position.set(0, 3.2, -60);
+      rainbowChamberGroup.visible = false;
+      scene.add(rainbowChamberGroup);
+
+      let rainbowTex = null;
+      if (texData.rainbowTunnel) {
+        rainbowTex = textureLoader.load(texData.rainbowTunnel);
+      }
+      if (rainbowTex) {
+        rainbowTex.wrapS = THREE.MirroredRepeatWrapping;
+        rainbowTex.wrapT = THREE.MirroredRepeatWrapping;
+        rainbowTex.repeat.set(2, 1);
+        rainbowTex.encoding = THREE.sRGBEncoding;
+      }
+
+      // Tapering Rainbow Vortex Funnel (Swirls smoothly into the central radiant star, ZERO CUTOFF!)
+      const tunnelGeo = new THREE.CylinderGeometry(22, 0.8, 180, 64, 48, true);
+      tunnelGeo.rotateX(Math.PI / 2);
+      const tunnelMat = new THREE.MeshBasicMaterial({
+        map: rainbowTex,
+        side: THREE.BackSide,
+        transparent: true,
+        opacity: 0.98
+      });
+      rainbowTunnelMesh = new THREE.Mesh(tunnelGeo, tunnelMat);
+      rainbowChamberGroup.add(rainbowTunnelMesh);
+
+      // Radiant Celestial Focal Core at vanishing point
+      const focalTex = createGlowMoteTexture('gold');
+      const focalMat = new THREE.SpriteMaterial({
+        map: focalTex,
+        color: 0xffffff,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        opacity: 0.98,
+        depthWrite: false
+      });
+      rainbowBeaconSprite = new THREE.Sprite(focalMat);
+      rainbowBeaconSprite.position.set(0, 0, -96);
+      rainbowBeaconSprite.scale.set(12, 12, 1);
+      rainbowChamberGroup.add(rainbowBeaconSprite);
+
+      // 2000 Prismatic Fibonacci Spiral Sparkles
+      const pCount = 2000;
+      const pGeo = new THREE.BufferGeometry();
+      const pPos = new Float32Array(pCount * 3);
+      const pCols = new Float32Array(pCount * 3);
+
+      const chakraPalette = [
+        new THREE.Color(0xff2a2a), // Red
+        new THREE.Color(0xff7a00), // Orange
+        new THREE.Color(0xffd700), // Yellow
+        new THREE.Color(0x00e676), // Green
+        new THREE.Color(0x00b0ff), // Cyan/Blue
+        new THREE.Color(0x3d5afe), // Indigo
+        new THREE.Color(0xd500f9)  // Violet
+      ];
+
+      for (let i = 0; i < pCount; i++) {
+        const radius = 2.0 + Math.random() * 15.0;
+        const theta = Math.random() * Math.PI * 2;
+        const z = (Math.random() - 0.5) * 140;
+        pPos[i * 3 + 0] = radius * Math.cos(theta);
+        pPos[i * 3 + 1] = radius * Math.sin(theta);
+        pPos[i * 3 + 2] = z;
+
+        const col = chakraPalette[i % chakraPalette.length];
+        pCols[i * 3 + 0] = col.r;
+        pCols[i * 3 + 1] = col.g;
+        pCols[i * 3 + 2] = col.b;
+      }
+      pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+      pGeo.setAttribute('color', new THREE.BufferAttribute(pCols, 3));
+
+      const whiteSparkleTex = createGlowMoteTexture('sparkle');
+      const pMat = new THREE.PointsMaterial({
+        size: 0.18,
+        map: whiteSparkleTex,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.88,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        sizeAttenuation: true
+      });
+      rainbowParticles = new THREE.Points(pGeo, pMat);
+      rainbowChamberGroup.add(rainbowParticles);
+    }
+
+    /* --- TRANSITION: GOLDEN LIGHT THRESHOLD VEIL (296s - 306s) --- */
+    function buildGoldenThresholdVeil() {
+      const thresholdGeo = new THREE.PlaneGeometry(16, 16);
+      const thresholdMat = new THREE.MeshBasicMaterial({
+        color: 0xfff6dd,
+        transparent: true,
+        opacity: 0.0,
+        depthTest: false,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      });
+      thresholdMesh = new THREE.Mesh(thresholdGeo, thresholdMat);
+      thresholdMesh.position.set(0, 0, -0.4);
+      thresholdMesh.visible = false;
+      camera.add(thresholdMesh);
+    }
+
+    /* --- 3D FLOATING SUBTITLE BILLBOARD (FOR CARDBOARD VR MODE) --- */
+    function build3DSubtitleBillboard() {
+      billboardCanvas = document.createElement('canvas');
+      billboardCanvas.width = 2048;
+      billboardCanvas.height = 512;
+      billboardContext = billboardCanvas.getContext('2d');
+
+      billboardTexture = new THREE.CanvasTexture(billboardCanvas);
+      billboardTexture.minFilter = THREE.LinearFilter;
+      billboardTexture.magFilter = THREE.LinearFilter;
+      billboardTexture.generateMipmaps = false;
+
+      const billboardGeo = new THREE.PlaneGeometry(3.6, 0.9);
+      const billboardMat = new THREE.MeshBasicMaterial({
+        map: billboardTexture,
+        transparent: true,
+        opacity: 1.0,
+        depthTest: false,
+        depthWrite: false,
+        fog: false // CRITICAL: prevent scene fog from darkening/discoloring pure white typography
+      });
+      billboardMesh = new THREE.Mesh(billboardGeo, billboardMat);
+      billboardMesh.renderOrder = 9999; // CRITICAL: ensure text renders crisp and clear over water/sky
+      billboardMesh.position.set(0, -1.25, -3.6);
+      billboardMesh.rotation.x = 0.10;
+      billboardMesh.visible = false;
+      camera.add(billboardMesh);
+      update3DSubtitle("Respira profondamente... Inizia la meditazione.");
+    }
+
+    let lastRenderedSubtitleText = null;
+
+    function update3DSubtitle(text) {
+      if (text === lastRenderedSubtitleText) return;
+      lastRenderedSubtitleText = text;
+      if (!billboardContext) return;
+      billboardContext.clearRect(0, 0, billboardCanvas.width, billboardCanvas.height);
+      if (!text) {
+        billboardTexture.needsUpdate = true;
+        return;
+      }
+
+      billboardContext.save();
+      // Drop Shadow pulito per contrasto conforme allo standard Guido VR
+      billboardContext.shadowColor = 'rgba(0, 0, 0, 0.75)';
+      billboardContext.shadowBlur = 8;
+      billboardContext.shadowOffsetX = 0;
+      billboardContext.shadowOffsetY = 2;
+      billboardContext.fillStyle = '#FFFFFF';
+      billboardContext.font = 'bold 58px "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Trebuchet MS", sans-serif';
+      billboardContext.textAlign = 'center';
+      billboardContext.textBaseline = 'middle';
+
+      wrapText(billboardContext, text, 1024, 256, 1860, 74);
+      billboardContext.restore();
+
+      billboardTexture.needsUpdate = true;
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let lines = [];
+      let currentLine = words[0] || '';
+
+      for (let i = 1; i < words.length; i++) {
+        const testLine = currentLine + ' ' + words[i];
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth) {
+          lines.push(currentLine);
+          currentLine = words[i];
+        } else {
+          currentLine = testLine;
+        }
+      }
+      lines.push(currentLine);
+
+      const startY = y - ((lines.length - 1) * lineHeight) / 2;
+      for (let k = 0; k < lines.length; k++) {
+        ctx.fillText(lines[k], x, startY + (k * lineHeight));
+      }
+    }
+
+    /* ======================================================================
+       4. TIMELINE DIRECTOR & SMOOTH CONTINUOUS EASING (ZERO SCATTI)
+       ====================================================================== */
+    let lastActiveSceneId = null;
+    const _tempColor1 = new THREE.Color();
+    const _tempColor2 = new THREE.Color();
+    const _currChakraColor = new THREE.Color();
+
+    function updateExperienceTimeline(timeSec, deltaSec, snapCamera = false) {
+      // 1. Scene active lookup
+      let activeScene = SCENES_CONFIG[0];
+      for (let i = 0; i < SCENES_CONFIG.length; i++) {
+        if (timeSec >= SCENES_CONFIG[i].start && timeSec < SCENES_CONFIG[i].end) {
+          activeScene = SCENES_CONFIG[i];
+          break;
+        }
+      }
+      if (timeSec >= TOTAL_DURATION_SEC) {
+        activeScene = SCENES_CONFIG[SCENES_CONFIG.length - 1];
+      }
+
+      state.currentSceneIndex = activeScene.id - 1;
+
+      if (activeScene.id !== lastActiveSceneId) {
+        lastActiveSceneId = activeScene.id;
+        hudSceneName.textContent = activeScene.name;
+        scenePills.forEach((p, idx) => {
+          if (idx === state.currentSceneIndex) p.classList.add('active');
+          else p.classList.remove('active');
+        });
+        notifyFlutter('onSceneChange', { sceneId: activeScene.id, sceneName: activeScene.name });
+      }
+
+      updateSubtitlesForTime(timeSec);
+
+      // Outdoor lake vs indoor rainbow chamber visibility isolation with seamless threshold
+      const outdoorVis = (timeSec < 301.5);
+      if (skySphere) skySphere.visible = outdoorVis;
+      if (sunMesh) sunMesh.visible = outdoorVis;
+      if (waterSubSurfaceMesh) waterSubSurfaceMesh.visible = outdoorVis;
+      if (waterMesh) waterMesh.visible = outdoorVis;
+      if (terrainAlpineMassives) terrainAlpineMassives.visible = outdoorVis;
+      if (terrainPromontoryWest) terrainPromontoryWest.visible = outdoorVis;
+      if (terrainPromontoryEast) terrainPromontoryEast.visible = outdoorVis;
+      if (terrainForegroundShore) terrainForegroundShore.visible = outdoorVis;
+      if (terrainBoulders) terrainBoulders.visible = outdoorVis;
+
+      // Golden Light Threshold Veil (296s - 306s)
+      if (thresholdMesh) {
+        if (timeSec >= 296 && timeSec <= 306) {
+          let tAlpha = 0;
+          if (timeSec < 301.5) {
+            tAlpha = smoothstep(296, 301.5, timeSec);
+          } else {
+            tAlpha = 1.0 - smoothstep(301.5, 306, timeSec);
+          }
+          thresholdMesh.material.opacity = Math.sin(tAlpha * Math.PI * 0.5) * 0.98;
+          thresholdMesh.visible = true;
+        } else {
+          thresholdMesh.material.opacity = 0.0;
+          thresholdMesh.visible = false;
+        }
+      }
+
+      // ========================================================================
+      // CONTINUOUS CAMERA POSITION & ALTITUDE EASING (ZERO TELEPORTATION!)
+      // ========================================================================
+      let targetCamX = 0;
+      let targetCamY = 8.2;
+      let targetCamZ = 42.0;
+
+      if (timeSec < 75) {
+        // Scena 1: Relaxed observation of arctic dawn from elevated dry promontory (ground Y=6.5m)
+        targetCamY = 8.2;
+        targetCamZ = 42.0;
+      } else if (timeSec >= 75 && timeSec < 125) {
+        // Scena 2: Smooth forward glide down toward shoreline
+        const p = smoothstep(75, 125, timeSec);
+        targetCamY = lerp(8.2, 1.8, p);
+        targetCamZ = lerp(42.0, 16.5, p);
+      } else if (timeSec >= 125 && timeSec < 215) {
+        // Scena 3 & 4: Waterline level with natural, fluid sinusoidal wave bobbing
+        const pDescend = smoothstep(125, 145, timeSec);
+        const bob = Math.sin(timeSec * 1.7) * 0.055 + Math.sin(timeSec * 3.2) * 0.018;
+        targetCamY = lerp(1.8, 0.22, pDescend) + bob;
+        targetCamZ = lerp(16.5, 10, smoothstep(125, 170, timeSec));
+      } else if (timeSec >= 215 && timeSec < 265) {
+        // Scena 5: Gentle ascent out of the water to standing observation
+        const pRise = smoothstep(215, 222, timeSec);
+        targetCamY = lerp(0.22, 2.3, pRise);
+        targetCamZ = 10;
+      } else if (timeSec >= 265 && timeSec < 296) {
+        // Scena 6: Approaching the monumental portal
+        const pGate = smoothstep(265, 296, timeSec);
+        targetCamY = 2.4;
+        targetCamZ = lerp(10, -10, pGate);
+      } else if (timeSec >= 296 && timeSec < 306) {
+        // Scena 6 -> 7: Crossing the Golden Threshold
+        const pCross = smoothstep(296, 306, timeSec);
+        targetCamY = lerp(2.4, 3.2, pCross);
+        targetCamZ = lerp(-10, -55, pCross);
+      } else if (timeSec >= 306) {
+        // Scena 7 & 8: Gliding inside Rainbow Vortex Sanctuary
+        const pVortex = smoothstep(306, 375, timeSec);
+        targetCamY = 3.2;
+        targetCamZ = lerp(-55, -45, pVortex);
+      }
+
+      // Apply smooth frame-rate independent exponential camera rig position decay (or snap on seek)
+      if (snapCamera) {
+        cameraRig.position.x = targetCamX;
+        cameraRig.position.y = targetCamY;
+        cameraRig.position.z = targetCamZ;
+      } else {
+        const camDamp = 1.0 - Math.exp(-8.0 * deltaSec);
+        cameraRig.position.x += (targetCamX - cameraRig.position.x) * camDamp;
+        cameraRig.position.y += (targetCamY - cameraRig.position.y) * camDamp;
+        cameraRig.position.z += (targetCamZ - cameraRig.position.z) * camDamp;
+      }
+
+      // ========================================================================
+      // DAWN SUN PROGRESSION & CELESTIAL ILLUMINATION
+      // ========================================================================
+      const dawnProgress = smoothstep(15, 75, timeSec);
+      if (skySphere && skySphere.material.uniforms) {
+        skySphere.material.uniforms.uDawnProgress.value = (timeSec < 75) ? dawnProgress : 1.0;
+      }
+      if (waterMesh && waterMesh.material.uniforms) {
+        waterMesh.material.uniforms.uDawnProgress.value = (timeSec < 75) ? dawnProgress : 1.0;
+      }
+      if (starField) {
+        starField.material.opacity = Math.max(0.04, 0.90 - (timeSec / 90.0) * 0.85);
+      }
+
+      // Sun Celestial Trajectory
+      if (timeSec < 75) {
+        // Rising behind mountains: y from -40 to 14
+        sunMesh.position.y = lerp(-40, 14, dawnProgress);
+        sunMesh.position.x = 25;
+        sunMesh.position.z = -720;
+        sunLight.intensity = 0.5 + dawnProgress * 0.85;
+
+        // 3 Guided Breathing waves (15-35s, 35-55s, 55-75s)
+        if (timeSec >= 15 && timeSec < 75) {
+          const breathPhase = ((timeSec - 15) % 20) / 20;
+          const breathCurve = breathPhase < 0.4 
+            ? Math.sin((breathPhase / 0.4) * (Math.PI / 2)) 
+            : Math.cos(((breathPhase - 0.4) / 0.6) * (Math.PI / 2));
+          
+          const s1 = 75 * (1.0 + breathCurve * 0.22);
+          const s2 = 260 * (1.0 + breathCurve * 0.28);
+          if (sunCorona1) sunCorona1.scale.set(s1, s1, 1);
+          if (sunCorona2) {
+            sunCorona2.scale.set(s2, s2, 1);
+            sunCorona2.material.opacity = 0.32 + breathCurve * 0.18;
+          }
+        }
+      } else if (timeSec >= 75 && timeSec < 125) {
+        // Ascending to 9:00 AM position (altitude ~ 112)
+        const p2 = smoothstep(75, 125, timeSec);
+        sunMesh.position.y = lerp(14, 112, p2);
+        sunMesh.position.x = lerp(25, 75, p2);
+        sunMesh.position.z = -720;
+        sunLight.intensity = 1.35 + p2 * 0.45;
+      }
+      sunLight.position.copy(sunMesh.position);
+      if (skySphere && skySphere.material.uniforms) {
+        skySphere.material.uniforms.uSunPos.value.copy(sunMesh.position);
+      }
+      if (waterMesh && waterMesh.material.uniforms) {
+        waterMesh.material.uniforms.uSunPos.value.copy(sunMesh.position);
+      }
+      if (terrainMaterial && terrainMaterial.uniforms) {
+        terrainMaterial.uniforms.uDawnProgress.value = (timeSec < 75) ? dawnProgress : 1.0;
+        terrainMaterial.uniforms.uSunPos.value.copy(sunMesh.position);
+        terrainMaterial.uniforms.uSunIntensity.value = (timeSec < 75)
+          ? (0.6 + dawnProgress * 0.8)
+          : (1.4 + smoothstep(75, 125, timeSec) * 0.35);
+      }
+
+      // ========================================================================
+      // SCENA 4: VOLUMETRIC AURA BATH (Smooth Fade 170s - 215s)
+      // ========================================================================
+      const auraIn = smoothstep(170, 174, timeSec);
+      const auraOut = 1.0 - smoothstep(211, 215, timeSec);
+      const auraAlpha = auraIn * auraOut;
+
+      if (auraAlpha > 0.001) {
+        auraGroup.visible = true;
+        auraGroup.position.copy(cameraRig.position);
+
+        const breathSine = (Math.sin(timeSec * 1.5) + 1.0) * 0.5;
+        auraShellMesh.scale.setScalar(1.0 + breathSine * 0.08);
+        auraShellMesh.material.uniforms.uOpacity.value = auraAlpha * (0.85 + breathSine * 0.15);
+
+        if (auraPhotons) {
+          auraPhotons.material.opacity = 0.88 * auraAlpha;
+          const pos = auraPhotons.geometry.attributes.position.array;
+          const { pBaseRadii, pBaseAngles, pHeights, pSpeeds } = auraPhotons.userData;
+          for (let i = 0; i < 1200; i++) {
+            const curAngle = pBaseAngles[i] + timeSec * pSpeeds[i] * 1.1;
+            const r = pBaseRadii[i] + Math.sin(timeSec * 2.2 + i) * 0.20;
+            pos[i * 3 + 0] = r * Math.cos(curAngle);
+            pos[i * 3 + 1] = pHeights[i] + Math.sin(timeSec * 1.8 + i * 0.4) * 0.28;
+            pos[i * 3 + 2] = r * Math.sin(curAngle);
+          }
+          auraPhotons.geometry.attributes.position.needsUpdate = true;
+        }
+      } else {
+        auraGroup.visible = false;
+      }
+
+      // ========================================================================
+      // SCENA 5: TELLURIC 4 CHAKRAS COLUMN (Smooth Fade 215s - 265s)
+      // ========================================================================
+      const chakraIn = smoothstep(215, 218, timeSec);
+      const chakraOut = 1.0 - smoothstep(261, 265, timeSec);
+      const chakraAlpha = chakraIn * chakraOut;
+
+      if (chakraAlpha > 0.001) {
+        chakraColumnGroup.visible = true;
+        chakraColumnGroup.position.set(0, 0, 2);
+
+        // Continuous Chakric Color Blending across 4 Chakras
+        if (timeSec < 230) {
+          // Muladhara: Ruby Red
+          _currChakraColor.setHex(0xff1d38);
+        } else if (timeSec >= 230 && timeSec < 232.5) {
+          // Crossfade: Red -> Orange
+          const t = smoothstep(230, 232.5, timeSec);
+          _tempColor1.setHex(0xff1d38);
+          _tempColor2.setHex(0xff8800);
+          _currChakraColor.lerpColors(_tempColor1, _tempColor2, t);
+        } else if (timeSec >= 232.5 && timeSec < 242) {
+          // Svadhisthana: Orange
+          _currChakraColor.setHex(0xff8800);
+        } else if (timeSec >= 242 && timeSec < 244.5) {
+          // Crossfade: Orange -> Solar Yellow
+          const t = smoothstep(242, 244.5, timeSec);
+          _tempColor1.setHex(0xff8800);
+          _tempColor2.setHex(0xffdd00);
+          _currChakraColor.lerpColors(_tempColor1, _tempColor2, t);
+        } else if (timeSec >= 244.5 && timeSec < 254) {
+          // Manipura: Solar Yellow
+          _currChakraColor.setHex(0xffdd00);
+        } else if (timeSec >= 254 && timeSec < 256.5) {
+          // Crossfade: Yellow -> Emerald Green
+          const t = smoothstep(254, 256.5, timeSec);
+          _tempColor1.setHex(0xffdd00);
+          _tempColor2.setHex(0x00e676);
+          _currChakraColor.lerpColors(_tempColor1, _tempColor2, t);
+        } else {
+          // Anahata: Emerald Green
+          _currChakraColor.setHex(0x00e676);
+        }
+
+        // Apply uniforms to the 3 volumetric plasma cylinders (Zero GC allocation)
+        if (chakraCoreMesh && chakraCoreMesh.material.uniforms) {
+          chakraCoreMesh.material.uniforms.uTime.value = timeSec;
+          chakraCoreMesh.material.uniforms.uColor.value.copy(_currChakraColor);
+          chakraCoreMesh.material.uniforms.uOpacity.value = chakraAlpha;
+        }
+        if (chakraMantleMesh && chakraMantleMesh.material.uniforms) {
+          chakraMantleMesh.material.uniforms.uTime.value = timeSec;
+          chakraMantleMesh.material.uniforms.uColor.value.copy(_currChakraColor);
+          chakraMantleMesh.material.uniforms.uOpacity.value = chakraAlpha;
+        }
+        if (chakraOuterMesh && chakraOuterMesh.material.uniforms) {
+          chakraOuterMesh.material.uniforms.uTime.value = timeSec;
+          chakraOuterMesh.material.uniforms.uColor.value.copy(_currChakraColor);
+          chakraOuterMesh.material.uniforms.uOpacity.value = chakraAlpha;
+        }
+
+        // Sacred Caustic Water Pool at Base
+        if (chakraRipplePool && chakraRipplePool.material.uniforms) {
+          chakraRipplePool.material.uniforms.uTime.value = timeSec;
+          chakraRipplePool.material.uniforms.uColor.value.copy(_currChakraColor);
+          chakraRipplePool.material.uniforms.uOpacity.value = chakraAlpha;
+        }
+
+        // Double Helix Kundalini Rotation & Color
+        if (chakraHelixGroup) {
+          chakraHelixGroup.rotation.y += deltaSec * 2.6;
+          const { helixPoints, hMat } = chakraHelixGroup.userData;
+          if (hMat) {
+            hMat.color.copy(_currChakraColor);
+            hMat.opacity = 0.88 * chakraAlpha;
+          }
+          if (helixPoints) {
+            const hArr = helixPoints.geometry.attributes.position.array;
+            for (let i = 0; i < 360; i++) {
+              const y = (i / 360) * 11.0;
+              const r = 0.75 + Math.sin(y * 2.2 + timeSec * 3.6) * 0.22;
+              const ang = y * 2.0 + timeSec * 4.2;
+              const strand = (i % 2 === 0) ? 0 : Math.PI;
+              hArr[i * 3 + 0] = r * Math.cos(ang + strand);
+              hArr[i * 3 + 1] = y;
+              hArr[i * 3 + 2] = r * Math.sin(ang + strand);
+            }
+            helixPoints.geometry.attributes.position.needsUpdate = true;
+          }
+        }
+
+        // Rising Stardust Motes
+        if (chakraSparks) {
+          chakraSparks.material.color.copy(_currChakraColor);
+          chakraSparks.material.opacity = 0.88 * chakraAlpha;
+          const sArr = chakraSparks.geometry.attributes.position.array;
+          const { sRad, sTheta, sYVel } = chakraSparks.userData;
+          for (let i = 0; i < 600; i++) {
+            sArr[i * 3 + 1] += sYVel[i] * 2.2 * deltaSec;
+            if (sArr[i * 3 + 1] > 11.5) {
+              sArr[i * 3 + 1] = 0.1;
+            }
+            const curTheta = sTheta[i] + timeSec * 2.0;
+            sArr[i * 3 + 0] = sRad[i] * Math.cos(curTheta);
+            sArr[i * 3 + 2] = sRad[i] * Math.sin(curTheta);
+          }
+          chakraSparks.geometry.attributes.position.needsUpdate = true;
+        }
+      } else {
+        chakraColumnGroup.visible = false;
+      }
+
+      // ========================================================================
+      // SCENA 6: PORTA DEI 4 ELEMENTI (Smooth Fade 265s - 302s)
+      // ========================================================================
+      const gateIn = smoothstep(263, 266, timeSec);
+      const gateOut = 1.0 - smoothstep(301.0, 301.8, timeSec);
+      const gateAlpha = gateIn * gateOut;
+
+      if (gateAlpha > 0.001) {
+        gateGroup.visible = true;
+
+        // Smooth cinematic door opening between 285s and 294s (responsive, majestic opening)
+        if (timeSec >= 285) {
+          const openP = smoothstep(285, 294, timeSec);
+          const doorAngle = openP * (Math.PI * 0.48); // ~86 degrees
+          if (gateDoorLeft) gateDoorLeft.rotation.y = -doorAngle;
+          if (gateDoorRight) gateDoorRight.rotation.y = doorAngle;
+
+          // Celestial Light & God Rays emerge
+          if (gatePortalBeam) gatePortalBeam.material.opacity = openP * 0.95 * gateAlpha;
+          if (gateGodRays) gateGodRays.material.opacity = openP * 0.45 * gateAlpha;
+          if (gateStardust) gateStardust.material.opacity = openP * 0.88 * gateAlpha;
+        } else {
+          if (gateDoorLeft) gateDoorLeft.rotation.y = 0;
+          if (gateDoorRight) gateDoorRight.rotation.y = 0;
+          if (gatePortalBeam) gatePortalBeam.material.opacity = 0;
+          if (gateGodRays) gateGodRays.material.opacity = 0;
+          if (gateStardust) gateStardust.material.opacity = 0;
+        }
+
+        // Animate streaming stardust
+        if (gateStardust && gateStardust.material.opacity > 0.01) {
+          const gArr = gateStardust.geometry.attributes.position.array;
+          for (let i = 0; i < 700; i++) {
+            gArr[i * 3 + 2] += deltaSec * 5.5;
+            if (gArr[i * 3 + 2] > 18.0) {
+              gArr[i * 3 + 2] = -0.5;
+            }
+          }
+          gateStardust.geometry.attributes.position.needsUpdate = true;
+        }
+      } else {
+        gateGroup.visible = false;
+      }
+
+      // ========================================================================
+      // SCENA 7 & 8: RAINBOW VORTEX SANCTUARY (301.5s - 384s)
+      // ========================================================================
+      const rainbowIn = smoothstep(301.0, 302.0, timeSec);
+      if (rainbowIn > 0.001) {
+        rainbowChamberGroup.visible = true;
+
+        if (rainbowTunnelMesh && rainbowTunnelMesh.material.map) {
+          rainbowTunnelMesh.material.map.offset.x += deltaSec * 0.16;
+          rainbowTunnelMesh.rotation.z += deltaSec * 0.32;
+        }
+
+        if (rainbowParticles) {
+          rainbowParticles.rotation.z += deltaSec * 0.42;
+          rainbowParticles.rotation.y += deltaSec * 0.24;
+        }
+
+        if (rainbowBeaconSprite) {
+          const pulse = (Math.sin(timeSec * 3.5) + 1.0) * 0.5;
+          const s = 14 + pulse * 4.0;
+          rainbowBeaconSprite.scale.set(s, s, 1);
+        }
+
+        // Scena 8 Outro Fade
+        if (timeSec >= 355) {
+          const p8 = (timeSec - 355) / 29.0;
+          if (rainbowTunnelMesh) {
+            rainbowTunnelMesh.material.opacity = Math.max(0.04, 0.98 * (1.0 - p8 * 0.85));
+          }
+          if (rainbowParticles) {
+            rainbowParticles.material.opacity = Math.max(0.02, 0.88 * (1.0 - p8 * 0.90));
+          }
+          if (timeSec >= 378) {
+            const fadeP = (timeSec - 378) / 6.0;
+            renderer.toneMappingExposure = Math.max(0.01, 1.08 * (1.0 - fadeP));
+          } else {
+            renderer.toneMappingExposure = 1.08;
+          }
+        }
+      } else {
+        rainbowChamberGroup.visible = false;
+      }
+    }
+
+    /* --- SUBTITLES LOOKUP --- */
+    let lastSubtitleText = null;
+
+    function updateSubtitlesForTime(t) {
+      // Primary temporal clock: locked to actual voice audio playback (zero drift, zero latency)
+      const currentVoiceTime = (audioVoice && !audioVoice.paused && audioVoice.currentTime > 0)
+        ? audioVoice.currentTime
+        : (typeof t === 'number' ? t : state.currentTime);
+
+      let currentText = "";
+      for (let i = 0; i < SCRIPT_CUES.length; i++) {
+        if (currentVoiceTime >= SCRIPT_CUES[i].start && currentVoiceTime < SCRIPT_CUES[i].end) {
+          currentText = SCRIPT_CUES[i].text;
+          break;
+        }
+      }
+      if (!currentText && currentVoiceTime >= 384) {
+        currentText = "Fine della meditazione. Porta questa energia di pace e rigenerazione nella tua giornata.";
+      }
+      if (currentText !== lastSubtitleText) {
+        lastSubtitleText = currentText;
+        hudSubtitleText.textContent = currentText ? (currentText.startsWith('«') ? currentText : `"${currentText}"`) : "";
+        if (hudSubtitleBox) {
+          if (currentText) {
+            hudSubtitleBox.classList.add('visible');
+          } else {
+            hudSubtitleBox.classList.remove('visible');
+          }
+        }
+        update3DSubtitle(currentText);
+      }
+    }
+
+    function updateSceneFromTime(t, snapCamera = false) {
+      updateExperienceTimeline(t, 0.016, snapCamera);
+    }
+
+    /* ======================================================================
+       5. CONTROLS, TOUCH, GYRO & VR CARDBOARD SETUP
+       ====================================================================== */
+    function initControls() {
+      enableDeviceOrientation();
+      // Mouse Drag Orbit
+      window.addEventListener('mousedown', (e) => {
+        if (e.target.closest('#ui-layer') || e.target.closest('#audio-gate')) return;
+        isUserDragging = true;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isUserDragging) return;
+        const dx = e.clientX - prevMouseX;
+        const dy = e.clientY - prevMouseY;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+
+        targetYaw -= dx * 0.0035;
+        targetPitch -= dy * 0.003;
+        targetPitch = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, targetPitch));
+      });
+
+      window.addEventListener('mouseup', () => { isUserDragging = false; });
+
+      // Touch Orbit
+      let touchStartX = 0, touchStartY = 0;
+      window.addEventListener('touchstart', (e) => {
+        if (e.target.closest('#ui-layer') || e.target.closest('#audio-gate')) return;
+        if (e.touches.length === 1) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+        unlockAudio();
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (state.isVRMode && deviceOrientationEnabled) return;
+        if (e.touches.length === 1) {
+          const dx = e.touches[0].clientX - touchStartX;
+          const dy = e.touches[0].clientY - touchStartY;
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+
+          targetYaw -= dx * 0.004;
+          targetPitch -= dy * 0.0035;
+          targetPitch = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, targetPitch));
+        }
+      }, { passive: true });
+
+      // Mouse Wheel Zoom
+      window.addEventListener('wheel', (e) => {
+        if (state.isVRMode) return;
+        camera.fov = Math.max(35, Math.min(85, camera.fov + e.deltaY * 0.05));
+        camera.updateProjectionMatrix();
+      }, { passive: true });
+
+      // Keyboard Shortcuts
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          togglePlay();
+        } else if (e.code === 'KeyR') {
+          recenterView();
+        } else if (e.code === 'KeyF') {
+          toggleFullscreen();
+        } else if (e.code === 'KeyV') {
+          toggleVR();
+        } else if (e.code === 'KeyM') {
+          toggleMute();
+        } else if (e.key >= '1' && e.key <= '8') {
+          const sc = SCENES_CONFIG[parseInt(e.key) - 1];
+          if (sc) seekExperience(sc.start);
+        }
+      });
+    }
+
+    function recenterView() {
+      targetYaw = 0;
+      targetPitch = 0;
+      yaw = 0;
+      pitch = 0;
+      vrAlphaOffset = -orientationAlpha;
+    }
+
+    function enableDeviceOrientation() {
+      window.addEventListener('deviceorientation', (e) => {
+        if (e && e.alpha !== null && e.alpha !== undefined && e.beta !== null && e.gamma !== null && (Math.abs(e.beta) > 0.05 || Math.abs(e.gamma) > 0.05)) {
+          deviceOrientationEnabled = true;
+          orientationAlpha = e.alpha;
+          orientationBeta = e.beta;
+          orientationGamma = e.gamma;
+        }
+      }, true);
+    }
+
+    function requestDeviceOrientationPermission() {
+      enableDeviceOrientation();
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(perm => {
+            if (perm === 'granted') enableDeviceOrientation();
+          })
+          .catch(err => console.warn('Orientation permission err:', err));
+      }
+    }
+
+    function getScreenOrientationAngle() {
+      if (screen.orientation && typeof screen.orientation.angle === 'number') {
+        return screen.orientation.angle;
+      }
+      if (typeof window.orientation === 'number') {
+        return window.orientation;
+      }
+      if (window.innerWidth > window.innerHeight) {
+        return 90;
+      }
+      return 0;
+    }
+
+    function updateCameraRotation() {
+      if (deviceOrientationEnabled && state.isVRMode) {
+        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset);
+        const betaRad = THREE.MathUtils.degToRad(orientationBeta);
+        const gammaRad = THREE.MathUtils.degToRad(orientationGamma);
+        const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
+
+        // 1. Converti gli angoli W3C nel frame della telecamera Three.js
+        _euler.set(betaRad, alphaRad, -gammaRad, 'YXZ');
+        camera.quaternion.setFromEuler(_euler);
+
+        // 2. Ruota per allineare l'asse del dispositivo con il frustum della camera
+        camera.quaternion.multiply(_q1);
+
+        // 3. Compensa la rotazione landscape dello schermo
+        _q0.setFromAxisAngle(_zee, -orientRad);
+        camera.quaternion.multiply(_q0);
+      } else {
+        const rotDamp = 1.0 - Math.exp(-14.0 * (state.lastDeltaSec || 0.016));
+        yaw += (targetYaw - yaw) * rotDamp;
+        pitch += (targetPitch - pitch) * rotDamp;
+        camera.rotation.set(pitch, yaw, 0, 'YXZ');
+      }
+    }
+
+    function setVRMode(enable) {
+      state.isVRMode = enable;
+      if (vrReticleGroup) {
+        vrReticleGroup.visible = enable;
+      }
+      if (billboardMesh) {
+        billboardMesh.visible = enable;
+        if (enable) {
+          lastRenderedSubtitleText = null;
+          update3DSubtitle(lastSubtitleText || (state.currentTime > 0 ? "" : "Respira profondamente... Inizia la meditazione."));
+        }
+      }
+      if (enable) {
+        camera.fov = 72;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        document.body.classList.add('vr-active');
+        vrOverlay.classList.add('active');
+        uiLayer.classList.add('hidden');
+        requestDeviceOrientationPermission();
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+        if (state.isCompleted) {
+          hide2DCompletionPopup();
+          showVRCompletionPopup();
+        }
+      } else {
+        camera.fov = 52;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        hideVRCompletionPopup();
+        document.body.classList.remove('vr-active');
+        vrOverlay.classList.remove('active');
+        uiLayer.classList.remove('hidden');
+        if (screen.orientation && screen.orientation.unlock) {
+          try { screen.orientation.unlock(); } catch (e) {}
+        }
+        if (state.isCompleted) {
+          show2DCompletionPopup();
+        }
+      }
+      camera.updateProjectionMatrix();
+      onWindowResize();
+      notifyFlutter('onVRModeChanged', { isVR: state.isVRMode });
+    }
+
+    function toggleVR() {
+      setVRMode(!state.isVRMode);
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function toggleMute() {
+      state.isMuted = !state.isMuted;
+      syncVolumes();
+      if (state.isMuted) {
+        iconSoundOn.style.display = 'none';
+        iconSoundOff.style.display = 'block';
+      } else {
+        iconSoundOn.style.display = 'block';
+        iconSoundOff.style.display = 'none';
+      }
+    }
+
+    function onWindowResize() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.fov = state.isVRMode ? 72 : 52;
+      camera.updateProjectionMatrix();
+      stereoCamera.aspect = 0.5;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(w, h);
+    }
+
+    /* ======================================================================
+       6. UI EVENT LISTENERS & BINDINGS
+       ====================================================================== */
+    btnGateEnter.addEventListener('click', () => {
+      audioGate.classList.add('fade-out');
+      playExperience();
+    });
+
+    btnGateEnterVR.addEventListener('click', () => {
+      audioGate.classList.add('fade-out');
+      setVRMode(true);
+      playExperience();
+    });
+
+    btnPlayPause.addEventListener('click', togglePlay);
+    btnAudioMute.addEventListener('click', toggleMute);
+    btnRecenter.addEventListener('click', recenterView);
+    btnFullscreen.addEventListener('click', toggleFullscreen);
+    btnToggleVR.addEventListener('click', toggleVR);
+
+    // Audio Sliders
+    sliderVoice.addEventListener('input', (e) => {
+      state.voiceVolume = parseFloat(e.target.value);
+      syncVolumes();
+    });
+
+    sliderMusic.addEventListener('input', (e) => {
+      state.musicVolume = parseFloat(e.target.value);
+      syncVolumes();
+    });
+
+    // Fast Scene Pills
+    scenePills.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = parseFloat(btn.getAttribute('data-time'));
+        seekExperience(t);
+      });
+    });
+
+    // Scrubber click / drag
+    let isScrubbing = false;
+    function handleScrubber(e) {
+      const rect = progressWrapper.getBoundingClientRect();
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      seekExperience(pos * TOTAL_DURATION_SEC);
+    }
+
+    progressWrapper.addEventListener('mousedown', (e) => {
+      isScrubbing = true;
+      handleScrubber(e);
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (isScrubbing) handleScrubber(e);
+    });
+    window.addEventListener('mouseup', () => { isScrubbing = false; });
+
+    progressWrapper.addEventListener('touchstart', (e) => {
+      isScrubbing = true;
+      handleScrubber(e);
+    }, { passive: true });
+    window.addEventListener('touchmove', (e) => {
+      if (isScrubbing) handleScrubber(e);
+    }, { passive: true });
+    window.addEventListener('touchend', () => { isScrubbing = false; });
+
+    // Audio Element Time Update sync
+    audioMusic.addEventListener('seeking', () => { isAudioSeeking = true; });
+    audioMusic.addEventListener('seeked', () => { isAudioSeeking = false; });
+    audioMusic.addEventListener('timeupdate', () => {
+      if (!isScrubbing && !isAudioSeeking && state.isPlaying) {
+        if (audioMusic.readyState >= 2 && audioMusic.currentTime > 0) {
+          const drift = audioMusic.currentTime - state.currentTime;
+          if (Math.abs(drift) > 1.5) {
+            try { audioMusic.currentTime = state.currentTime; } catch(e) {}
+          }
+        }
+      }
+    });
+
+    audioMusic.addEventListener('ended', () => {
+      onExperienceEnded();
+    });
+
+    // 2D Session Completion Modal Actions
+    if (btnCompletionExit) {
+      btnCompletionExit.addEventListener('click', () => {
+        notifyFlutter('onExitRequested', {});
+      });
+    }
+
+    if (btnCompletionRepeat) {
+      btnCompletionRepeat.addEventListener('click', () => {
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+        state.isCompleted = false;
+        seekExperience(0);
+        playExperience();
+      });
+    }
+
+    // VR tap trigger on gaze target
+    window.addEventListener('click', (e) => {
+      if (state.isVRMode && completionPopupGroup && completionPopupGroup.visible) {
+        if (gazeHoverTarget && gazeHoverTarget.userData && typeof gazeHoverTarget.userData.onDwellSelect === 'function') {
+          gazeDwellTimer = 0.0;
+          gazeHoverTarget.userData.onDwellSelect();
+        }
+      }
+    });
+
+    function formatTime(s) {
+      const mins = Math.floor(s / 60);
+      const secs = Math.floor(s % 60);
+      return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    /* ======================================================================
+       7. MAIN 60/120 FPS RENDERING & ANIMATION LOOP
+       ====================================================================== */
+    let animFrameId = null;
+    let lastFloorSec = -1;
+    let ambientWaterTime = 0;
+
+    function animate(timestamp) {
+      animFrameId = requestAnimationFrame(animate);
+
+      if (!state.lastTimestamp) state.lastTimestamp = timestamp;
+      const deltaMs = Math.min(timestamp - state.lastTimestamp, 64);
+      const deltaSec = Math.max(0.001, Math.min(deltaMs / 1000, 0.1));
+      state.lastTimestamp = timestamp;
+      state.lastDeltaSec = deltaSec;
+
+      ambientWaterTime += deltaSec;
+
+      // Ultra-smooth 60/120 FPS continuous time advancement (Monotonic clock decoupled from audio micro-drift)
+      if (state.isPlaying) {
+        state.currentTime += deltaSec;
+
+        if (!audioMusic.paused && !audioMusic.ended && !isAudioSeeking && !audioMusic.seeking) {
+          if (performance.now() - lastSeekTime > 600) {
+            if (audioMusic.readyState >= 2 && !isNaN(audioMusic.duration) && audioMusic.currentTime > 0) {
+              const audioTime = audioMusic.currentTime;
+              const drift = audioTime - state.currentTime;
+              if (Math.abs(drift) > 1.2) {
+                // Macro-drift hard sync (> 1.2s)
+                state.currentTime = audioTime;
+              }
+            }
+          }
+        }
+
+        if (state.currentTime >= TOTAL_DURATION_SEC) {
+          state.currentTime = TOTAL_DURATION_SEC;
+          onExperienceEnded();
+        }
+      }
+
+      // Update Scrubber & Time UI
+      const timeSec = state.currentTime;
+      const progressRatio = Math.min(1.0, timeSec / TOTAL_DURATION_SEC);
+      progressFill.style.width = `${progressRatio * 100}%`;
+
+      const curFloorSec = Math.floor(timeSec);
+      if (curFloorSec !== lastFloorSec) {
+        lastFloorSec = curFloorSec;
+        hudTimeDisplay.textContent = `${formatTime(timeSec)} / 06:24`;
+        scrubCurrentTime.textContent = formatTime(timeSec);
+      }
+
+      // Active voice track sync
+      if (state.isPlaying && !audioMusic.paused) {
+        if (timeSec < VOICE_DURATION_SEC) {
+          if (audioVoice.paused) {
+            audioVoice.play().catch(() => {});
+          }
+          const drift = audioVoice.currentTime - timeSec;
+          if (Math.abs(drift) > 0.35) {
+            audioVoice.currentTime = timeSec;
+          }
+        } else if (!audioVoice.paused) {
+          audioVoice.pause();
+        }
+      }
+
+      // Dynamic water Gerstner wave animation (continuous 60/120 FPS ambient water time)
+      if (waterMesh && waterMesh.material.uniforms) {
+        waterMesh.material.uniforms.uTime.value = ambientWaterTime;
+      }
+
+      // Execute Timeline Updates with smooth continuous delta easing
+      updateExperienceTimeline(timeSec, deltaSec);
+
+      // Camera Rotations & Orientation
+      updateCameraRotation();
+
+      // Hands-free Gaze Interaction (Dwell Timer)
+      updateGazeInteraction(deltaSec);
+
+      // Rendering: Stereo VR or Monoscopic
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      if (state.isVRMode) {
+        renderer.setScissorTest(true);
+        stereoCamera.update(camera);
+
+        // Left Eye Viewport
+        renderer.setScissor(0, 0, width / 2, height);
+        renderer.setViewport(0, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraL);
+
+        // Right Eye Viewport
+        renderer.setScissor(width / 2, 0, width / 2, height);
+        renderer.setViewport(width / 2, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraR);
+
+        renderer.setScissorTest(false);
+      } else {
+        renderer.setViewport(0, 0, width, height);
+        renderer.render(scene, camera);
+      }
+    }
+
+    /* ======================================================================
+       8. FLUTTER BRIDGE & WINDOW.GUIDOVR API
+       ====================================================================== */
+    function notifyFlutter(eventName, data) {
+      try {
+        if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+          window.flutter_inappwebview.callHandler(eventName, data);
+        }
+        if (window.GuidoFlutterBridge && window.GuidoFlutterBridge.postMessage) {
+          window.GuidoFlutterBridge.postMessage(JSON.stringify({ event: eventName, data: data }));
+        } else if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'GUIDO_VR', event: eventName, data: data }, '*');
+        }
+      } catch (err) {
+        console.warn('Flutter Bridge post error:', err);
+      }
+    }
+
+    function resetSession() {
+      state.isCompleted = false;
+      hide2DCompletionPopup();
+      hideVRCompletionPopup();
+      seekExperience(0);
+      pauseExperience();
+    }
+
+    window.GuidoVR = {
+      start: function() { playExperience(); },
+      pause: function() { pauseExperience(); },
+      toggle: function() { togglePlay(); },
+      reset: function() { resetSession(); },
+      seek: function(sec) { seekExperience(sec); },
+      setVRMode: function(enable) { setVRMode(enable); },
+      showCompletionPopup: function() { onExperienceEnded(); },
+      hideCompletionPopup: function() { hideVRCompletionPopup(); hide2DCompletionPopup(); },
+      recenter: function() { recenterView(); },
+      setDeviceOrientation: function(alpha, beta, gamma) {
+        deviceOrientationEnabled = true;
+        orientationAlpha = Number(alpha) || 0;
+        orientationBeta = Number(beta) || 0;
+        orientationGamma = Number(gamma) || 0;
+      },
+      setMuted: function(mute) { 
+        state.isMuted = mute; 
+        syncVolumes(); 
+        if (state.isMuted) {
+          iconSoundOn.style.display = 'none';
+          iconSoundOff.style.display = 'block';
+        } else {
+          iconSoundOn.style.display = 'block';
+          iconSoundOff.style.display = 'none';
+        }
+      },
+      getState: function() { return { ...state }; },
+      dispose: function() { disposeExperience(); }
+    };
+
+    /* ======================================================================
+       9. RESOURCE TEARDOWN & LIFECYCLE MANAGEMENT (disposeExperience)
+       ====================================================================== */
+    function disposeExperience() {
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+      }
+      state.isPlaying = false;
+
+      if (synthOsc432) {
+        try { synthOsc432.stop(); synthOsc432.disconnect(); } catch(e) {}
+        synthOsc432 = null;
+      }
+      if (synthGain) {
+        try { synthGain.disconnect(); } catch(e) {}
+        synthGain = null;
+      }
+      if (audioCtx) {
+        try { audioCtx.close(); } catch(e) {}
+        audioCtx = null;
+      }
+
+      if (audioVoice) {
+        audioVoice.pause();
+        audioVoice.src = '';
+      }
+      if (audioMusic) {
+        audioMusic.pause();
+        audioMusic.src = '';
+      }
+
+      if (scene) {
+        scene.traverse((obj) => {
+          if (obj.geometry) {
+            try { obj.geometry.dispose(); } catch (e) {}
+          }
+          if (obj.material) {
+            if (Array.isArray(obj.material)) {
+              obj.material.forEach(m => {
+                if (m.map) m.map.dispose();
+                m.dispose();
+              });
+            } else {
+              if (obj.material.map) obj.material.map.dispose();
+              obj.material.dispose();
+            }
+          }
+        });
+      }
+
+      if (billboardTexture) {
+        try { billboardTexture.dispose(); } catch(e) {}
+      }
+
+      if (renderer) {
+        try {
+          renderer.dispose();
+          if (renderer.domElement && renderer.domElement.parentNode) {
+            renderer.domElement.parentNode.removeChild(renderer.domElement);
+          }
+        } catch (e) {}
+      }
+
+      notifyFlutter('onVRDisposed', { status: 'disposed', experience: 'meditazione_mattino_acqua' });
+    }
+
+    window.addEventListener('beforeunload', disposeExperience);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeScene();
+      syncVolumes();
+      animate(0);
+
+      const urlParams = new URLSearchParams(window.location.search);
+      if (audioGate) {
+        audioGate.classList.add('fade-out');
+        audioGate.style.setProperty('display', 'none', 'important');
+      }
+      if (urlParams.get('vr') === 'true') {
+        setVRMode(true);
+      }
+      if (urlParams.has('seek')) {
+        const targetSec = parseFloat(urlParams.get('seek'));
+        seekExperience(targetSec);
+      } else {
+        playExperience();
+      }
+      window.focus();
+      if (document.body) document.body.focus();
+
+      notifyFlutter('onVRReady', { status: 'ready', experience: 'meditazione_mattino_acqua' });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,3572 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Guido VR - Meditazione Generale (Elemento Acqua • 432 Hz)</title>
+  
+  <style>
+    :root {
+      --bg-dark: #01030a;
+      --water-cyan: #38bdf8;
+      --emerald-core: #10b981;
+      --emerald-glow: #34d399;
+      --sacred-violet: #8b5cf6;
+      --gold-solar: #fbbf24;
+      --moon-silver: #e2e8f0;
+      --text-bright: #ffffff;
+      --text-dim: rgba(248, 250, 252, 0.72);
+      --glass-panel: rgba(7, 16, 32, 0.78);
+      --glass-border: rgba(16, 185, 129, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text-bright);
+    }
+
+    #webgl-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: none;
+    }
+
+    /* VR Cardboard Stereo Overlay */
+    #vr-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    #vr-overlay.active,
+    body.vr-active #vr-overlay {
+      display: block;
+    }
+
+    #vr-divider,
+    .vr-divider {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateX(-50%);
+      box-shadow: none !important;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* Clean Floating HUD UI Layer (Clutter-free, zero debug text) */
+    #ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 20;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    /* Hide debug elements in production */
+    .header-bar,
+    .bottom-dock,
+    .desktop-dock,
+    .hud-title-badge,
+    .hud-title,
+    .hud-scene-name,
+    .hud-vr-btn,
+    .hud-audio-indicator,
+    .hud-progress-container,
+    .debug-overlay,
+    .stats-panel {
+      display: none !important;
+    }
+
+    /* Essential Minimal Top Controls (Only Pause & Exit icons on mobile/VR) */
+    #minimal-controls {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: auto;
+      z-index: 30;
+      transition: opacity 0.3s ease;
+    }
+
+    .min-btn {
+      background: rgba(4, 10, 22, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.20);
+      color: #ffffff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: background 0.2s, transform 0.15s, border-color 0.2s;
+    }
+
+    .min-btn:hover {
+      background: rgba(16, 185, 129, 0.35);
+      border-color: var(--emerald-glow);
+    }
+
+    .min-btn:active {
+      transform: scale(0.92);
+    }
+
+    .min-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    /* 2D Monoscopic Subtitles - Bound to Michela IT Voice */
+    /* Positioned safely above bottom (bottom: 42%) with soft glow and subtle black drop shadow, NO dark box */
+    #hud-subtitles {
+      position: absolute;
+      bottom: 42%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 86%;
+      max-width: 780px;
+      text-align: center;
+      pointer-events: none;
+      z-index: 25;
+      opacity: 0;
+      transition: opacity 0.4s ease-out;
+    }
+
+    #hud-subtitles.visible {
+      opacity: 1;
+    }
+
+    #hud-subtitles-text {
+      font-size: 20px;
+      line-height: 1.45;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(16, 185, 129, 0.60), 0 2px 4px rgba(0, 0, 0, 0.95);
+      letter-spacing: 0.3px;
+    }
+
+    @media (min-width: 768px) {
+      #hud-subtitles-text {
+        font-size: 24px;
+      }
+    }
+
+    /* White Luminous Bloom Overlay for Scene 16 Conclusion */
+    #bloom-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 45;
+      transition: opacity 1.8s ease-in-out;
+    }
+
+    /* Monoscopic 2D Completion Modal Fallback */
+    #completion-modal-2d {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(1, 4, 12, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 60;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s ease;
+    }
+
+    #completion-modal-2d.active {
+      display: flex;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: rgba(7, 18, 36, 0.90);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 32px rgba(16, 185, 129, 0.25);
+      border-radius: 20px;
+      padding: 32px 36px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .modal-card h2 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .modal-card p.subtitle {
+      font-size: 15px;
+      color: var(--emerald-glow);
+      margin-bottom: 24px;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 28px;
+      padding: 14px 0;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-val {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .stat-lbl {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 2px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 14px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .modal-btn-restart {
+      background: rgba(255, 255, 255, 0.10);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.20);
+    }
+
+    .modal-btn-restart:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .modal-btn-exit {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.40);
+    }
+
+    .modal-btn-exit:hover {
+      background: linear-gradient(135deg, #34d399, #10b981);
+    }
+
+    /* Start / Touch-To-Unlock Overlay for iOS WKWebView */
+    #start-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(1, 4, 10, 0.92);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: opacity 0.5s ease;
+    }
+
+    #start-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .start-circle {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981, #0284c7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 36px rgba(16, 185, 129, 0.55);
+      animation: pulseStart 2.4s infinite ease-in-out;
+      margin-bottom: 24px;
+    }
+
+    .start-circle svg {
+      width: 36px;
+      height: 36px;
+      fill: #ffffff;
+      margin-left: 4px;
+    }
+
+    .start-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
+      letter-spacing: 0.6px;
+    }
+
+    .start-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.70);
+      letter-spacing: 0.4px;
+    }
+
+    @keyframes pulseStart {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 28px rgba(16, 185, 129, 0.45); }
+      50% { transform: scale(1.08); box-shadow: 0 0 46px rgba(16, 185, 129, 0.75); }
+    }
+  </style>
+
+  <!-- Offline Standalone Scripts (Zero CDN Dependencies) -->
+  <script src="three.min.js"></script>
+  <script src="GLTFLoader.js"></script>
+  <script src="dragon_model_data.js"></script>
+  <script src="general_water_textures.js"></script>
+</head>
+<body>
+  <div id="webgl-container"></div>
+
+  <!-- VR Cardboard Stereo Divider Overlay -->
+  <div id="vr-overlay">
+    <div id="vr-divider"></div>
+  </div>
+
+  <!-- Luminous White Bloom for Final Conclusion -->
+  <div id="bloom-overlay"></div>
+
+  <!-- Minimal UI Layer -->
+  <div id="ui-layer">
+    <div id="minimal-controls">
+      <button id="btn-pause-toggle" class="min-btn" aria-label="Pausa/Riprendi" title="Pausa/Riprendi">
+        <svg id="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        <svg id="icon-play" viewBox="0 0 24 24" style="display:none;"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+
+      <button id="btn-exit" class="min-btn" aria-label="Esci" title="Torna a Guido">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+
+    <!-- 2D Monoscopic Subtitles (Clean, elevated, pure white with soft glow) -->
+    <div id="hud-subtitles">
+      <div id="hud-subtitles-text"></div>
+    </div>
+  </div>
+
+  <!-- 2D Monoscopic Completion Dialog -->
+  <div id="completion-modal-2d">
+    <div class="modal-card">
+      <h2>Sessione Completata</h2>
+      <p class="subtitle">Meditazione Generale • Acqua • 432 Hz</p>
+      
+      <div class="stats-row">
+        <div class="stat-item">
+          <span class="stat-val">07:36</span>
+          <span class="stat-lbl">Durata</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val">+150</span>
+          <span class="stat-lbl">Punti XP</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val">100%</span>
+          <span class="stat-lbl">Completato</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="modal-btn-restart" class="modal-btn modal-btn-restart">Ricomincia</button>
+        <button id="modal-btn-exit" class="modal-btn modal-btn-exit">Torna a Guido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tap to Start Overlay (Unlocks iOS AudioContext & Sensor permissions) -->
+  <div id="start-overlay">
+    <div class="start-circle">
+      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    </div>
+    <div class="start-title">Tocca per Iniziare</div>
+    <div class="start-subtitle">Meditazione Generale • Elemento Acqua • 432 Hz</div>
+  </div>
+
+  <!-- Audio Elements: Official Michela Voice (456.78s) & 432 Hz Music Loop (240.0s) -->
+  <audio id="audio-voice" preload="auto" playsinline src="audio/voice_it.mp3"></audio>
+  <audio id="audio-music-a" preload="auto" playsinline src="audio/music_432hz.mp3"></audio>
+  <audio id="audio-music-b" preload="auto" playsinline src="audio/music_432hz.mp3"></audio>
+
+  <script>
+  (function() {
+    'use strict';
+
+    /* ======================================================================
+       CONSTANTS, TIMELINE & NARRATIVE CUES (29 Official Waveform Cues)
+       ====================================================================== */
+    const VOICE_DURATION_SEC = 456.3878;
+    const TOTAL_DURATION_SEC = 456.78;
+    const MUSIC_CYCLE_SEC = 240.0;
+
+    // Narrative Cues synchronised with voice_it.mp3
+    const SCRIPT_CUES = [
+      { start: 0.00, end: 8.00, text: "Fai un profondo respiro e osserva la luce avanti a te." },
+      { start: 8.00, end: 16.00, text: "È un’energia di calma e leggerezza alla quale ti puoi affidare." },
+      { start: 16.00, end: 28.00, text: "Lasciati guidare dal suo movimento, collegando il tuo respiro al suo andamento." },
+      { start: 28.00, end: 39.00, text: "Permetti al tuo respiro di diventare calmo e regolare." },
+      { start: 40.00, end: 51.00, text: "Se lo desideri, puoi ondeggiare il corpo come se ti lasciassi cullare dal tuo respiro." },
+      { start: 51.00, end: 65.00, text: "Inspira, e mentre espiri, ti senti sempre più rilassato e consapevole." },
+      { start: 66.00, end: 73.00, text: "In questo luogo sei al sicuro e protetto." },
+      { start: 73.00, end: 79.00, text: "Puoi lasciarti avvolgere dalle scintille purificanti," },
+      { start: 79.00, end: 84.00, text: "permettendo loro di agire per il tuo massimo bene," },
+      { start: 84.00, end: 94.00, text: "rinnovando l’energia del tuo corpo, delle tue cellule e dei tuoi pensieri." },
+      { start: 95.00, end: 113.00, text: "Accogli questo momento di rigenerazione, abbandona l’ansia e ogni preoccupazione per il futuro." },
+      { start: 114.00, end: 126.00, text: "Lascia andare la fretta e la paura di essere in ritardo per realizzare i tuoi sogni e te stesso." },
+      { start: 126.00, end: 138.00, text: "Queste piccole sfere ora portano l’energia delle tue paure e delle tossine accumulate fino ad ora dentro la luce," },
+      { start: 138.00, end: 165.00, text: "trasmutandole in nuova vibrazione sana e risolutrice, rinnovando l’energia del tuo presente e del tuo futuro con nuove opportunità." },
+      { start: 166.00, end: 183.00, text: "Ecco arrivare Njord, il grande drago dell’acqua, un potentissimo totem collegato alla passione, alle emozioni e alla profondità." },
+      { start: 184.00, end: 198.00, text: "Esso aiuta a portare alla luce ciò che è nascosto: memorie e desideri che possono anche essere stati dimenticati e repressi nell’Inconscio." },
+      { start: 199.00, end: 211.00, text: "Questo animale di potere aiuta ad affrontarli con amore e coraggio, donandoci un grande senso di collegamento con la vita." },
+      { start: 212.00, end: 247.00, text: "Guardandoti indietro, nel tuo passato, puoi osservare le energie del caos emotivo creato dagli eventi che hai vissuto e osservare come l’energia del drago ripulisce ora tutto, portando ordine e armonia ovunque attorno a te." },
+      { start: 247.00, end: 268.00, text: "Osserva come la strada inerente al tuo passato, ora rinnovata, si collega al tuo futuro." },
+      { start: 269.00, end: 290.00, text: "Solo tu hai in mano il potere di gestirlo e hai tutti gli strumenti per farlo, trasmutando in energia creatrice le dinamiche del passato che in qualche modo oscuravano anche il tuo presente." },
+      { start: 291.00, end: 302.00, text: "Ora l’energia collegata al diritto che hai di gestire il tuo tempo è tornata a te." },
+      { start: 303.00, end: 321.00, text: "Questo strumento simbolico ha il potere di creare nuove energie e pensieri sani nel tuo futuro, affinché possano diventare punti fermi nella tua vita," },
+      { start: 322.00, end: 336.00, text: "dei fari di luce che saranno il tuo sostegno mentre ti apri alla vita e alla fiducia in te stesso." },
+      { start: 337.00, end: 352.00, text: "Permettiti di accogliere nel profondo una sensazione di protezione e fiducia nell’esistenza che si possa manifestare anche nella tua realtà quotidiana." },
+      { start: 353.00, end: 372.00, text: "Da questo momento, se lo vorrai, potrai riappropriarti della consapevolezza di saper come gestire il tuo tempo, perché è un dono prezioso ed è tuo di diritto." },
+      { start: 372.00, end: 400.00, text: "La proiezione delle paure collegate all’ansia, che in qualche modo avevi già distribuito nel futuro, ora vengono recuperate e trasformate in sana energia." },
+      { start: 403.00, end: 424.00, text: "Questa sfera rappresenta la capacità che hai di gestire il tuo tempo e di trasmutare ogni paura per il futuro, ogni senso d’impotenza, in fiducia nella vita risvegliando il tuo potenziale:" },
+      { start: 424.00, end: 439.00, text: "solo tu sei il creatore della tua realtà, rispettando i tuoi tempi per il tuo massimo bene." },
+      { start: 439.00, end: 456.00, text: "Lascia che questo mantello di luce ti avvolga e ti protegga, rimanendo sempre attivo nella tua vita, in ogni tuo passo e in ogni tuo respiro." }
+    ];
+
+    /* ======================================================================
+       APPLICATION STATE
+       ====================================================================== */
+    const state = {
+      isPlaying: false,
+      isCompleted: false,
+      isVRMode: false,
+      currentTime: 0.0,
+      voiceVolume: 1.0,
+      musicVolume: 0.65,
+      isDesktop: false,
+      lastTimestamp: 0,
+      lastDeltaSec: 0.016
+    };
+
+    // DOM Elements
+    const container = document.getElementById('webgl-container');
+    const vrOverlay = document.getElementById('vr-overlay');
+    const bloomOverlay = document.getElementById('bloom-overlay');
+    const hudSubtitles = document.getElementById('hud-subtitles');
+    const hudSubtitlesText = document.getElementById('hud-subtitles-text');
+    const completionModal2D = document.getElementById('completion-modal-2d');
+    const startOverlay = document.getElementById('start-overlay');
+    const btnPauseToggle = document.getElementById('btn-pause-toggle');
+    const iconPause = document.getElementById('icon-pause');
+    const iconPlay = document.getElementById('icon-play');
+    const btnExit = document.getElementById('btn-exit');
+    const modalBtnRestart = document.getElementById('modal-btn-restart');
+    const modalBtnExit = document.getElementById('modal-btn-exit');
+
+    // Audio Elements
+    const audioVoice = document.getElementById('audio-voice');
+    const audioMusicA = document.getElementById('audio-music-a');
+    const audioMusicB = document.getElementById('audio-music-b');
+
+    let audioContext = null;
+    let voiceGainNode = null;
+    let musicGainNodeA = null;
+    let musicGainNodeB = null;
+
+    /* ======================================================================
+       THREE.JS CORE RIG & RENDERER SETUP
+       ====================================================================== */
+    let scene, renderer;
+    let cameraRig, camera, stereoCamera;
+    let textureLoader;
+    let particleGlowTex = null;
+
+    // Lighting
+    let ambientLight, moonLight, emeraldPointLight;
+
+    // Scene Geometries & Systems
+    let skySphere, starField;
+    let terrainAmphitheater, terrainPromontoryWest, terrainPromontoryEast, terrainForegroundShore, terrainBoulders;
+    let waterMesh, waterMaterial;
+
+    // VFX 1: Emerald Light Column & Sparkles (0s - 165s)
+    let emeraldColumnGroup, innerColumnMesh, outerColumnMesh, columnGlowLight;
+    let sparkleParticles, sparkleGeo, sparkleMat;
+
+    // VFX 2: Njord Dragon & 7 Chakra Trail (166s - 247s)
+    let njordGroup, realDragonRoot, dragonModel, dragonMixer, dragonBones = {};
+    let chakraRibbonMesh, chakraCurtainMesh, chakraMotes;
+    let pastCloudsGroup;
+
+    // VFX 3: White Road of Light & Floating Golden Pocket Watch (247s - 336s)
+    let whiteRoadMesh, roadBeaconsGroup = [], bridgeGroup, bridgeMaterials = [], bridgeVeinMat, lanternOpalMat;
+    let goldWatchGroup, watchHands = { hour: null, minute: null, second: null };
+
+    // VFX 4: Shifting Light Tunnel, Travel & Future Fears (337s - 402s)
+    let lightTunnelGroup, lightTunnelMesh;
+    let futureFearSpheresGroup;
+
+    // VFX 5: Emerald-Violet Transmutation Sphere & Protective Mantle (403s - 456.78s)
+    let energySphereMesh, protectiveMantleMesh, mantleStardust;
+
+    // 3D VR Subtitle Billboard & Gaze Reticle
+    let billboardMesh, billboardCanvas, billboardContext, billboardTexture;
+    let vrReticleMesh, vrReticleProgressMesh;
+    let vrCompletionPopupGroup;
+    let gazeInteractables = [];
+    let currentGazeTarget = null;
+    let gazeDwellTimer = 0.0;
+    const GAZE_DWELL_THRESHOLD = 1.50; // 1.5 seconds dwell to trigger
+
+    // Pre-allocated vectors & quaternions for zero-GC 60/120 FPS loop
+    const _vZero = new THREE.Vector3(0, 0, 0);
+    const _vCamWorld = new THREE.Vector3();
+    const _vTemp1 = new THREE.Vector3();
+    const _vTemp2 = new THREE.Vector3();
+    const _vTemp3 = new THREE.Vector3();
+    const _qTemp = new THREE.Quaternion();
+    const _raycaster = new THREE.Raycaster();
+    const _reticleDir = new THREE.Vector3(0, 0, -1);
+    const _upVec = new THREE.Vector3(0, 1, 0);
+    const _forwardZ = new THREE.Vector3(0, 0, 1);
+    const _nextTan = new THREE.Vector3();
+    const _tempNormal = new THREE.Vector3();
+    const _curvature = new THREE.Vector3();
+    const _targetQuat = new THREE.Quaternion();
+    const _bankQuat = new THREE.Quaternion();
+    const _vTempWatchPos = new THREE.Vector3();
+    const _vTempSpherePos = new THREE.Vector3();
+    const _trailPt = new THREE.Vector3();
+    const _trailTan = new THREE.Vector3();
+    const _trailNorm = new THREE.Vector3();
+
+    // Initial Camera Rig Position: dry ground at shore X=0.0, Y=1.8, Z=12.0 (water level Y=0.0)
+    const CAMERA_INIT_X = 0.0;
+    const CAMERA_INIT_Y = 1.8;
+    const CAMERA_INIT_Z = 12.0;
+
+    /* ======================================================================
+       INITIALIZATION ROUTINE
+       ====================================================================== */
+    function initThreeScene() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x010206);
+      scene.fog = new THREE.FogExp2(0x020713, 0.0018);
+
+      // Camera Rig & Perspective Camera
+      cameraRig = new THREE.Group();
+      cameraRig.position.set(CAMERA_INIT_X, CAMERA_INIT_Y, CAMERA_INIT_Z);
+      scene.add(cameraRig);
+
+      const aspect = window.innerWidth / window.innerHeight;
+      camera = new THREE.PerspectiveCamera(75.0, aspect, 0.05, 3000.0);
+      camera.position.set(0, 0, 0);
+      cameraRig.add(camera);
+
+      // Stereo Camera for VR Cardboard Mode (0.064m IPD)
+      stereoCamera = new THREE.StereoCamera();
+      stereoCamera.aspect = 0.5;
+      stereoCamera.eyeSep = 0.064;
+
+      // WebGL Renderer with High-Performance Settings & DPR Clamp
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: false,
+        powerPreference: 'high-performance',
+        preserveDrawingBuffer: true
+      });
+      const dpr = Math.min(window.devicePixelRatio || 1, state.isVRMode ? 1.25 : 1.30);
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.10;
+      container.appendChild(renderer.domElement);
+
+      textureLoader = new THREE.TextureLoader();
+      const globalTexData = window.GENERAL_WATER_TEXTURES || {};
+      if (globalTexData.particleGlow) {
+        particleGlowTex = textureLoader.load(globalTexData.particleGlow);
+      }
+
+      // Build 3D World Components
+      buildLighting();
+      buildAtmosphericNightSky();
+      buildAlpineTerrain();
+      buildSacredGerstnerLake();
+
+      // Build Storyboard VFX Systems
+      buildVFX1EmeraldColumn();
+      buildVFX2NjordAndChakra();
+      buildVFX3WhiteRoadAndGoldWatch();
+      buildVFX4LightTunnelAndFutureFears();
+      buildVFX5EnergySphereAndMantle();
+
+      // 3D VR Subtitle Billboard, Reticle & 3D Completion Popup
+      build3DSubtitleBillboard();
+      initVRReticle();
+      buildVRCompletionPopup();
+
+      initControls();
+      window.addEventListener('resize', onWindowResize, false);
+    }
+
+    /* --- 1. LIGHTING SETUP (Night Profile PBR) --- */
+    function buildLighting() {
+      // Midnight twilight ambient light
+      ambientLight = new THREE.AmbientLight(0x0c1b2c, 0.85);
+      scene.add(ambientLight);
+
+      // Silvery Arctic Moonlight
+      moonLight = new THREE.DirectionalLight(0xcbd5e1, 0.65);
+      moonLight.position.set(-60, 140, -180);
+      scene.add(moonLight);
+
+      // Radiant Emerald Healing Point Light (for Column & Energy Sphere)
+      emeraldPointLight = new THREE.PointLight(0x10b981, 0.0, 80.0, 1.8);
+      emeraldPointLight.position.set(0, 2.5, -35);
+      scene.add(emeraldPointLight);
+    }
+
+    /* --- 2. ATMOSPHERIC NIGHT SKY & TWINKLING STARFIELD --- */
+    function buildAtmosphericNightSky() {
+      const domeGeo = new THREE.SphereGeometry(1500, 48, 36);
+      const domeMat = new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        depthWrite: false,
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          void main() {
+            vec4 wp = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = wp.xyz;
+            gl_Position = projectionMatrix * viewMatrix * wp;
+          }
+        `,
+        fragmentShader: `
+          varying vec3 vWorldPosition;
+          void main() {
+            vec3 vDir = normalize(vWorldPosition);
+            float h = clamp(vDir.y, 0.0, 1.0);
+            vec3 zenith = vec3(0.004, 0.008, 0.022); // Deep cosmic black-indigo
+            vec3 horizon = vec3(0.015, 0.038, 0.082); // Twilight cobalt rim
+            vec3 sky = mix(horizon, zenith, pow(h, 0.45));
+            gl_FragColor = vec4(sky, 1.0);
+          }
+        `
+      });
+      skySphere = new THREE.Mesh(domeGeo, domeMat);
+      scene.add(skySphere);
+
+      // Starfield with ~3500 twinkling stars
+      const starCount = 3500;
+      const starGeo = new THREE.BufferGeometry();
+      const starPos = new Float32Array(starCount * 3);
+      const starShimmer = new Float32Array(starCount);
+
+      for (let i = 0; i < starCount; i++) {
+        const u = Math.random();
+        const v = Math.random();
+        const theta = u * 2.0 * Math.PI;
+        const phi = Math.acos(2.0 * v - 1.0);
+        const r = 1380 + Math.random() * 80;
+        starPos[i * 3 + 0] = r * Math.sin(phi) * Math.cos(theta);
+        starPos[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 15;
+        starPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+        starShimmer[i] = Math.random() * Math.PI * 2.0;
+      }
+
+      starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+      starGeo.setAttribute('aShimmer', new THREE.BufferAttribute(starShimmer, 1));
+
+      const texData = window.GENERAL_WATER_TEXTURES || {};
+      const starTex = texData.particleGlow ? textureLoader.load(texData.particleGlow) : null;
+
+      const starMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0.0 },
+          uTexture: { value: starTex }
+        },
+        vertexShader: `
+          uniform float uTime;
+          attribute float aShimmer;
+          varying float vAlpha;
+          void main() {
+            float blink = 0.55 + 0.45 * sin(uTime * 2.2 + aShimmer);
+            vAlpha = blink;
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_PointSize = (2.2 + blink * 1.8) * (280.0 / -mvPosition.z);
+            gl_Position = projectionMatrix * mvPosition;
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D uTexture;
+          varying float vAlpha;
+          void main() {
+            vec4 col = texture2D(uTexture, gl_PointCoord);
+            gl_FragColor = vec4(vec3(0.92, 0.96, 1.0), col.a * vAlpha * 0.85);
+          }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      starField = new THREE.Points(starGeo, starMat);
+      scene.add(starField);
+    }
+
+    /* --- 3. HIGH-POLY ALPINE AMPHITHEATER & BASALT/SNOW TERRAIN --- */
+    function buildAlpineTerrain() {
+      // Noise utility functions for terrain procedural synthesis
+      function smoothNoise(x, z) {
+        const xi = Math.floor(x);
+        const zi = Math.floor(z);
+        const xf = x - xi;
+        const zf = z - zi;
+        const u = xf * xf * (3 - 2 * xf);
+        const v = zf * zf * (3 - 2 * zf);
+        function h(i, j) {
+          const s = Math.sin(i * 12.9898 + j * 78.233) * 43758.5453;
+          return s - Math.floor(s);
+        }
+        return (1 - u) * ((1 - v) * h(xi, zi) + v * h(xi, zi + 1)) +
+               u * ((1 - v) * h(xi + 1, zi) + v * h(xi + 1, zi + 1));
+      }
+
+      function terrainFbm(x, z, octaves) {
+        let val = 0.0;
+        let amp = 0.5;
+        for (let i = 0; i < octaves; i++) {
+          val += amp * smoothNoise(x, z);
+          x *= 2.05;
+          z *= 2.05;
+          amp *= 0.5;
+        }
+        return val;
+      }
+
+      const terrainMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          uMoonPos: { value: new THREE.Vector3(-60, 140, -180) },
+          uMoonColor: { value: new THREE.Color(0xcbd5e1) },
+          uEmeraldGlow: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying float vElevation;
+          void main() {
+            vec4 wp = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = wp.xyz;
+            vNormal = normalize(mat3(modelMatrix) * normal);
+            vElevation = wp.y;
+            gl_Position = projectionMatrix * viewMatrix * wp;
+          }
+        `,
+        fragmentShader: `
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying float vElevation;
+          uniform vec3 uMoonPos;
+          uniform vec3 uMoonColor;
+          uniform float uEmeraldGlow;
+
+          float hash(vec2 p) {
+            return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+          }
+
+          float smoothNoise(vec2 p) {
+            vec2 i = floor(p);
+            vec2 f = fract(p);
+            vec2 u = f * f * (3.0 - 2.0 * f);
+            float a = hash(i);
+            float b = hash(i + vec2(1.0, 0.0));
+            float c = hash(i + vec2(0.0, 1.0));
+            float d = hash(i + vec2(1.0, 1.0));
+            return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+          }
+
+          float fbmSmooth(vec2 p) {
+            mat2 rot = mat2(0.80, 0.60, -0.60, 0.80);
+            float v = 0.0;
+            float a = 0.5;
+            for (int i = 0; i < 3; i++) {
+              v += a * smoothNoise(p);
+              p = rot * p * 2.05;
+              a *= 0.5;
+            }
+            return v;
+          }
+
+          void main() {
+            vec3 baseN = normalize(vNormal);
+
+            // Natural Basalt Rock Micro-Texture (Continuous, non-grid-aligned)
+            vec2 rockUv = vWorldPosition.xz * 0.35;
+            float nFissure = fbmSmooth(rockUv * 2.5) * 0.16;
+
+            // Subtle continuous normal perturbation for organic basalt roughness
+            float eps = 0.08;
+            float nCenter = smoothNoise(rockUv * 3.0);
+            float nDx = smoothNoise(rockUv * 3.0 + vec2(eps, 0.0)) - nCenter;
+            float nDz = smoothNoise(rockUv * 3.0 + vec2(0.0, eps)) - nCenter;
+            vec3 bumpN = normalize(baseN + vec3(nDx * 0.75, 0.0, nDz * 0.75));
+
+            float slope = baseN.y;
+            float nLedge = fbmSmooth(vWorldPosition.xz * 0.06) * 0.22;
+            float isHighMountain = smoothstep(3.5, 12.0, vElevation);
+            float mountainSnow = smoothstep(0.42, 0.62, slope + nLedge);
+            float boulderSnow = smoothstep(0.60, 0.80, baseN.y + nLedge * 0.25);
+            float snowMask = mix(boulderSnow, mountainSnow, isHighMountain);
+
+            // Waterline clearing: no snow under water / right at wet shore (vElevation < 0.25)
+            float shoreClear = smoothstep(0.15, 0.55, vElevation);
+            snowMask *= shoreClear;
+            snowMask = clamp(snowMask, 0.0, 1.0);
+
+            vec3 N = normalize(mix(bumpN, baseN, snowMask * 0.80));
+            vec3 L_moon = normalize(uMoonPos - vWorldPosition);
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 H_moon = normalize(L_moon + V);
+
+            // Albedo: Basalt rock with wet shoreline darkening vs crisp snow
+            float wetness = clamp(1.0 - smoothstep(0.0, 1.4, vElevation), 0.0, 1.0) * (1.0 - snowMask);
+            vec3 snowAlbedo = vec3(0.92, 0.96, 1.0);
+            float strata = sin(vElevation * 0.55 + fbmSmooth(vWorldPosition.xz * 0.08) * 3.5) * 0.045;
+            vec3 dryBasalt = vec3(0.28, 0.32, 0.37) + strata + nFissure * 0.12;
+            vec3 wetBasalt = dryBasalt * 0.68; // Rich dark saturated wet granite/basalt, never pitch black
+            vec3 rockAlbedo = mix(dryBasalt, wetBasalt, wetness);
+            vec3 albedo = mix(rockAlbedo, snowAlbedo, snowMask);
+
+            // Direct Moonlight Illumination
+            float NdotL_moon = max(0.0, dot(N, L_moon));
+            vec3 moonLit = uMoonColor * (NdotL_moon * 0.75 + 0.25) * 0.85;
+            moonLit += vec3(0.88, 0.95, 1.0) * pow(max(0.0, dot(N, H_moon)), 45.0) * snowMask * 0.65;
+
+            // Ambient sky fill & lake upward bounce (illuminating shadowed rock faces)
+            vec3 ambient = vec3(0.08, 0.13, 0.22) * mix(0.85, 1.35, snowMask) * (0.45 + 0.55 * N.y);
+            vec3 lakeBounce = vec3(0.06, 0.12, 0.20) * max(0.0, -N.y * 0.4 + 0.6);
+
+            // Emerald column diffuse reflection on mountain walls
+            vec3 emeraldRefl = vec3(0.06, 0.72, 0.50) * uEmeraldGlow * max(0.0, dot(N, normalize(vec3(-vWorldPosition.x, 20.0, -35.0 - vWorldPosition.z)))) * 0.45;
+
+            // Specular highlights: wet rock glistens near water, snow sparkles
+            float specPow = mix(mix(16.0, 55.0, wetness), 110.0, snowMask);
+            float specCoeff = mix(mix(0.06, 0.50, wetness), 0.80, snowMask);
+            float spec = pow(max(0.0, dot(N, H_moon)), specPow) * specCoeff;
+
+            vec3 litSurface = albedo * (moonLit + ambient + lakeBounce) + emeraldRefl + uMoonColor * spec;
+
+            // Atmospheric Fog
+            float dist = length(cameraPosition - vWorldPosition);
+            float fogFactor = 1.0 - exp(-pow(dist * 0.0028, 1.45));
+            vec3 fogCol = vec3(0.015, 0.035, 0.075);
+            gl_FragColor = vec4(mix(litSurface, fogCol, fogFactor), 1.0);
+          }
+        `
+      });
+
+      // 1. Distant 360-degree Mountain Amphitheater
+      const radialSegs = 240;
+      const ringSegs = 60;
+      const alpineGeo = new THREE.BufferGeometry();
+      const alpinePos = [];
+      const alpineIndices = [];
+
+      for (let ri = 0; ri <= ringSegs; ri++) {
+        const tRing = ri / ringSegs;
+        const r = 140 + (420 - 140) * Math.pow(tRing, 1.30);
+
+        for (let ai = 0; ai <= radialSegs; ai++) {
+          const theta = (ai / radialSegs) * Math.PI * 2;
+          const x = r * Math.sin(theta);
+          const z = r * Math.cos(theta) - 40;
+
+          const qx = x * 0.0035;
+          const qz = z * 0.0035;
+          const mountainFbm = terrainFbm(qx * 2.5, qz * 2.5, 4) * 85.0 +
+                            terrainFbm(qx * 5.0, qz * 5.0, 3) * 24.0;
+          
+          let h = mountainFbm * Math.pow(tRing, 1.25);
+          if (tRing < 0.06) {
+            h = (h * (tRing / 0.06)) - 3.5 * (1.0 - tRing / 0.06);
+          }
+          alpinePos.push(x, h, z);
+        }
+      }
+
+      for (let ri = 0; ri < ringSegs; ri++) {
+        for (let ai = 0; ai < radialSegs; ai++) {
+          const i0 = ri * (radialSegs + 1) + ai;
+          const i1 = (ri + 1) * (radialSegs + 1) + ai;
+          const i2 = (ri + 1) * (radialSegs + 1) + (ai + 1);
+          const i3 = ri * (radialSegs + 1) + (ai + 1);
+          alpineIndices.push(i0, i1, i3);
+          alpineIndices.push(i1, i2, i3);
+        }
+      }
+
+      alpineGeo.setAttribute('position', new THREE.Float32BufferAttribute(alpinePos, 3));
+      alpineGeo.setIndex(alpineIndices);
+      alpineGeo.computeVertexNormals();
+
+      terrainAmphitheater = new THREE.Mesh(alpineGeo, terrainMaterial);
+      scene.add(terrainAmphitheater);
+
+      // 2. Dry Foreground Shoreline where Observer Stands (X=0, Y=1.8, Z=12.0)
+      // Ground plane elevated to Y=1.8 (eyes) with base ground at Y=0.0..1.2
+      const shoreGeo = new THREE.PlaneGeometry(120, 90, 80, 60);
+      shoreGeo.rotateX(-Math.PI / 2);
+      const sPos = shoreGeo.attributes.position.array;
+
+      for (let i = 0; i < sPos.length; i += 3) {
+        const lx = sPos[i];
+        const lz = sPos[i + 2];
+        const wx = lx;
+        const wz = 24.0 + lz; // Observer is at Z=12.0
+
+        let h = 0.0;
+        if (wz >= 10.0) {
+          // Elevated dry ground plateau (Y=0.35..0.50)
+          h = 0.35 + terrainFbm(wx * 0.06, wz * 0.06, 3) * 0.20;
+        } else if (wz >= 2.0) {
+          // Gentle slope dipping into the lake
+          const tSlope = (wz - 2.0) / 8.0;
+          h = tSlope * 0.35;
+        } else {
+          // Submerged lakebed
+          h = (wz - 2.0) * 0.35;
+        }
+
+        // Lateral fade towards deep sides
+        const latFade = Math.max(0.0, 1.0 - Math.pow(Math.abs(lx) / 55.0, 3.0));
+        sPos[i + 1] = h * latFade;
+      }
+
+      shoreGeo.attributes.position.needsUpdate = true;
+      shoreGeo.computeVertexNormals();
+      terrainForegroundShore = new THREE.Mesh(shoreGeo, terrainMaterial);
+      terrainForegroundShore.position.set(0, 0, 24);
+      scene.add(terrainForegroundShore);
+
+      // 3. 100% Photorealistic Alpine Glacial Erratics (Fractured faceted boulders with flat grounded base)
+      terrainBoulders = new THREE.Group();
+
+      function createGlacialErraticGeometry(radius, detail, cfg) {
+        const rawGeo = new THREE.IcosahedronGeometry(radius, detail);
+        const rawPos = rawGeo.attributes.position.array;
+
+        // Weld duplicate vertices to create an indexed geometry with shared topology
+        const uniquePos = [];
+        const indices = [];
+        const vertexMap = new Map();
+        const prec = 10000;
+
+        for (let i = 0; i < rawPos.length; i += 3) {
+          const vx = rawPos[i];
+          const vy = rawPos[i + 1];
+          const vz = rawPos[i + 2];
+          const key = `${Math.round(vx * prec)}_${Math.round(vy * prec)}_${Math.round(vz * prec)}`;
+          let idx = vertexMap.get(key);
+          if (idx === undefined) {
+            idx = uniquePos.length / 3;
+            vertexMap.set(key, idx);
+            uniquePos.push(vx, vy, vz);
+          }
+          indices.push(idx);
+        }
+
+        const seed = cfg.seed || 1.0;
+        const sx = cfg.sx || 1.0;
+        const sy = cfg.sy || 1.0;
+        const sz = cfg.sz || 1.0;
+
+        // Sculpt organic weathered glacial shape with sharp geological cleavage planes
+        for (let i = 0; i < uniquePos.length; i += 3) {
+          const vx = uniquePos[i];
+          const vy = uniquePos[i + 1];
+          const vz = uniquePos[i + 2];
+          const len = Math.hypot(vx, vy, vz) || 1.0;
+          const nx = vx / len;
+          const ny = vy / len;
+          const nz = vz / len;
+
+          const n1 = smoothNoise(nx * 1.5 + seed * 2.1, nz * 1.5 + seed * 1.7) * 2.0 - 1.0;
+          const n2 = smoothNoise(ny * 2.1 + seed * 1.3, nx * 2.1 + seed * 0.9) * 2.0 - 1.0;
+          const n3 = (smoothNoise(nz * 3.6 + seed * 0.7, ny * 3.6 + seed * 1.4) * 2.0 - 1.0) * 0.35;
+
+          // Natural cleavage planes (sharp fractured facets from mountain frost shattering)
+          const cleavage1 = Math.max(0.0, (nx * 0.70 + ny * 0.40 + nz * 0.60) - 0.65) * 0.42;
+          const cleavage2 = Math.max(0.0, (-nx * 0.65 + ny * 0.30 - nz * 0.70) - 0.65) * 0.38;
+          const cleavage3 = Math.max(0.0, (nx * 0.30 - ny * 0.80 + nz * 0.50) - 0.70) * 0.35;
+
+          const topShelf = ny > 0.15 ? (1.0 - (ny - 0.15) * 0.14) : 1.0;
+          const r = Math.max(0.40, 1.0 + (n1 * 0.22 + n2 * 0.14 + n3 * 0.06) - cleavage1 - cleavage2 - cleavage3);
+
+          let px = nx * r * sx;
+          let py = ny * r * sy * topShelf;
+          let pz = nz * r * sz;
+
+          // Natural grounding: flatten base so boulder rests solidly in shore sand and water
+          if (ny < -0.22) {
+            const botT = (-ny - 0.22) / 0.78;
+            py = py * (1.0 - botT * 0.35);
+          }
+
+          uniquePos[i] = px;
+          uniquePos[i + 1] = py;
+          uniquePos[i + 2] = pz;
+        }
+
+        const indexedGeo = new THREE.BufferGeometry();
+        indexedGeo.setAttribute('position', new THREE.Float32BufferAttribute(uniquePos, 3));
+        indexedGeo.setIndex(indices);
+        // Non-indexed conversion guarantees distinct triangular facet normals: spigoli vivi, zero gummy panettone!
+        const facetedGeo = indexedGeo.toNonIndexed();
+        facetedGeo.computeVertexNormals();
+        return facetedGeo;
+      }
+
+      const bConfigs = [
+        // 1. Foreground Promontory framing the observer (Observer at X=0, Z=12, Y=1.8)
+        { x: -5.6, y: 0.18, z: 9.2, sx: 2.5, sy: 1.5, sz: 2.2, ry: 0.85, seed: 12.4 },
+        { x: -3.6, y: 0.12, z: 8.0, sx: 1.6, sy: 1.0, sz: 1.4, ry: 1.90, seed: 5.7 },
+        { x: -4.6, y: 0.04, z: 6.8, sx: 1.0, sy: 0.45, sz: 0.9, ry: 2.40, seed: 8.1 },
+        { x: -3.0, y: 0.02, z: 7.2, sx: 0.6, sy: 0.30, sz: 0.5, ry: 0.30, seed: 19.2 },
+
+        { x:  6.2, y: 0.20, z: 9.6, sx: 2.7, sy: 1.6, sz: 2.3, ry: 2.15, seed: 14.8 },
+        { x:  4.1, y: 0.12, z: 8.3, sx: 1.5, sy: 0.9, sz: 1.3, ry: 1.10, seed: 9.3 },
+        { x:  5.2, y: 0.04, z: 7.1, sx: 1.1, sy: 0.42, sz: 0.9, ry: 2.80, seed: 11.5 },
+        { x:  3.4, y: 0.02, z: 7.6, sx: 0.6, sy: 0.32, sz: 0.55, ry: 1.70, seed: 21.4 },
+
+        // 2. Mid-shore waterline boulders & partially submerged sentinels
+        { x: -10.5, y: 0.05, z: 4.8, sx: 3.4, sy: 2.0, sz: 2.8, ry: 1.40, seed: 3.2 },
+        { x:  -7.6, y: 0.02, z: 3.5, sx: 2.0, sy: 1.2, sz: 1.8, ry: 2.60, seed: 7.9 },
+        { x:  -5.8, y: -0.05, z: 2.2, sx: 1.4, sy: 0.6, sz: 1.2, ry: 0.50, seed: 16.3 },
+
+        { x:  11.8, y: 0.05, z: 4.2, sx: 3.6, sy: 2.1, sz: 3.0, ry: 0.90, seed: 6.1 },
+        { x:   8.4, y: 0.02, z: 3.1, sx: 2.2, sy: 1.3, sz: 1.9, ry: 2.10, seed: 15.6 },
+        { x:   6.4, y: -0.05, z: 1.8, sx: 1.3, sy: 0.55, sz: 1.1, ry: 3.10, seed: 18.7 },
+
+        // 3. Wide flank sentinels
+        { x: -16.5, y: 0.30, z: 8.0, sx: 4.2, sy: 2.5, sz: 3.5, ry: 1.70, seed: 2.1 },
+        { x:  17.5, y: 0.35, z: 7.5, sx: 4.5, sy: 2.7, sz: 3.8, ry: 2.50, seed: 4.4 }
+      ];
+
+      bConfigs.forEach(cfg => {
+        const bGeo = createGlacialErraticGeometry(1.0, 2, cfg);
+        const bMesh = new THREE.Mesh(bGeo, terrainMaterial);
+        bMesh.position.set(cfg.x, cfg.y + cfg.sy * 0.45, cfg.z);
+        bMesh.rotation.y = cfg.ry;
+        terrainBoulders.add(bMesh);
+      });
+      scene.add(terrainBoulders);
+    }
+
+    /* --- 4. SACRED GERSTNER LAKE (Physical PBR Water with Dual-Simplex Ripple) --- */
+    function buildSacredGerstnerLake() {
+      const texData = window.GENERAL_WATER_TEXTURES || {};
+      const waterGeo = new THREE.PlaneGeometry(1400, 800, 120, 80);
+      waterGeo.rotateX(-Math.PI / 2);
+
+      let waterNormalTex = texData.waterNormal ? textureLoader.load(texData.waterNormal) : null;
+      if (waterNormalTex) {
+        waterNormalTex.wrapS = THREE.RepeatWrapping;
+        waterNormalTex.wrapT = THREE.RepeatWrapping;
+      }
+
+      waterMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0.0 },
+          uNormalMap: { value: waterNormalTex },
+          uMoonPos: { value: new THREE.Vector3(-60, 140, -180) },
+          uMoonColor: { value: new THREE.Color(0xcbd5e1) },
+          uDeepColor: { value: new THREE.Color(0x010814) },
+          uShallowColor: { value: new THREE.Color(0x04182e) },
+          uSkyReflectColor: { value: new THREE.Color(0x081f3d) },
+          uEmeraldColPos: { value: new THREE.Vector3(0, 0, -35) },
+          uEmeraldColIntensity: { value: 0.0 },
+          uMoonSpecularFactor: { value: 1.0 },
+          uSphereReflectPos: { value: new THREE.Vector3(0, 0.91, -9.18) },
+          uSphereReflectColor: { value: new THREE.Color(0x10b981) },
+          uSphereReflectIntensity: { value: 0.0 }
+        },
+        vertexShader: `
+          uniform float uTime;
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+
+          void getGerstner(vec2 pos, float time, out vec3 dispPos, out vec3 wNormal) {
+            float x = pos.x;
+            float z = pos.y;
+            float y = 0.0;
+            vec3 B = vec3(1.0, 0.0, 0.0);
+            vec3 T = vec3(0.0, 0.0, 1.0);
+
+            // Primary gentle mountain lake swell
+            float k1 = 2.0 * 3.14159 / 28.0;
+            float c1 = 1.8;
+            vec2 d1 = normalize(vec2(0.2, 0.98));
+            float a1 = 0.08;
+            float phase1 = k1 * (dot(d1, pos) - c1 * time);
+            x += d1.x * (a1 * cos(phase1));
+            z += d1.y * (a1 * cos(phase1));
+            y += a1 * sin(phase1);
+            B += vec3(-d1.x * d1.x * a1 * k1 * sin(phase1), d1.x * a1 * k1 * cos(phase1), -d1.x * d1.y * a1 * k1 * sin(phase1));
+            T += vec3(-d1.x * d1.y * a1 * k1 * sin(phase1), d1.y * a1 * k1 * cos(phase1), -d1.y * d1.y * a1 * k1 * sin(phase1));
+
+            // Secondary crossing wave
+            float k2 = 2.0 * 3.14159 / 14.0;
+            float c2 = 2.2;
+            vec2 d2 = normalize(vec2(-0.4, 0.9));
+            float a2 = 0.04;
+            float phase2 = k2 * (dot(d2, pos) - c2 * time);
+            x += d2.x * (a2 * cos(phase2));
+            z += d2.y * (a2 * cos(phase2));
+            y += a2 * sin(phase2);
+            B += vec3(-d2.x * d2.x * a2 * k2 * sin(phase2), d2.x * a2 * k2 * cos(phase2), -d2.x * d2.y * a2 * k2 * sin(phase2));
+            T += vec3(-d2.x * d2.y * a2 * k2 * sin(phase2), d2.y * a2 * k2 * cos(phase2), -d2.y * d2.y * a2 * k2 * sin(phase2));
+
+            dispPos = vec3(x, y, z);
+            wNormal = normalize(cross(T, B));
+          }
+
+          void main() {
+            vUv = uv;
+            vec3 dispPos;
+            vec3 wNormal;
+            getGerstner(position.xz, uTime, dispPos, wNormal);
+            vec4 wp = modelMatrix * vec4(dispPos, 1.0);
+            vWorldPosition = wp.xyz;
+            vNormal = normalize(mat3(modelMatrix) * wNormal);
+            gl_Position = projectionMatrix * viewMatrix * wp;
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform sampler2D uNormalMap;
+          uniform vec3 uMoonPos;
+          uniform vec3 uMoonColor;
+          uniform vec3 uDeepColor;
+          uniform vec3 uShallowColor;
+          uniform vec3 uSkyReflectColor;
+          uniform vec3 uEmeraldColPos;
+          uniform float uEmeraldColIntensity;
+          uniform float uMoonSpecularFactor;
+          uniform vec3 uSphereReflectPos;
+          uniform vec3 uSphereReflectColor;
+          uniform float uSphereReflectIntensity;
+
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+
+          void main() {
+            // Dual-speed scrolling micro normal map
+            vec2 uv1 = vUv * 36.0 + vec2(uTime * 0.032, uTime * 0.024);
+            vec2 uv2 = vUv * 78.0 + vec2(-uTime * 0.038, uTime * 0.030);
+            vec3 n1 = texture2D(uNormalMap, uv1).rgb * 2.0 - 1.0;
+            vec3 n2 = texture2D(uNormalMap, uv2).rgb * 2.0 - 1.0;
+            vec3 microN = normalize(n1 + n2 * 0.65);
+
+            vec3 N = normalize(vec3(
+              vNormal.x + microN.x * 0.20,
+              vNormal.y + microN.z * 0.06,
+              vNormal.z + microN.y * 0.20
+            ));
+
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 L_moon = normalize(uMoonPos - vWorldPosition);
+            vec3 H_moon = normalize(L_moon + V);
+
+            // Fresnel reflectance
+            float cosTheta = clamp(dot(N, V), 0.0, 1.0);
+            float fresnel = 0.03 + 0.97 * pow(1.0 - cosTheta, 5.0);
+
+            vec3 waterDepth = mix(uDeepColor, uShallowColor, 0.40);
+            vec3 baseWater = mix(waterDepth, uSkyReflectColor, fresnel);
+
+            // Moonlight specular glitter path (harmonized & attenuated during sphere phase)
+            float NdotH = max(0.0, dot(N, H_moon));
+            float moonGlitter = (pow(NdotH, 32.0) * 0.60 + pow(NdotH, 120.0) * 1.8) * uMoonSpecularFactor;
+            vec3 moonLit = uMoonColor * moonGlitter * 1.6;
+
+            // Emerald-Violet Energy Sphere harmonic reflection on lake
+            vec3 toSphere = uSphereReflectPos - vWorldPosition;
+            float distSphereXZ = length(toSphere.xz);
+            vec3 L_sphere = normalize(toSphere);
+            vec3 H_sphere = normalize(L_sphere + V);
+            float sphereSpec = pow(max(0.0, dot(N, H_sphere)), 24.0) * 0.85 + pow(max(0.0, dot(N, H_sphere)), 64.0) * 1.3;
+            float sphereDiffuseAura = exp(-distSphereXZ * distSphereXZ / (20.0 * 20.0)) * 0.75;
+            vec3 sphereReflect = uSphereReflectColor * (sphereSpec * 0.70 + sphereDiffuseAura) * uSphereReflectIntensity;
+
+            // Emerald light column reflection on lake
+            float colDist = length(vWorldPosition.xz - uEmeraldColPos.xz);
+            float colGlow = exp(-colDist * colDist / (45.0 * 45.0)) * uEmeraldColIntensity;
+            vec3 emeraldReflection = vec3(0.06, 0.85, 0.55) * colGlow * 1.5;
+
+            vec3 finalColor = baseWater + moonLit + emeraldReflection + sphereReflect;
+            gl_FragColor = vec4(finalColor, 0.94);
+          }
+        `,
+        transparent: true
+      });
+
+      waterMesh = new THREE.Mesh(waterGeo, waterMaterial);
+      waterMesh.position.set(0, 0.0, -40); // Lake level strictly at Y = 0.0
+      scene.add(waterMesh);
+    }
+
+    /* --- 5. VFX 1: EMERALD LIGHT COLUMN & HEALING SPARKLES (0s - 165s) --- */
+    function buildVFX1EmeraldColumn() {
+      emeraldColumnGroup = new THREE.Group();
+      emeraldColumnGroup.position.set(0, 50, -35); // Initial position over lake center
+
+      // Double-walled volumetric cylinder: R_in = 1.8m, R_out = 4.5m, Height = 180m
+      const innerGeo = new THREE.CylinderGeometry(1.8, 1.8, 180, 48, 1, true);
+      const outerGeo = new THREE.CylinderGeometry(4.5, 4.5, 180, 48, 1, true);
+
+      const columnShaderMat = (colorHex, glowHex, powerVal) => new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0.0 },
+          uOpacity: { value: 0.0 },
+          uColor: { value: new THREE.Color(colorHex) },
+          uGlowColor: { value: new THREE.Color(glowHex) },
+          uPulse: { value: 1.0 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            vec4 wp = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = wp.xyz;
+            vNormal = normalize(mat3(modelMatrix) * normal);
+            gl_Position = projectionMatrix * viewMatrix * wp;
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform float uOpacity;
+          uniform vec3 uColor;
+          uniform vec3 uGlowColor;
+          uniform float uPulse;
+
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+
+          void main() {
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 N = normalize(vNormal);
+
+            // Fresnel rim falloff
+            float fresnel = pow(1.0 - abs(dot(V, N)), ${powerVal});
+
+            // Vertical gradient: soft near bottom lake and sky apex
+            float vertFade = sin(vUv.y * 3.14159);
+            vertFade = pow(vertFade, 0.35);
+
+            // Subtle energy spiral waves traveling downward
+            float wave = 0.85 + 0.15 * sin(vUv.y * 45.0 - uTime * 2.8);
+
+            vec3 col = mix(uColor, uGlowColor, fresnel) * wave * uPulse;
+            float alpha = uOpacity * fresnel * vertFade;
+            gl_FragColor = vec4(col, alpha);
+          }
+        `,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      });
+
+      innerColumnMesh = new THREE.Mesh(innerGeo, columnShaderMat(0x10b981, 0x34d399, 1.8));
+      outerColumnMesh = new THREE.Mesh(outerGeo, columnShaderMat(0x059669, 0x10b981, 2.4));
+      emeraldColumnGroup.add(innerColumnMesh);
+      emeraldColumnGroup.add(outerColumnMesh);
+      scene.add(emeraldColumnGroup);
+
+      // Healing Sparkle Particles (350 motes that can shift from emerald/gold to dark/amber and flow into lake)
+      const sparkleCount = 350;
+      sparkleGeo = new THREE.BufferGeometry();
+      const sPositions = new Float32Array(sparkleCount * 3);
+      const sColors = new Float32Array(sparkleCount * 3);
+      const sSeeds = new Float32Array(sparkleCount * 4); // x: speed, y: radius, z: angle, w: phase
+
+      for (let i = 0; i < sparkleCount; i++) {
+        const rad = 2.0 + Math.random() * 8.0;
+        const ang = Math.random() * Math.PI * 2.0;
+        const y = 0.5 + Math.random() * 3.5;
+        sPositions[i * 3 + 0] = Math.cos(ang) * rad;
+        sPositions[i * 3 + 1] = y;
+        sPositions[i * 3 + 2] = CAMERA_INIT_Z + Math.sin(ang) * rad;
+
+        // Initial radiant golden-emerald color
+        sColors[i * 3 + 0] = 0.20; // R
+        sColors[i * 3 + 1] = 0.95; // G
+        sColors[i * 3 + 2] = 0.65; // B
+
+        sSeeds[i * 4 + 0] = 0.4 + Math.random() * 0.6; // speed
+        sSeeds[i * 4 + 1] = rad;
+        sSeeds[i * 4 + 2] = ang;
+        sSeeds[i * 4 + 3] = Math.random() * Math.PI * 2.0;
+      }
+
+      sparkleGeo.setAttribute('position', new THREE.BufferAttribute(sPositions, 3));
+      sparkleGeo.setAttribute('color', new THREE.BufferAttribute(sColors, 3));
+      sparkleGeo.setAttribute('aSeed', new THREE.BufferAttribute(sSeeds, 4));
+
+      sparkleMat = new THREE.PointsMaterial({
+        size: 3.5,
+        map: particleGlowTex,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      sparkleParticles = new THREE.Points(sparkleGeo, sparkleMat);
+      scene.add(sparkleParticles);
+    }
+
+    /* --- 6. VFX 2: NJORD 3D DRAGON, 7 CHAKRA WAKE & PAST CLOUDS (166s - 247s) --- */
+    function createDragonScalesNormalTexture() {
+      const width = 512, height = 512;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.createImageData(width, height);
+      const data = imgData.data;
+
+      const rows = 32.0;
+      const cols = 16.0;
+
+      for (let y = 0; y < height; y++) {
+        const v = (y / height) * rows;
+        const row = Math.floor(v);
+        const fv = v - row;
+
+        for (let x = 0; x < width; x++) {
+          let u = (x / width) * cols;
+          if (row % 2 === 1) u += 0.5;
+          const col = Math.floor(u);
+          const fu = (u - col) - 0.5;
+
+          const cx = fu * 2.1;
+          const cy = (fv - 0.38) * 1.85;
+          const distSq = cx * cx + cy * cy;
+          const shield = Math.max(0.0, 1.0 - Math.sqrt(distSq));
+          const carina = Math.exp(-Math.abs(fu) * 6.5) * 0.55;
+          const overlapBevel = Math.max(0.0, 1.0 - fv * 1.15) * 0.45;
+          const microPores = (Math.sin(x * 0.85) * Math.cos(y * 0.85) + Math.sin(x * 1.7 + y * 1.3) * 0.5) * 0.045;
+
+          let nx = (-cx * 3.4 - Math.sign(fu) * (carina * 4.2)) * shield;
+          let ny = (-cy * 2.8 - overlapBevel * 1.8);
+          let nz = 1.0;
+          const len = Math.hypot(nx, ny, nz) || 1.0;
+          nx /= len; ny /= len; nz /= len;
+
+          const idx = (y * width + x) * 4;
+          data[idx + 0] = Math.floor((nx * 0.5 + 0.5) * 255);
+          data[idx + 1] = Math.floor((ny * 0.5 + 0.5) * 255);
+          data[idx + 2] = Math.floor((nz * 0.5 + 0.5) * 255);
+          data[idx + 3] = 255;
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(24, 12);
+      tex.generateMipmaps = true;
+      return tex;
+    }
+
+    function buildVFX2NjordAndChakra() {
+      njordGroup = new THREE.Group();
+      njordGroup.visible = false;
+      scene.add(njordGroup);
+
+      realDragonRoot = new THREE.Group();
+      njordGroup.add(realDragonRoot);
+
+      // Calibrated Catmull-Rom Flight Trajectory across mountain lake and past skies
+      const njordFlightSpline = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-48, 34, -220), // entrance from distant mountain clouds (166s)
+        new THREE.Vector3(-26, 18, -120), // glide low over lake (185s)
+        new THREE.Vector3(-6, 13, -40),   // over water (200s)
+        new THREE.Vector3(0, 18, 4),      // climbing towards user (212s)
+        new THREE.Vector3(14, 20, 52),    // behind user past clouds (225s)
+        new THREE.Vector3(-14, 16, 44),   // circling around past (235s)
+        new THREE.Vector3(0, 15, -30)     // returning to horizon (247s)
+      ]);
+      njordGroup.userData.flightSpline = njordFlightSpline;
+
+      const dragonScalesNormalTex = createDragonScalesNormalTexture();
+
+      // Dragon Body Skin: Deep oceanic sapphire with wet clearcoat & physical skeletal skinning
+      const skinMat = new THREE.MeshPhysicalMaterial({
+        color: 0x054b73,
+        roughness: 0.20,
+        metalness: 0.22,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.05,
+        transmission: 0.18,
+        ior: 1.48,
+        reflectivity: 0.95,
+        normalMap: dragonScalesNormalTex,
+        normalScale: new THREE.Vector2(0.55, 0.55),
+        emissive: 0x03304c,
+        emissiveIntensity: 0.40,
+        transparent: true,
+        opacity: 0.98,
+        depthWrite: true,
+        skinning: true
+      });
+
+      // Translucent Flying Wing Membrane Material
+      const wingMat = new THREE.MeshPhysicalMaterial({
+        color: 0x0284c7,
+        roughness: 0.16,
+        metalness: 0.10,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.04,
+        transmission: 0.45,
+        ior: 1.42,
+        emissive: 0x0369a1,
+        emissiveIntensity: 0.50,
+        transparent: true,
+        opacity: 0.95,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        skinning: true
+      });
+
+      // Radiant Luminous Dragon Eyes
+      const eyeMat = new THREE.MeshStandardMaterial({
+        color: 0xfacc15,
+        emissive: 0xf59e0b,
+        emissiveIntensity: 1.6,
+        roughness: 0.08,
+        metalness: 0.1,
+        transparent: true,
+        opacity: 1.0,
+        skinning: true
+      });
+
+      const tailMat = skinMat.clone();
+      tailMat.skinning = true;
+
+      function configureDragonMesh(gltf) {
+        if (!gltf || !gltf.scene) return;
+        while (realDragonRoot.children.length > 0) {
+          realDragonRoot.remove(realDragonRoot.children[0]);
+        }
+        dragonModel = gltf.scene;
+        dragonBones = {};
+
+        const box = new THREE.Box3().setFromObject(dragonModel);
+        const size = new THREE.Vector3();
+        const center = new THREE.Vector3();
+        box.getSize(size);
+        box.getCenter(center);
+
+        // Calibrate majestic wingspan to 22 meters
+        const TARGET_WINGSPAN = 22.0;
+        const scale = TARGET_WINGSPAN / (size.x || 1.0);
+        dragonModel.scale.setScalar(scale);
+        dragonModel.position.sub(center.clone().multiplyScalar(scale));
+
+        dragonModel.traverse(c => {
+          if (c.isBone) dragonBones[c.name] = c;
+          if (c.isMesh) {
+            c.frustumCulled = false;
+            c.castShadow = true;
+            c.receiveShadow = true;
+            if (c.name.includes("Eyes")) c.material = eyeMat;
+            else if (c.name.includes("Wings")) c.material = wingMat;
+            else if (c.name.includes("Tail")) c.material = tailMat;
+            else c.material = skinMat;
+          }
+        });
+
+        const offsetWrapper = new THREE.Group();
+        offsetWrapper.add(dragonModel);
+        realDragonRoot.add(offsetWrapper);
+
+        if (gltf.animations && gltf.animations.length > 0) {
+          dragonMixer = new THREE.AnimationMixer(dragonModel);
+          const clip = gltf.animations[0];
+          const action = dragonMixer.clipAction(clip);
+          action.setLoop(THREE.LoopRepeat);
+          action.play();
+        }
+        window.dragonLoaded = true;
+      }
+
+      // Load Dragon GLTF Model with synchronous Base64 fallback (100% offline guarantee)
+      if (typeof THREE.GLTFLoader !== 'undefined') {
+        const gltfLoader = new THREE.GLTFLoader();
+        if (window.DRAGON_MODEL_DATA && typeof window.DRAGON_MODEL_DATA === 'string') {
+          try {
+            const raw = window.atob(window.DRAGON_MODEL_DATA);
+            const u8 = new Uint8Array(raw.length);
+            for (let i = 0; i < raw.length; i++) u8[i] = raw.charCodeAt(i);
+            gltfLoader.parse(u8.buffer, '', gltf => configureDragonMesh(gltf), e => console.warn(e));
+          } catch(e) {
+            console.warn('Dragon Base64 parse fallback', e);
+          }
+        }
+        if (window.location.protocol.startsWith('http')) {
+          gltfLoader.load('dragon_flying.glb', gltf => configureDragonMesh(gltf), undefined, e => {
+            console.warn('Fallback loading dragon_toon_flying.glb', e);
+            gltfLoader.load('dragon_toon_flying.glb', gltf2 => configureDragonMesh(gltf2));
+          });
+        }
+      }
+
+      // 7-Chakra Rainbow Wake Trailing Behind Njord
+      const trailSteps = 75;
+      const widthVerts = 9;
+      const trailVertsCount = trailSteps * widthVerts;
+
+      function create7ChakraStreamerMesh(name) {
+        const pos = new Float32Array(trailVertsCount * 3);
+        const uvs = new Float32Array(trailVertsCount * 2);
+        const alphas = new Float32Array(trailVertsCount);
+        const indices = [];
+
+        for (let s = 0; s < trailSteps - 1; s++) {
+          for (let w = 0; w < widthVerts - 1; w++) {
+            const i0 = s * widthVerts + w;
+            const i1 = (s + 1) * widthVerts + w;
+            const i2 = (s + 1) * widthVerts + (w + 1);
+            const i3 = s * widthVerts + (w + 1);
+            indices.push(i0, i1, i3);
+            indices.push(i1, i2, i3);
+            indices.push(i0, i3, i1);
+            indices.push(i1, i3, i2);
+          }
+        }
+
+        for (let s = 0; s < trailSteps; s++) {
+          const u = s / (trailSteps - 1);
+          for (let w = 0; w < widthVerts; w++) {
+            const v = w / (widthVerts - 1);
+            const idx = s * widthVerts + w;
+            uvs[idx * 2 + 0] = u;
+            uvs[idx * 2 + 1] = v;
+            alphas[idx] = Math.pow(Math.max(0.0, 1.0 - u), 0.70) * Math.min(1.0, u * 12.0);
+          }
+        }
+
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+        geo.setAttribute('aAlpha', new THREE.BufferAttribute(alphas, 1));
+        geo.setIndex(indices);
+
+        const mat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 0.0 },
+            uAlpha: { value: 0.0 }
+          },
+          vertexShader: `
+            uniform float uTime;
+            uniform float uAlpha;
+            attribute float aAlpha;
+            varying vec2 vUv;
+            varying float vAlpha;
+            void main() {
+              vUv = uv;
+              vAlpha = uAlpha * aAlpha;
+              gl_Position = projectionMatrix * viewMatrix * vec4(position, 1.0);
+            }
+          `,
+          fragmentShader: `
+            uniform float uTime;
+            varying vec2 vUv;
+            varying float vAlpha;
+
+            // 7 Chakra Colors interpolation (Muladhara to Sahasrara)
+            vec3 sevenChakra(float t) {
+              vec3 c0 = vec3(0.94, 0.27, 0.27); // 1. Muladhara (Ruby Red)
+              vec3 c1 = vec3(0.98, 0.45, 0.09); // 2. Svadhisthana (Tangerine)
+              vec3 c2 = vec3(0.92, 0.70, 0.03); // 3. Manipura (Solar Gold)
+              vec3 c3 = vec3(0.06, 0.72, 0.50); // 4. Anahata (Emerald Green)
+              vec3 c4 = vec3(0.02, 0.71, 0.83); // 5. Vishuddha (Glacial Cyan)
+              vec3 c5 = vec3(0.23, 0.51, 0.96); // 6. Ajna (Deep Sapphire)
+              vec3 c6 = vec3(0.66, 0.33, 0.97); // 7. Sahasrara (Celestial Violet)
+
+              float s = clamp(t, 0.0, 1.0) * 6.0;
+              float i = floor(s);
+              float f = fract(s);
+              if (i < 1.0) return mix(c0, c1, f);
+              if (i < 2.0) return mix(c1, c2, f);
+              if (i < 3.0) return mix(c2, c3, f);
+              if (i < 4.0) return mix(c3, c4, f);
+              if (i < 5.0) return mix(c4, c5, f);
+              return mix(c5, c6, f);
+            }
+
+            void main() {
+              float edge = pow(sin(vUv.y * 3.14159), 1.6);
+              float shimmer = 0.88 + 0.12 * sin(vUv.x * 50.0 - uTime * 3.5);
+              vec3 col = sevenChakra(vUv.y) * shimmer;
+              float a = clamp(vAlpha * edge, 0.0, 0.95);
+              gl_FragColor = vec4(col, a);
+            }
+          `,
+          blending: THREE.AdditiveBlending,
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide
+        });
+
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.frustumCulled = false;
+        return mesh;
+      }
+
+      chakraRibbonMesh = create7ChakraStreamerMesh('ChakraRibbonHorizontal');
+      chakraCurtainMesh = create7ChakraStreamerMesh('ChakraCurtainVertical');
+      njordGroup.add(chakraRibbonMesh);
+      njordGroup.add(chakraCurtainMesh);
+
+      // Past Clouds Group (Dark chaotic smoke particles behind observer at Z > 12)
+      pastCloudsGroup = new THREE.Group();
+      pastCloudsGroup.visible = false;
+      const cloudCount = 180;
+      const cPos = new Float32Array(cloudCount * 3);
+      for (let i = 0; i < cloudCount; i++) {
+        cPos[i * 3 + 0] = (Math.random() - 0.5) * 45.0;
+        cPos[i * 3 + 1] = 4.0 + Math.random() * 22.0;
+        cPos[i * 3 + 2] = 25.0 + Math.random() * 55.0; // Behind observer (Z > 12)
+      }
+      const cGeo = new THREE.BufferGeometry();
+      cGeo.setAttribute('position', new THREE.BufferAttribute(cPos, 3));
+      const cMat = new THREE.PointsMaterial({
+        size: 26.0,
+        map: particleGlowTex,
+        color: 0x1e1b4b, // Deep storm dark violet
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.NormalBlending,
+        depthWrite: false
+      });
+      const cloudPoints = new THREE.Points(cGeo, cMat);
+      pastCloudsGroup.add(cloudPoints);
+      pastCloudsGroup.userData = { material: cMat };
+      scene.add(pastCloudsGroup);
+    }
+
+    /* --- 7. VFX 3: WHITE ROAD OF LIGHT & FLOATING GOLD POCKET WATCH (247s - 336s) --- */
+    /* --- 7. VFX 3: WHITE ROAD OF LIGHT & FLOATING GOLD POCKET WATCH (247s - 336s) --- */
+    function createBridgeStoneTextures() {
+      // 1. Procedural PBR Travertine / White Carrara Marble Deck Texture
+      const width = 1024, height = 1024;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      // Base warm honed marble albedo
+      const baseGrad = ctx.createLinearGradient(0, 0, width, height);
+      baseGrad.addColorStop(0, '#f8fafc');
+      baseGrad.addColorStop(0.5, '#f1f5f9');
+      baseGrad.addColorStop(1, '#e2e8f0');
+      ctx.fillStyle = baseGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // Fine crystalline marble veining
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.26)';
+      ctx.lineWidth = 1.8;
+      for (let i = 0; i < 28; i++) {
+        ctx.beginPath();
+        let sx = Math.random() * width;
+        let sy = Math.random() * height;
+        ctx.moveTo(sx, sy);
+        for (let seg = 0; seg < 6; seg++) {
+          sx += (Math.random() - 0.4) * 160;
+          sy += (Math.random() - 0.2) * 120;
+          ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+      }
+
+      // Stone Slabs Layout (Paving transverse joints every 128px with 3D bevels)
+      const slabRows = 8;
+      const rowH = height / slabRows;
+      for (let r = 0; r <= slabRows; r++) {
+        const y = r * rowH;
+        ctx.fillStyle = 'rgba(30, 41, 59, 0.45)'; // Dark joint line
+        ctx.fillRect(0, y - 1, width, 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)'; // Top bevel highlight
+        ctx.fillRect(0, y + 1, width, 1.5);
+      }
+
+      // Golden Bronze Trim lines along inner curb margins
+      ctx.fillStyle = 'rgba(217, 119, 6, 0.65)';
+      ctx.fillRect(0, 0, 24, height);
+      ctx.fillRect(width - 24, 0, 24, height);
+
+      const albedoTex = new THREE.CanvasTexture(canvas);
+      albedoTex.wrapS = THREE.RepeatWrapping;
+      albedoTex.wrapT = THREE.RepeatWrapping;
+      albedoTex.repeat.set(2, 28);
+      albedoTex.generateMipmaps = true;
+
+      // 2. Micro-roughness Normal Map for stone grain & slab joints
+      const nCanvas = document.createElement('canvas');
+      nCanvas.width = 512;
+      nCanvas.height = 512;
+      const nCtx = nCanvas.getContext('2d');
+      const nImg = nCtx.createImageData(512, 512);
+      const nd = nImg.data;
+
+      for (let y = 0; y < 512; y++) {
+        const rowFrac = (y % 64);
+        const isJoint = rowFrac < 2 || rowFrac > 62;
+        for (let x = 0; x < 512; x++) {
+          const idx = (y * 512 + x) * 4;
+          const grain = (Math.sin(x * 0.8) * Math.cos(y * 0.8) + Math.sin(x * 1.6 + y * 1.2) * 0.4) * 0.12;
+          let nx = grain;
+          let ny = isJoint ? (rowFrac < 2 ? -0.45 : 0.45) : grain;
+          let nz = 1.0;
+          const len = Math.hypot(nx, ny, nz) || 1.0;
+          nd[idx + 0] = Math.floor((nx / len * 0.5 + 0.5) * 255);
+          nd[idx + 1] = Math.floor((ny / len * 0.5 + 0.5) * 255);
+          nd[idx + 2] = Math.floor((nz / len * 0.5 + 0.5) * 255);
+          nd[idx + 3] = 255;
+        }
+      }
+      nCtx.putImageData(nImg, 0, 0);
+      const normalTex = new THREE.CanvasTexture(nCanvas);
+      normalTex.wrapS = THREE.RepeatWrapping;
+      normalTex.wrapT = THREE.RepeatWrapping;
+      normalTex.repeat.set(2, 28);
+      normalTex.generateMipmaps = true;
+
+      return { albedo: albedoTex, normal: normalTex };
+    }
+
+    function buildVFX3WhiteRoadAndGoldWatch() {
+      // 1. Majestic Volumetric 3D Stone Bridge & Sacred Path of Light
+      bridgeGroup = new THREE.Group();
+      bridgeGroup.visible = false;
+      bridgeMaterials = [];
+
+      const stoneTextures = createBridgeStoneTextures();
+
+      // PBR Stone Deck Material
+      const bridgeDeckMat = new THREE.MeshStandardMaterial({
+        map: stoneTextures.albedo,
+        normalMap: stoneTextures.normal,
+        normalScale: new THREE.Vector2(0.55, 0.55),
+        roughness: 0.62,
+        metalness: 0.04,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: true
+      });
+      bridgeMaterials.push(bridgeDeckMat);
+
+      // Raised Curbstone Material
+      const curbMat = new THREE.MeshStandardMaterial({
+        color: 0xe2e8f0,
+        roughness: 0.35,
+        metalness: 0.12,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: true
+      });
+      bridgeMaterials.push(curbMat);
+
+      // Submerged Foundation Pillar Material
+      const pillarMat = new THREE.MeshStandardMaterial({
+        color: 0x94a3b8,
+        roughness: 0.60,
+        metalness: 0.15,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: true
+      });
+      bridgeMaterials.push(pillarMat);
+
+      // Golden Trim Inlay Material
+      const goldTrimMat = new THREE.MeshStandardMaterial({
+        color: 0xd4af37,
+        roughness: 0.22,
+        metalness: 0.88,
+        emissive: 0x78350f,
+        emissiveIntensity: 0.25,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: true
+      });
+      bridgeMaterials.push(goldTrimMat);
+
+      // Japandi Lantern Bronze Material
+      const lanternBronzeMat = new THREE.MeshStandardMaterial({
+        color: 0x78350f,
+        roughness: 0.30,
+        metalness: 0.85,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: true
+      });
+      bridgeMaterials.push(lanternBronzeMat);
+
+      // Lantern Inner Opal Sphere Material (Pulsing 432 Hz warm light)
+      lanternOpalMat = new THREE.MeshStandardMaterial({
+        color: 0xfffbeb,
+        emissive: 0xfef08a,
+        emissiveIntensity: 1.4,
+        roughness: 0.15,
+        metalness: 0.1,
+        transparent: true,
+        opacity: 0.0
+      });
+      bridgeMaterials.push(lanternOpalMat);
+
+      // Sacred Spine Center Inlay Material (Continuous warm satin bronze/sandstone inlay, zero specular popping)
+      bridgeVeinMat = new THREE.MeshStandardMaterial({
+        color: 0xd4af37, // warm satin gold/bronze
+        roughness: 0.55,
+        metalness: 0.28,
+        emissive: 0x5a3e14,
+        emissiveIntensity: 0.12,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: true,
+        blending: THREE.NormalBlending
+      });
+      bridgeMaterials.push(bridgeVeinMat);
+
+      // A. Main Solid Bridge Deck (Width 5.6m, Thickness 0.28m, Length 240m from Z=+20 to Z=-220)
+      // Top walking surface elevated to Y=0.32m (32 cm above calm water Y=0.0, zero wave clipping)
+      const deckGeo = new THREE.BoxGeometry(5.6, 0.28, 240);
+      const deckMesh = new THREE.Mesh(deckGeo, bridgeDeckMat);
+      deckMesh.position.set(0, 0.18, -100);
+      deckMesh.receiveShadow = true;
+      bridgeGroup.add(deckMesh);
+
+      // B. Raised Solid Parapets / Curbstones on both sides (Width 0.38m, Height 0.22m, Top at Y=0.54m)
+      const curbGeo = new THREE.BoxGeometry(0.38, 0.22, 240);
+      const curbLeft = new THREE.Mesh(curbGeo, curbMat);
+      curbLeft.position.set(-2.61, 0.43, -100);
+      bridgeGroup.add(curbLeft);
+
+      const curbRight = new THREE.Mesh(curbGeo, curbMat);
+      curbRight.position.set(2.61, 0.43, -100);
+      bridgeGroup.add(curbRight);
+
+      // C. Golden Inlay Trim running along inner curb borders
+      const trimGeo = new THREE.BoxGeometry(0.06, 0.04, 240);
+      const trimLeft = new THREE.Mesh(trimGeo, goldTrimMat);
+      trimLeft.position.set(-2.40, 0.33, -100);
+      bridgeGroup.add(trimLeft);
+
+      const trimRight = new THREE.Mesh(trimGeo, goldTrimMat);
+      trimRight.position.set(2.40, 0.33, -100);
+      bridgeGroup.add(trimRight);
+
+      // D. Sacred Center Inlay Strip (Embedded into bridge deck, perfectly stable under all pitch angles)
+      const veinGeo = new THREE.BoxGeometry(0.38, 0.015, 240);
+      const veinMesh = new THREE.Mesh(veinGeo, bridgeVeinMat);
+      veinMesh.position.set(0, 0.326, -100);
+      bridgeGroup.add(veinMesh);
+
+      // E. Shore Ramp & Steps (Smooth transition at Z = 12 .. 22 connecting to shoreline terrain)
+      const rampGeo = new THREE.BoxGeometry(6.4, 0.35, 12);
+      const rampMesh = new THREE.Mesh(rampGeo, bridgeDeckMat);
+      rampMesh.position.set(0, 0.28, 16);
+      rampMesh.rotation.x = -0.025; // Gentle slope matching shoreline promontory
+      bridgeGroup.add(rampMesh);
+
+      // F. Heavy Submerged Foundation Pillars & Structural Cross-Beams
+      // Spaced every 14 meters along bridge length
+      const pillarGeo = new THREE.CylinderGeometry(0.38, 0.46, 5.2, 16);
+      const crossBeamGeo = new THREE.BoxGeometry(5.2, 0.40, 0.75);
+
+      // G. Japandi Stone Pedestal Lanterns
+      const lanternBaseGeo = new THREE.BoxGeometry(0.32, 0.16, 0.32);
+      const lanternCageGeo = new THREE.BoxGeometry(0.24, 0.28, 0.24);
+      const lanternOpalGeo = new THREE.SphereGeometry(0.09, 16, 16);
+      const lanternRoofGeo = new THREE.ConeGeometry(0.26, 0.12, 4);
+      lanternRoofGeo.rotateY(Math.PI / 4);
+
+      for (let z = 14.0; z >= -210.0; z -= 14.0) {
+        // Pillars extending from bridge bottom down to Y=-4.8m in lakebed
+        const pLeft = new THREE.Mesh(pillarGeo, pillarMat);
+        pLeft.position.set(-2.4, -2.3, z);
+        bridgeGroup.add(pLeft);
+
+        const pRight = new THREE.Mesh(pillarGeo, pillarMat);
+        pRight.position.set(2.4, -2.3, z);
+        bridgeGroup.add(pRight);
+
+        // Transverse stone arch / cross beam underneath deck
+        const beam = new THREE.Mesh(crossBeamGeo, pillarMat);
+        beam.position.set(0, -0.15, z);
+        bridgeGroup.add(beam);
+
+        // Pedestal Lanterns sitting firmly on the curbstones
+        [-2.61, 2.61].forEach(lx => {
+          const lBase = new THREE.Mesh(lanternBaseGeo, curbMat);
+          lBase.position.set(lx, 0.62, z);
+          bridgeGroup.add(lBase);
+
+          const lCage = new THREE.Mesh(lanternCageGeo, lanternBronzeMat);
+          lCage.position.set(lx, 0.84, z);
+          bridgeGroup.add(lCage);
+
+          const lOpal = new THREE.Mesh(lanternOpalGeo, lanternOpalMat);
+          lOpal.position.set(lx, 0.84, z);
+          bridgeGroup.add(lOpal);
+
+          const lRoof = new THREE.Mesh(lanternRoofGeo, curbMat);
+          lRoof.position.set(lx, 1.04, z);
+          bridgeGroup.add(lRoof);
+        });
+      }
+
+      scene.add(bridgeGroup);
+      whiteRoadMesh = bridgeGroup;
+      roadBeaconsGroup = bridgeGroup;
+
+      // 2. Floating Gold Pocket Watch (Rock-solid cameraRig anchor, ZERO jitter)
+      goldWatchGroup = new THREE.Group();
+      goldWatchGroup.visible = false;
+      // Anchor directly to cameraRig so it moves in 100% mechanical lockstep with the viewer
+      cameraRig.add(goldWatchGroup);
+      goldWatchGroup.position.set(0.0, -0.74, -1.18); // Hand/chest level (74cm below eye height, 1.18m forward)
+      goldWatchGroup.rotation.x = -0.38; // Tilt face upwards towards eyes
+
+      // Outer gold case
+      const goldPBR = new THREE.MeshStandardMaterial({
+        color: 0xf59e0b,
+        emissive: 0x78350f,
+        emissiveIntensity: 0.20,
+        metalness: 0.96,
+        roughness: 0.18
+      });
+
+      const caseBody = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.045, 36), goldPBR);
+      caseBody.rotation.x = Math.PI / 2;
+      goldWatchGroup.add(caseBody);
+
+      const caseRim = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.02, 16, 36), goldPBR);
+      goldWatchGroup.add(caseRim);
+
+      // Top crown & winding ring
+      const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.05, 16), goldPBR);
+      crown.position.set(0, 0.26, 0);
+      goldWatchGroup.add(crown);
+
+      const loopRing = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.012, 12, 24), goldPBR);
+      loopRing.position.set(0, 0.31, 0);
+      goldWatchGroup.add(loopRing);
+
+      // Procedural Canvas Dial with Roman Numerals
+      const dialCanvas = document.createElement('canvas');
+      dialCanvas.width = 512;
+      dialCanvas.height = 512;
+      const dCtx = dialCanvas.getContext('2d');
+
+      // Dial face design
+      const dGrad = dCtx.createRadialGradient(256, 256, 20, 256, 256, 250);
+      dGrad.addColorStop(0, '#ffffff');
+      dGrad.addColorStop(0.85, '#fef3c7');
+      dGrad.addColorStop(1, '#fde68a');
+      dCtx.fillStyle = dGrad;
+      dCtx.beginPath();
+      dCtx.arc(256, 256, 248, 0, Math.PI * 2);
+      dCtx.fill();
+
+      // Outer border rings
+      dCtx.strokeStyle = '#b45309';
+      dCtx.lineWidth = 6;
+      dCtx.stroke();
+      dCtx.beginPath();
+      dCtx.arc(256, 256, 235, 0, Math.PI * 2);
+      dCtx.lineWidth = 2;
+      dCtx.stroke();
+
+      // Roman Numerals
+      const romanNumerals = ['XII', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
+      dCtx.fillStyle = '#1c1917';
+      dCtx.font = 'bold 36px "Times New Roman", Georgia, serif';
+      dCtx.textAlign = 'center';
+      dCtx.textBaseline = 'middle';
+      for (let i = 0; i < 12; i++) {
+        const ang = (i / 12) * Math.PI * 2 - Math.PI / 2;
+        const rx = 256 + Math.cos(ang) * 190;
+        const ry = 256 + Math.sin(ang) * 190;
+        dCtx.fillText(romanNumerals[i], rx, ry);
+      }
+
+      // Minute ticks
+      for (let m = 0; m < 60; m++) {
+        const ang = (m / 60) * Math.PI * 2;
+        const r1 = (m % 5 === 0) ? 218 : 224;
+        const r2 = 232;
+        dCtx.beginPath();
+        dCtx.moveTo(256 + Math.cos(ang) * r1, 256 + Math.sin(ang) * r1);
+        dCtx.lineTo(256 + Math.cos(ang) * r2, 256 + Math.sin(ang) * r2);
+        dCtx.lineWidth = (m % 5 === 0) ? 3 : 1;
+        dCtx.stroke();
+      }
+
+      // Center gold emblem
+      dCtx.beginPath();
+      dCtx.arc(256, 256, 12, 0, Math.PI * 2);
+      dCtx.fillStyle = '#d97706';
+      dCtx.fill();
+
+      const dialTex = new THREE.CanvasTexture(dialCanvas);
+      const dialMat = new THREE.MeshBasicMaterial({ map: dialTex });
+      const dialMesh = new THREE.Mesh(new THREE.CircleGeometry(0.235, 36), dialMat);
+      dialMesh.position.z = 0.024;
+      goldWatchGroup.add(dialMesh);
+
+      // Rotating Hands
+      const handMat = new THREE.MeshBasicMaterial({ color: 0x1c1917 });
+      const hHour = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.11, 0.005), handMat);
+      hHour.position.set(0, 0.045, 0.026);
+      const hourPivot = new THREE.Group();
+      hourPivot.add(hHour);
+      goldWatchGroup.add(hourPivot);
+      watchHands.hour = hourPivot;
+
+      const hMinute = new THREE.Mesh(new THREE.BoxGeometry(0.010, 0.16, 0.005), handMat);
+      hMinute.position.set(0, 0.07, 0.028);
+      const minPivot = new THREE.Group();
+      minPivot.add(hMinute);
+      goldWatchGroup.add(minPivot);
+      watchHands.minute = minPivot;
+
+      // Transparent watch crystal glass
+      const glassMat = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        transmission: 0.92,
+        roughness: 0.05,
+        ior: 1.5,
+        transparent: true,
+        opacity: 0.4
+      });
+      const glassMesh = new THREE.Mesh(new THREE.CircleGeometry(0.238, 36), glassMat);
+      glassMesh.position.z = 0.030;
+      goldWatchGroup.add(glassMesh);
+    }
+
+    /* --- 8. VFX 4: SHIFTING LIGHT TUNNEL & FUTURE FEAR SPHERES (337s - 402s) --- */
+    function buildVFX4LightTunnelAndFutureFears() {
+      // 1. Shifting Volumetric Light Tunnel
+      lightTunnelGroup = new THREE.Group();
+      lightTunnelGroup.visible = false;
+
+      const tunnelGeo = new THREE.CylinderGeometry(5.2, 5.2, 240, 36, 1, true);
+      tunnelGeo.rotateX(Math.PI / 2);
+
+      const tunnelMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0.0 },
+          uOpacity: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            vec4 wp = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = wp.xyz;
+            gl_Position = projectionMatrix * viewMatrix * wp;
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform float uOpacity;
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+
+          // Iridescent shifting spectral waves (Turquoise -> Gold -> Magenta)
+          vec3 tunnelColor(float t) {
+            vec3 c0 = vec3(0.06, 0.82, 0.75); // Turquoise
+            vec3 c1 = vec3(0.98, 0.78, 0.22); // Solar Gold
+            vec3 c2 = vec3(0.85, 0.25, 0.75); // Radiant Magenta
+            vec3 c3 = vec3(0.35, 0.55, 0.98); // Sapphire
+            float s = fract(t);
+            if (s < 0.33) return mix(c0, c1, s * 3.0);
+            if (s < 0.66) return mix(c1, c2, (s - 0.33) * 3.0);
+            return mix(c2, c3, (s - 0.66) * 3.0);
+          }
+
+          void main() {
+            float spiral = sin(vUv.x * 32.0 + vWorldPosition.z * 0.15 - uTime * 2.5);
+            float colorPhase = vWorldPosition.z * 0.012 - uTime * 0.18;
+            vec3 col = tunnelColor(colorPhase) * (0.85 + 0.15 * spiral);
+
+            // Arch fade (fade out at floor level Y=0)
+            float archFade = smoothstep(0.0, 1.8, vWorldPosition.y);
+            float alpha = uOpacity * (0.35 + 0.25 * spiral) * archFade;
+            gl_FragColor = vec4(col, alpha);
+          }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.BackSide
+      });
+
+      lightTunnelMesh = new THREE.Mesh(tunnelGeo, tunnelMat);
+      lightTunnelMesh.position.set(0, 3.2, -40);
+      lightTunnelGroup.add(lightTunnelMesh);
+      scene.add(lightTunnelGroup);
+
+      // 2. Future Fears (Dark shadow orbs that get attracted and absorbed into pocket watch)
+      futureFearSpheresGroup = new THREE.Group();
+      futureFearSpheresGroup.visible = false;
+      const fearCount = 28;
+      for (let i = 0; i < fearCount; i++) {
+        const fearGeo = new THREE.SphereGeometry(0.28 + Math.random() * 0.25, 16, 16);
+        const fearMat = new THREE.MeshBasicMaterial({
+          color: 0x1e1b4b,
+          transparent: true,
+          opacity: 0.85
+        });
+        const fMesh = new THREE.Mesh(fearGeo, fearMat);
+        fMesh.userData = {
+          initPos: new THREE.Vector3((Math.random() - 0.5) * 8.0, 1.2 + Math.random() * 2.5, -45.0 - Math.random() * 35.0),
+          speed: 14.0 + Math.random() * 10.0,
+          phase: Math.random() * Math.PI * 2.0,
+          absorbed: false
+        };
+        fMesh.position.copy(fMesh.userData.initPos);
+        futureFearSpheresGroup.add(fMesh);
+      }
+      scene.add(futureFearSpheresGroup);
+    }
+
+    /* --- 9. VFX 5: EMERALD-VIOLET SPHERE & PROTECTIVE MANTLE (403s - 456.78s) --- */
+    function buildVFX5EnergySphereAndMantle() {
+      // 1. Emerald-Violet Metamorphosis Energy Sphere
+      const sphereGeo = new THREE.SphereGeometry(0.35, 36, 36);
+      const sphereMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0.0 },
+          uOpacity: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          void main() {
+            vec4 wp = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = wp.xyz;
+            vNormal = normalize(mat3(modelMatrix) * normal);
+            gl_Position = projectionMatrix * viewMatrix * wp;
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform float uOpacity;
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+
+          void main() {
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 N = normalize(vNormal);
+
+            // Core emerald to peripheral celestial violet Fresnel
+            float fresnel = pow(1.0 - abs(dot(V, N)), 2.0);
+            vec3 emeraldCore = vec3(0.06, 0.85, 0.50);
+            vec3 violetHalo = vec3(0.65, 0.35, 0.98);
+            vec3 col = mix(emeraldCore, violetHalo, fresnel);
+
+            float ripple = 0.90 + 0.10 * sin(uTime * 4.5);
+            gl_FragColor = vec4(col * ripple * 1.5, uOpacity * (0.75 + 0.25 * fresnel));
+          }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      energySphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+      energySphereMesh.position.set(0.0, -0.74, -1.18);
+      energySphereMesh.visible = false;
+      cameraRig.add(energySphereMesh);
+
+      // 2. Protective Mantle Dome (Expands concentrically to envelop observer)
+      const mantleGeo = new THREE.SphereGeometry(3.6, 36, 36);
+      const mantleMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0.0 },
+          uOpacity: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          varying vec3 vViewPosition;
+          void main() {
+            vec4 wp = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = wp.xyz;
+            vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+            vViewPosition = mvPos.xyz;
+            gl_Position = projectionMatrix * mvPos;
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform float uOpacity;
+          varying vec3 vWorldPosition;
+          varying vec3 vViewPosition;
+
+          void main() {
+            float viewRadius = length(vViewPosition.xy) / max(0.1, -vViewPosition.z);
+            float rim = smoothstep(0.20, 0.85, viewRadius);
+
+            vec3 emerald = vec3(0.06, 0.88, 0.55);
+            vec3 gold = vec3(0.98, 0.82, 0.22);
+            vec3 violet = vec3(0.68, 0.35, 0.98);
+
+            float wave = 0.82 + 0.18 * sin(vWorldPosition.y * 3.0 - uTime * 2.5);
+            vec3 col = mix(emerald, gold, 0.5 + 0.5 * sin(vWorldPosition.y * 1.8 - uTime * 2.0));
+            col = mix(col, violet, rim * 0.75) * wave;
+
+            float alpha = uOpacity * (0.15 + 0.55 * rim);
+            gl_FragColor = vec4(col * 1.35, alpha);
+          }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.BackSide
+      });
+
+      protectiveMantleMesh = new THREE.Mesh(mantleGeo, mantleMat);
+      protectiveMantleMesh.position.set(CAMERA_INIT_X, CAMERA_INIT_Y, CAMERA_INIT_Z);
+      protectiveMantleMesh.visible = false;
+      scene.add(protectiveMantleMesh);
+
+      // Protective Mantle Stardust Particles (150 shimmering motes surrounding user)
+      const stardustCount = 150;
+      const sdGeo = new THREE.BufferGeometry();
+      const sdPos = new Float32Array(stardustCount * 3);
+      const sdCol = new Float32Array(stardustCount * 3);
+      for (let i = 0; i < stardustCount; i++) {
+        const u = Math.random();
+        const v = Math.random();
+        const theta = u * 2.0 * Math.PI;
+        const phi = Math.acos(2.0 * v - 1.0);
+        const r = 1.0 + Math.random() * 2.2;
+        sdPos[i * 3 + 0] = r * Math.sin(phi) * Math.cos(theta);
+        sdPos[i * 3 + 1] = r * Math.cos(phi) * 0.8;
+        sdPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+
+        const isGold = Math.random() > 0.5;
+        sdCol[i * 3 + 0] = isGold ? 0.98 : 0.10;
+        sdCol[i * 3 + 1] = isGold ? 0.85 : 0.92;
+        sdCol[i * 3 + 2] = isGold ? 0.25 : 0.60;
+      }
+      sdGeo.setAttribute('position', new THREE.BufferAttribute(sdPos, 3));
+      sdGeo.setAttribute('color', new THREE.BufferAttribute(sdCol, 3));
+      const sdMat = new THREE.PointsMaterial({
+        size: 3.8,
+        map: particleGlowTex,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      mantleStardust = new THREE.Points(sdGeo, sdMat);
+      mantleStardust.visible = false;
+      scene.add(mantleStardust);
+    }
+
+    /* --- 10. 3D SUBTITLE BILLBOARD & VR RETICLE --- */
+    function build3DSubtitleBillboard() {
+      billboardCanvas = document.createElement('canvas');
+      billboardCanvas.width = 2048;
+      billboardCanvas.height = 512;
+      billboardContext = billboardCanvas.getContext('2d');
+
+      billboardTexture = new THREE.CanvasTexture(billboardCanvas);
+      billboardTexture.minFilter = THREE.LinearFilter;
+      billboardTexture.magFilter = THREE.LinearFilter;
+      billboardTexture.generateMipmaps = false;
+
+      const billboardGeo = new THREE.PlaneGeometry(3.2, 0.8);
+      const billboardMat = new THREE.MeshBasicMaterial({
+        map: billboardTexture,
+        transparent: true,
+        opacity: 1.0,
+        depthTest: false,
+        depthWrite: false,
+        fog: false
+      });
+      billboardMesh = new THREE.Mesh(billboardGeo, billboardMat);
+      billboardMesh.renderOrder = 9999;
+      // Positioned safely higher up (Y = -0.16, Z = -2.8) so Cardboard lenses never cut text off at bottom
+      billboardMesh.position.set(0, -0.16, -2.8);
+      billboardMesh.visible = false;
+      camera.add(billboardMesh);
+    }
+
+    let lastRenderedSubtitleText = null;
+    function update3DSubtitle(text) {
+      if (text === lastRenderedSubtitleText) return;
+      lastRenderedSubtitleText = text;
+      if (!billboardContext) return;
+      billboardContext.clearRect(0, 0, billboardCanvas.width, billboardCanvas.height);
+      if (!text) {
+        billboardTexture.needsUpdate = true;
+        return;
+      }
+
+      billboardContext.save();
+      billboardContext.shadowColor = 'rgba(0, 0, 0, 0.95)';
+      billboardContext.shadowBlur = 12;
+      billboardContext.shadowOffsetX = 0;
+      billboardContext.shadowOffsetY = 2;
+      billboardContext.fillStyle = '#FFFFFF';
+      billboardContext.font = 'bold 54px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      billboardContext.textAlign = 'center';
+      billboardContext.textBaseline = 'middle';
+
+      // Wrap text inside 1860px width
+      const words = text.split(' ');
+      let lines = [];
+      let currentLine = words[0];
+      for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        const width = billboardContext.measureText(currentLine + " " + word).width;
+        if (width < 1860) {
+          currentLine += " " + word;
+        } else {
+          lines.push(currentLine);
+          currentLine = word;
+        }
+      }
+      lines.push(currentLine);
+
+      const lineHeight = 72;
+      const totalH = lines.length * lineHeight;
+      const startY = 256 - (totalH / 2) + (lineHeight / 2);
+      for (let k = 0; k < lines.length; k++) {
+        billboardContext.fillText(lines[k], 1024, startY + (k * lineHeight));
+      }
+      billboardContext.restore();
+      billboardTexture.needsUpdate = true;
+    }
+
+    /* --- VR GAZE RETICLE --- */
+    function initVRReticle() {
+      const reticleGeo = new THREE.RingGeometry(0.016, 0.024, 32);
+      const reticleMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.85,
+        depthTest: false,
+        depthWrite: false
+      });
+      vrReticleMesh = new THREE.Mesh(reticleGeo, reticleMat);
+      vrReticleMesh.position.set(0, 0, -2.0); // 2.0 meters focal depth
+
+      // Radial Dwell Progress Ring
+      const progressGeo = new THREE.RingGeometry(0.026, 0.034, 32, 1, 0, 0);
+      const progressMat = new THREE.MeshBasicMaterial({
+        color: 0x10b981,
+        transparent: true,
+        opacity: 0.95,
+        depthTest: false,
+        depthWrite: false
+      });
+      vrReticleProgressMesh = new THREE.Mesh(progressGeo, progressMat);
+      vrReticleProgressMesh.position.set(0, 0, -1.99);
+      vrReticleProgressMesh.visible = false;
+
+      camera.add(vrReticleMesh);
+      camera.add(vrReticleProgressMesh);
+    }
+
+    function setReticleProgress(progressFraction) {
+      if (!vrReticleProgressMesh) return;
+      if (progressFraction <= 0.01) {
+        vrReticleProgressMesh.visible = false;
+        return;
+      }
+      vrReticleProgressMesh.visible = true;
+      vrReticleProgressMesh.geometry.dispose();
+      vrReticleProgressMesh.geometry = new THREE.RingGeometry(0.026, 0.034, 32, 1, 0, progressFraction * Math.PI * 2.0);
+    }
+
+    /* --- 11. IN-VR 3D COMPLETION POPUP (Cardboard Safe Gaze-Dwell Interaction) --- */
+    function buildVRCompletionPopup() {
+      vrCompletionPopupGroup = new THREE.Group();
+      vrCompletionPopupGroup.position.set(0, 0, -2.4);
+      vrCompletionPopupGroup.visible = false;
+      camera.add(vrCompletionPopupGroup);
+
+      // Card Background
+      const cardCanvas = document.createElement('canvas');
+      cardCanvas.width = 1024;
+      cardCanvas.height = 768;
+      const cCtx = cardCanvas.getContext('2d');
+
+      // Rounded Card Background
+      cCtx.fillStyle = 'rgba(7, 18, 36, 0.94)';
+      cCtx.strokeStyle = 'rgba(16, 185, 129, 0.65)';
+      cCtx.lineWidth = 8;
+      cCtx.beginPath();
+      cCtx.roundRect(24, 24, 976, 720, 36);
+      cCtx.fill();
+      cCtx.stroke();
+
+      // Card Typography
+      cCtx.fillStyle = '#FFFFFF';
+      cCtx.font = 'bold 54px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      cCtx.textAlign = 'center';
+      cCtx.fillText('SESSIONE COMPLETATA', 512, 140);
+
+      cCtx.fillStyle = '#34d399';
+      cCtx.font = '36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      cCtx.fillText('Meditazione Generale • Acqua • 432 Hz', 512, 210);
+
+      cCtx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      cCtx.font = '38px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      cCtx.fillText('Durata: 07:36  |  XP Guadagnati: +150', 512, 330);
+
+      cCtx.fillStyle = '#fbbf24';
+      cCtx.font = 'italic 32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      cCtx.fillText('Mantello di luce attivo nella tua consapevolezza', 512, 410);
+
+      const cardTex = new THREE.CanvasTexture(cardCanvas);
+      const cardMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.5), new THREE.MeshBasicMaterial({
+        map: cardTex,
+        transparent: true,
+        depthTest: false
+      }));
+      vrCompletionPopupGroup.add(cardMesh);
+
+      // 3D Interactive Gaze Buttons: "RIPETI" and "ESCI"
+      function createVRButton(text, bgHex, xPos, actionType) {
+        const bCanvas = document.createElement('canvas');
+        bCanvas.width = 512;
+        bCanvas.height = 180;
+        const bCtx = bCanvas.getContext('2d');
+
+        bCtx.fillStyle = bgHex;
+        bCtx.beginPath();
+        bCtx.roundRect(10, 10, 492, 160, 28);
+        bCtx.fill();
+        bCtx.strokeStyle = '#FFFFFF';
+        bCtx.lineWidth = 4;
+        bCtx.stroke();
+
+        bCtx.fillStyle = '#FFFFFF';
+        bCtx.font = 'bold 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        bCtx.textAlign = 'center';
+        bCtx.textBaseline = 'middle';
+        bCtx.fillText(text, 256, 90);
+
+        const bTex = new THREE.CanvasTexture(bCanvas);
+        const bMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.82, 0.28), new THREE.MeshBasicMaterial({
+          map: bTex,
+          transparent: true,
+          depthTest: false
+        }));
+        bMesh.position.set(xPos, -0.42, 0.04);
+        bMesh.userData = { isGazeTarget: true, action: actionType };
+        gazeInteractables.push(bMesh);
+        return bMesh;
+      }
+
+      const btnRepeat = createVRButton('RICOMINCIA', 'rgba(255, 255, 255, 0.25)', -0.46, 'restart');
+      const btnExitVR = createVRButton('TORNA A GUIDO', 'rgba(16, 185, 129, 0.85)', 0.46, 'exit');
+      vrCompletionPopupGroup.add(btnRepeat);
+      vrCompletionPopupGroup.add(btnExitVR);
+    }
+
+    /* ======================================================================
+       MASTER TIMELINE ENGINE (16 Scene Narrative & VFX Transitions)
+       ====================================================================== */
+    function updateExperienceTimeline(timeSec, deltaSec) {
+      // 1. Update Subtitles (both 2D Monoscopic & 3D VR Billboard)
+      updateSubtitlesForTime(timeSec);
+
+      // 2. VFX 1: Emerald Column Trajectory & Breathing Animation (0s - 165s)
+      if (timeSec < 165.0) {
+        emeraldColumnGroup.visible = true;
+        const colProg = Math.min(1.0, timeSec / 2.5); // Fade in over 2.5s
+        const fadeOut = Math.min(1.0, Math.max(0.0, (165.0 - timeSec) / 4.0));
+        const colAlpha = colProg * fadeOut;
+
+        innerColumnMesh.material.uniforms.uOpacity.value = colAlpha * 0.92;
+        outerColumnMesh.material.uniforms.uOpacity.value = colAlpha * 0.70;
+        innerColumnMesh.material.uniforms.uTime.value = timeSec;
+        outerColumnMesh.material.uniforms.uTime.value = timeSec;
+
+        // 8.0s Sine Breath Cycle (4s Expansion Inhale, 4s Contraction Exhale)
+        const breathScale = 1.0 + 0.18 * Math.sin(timeSec * (Math.PI * 2.0 / 8.0));
+        emeraldColumnGroup.scale.set(breathScale, 1.0, breathScale);
+
+        // Water reflection and ground illumination
+        if (waterMaterial && waterMaterial.uniforms) {
+          waterMaterial.uniforms.uEmeraldColIntensity.value = colAlpha * breathScale;
+        }
+        if (emeraldPointLight) {
+          emeraldPointLight.intensity = colAlpha * 1.5;
+        }
+
+        // Column Spatial Trajectory:
+        // Scene 1 (0s - 16s): at lake center (Z = -35.0)
+        // Scene 2-3 (16s - 28s): smoothly advances forward along Z to 12.0 (enveloping user)
+        // Scene 4-5 (66s - 94s): retreats back to lake (Z = -35.0)
+        if (timeSec < 16.0) {
+          emeraldColumnGroup.position.set(0, 50, -35.0);
+        } else if (timeSec < 28.0) {
+          const tAdv = (timeSec - 16.0) / 12.0;
+          const easeAdv = tAdv * tAdv * (3.0 - 2.0 * tAdv);
+          const curZ = -35.0 + (CAMERA_INIT_Z - -35.0) * easeAdv;
+          emeraldColumnGroup.position.set(0, 50, curZ);
+        } else if (timeSec < 66.0) {
+          emeraldColumnGroup.position.set(0, 50, CAMERA_INIT_Z);
+          // Scene 3: gentle sinusoidal body swaying tilt (+-0.8 deg roll)
+          const roll = Math.sin(timeSec * (Math.PI * 2.0 / 8.0)) * 0.014;
+          cameraRig.rotation.z = roll;
+        } else if (timeSec < 94.0) {
+          cameraRig.rotation.z = 0;
+          const tRet = (timeSec - 66.0) / 28.0;
+          const easeRet = tRet * tRet * (3.0 - 2.0 * tRet);
+          const curZ = CAMERA_INIT_Z + (-35.0 - CAMERA_INIT_Z) * easeRet;
+          emeraldColumnGroup.position.set(0, 50, curZ);
+        } else {
+          emeraldColumnGroup.position.set(0, 50, -35.0);
+        }
+
+        // Sparkle Particles Management (Scene 4-5: 66s - 165s)
+        if (timeSec >= 66.0 && timeSec < 165.0) {
+          sparkleParticles.visible = true;
+          const sFadeIn = Math.min(1.0, (timeSec - 66.0) / 4.0);
+          const sFadeOut = Math.min(1.0, (165.0 - timeSec) / 5.0);
+          sparkleMat.opacity = sFadeIn * sFadeOut * 0.90;
+
+          const pPos = sparkleGeo.attributes.position.array;
+          const pCols = sparkleGeo.attributes.color.array;
+          const pSeeds = sparkleGeo.attributes.aSeed.array;
+
+          // In Scene 5 (95s - 165s), particles turn into dark smoke/amber (fears/toxins) and flow to column
+          const isTransmuting = timeSec >= 95.0;
+          const transmuteProg = isTransmuting ? Math.min(1.0, (timeSec - 95.0) / 25.0) : 0.0;
+
+          for (let i = 0; i < 350; i++) {
+            const spd = pSeeds[i * 4 + 0];
+            const rad = pSeeds[i * 4 + 1];
+            let ang = pSeeds[i * 4 + 2] + timeSec * 0.25 * spd;
+            
+            if (!isTransmuting) {
+              // Gentle swirling around user
+              pPos[i * 3 + 0] = Math.cos(ang) * rad;
+              pPos[i * 3 + 1] = 0.5 + Math.sin(timeSec * 1.5 + pSeeds[i * 4 + 3]) * 1.5 + 1.2;
+              pPos[i * 3 + 2] = CAMERA_INIT_Z + Math.sin(ang) * rad;
+
+              // Radiant emerald-gold
+              pCols[i * 3 + 0] = 0.20;
+              pCols[i * 3 + 1] = 0.95;
+              pCols[i * 3 + 2] = 0.65;
+            } else {
+              // Attracted towards emerald column at Z = -35.0
+              const tFlow = Math.min(1.0, (timeSec - 95.0 + i * 0.12) / 45.0);
+              const curZ = CAMERA_INIT_Z + (-35.0 - CAMERA_INIT_Z) * tFlow;
+              pPos[i * 3 + 0] = Math.cos(ang) * (rad * (1.0 - tFlow * 0.6));
+              pPos[i * 3 + 1] = 1.0 + Math.sin(timeSec * 2.0 + i) * 1.2;
+              pPos[i * 3 + 2] = curZ;
+
+              // Color transmuting to smoky dark amber and dissolving
+              pCols[i * 3 + 0] = 0.20 * (1.0 - transmuteProg) + 0.35 * transmuteProg;
+              pCols[i * 3 + 1] = 0.95 * (1.0 - transmuteProg) + 0.18 * transmuteProg;
+              pCols[i * 3 + 2] = 0.65 * (1.0 - transmuteProg) + 0.05 * transmuteProg;
+            }
+          }
+          sparkleGeo.attributes.position.needsUpdate = true;
+          sparkleGeo.attributes.color.needsUpdate = true;
+        } else {
+          sparkleParticles.visible = false;
+        }
+      } else {
+        emeraldColumnGroup.visible = false;
+        sparkleParticles.visible = false;
+        if (emeraldPointLight) emeraldPointLight.intensity = 0.0;
+        if (waterMaterial && waterMaterial.uniforms) waterMaterial.uniforms.uEmeraldColIntensity.value = 0.0;
+      }
+
+      // 3. VFX 2: Njord Flight & 7 Chakra Trail (166s - 247s)
+      if (timeSec >= 165.0 && timeSec < 248.0) {
+        njordGroup.visible = true;
+        const nFadeIn = Math.min(1.0, (timeSec - 165.0) / 4.0);
+        const nFadeOut = Math.min(1.0, (248.0 - timeSec) / 4.0);
+        const nAlpha = nFadeIn * nFadeOut;
+
+        // Advance skeletal flight animation via AnimationMixer
+        if (dragonMixer) {
+          const dt = (typeof deltaSec === 'number' && deltaSec > 0 && deltaSec < 0.2) ? deltaSec : 0.016;
+          dragonMixer.update(dt * 1.15);
+        }
+
+        // Procedural natural tucked flight posture (aerodynamic folded legs along belly and tail)
+        if (dragonBones && dragonModel) {
+          // Forelegs: tucked neatly under chest/sternum
+          const lArm = dragonBones['L_UpperArm'];
+          const rArm = dragonBones['R_UpperArm'];
+          const lFore = dragonBones['L_Forearm'];
+          const rFore = dragonBones['R_Forearm'];
+          const lHand = dragonBones['L_Hand'];
+          const rHand = dragonBones['R_Hand'];
+          
+          if (lArm) { lArm.rotateZ(0.65); lArm.rotateX(0.25); }
+          if (rArm) { rArm.rotateZ(0.65); rArm.rotateX(-0.25); }
+          if (lFore) { lFore.rotateZ(-0.95); }
+          if (rFore) { rFore.rotateZ(-0.95); }
+          if (lHand) { lHand.rotateZ(0.40); }
+          if (rHand) { rHand.rotateZ(0.40); }
+
+          // Hindlegs: folded aerodynamically along flanks and tail
+          const lThigh = dragonBones['L_Thigh'];
+          const rThigh = dragonBones['R_Thigh'];
+          const lCalf = dragonBones['L_Calf'];
+          const rCalf = dragonBones['R_Calf'];
+          const lHorse = dragonBones['L_HorseLink'];
+          const rHorse = dragonBones['R_HorseLink'];
+          const lFoot = dragonBones['L_Foot'];
+          const rFoot = dragonBones['R_Foot'];
+
+          if (lThigh) { lThigh.rotateZ(-1.15); lThigh.rotateX(-0.15); }
+          if (rThigh) { rThigh.rotateZ(-1.15); rThigh.rotateX(0.15); }
+          if (lCalf) { lCalf.rotateZ(0.70); }
+          if (rCalf) { rCalf.rotateZ(0.70); }
+          if (lHorse) { lHorse.rotateZ(-0.45); }
+          if (rHorse) { rHorse.rotateZ(-0.45); }
+          if (lFoot) { lFoot.rotateZ(0.35); }
+          if (rFoot) { rFoot.rotateZ(0.35); }
+        }
+
+        // Njord Flight Path with smooth banking into curves (+Z forward, zero GC allocations)
+        const flightSpline = njordGroup.userData.flightSpline;
+        const uFlight = Math.max(0.0, Math.min(1.0, (timeSec - 166.0) / 81.0));
+
+        let dPos = _vTemp1;
+        let dTan = _vTemp2;
+        flightSpline.getPointAt(uFlight, dPos);
+        flightSpline.getTangentAt(uFlight, dTan).normalize();
+
+        const tNext = Math.min(1.0, uFlight + 0.015);
+        flightSpline.getTangentAt(tNext, _nextTan).normalize();
+        _tempNormal.crossVectors(dTan, _upVec).normalize();
+        _curvature.copy(_nextTan).sub(dTan);
+        const bankAngle = THREE.MathUtils.clamp(-_curvature.dot(_tempNormal) * 5.5, -0.65, 0.65);
+
+        realDragonRoot.position.copy(dPos);
+        _targetQuat.setFromUnitVectors(_forwardZ, dTan);
+        _bankQuat.setFromAxisAngle(dTan, bankAngle);
+        _targetQuat.premultiply(_bankQuat);
+        realDragonRoot.quaternion.copy(_targetQuat);
+
+        // Past clouds visibility (active when Njord approaches Z > 12: uFlight > 0.50)
+        if (uFlight >= 0.50 && uFlight <= 0.92) {
+          pastCloudsGroup.visible = true;
+          const tPast = (uFlight - 0.50) / 0.42;
+          if (pastCloudsGroup.userData && pastCloudsGroup.userData.material) {
+            const cloudFade = Math.max(0.0, 1.0 - tPast * 1.5);
+            pastCloudsGroup.userData.material.opacity = cloudFade * 0.85;
+          }
+        } else {
+          pastCloudsGroup.visible = false;
+        }
+
+        // Update 7 Chakra Rainbow Ribbon Trail
+        if (chakraRibbonMesh && chakraRibbonMesh.material.uniforms) {
+          chakraRibbonMesh.material.uniforms.uTime.value = timeSec;
+          chakraRibbonMesh.material.uniforms.uAlpha.value = nAlpha * 0.95;
+          chakraCurtainMesh.material.uniforms.uTime.value = timeSec;
+          chakraCurtainMesh.material.uniforms.uAlpha.value = nAlpha * 0.85;
+
+          const trailArr = chakraRibbonMesh.geometry.attributes.position.array;
+          const curtainArr = chakraCurtainMesh.geometry.attributes.position.array;
+
+          for (let s = 0; s < 75; s++) {
+            const uLag = Math.max(0.0, uFlight - (s * 0.0032 + 0.012));
+            flightSpline.getPointAt(uLag, _trailPt);
+            flightSpline.getTangentAt(uLag, _trailTan).normalize();
+            _trailNorm.crossVectors(_trailTan, _upVec).normalize();
+
+            const sFactor = s / 74.0;
+            const trailEnvelope = Math.sin(Math.pow(sFactor, 0.45) * Math.PI);
+            const trailWidth = 3.2 + trailEnvelope * 18.0;
+            const curtainHeight = 2.0 + trailEnvelope * 10.0;
+            const ribbonWave = Math.sin(timeSec * 2.8 - s * 0.22) * 0.45;
+
+            for (let w = 0; w < 9; w++) {
+              const wFrac = (w / 8.0) - 0.5;
+              const idx = (s * 9 + w) * 3;
+              const latX = _trailNorm.x * (wFrac * trailWidth);
+              const latZ = _trailNorm.z * (wFrac * trailWidth);
+
+              trailArr[idx + 0] = _trailPt.x + latX;
+              trailArr[idx + 1] = _trailPt.y + ribbonWave;
+              trailArr[idx + 2] = _trailPt.z + latZ;
+
+              curtainArr[idx + 0] = _trailPt.x + latX * 0.35;
+              curtainArr[idx + 1] = _trailPt.y + (w / 8.0) * curtainHeight;
+              curtainArr[idx + 2] = _trailPt.z + latZ * 0.35;
+            }
+          }
+          chakraRibbonMesh.geometry.attributes.position.needsUpdate = true;
+          chakraCurtainMesh.geometry.attributes.position.needsUpdate = true;
+        }
+      } else {
+        njordGroup.visible = false;
+        pastCloudsGroup.visible = false;
+      }
+
+      // 4. VFX 3: Volumetric 3D Stone Bridge & Floating Gold Pocket Watch (247s - 403.5s)
+      if (timeSec >= 247.0 && timeSec < 403.5) {
+        if (bridgeGroup) {
+          bridgeGroup.visible = true;
+          const roadFadeIn = Math.min(1.0, (timeSec - 247.0) / 4.0);
+          // Seamless 3.0-second crossfade starting at 400.5s up to 403.5s (zero sudden pop!)
+          const roadFadeOut = (timeSec >= 400.5) ? Math.max(0.0, (403.5 - timeSec) / 3.0) : 1.0;
+          const bridgeAlpha = roadFadeIn * roadFadeOut;
+
+          if (bridgeMaterials) {
+            bridgeMaterials.forEach(m => {
+              if (m && m.opacity !== undefined) {
+                m.opacity = bridgeAlpha * 0.98;
+              }
+            });
+          }
+          if (bridgeVeinMat) {
+            bridgeVeinMat.opacity = bridgeAlpha * 0.98;
+            bridgeVeinMat.emissiveIntensity = 0.12 * bridgeAlpha;
+          }
+          if (lanternOpalMat) {
+            lanternOpalMat.emissiveIntensity = (1.2 + 0.45 * Math.sin(timeSec * 2.1)) * bridgeAlpha;
+          }
+        }
+
+        // Gold Pocket Watch (Scene 9-13: 291s - 402.5s) - Rigidly anchored to cameraRig, ZERO jitter
+        if (timeSec >= 291.0 && timeSec < 402.5) {
+          goldWatchGroup.visible = true;
+          const watchFadeOut = (timeSec >= 400.0) ? Math.max(0.0, (402.5 - timeSec) / 2.5) : 1.0;
+          goldWatchGroup.scale.setScalar(watchFadeOut);
+          if (watchHands.hour) watchHands.hour.rotation.z = -timeSec * 0.12;
+          if (watchHands.minute) watchHands.minute.rotation.z = -timeSec * 1.40;
+
+          // Gentle organic hovering bob in local Y
+          const watchBob = Math.sin(timeSec * 1.8) * 0.015;
+          goldWatchGroup.position.set(0.0, -0.74 + watchBob, -1.18);
+        } else {
+          goldWatchGroup.visible = false;
+        }
+      } else {
+        if (bridgeGroup) bridgeGroup.visible = false;
+        goldWatchGroup.visible = false;
+      }
+
+      // 5. VFX 4: Shifting Light Tunnel, Travel & Future Fears (337s - 402s)
+      if (timeSec >= 337.0 && timeSec < 403.0) {
+        lightTunnelGroup.visible = true;
+        const tFadeIn = Math.min(1.0, (timeSec - 337.0) / 4.0);
+        const tFadeOut = Math.min(1.0, (403.0 - timeSec) / 4.0);
+        lightTunnelMesh.material.uniforms.uOpacity.value = tFadeIn * tFadeOut * 0.85;
+        lightTunnelMesh.material.uniforms.uTime.value = timeSec;
+
+        // Scene 12: Smooth non-jerk camera travel forward along stone bridge (353s - 372s)
+        if (timeSec >= 353.0 && timeSec < 372.0) {
+          const tWalk = (timeSec - 353.0) / 19.0;
+          const easeWalk = tWalk * tWalk * (3.0 - 2.0 * tWalk);
+          const curCamZ = CAMERA_INIT_Z + (-8.0 - CAMERA_INIT_Z) * easeWalk;
+          cameraRig.position.set(CAMERA_INIT_X, CAMERA_INIT_Y, curCamZ);
+        } else if (timeSec >= 372.0) {
+          cameraRig.position.set(CAMERA_INIT_X, CAMERA_INIT_Y, -8.0);
+        }
+
+        // Scene 13: Future Fears Absorption into Pocket Watch (372s - 402s)
+        if (timeSec >= 372.0 && timeSec < 402.0) {
+          futureFearSpheresGroup.visible = true;
+          const fears = futureFearSpheresGroup.children;
+          goldWatchGroup.getWorldPosition(_vTempWatchPos);
+          const watchPos = _vTempWatchPos;
+
+          fears.forEach((f, idx) => {
+            const data = f.userData;
+            const fProg = Math.min(1.0, (timeSec - 372.0 + idx * 0.8) / 22.0);
+            if (fProg < 1.0) {
+              // Spiral vortex into world watch position
+              const spiralAng = data.phase + fProg * Math.PI * 6.0;
+              const curDist = (1.0 - fProg) * 35.0;
+              f.position.set(
+                watchPos.x + Math.cos(spiralAng) * (curDist * 0.15),
+                watchPos.y + Math.sin(spiralAng) * (curDist * 0.15),
+                watchPos.z - curDist
+              );
+              f.scale.setScalar(Math.max(0.01, 1.0 - fProg * 0.85));
+            } else {
+              // Absorbed!
+              f.scale.setScalar(0.001);
+            }
+          });
+        } else {
+          futureFearSpheresGroup.visible = false;
+        }
+      } else {
+        lightTunnelGroup.visible = false;
+        futureFearSpheresGroup.visible = false;
+      }
+
+      // 6. VFX 5: Emerald-Violet Sphere & Protective Mantle (400.5s - 456.78s)
+      if (timeSec >= 400.5) {
+        // Metamorphosis: Watch dissolves into Energy Sphere with soft organic crescendo
+        energySphereMesh.visible = (timeSec < 442.0);
+
+        energySphereMesh.material.uniforms.uTime.value = timeSec;
+        energySphereMesh.position.set(0.0, -0.74, -1.18);
+
+        if (timeSec < 439.0) {
+          // 3.0 second organic crescendo from 400.5s to 403.5s
+          const sFadeIn = Math.min(1.0, (timeSec - 400.5) / 3.0);
+          const easeSphere = sFadeIn * sFadeIn * (3.0 - 2.0 * sFadeIn);
+          energySphereMesh.material.uniforms.uOpacity.value = easeSphere;
+          energySphereMesh.scale.setScalar(0.25 + 0.75 * easeSphere);
+          protectiveMantleMesh.visible = false;
+          if (mantleStardust) mantleStardust.visible = false;
+        } else {
+          // Scene 15: Expansion into Protective Mantle (439s - 456s)
+          protectiveMantleMesh.visible = true;
+          protectiveMantleMesh.position.copy(cameraRig.position);
+
+          const tMantle = Math.min(1.0, (timeSec - 439.0) / 14.0);
+          const easeMantle = tMantle * tMantle * (3.0 - 2.0 * tMantle);
+
+          // Sphere expands from 0.35m to 3.6m
+          const mantleScale = 0.35 + (3.6 - 0.35) * easeMantle;
+          protectiveMantleMesh.scale.setScalar(mantleScale / 3.6);
+          protectiveMantleMesh.material.uniforms.uOpacity.value = Math.min(1.0, tMantle * 1.5) * 0.90;
+          protectiveMantleMesh.material.uniforms.uTime.value = timeSec;
+
+          // Stardust swirling around user
+          if (mantleStardust) {
+            mantleStardust.visible = true;
+            mantleStardust.position.copy(cameraRig.position);
+            mantleStardust.material.opacity = Math.min(0.85, tMantle * 1.2);
+            mantleStardust.rotation.y = timeSec * 0.15;
+          }
+
+          // Energy sphere fades into mantle
+          energySphereMesh.material.uniforms.uOpacity.value = Math.max(0.0, 1.0 - tMantle * 1.2);
+        }
+
+        // Scene 16: Conclusive Soft Bloom Fade (456.0s - 456.78s)
+        if (timeSec >= 455.5 && bloomOverlay) {
+          const bAlpha = Math.min(0.40, (timeSec - 455.5) / 1.28);
+          bloomOverlay.style.opacity = bAlpha;
+        }
+      } else {
+        energySphereMesh.visible = false;
+        protectiveMantleMesh.visible = false;
+        if (mantleStardust) mantleStardust.visible = false;
+        if (bloomOverlay) bloomOverlay.style.opacity = 0;
+      }
+
+      // 7. Water Specular & Sphere Reflection Harmonization (Scene 14-16: 399s - 456s)
+      if (waterMaterial && waterMaterial.uniforms) {
+        if (timeSec >= 399.0 && timeSec < 442.0) {
+          const tHarmonize = Math.min(1.0, (timeSec - 399.0) / 3.5);
+          // Attenuate harsh white directional specular on water by 94%
+          waterMaterial.uniforms.uMoonSpecularFactor.value = 1.0 - tHarmonize * 0.94;
+          if (moonLight) moonLight.intensity = 0.65 - tHarmonize * 0.45;
+
+          // Soft pulsating emerald-violet reflection echoing the sphere
+          waterMaterial.uniforms.uSphereReflectIntensity.value = tHarmonize * (1.2 + 0.25 * Math.sin(timeSec * 2.8));
+          if (energySphereMesh) {
+            energySphereMesh.getWorldPosition(_vTempSpherePos);
+            waterMaterial.uniforms.uSphereReflectPos.value.copy(_vTempSpherePos);
+          }
+          // Harmonic blend between emerald and celestial violet
+          const sphereWave = 0.5 + 0.5 * Math.sin(timeSec * 1.8);
+          waterMaterial.uniforms.uSphereReflectColor.value.setRGB(
+            0.06 * (1.0 - sphereWave) + 0.55 * sphereWave,
+            0.85 * (1.0 - sphereWave) + 0.30 * sphereWave,
+            0.50 * (1.0 - sphereWave) + 0.95 * sphereWave
+          );
+        } else if (timeSec < 399.0) {
+          waterMaterial.uniforms.uMoonSpecularFactor.value = 1.0;
+          waterMaterial.uniforms.uSphereReflectIntensity.value = 0.0;
+          if (moonLight) moonLight.intensity = 0.65;
+        } else {
+          // Mantle phase: gentle return of moon specular
+          const tMantleRest = Math.min(1.0, (timeSec - 442.0) / 6.0);
+          waterMaterial.uniforms.uMoonSpecularFactor.value = 0.18 + tMantleRest * 0.52;
+          waterMaterial.uniforms.uSphereReflectIntensity.value = Math.max(0.0, 1.0 - tMantleRest);
+        }
+      }
+
+      // 7. Session Completion Check (456.78s)
+      if (timeSec >= TOTAL_DURATION_SEC && !state.isCompleted) {
+        onExperienceEnded();
+      }
+    }
+
+    /* --- SUBTITLES UPDATE (2D Overlay & 3D VR Billboard) --- */
+    function updateSubtitlesForTime(t) {
+      let activeText = '';
+      for (let i = 0; i < SCRIPT_CUES.length; i++) {
+        if (t >= SCRIPT_CUES[i].start && t <= SCRIPT_CUES[i].end) {
+          activeText = SCRIPT_CUES[i].text;
+          break;
+        }
+      }
+
+      // 2D Overlay (Visible in monoscopic mode, hidden in VR mode)
+      if (hudSubtitles && hudSubtitlesText) {
+        if (activeText && !state.isVRMode) {
+          if (hudSubtitlesText.textContent !== activeText) {
+            hudSubtitlesText.textContent = activeText;
+          }
+          hudSubtitles.classList.add('visible');
+        } else {
+          hudSubtitles.classList.remove('visible');
+        }
+      }
+
+      // 3D VR Billboard (Visible only in VR Mode)
+      if (billboardMesh) {
+        if (state.isVRMode && activeText) {
+          billboardMesh.visible = true;
+          update3DSubtitle(activeText);
+        } else {
+          billboardMesh.visible = false;
+        }
+      }
+    }
+
+    /* ======================================================================
+       AUDIO PLAYBACK & DUAL-BUFFER GAPLESS 432 HZ MUSIC LOOP
+       ====================================================================== */
+    function unlockAudio() {
+      if (!audioContext) {
+        try {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          audioContext = new AudioContextClass();
+        } catch(e) {
+          console.warn('Web Audio API not supported', e);
+        }
+      }
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume().catch(e => console.warn(e));
+      }
+    }
+
+    function syncVolumes() {
+      if (audioVoice) audioVoice.volume = state.voiceVolume;
+      if (audioMusicA) audioMusicA.volume = state.musicVolume;
+      if (audioMusicB) audioMusicB.volume = 0.0;
+    }
+
+    // Dual-buffer 3.0s continuous crossfade for gapless 432 Hz loop
+    function updateMusicLoop(timeSec) {
+      const musicCycleTime = timeSec % MUSIC_CYCLE_SEC;
+      const isCrossfading = musicCycleTime >= (MUSIC_CYCLE_SEC - 3.0);
+
+      if (isCrossfading) {
+        const xFade = (musicCycleTime - (MUSIC_CYCLE_SEC - 3.0)) / 3.0; // 0.0 to 1.0
+        if (audioMusicB.paused) {
+          audioMusicB.currentTime = 0;
+          audioMusicB.play().catch(e => {});
+        }
+        audioMusicA.volume = Math.max(0.0, state.musicVolume * (1.0 - xFade));
+        audioMusicB.volume = Math.min(state.musicVolume, state.musicVolume * xFade);
+      } else {
+        if (!audioMusicB.paused && audioMusicB.volume < 0.01) {
+          audioMusicB.pause();
+        }
+        audioMusicA.volume = state.musicVolume;
+      }
+    }
+
+    function playExperience() {
+      if (state.isCompleted) {
+        state.isCompleted = false;
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+        seekExperience(0);
+      }
+      unlockAudio();
+      state.isPlaying = true;
+      iconPause.style.display = 'block';
+      iconPlay.style.display = 'none';
+
+      audioVoice.play().catch(e => console.warn('Voice play fallback', e));
+      audioMusicA.play().catch(e => console.warn('Music play fallback', e));
+    }
+
+    function pauseExperience() {
+      state.isPlaying = false;
+      iconPause.style.display = 'none';
+      iconPlay.style.display = 'block';
+
+      audioVoice.pause();
+      audioMusicA.pause();
+      audioMusicB.pause();
+    }
+
+    function togglePlay() {
+      if (state.isPlaying) pauseExperience();
+      else playExperience();
+    }
+
+    function seekExperience(targetSec) {
+      targetSec = Math.max(0, Math.min(TOTAL_DURATION_SEC, targetSec));
+      state.currentTime = targetSec;
+
+      if (state.isCompleted && targetSec < TOTAL_DURATION_SEC) {
+        state.isCompleted = false;
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+      }
+
+      function applySeek(el, t) {
+        if (!el) return;
+        if (el.readyState >= 1) {
+          try { el.currentTime = t; } catch(e) {}
+        } else {
+          el.addEventListener('loadedmetadata', () => {
+            try { el.currentTime = t; } catch(e) {}
+          }, { once: true });
+        }
+      }
+
+      applySeek(audioVoice, Math.min(targetSec, VOICE_DURATION_SEC));
+      applySeek(audioMusicA, targetSec % MUSIC_CYCLE_SEC);
+      updateExperienceTimeline(targetSec, 0.016);
+    }
+
+    /* ======================================================================
+       COMPLETION FLOW (Dual-Layer: 3D in-VR Canvas + Flutter Native Dialog)
+       ====================================================================== */
+    function isFlutterEnvironment() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('is-mobile-app') || urlParams.has('isMobileApp') || urlParams.get('source') === 'flutter') {
+          return true;
+        }
+      } catch (e) {}
+      if (typeof window.flutter_inappwebview !== 'undefined' && window.flutter_inappwebview.callHandler) return true;
+      if (typeof window.GuidoFlutterBridge !== 'undefined') return true;
+      if (navigator.userAgent && navigator.userAgent.includes('GuidoFlutter')) return true;
+      return false;
+    }
+
+    function onExperienceEnded() {
+      state.isCompleted = true;
+      state.isPlaying = false;
+      audioVoice.pause();
+      audioMusicA.pause();
+      audioMusicB.pause();
+
+      const isInsideFlutter = isFlutterEnvironment();
+
+      // In VR mode: show 3D in-VR Cardboard dwell dialog
+      // In monoscopic mode: NEVER show 2D HTML popup on mobile app (Flutter displays its native Japandi dialog).
+      // Only show 2D HTML popup if standalone PC Windows preview!
+      if (state.isVRMode) {
+        showVRCompletionPopup();
+      } else if (!isInsideFlutter) {
+        show2DCompletionPopup();
+      }
+
+      // Layer 2: Flutter Native Bridge Notification & XP persistence
+      notifyFlutter('onSessionComplete', {
+        duration: TOTAL_DURATION_SEC,
+        xp: 150,
+        title: 'Meditazione Generale • Acqua'
+      });
+      notifyFlutter('completed', {
+        duration: TOTAL_DURATION_SEC
+      });
+      notifyFlutter('onEnded', {
+        duration: TOTAL_DURATION_SEC
+      });
+    }
+
+    function show2DCompletionPopup() {
+      // Safety guard: NEVER show HTML 2D popup if inside Flutter mobile app
+      if (isFlutterEnvironment()) return;
+      if (completionModal2D) completionModal2D.classList.add('active');
+    }
+
+    function hide2DCompletionPopup() {
+      if (completionModal2D) completionModal2D.classList.remove('active');
+    }
+
+    function showVRCompletionPopup() {
+      if (vrCompletionPopupGroup) vrCompletionPopupGroup.visible = true;
+    }
+
+    function hideVRCompletionPopup() {
+      if (vrCompletionPopupGroup) vrCompletionPopupGroup.visible = false;
+    }
+
+    function exitExperience() {
+      notifyFlutter('onExit', { duration: state.currentTime });
+      if (window.history.length > 1) {
+        window.history.back();
+      }
+    }
+
+    /* ======================================================================
+       VR STEREO RIG, GAZE DWELL RETICLE & CONTROLS
+       ====================================================================== */
+    function setVRMode(enable) {
+      state.isVRMode = !!enable;
+      if (state.isVRMode) {
+        document.body.classList.add('vr-active');
+        if (vrOverlay) vrOverlay.classList.add('active');
+        if (vrReticleMesh) vrReticleMesh.visible = true;
+        if (hudSubtitles) hudSubtitles.classList.remove('visible');
+      } else {
+        document.body.classList.remove('vr-active');
+        if (vrOverlay) vrOverlay.classList.remove('active');
+        if (vrReticleMesh) vrReticleMesh.visible = false;
+        if (vrReticleProgressMesh) vrReticleProgressMesh.visible = false;
+        if (billboardMesh) billboardMesh.visible = false;
+      }
+      onWindowResize();
+    }
+
+    function updateGazeInteraction(deltaSec) {
+      if (!state.isVRMode || gazeInteractables.length === 0) {
+        setReticleProgress(0);
+        currentGazeTarget = null;
+        gazeDwellTimer = 0;
+        return;
+      }
+
+      _raycaster.setFromCamera(_vZero, camera);
+      const intersects = _raycaster.intersectObjects(gazeInteractables, false);
+
+      if (intersects.length > 0 && intersects[0].object.userData.isGazeTarget) {
+        const target = intersects[0].object;
+        if (currentGazeTarget === target) {
+          gazeDwellTimer += deltaSec;
+          const prog = Math.min(1.0, gazeDwellTimer / GAZE_DWELL_THRESHOLD);
+          setReticleProgress(prog);
+
+          if (gazeDwellTimer >= GAZE_DWELL_THRESHOLD) {
+            // Trigger Action!
+            gazeDwellTimer = 0;
+            setReticleProgress(0);
+            const act = target.userData.action;
+            if (act === 'restart') {
+              seekExperience(0);
+              playExperience();
+            } else if (act === 'exit') {
+              exitExperience();
+            }
+          }
+        } else {
+          currentGazeTarget = target;
+          gazeDwellTimer = 0;
+          setReticleProgress(0);
+        }
+      } else {
+        currentGazeTarget = null;
+        gazeDwellTimer = 0;
+        setReticleProgress(0);
+      }
+    }
+
+    // Touch / Mouse Look & Gyroscope Handlers
+    let isDragging = false;
+    let prevMouseX = 0, prevMouseY = 0;
+    let yawAngle = 0, pitchAngle = 0;
+
+    function initControls() {
+      // Minimal Pause/Play Button
+      btnPauseToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePlay();
+      });
+
+      // Exit Button
+      btnExit.addEventListener('click', (e) => {
+        e.stopPropagation();
+        exitExperience();
+      });
+
+      // 2D Modal Buttons
+      if (modalBtnRestart) {
+        modalBtnRestart.addEventListener('click', () => {
+          seekExperience(0);
+          playExperience();
+        });
+      }
+      if (modalBtnExit) {
+        modalBtnExit.addEventListener('click', () => {
+          exitExperience();
+        });
+      }
+
+      // Tap-To-Start Overlay
+      startOverlay.addEventListener('click', () => {
+        startOverlay.classList.add('hidden');
+        unlockAudio();
+        requestDeviceOrientationPermission();
+        playExperience();
+      });
+
+      // Mouse Look for Desktop / Testing
+      window.addEventListener('mousedown', (e) => {
+        if (e.target.closest('#ui-layer') || e.target.closest('#completion-modal-2d')) return;
+        isDragging = true;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - prevMouseX;
+        const dy = e.clientY - prevMouseY;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+
+        yawAngle -= dx * 0.0035;
+        pitchAngle = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitchAngle - dy * 0.0035));
+        camera.rotation.set(pitchAngle, yawAngle, 0, 'YXZ');
+      });
+
+      window.addEventListener('mouseup', () => { isDragging = false; });
+
+      // Keyboard space to play/pause, arrows to seek
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          togglePlay();
+        } else if (e.code === 'ArrowRight') {
+          seekExperience(state.currentTime + 10);
+        } else if (e.code === 'ArrowLeft') {
+          seekExperience(state.currentTime - 10);
+        } else if (e.key === 'v' || e.key === 'V') {
+          setVRMode(!state.isVRMode);
+        }
+      });
+    }
+
+    function requestDeviceOrientationPermission() {
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(res => {
+            if (res === 'granted') {
+              window.addEventListener('deviceorientation', handleDeviceOrientation, false);
+            }
+          })
+          .catch(e => console.warn(e));
+      } else {
+        window.addEventListener('deviceorientation', handleDeviceOrientation, false);
+      }
+    }
+
+    function handleDeviceOrientation(e) {
+      if (!e.alpha && !e.beta && !e.gamma) return;
+      // Convert Euler angles (alpha, beta, gamma)
+      const alpha = THREE.MathUtils.degToRad(e.alpha || 0);
+      const beta = THREE.MathUtils.degToRad(e.beta || 0);
+      const gamma = THREE.MathUtils.degToRad(e.gamma || 0);
+
+      const euler = new THREE.Euler(beta, alpha, -gamma, 'YXZ');
+      camera.quaternion.setFromEuler(euler);
+    }
+
+    function onWindowResize() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+
+      if (stereoCamera) {
+        stereoCamera.aspect = 0.5;
+      }
+      const dpr = Math.min(window.devicePixelRatio || 1, state.isVRMode ? 1.25 : 1.30);
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(w, h);
+    }
+
+    /* ======================================================================
+       MAIN ANIMATION LOOP (Rock-Solid 60/120 FPS, Zero-GC)
+       ====================================================================== */
+    let animationFrameId = null;
+
+    function animate(timestamp) {
+      animationFrameId = requestAnimationFrame(animate);
+
+      if (!state.lastTimestamp) state.lastTimestamp = timestamp;
+      const deltaSec = Math.min(0.066, (timestamp - state.lastTimestamp) / 1000.0);
+      state.lastTimestamp = timestamp;
+      state.lastDeltaSec = deltaSec;
+
+      if (state.isPlaying) {
+        // Direct synchronization on voiceAudio.currentTime
+        if (audioVoice && !audioVoice.paused && !isNaN(audioVoice.currentTime)) {
+          state.currentTime = audioVoice.currentTime;
+        } else {
+          state.currentTime = Math.min(TOTAL_DURATION_SEC, state.currentTime + deltaSec);
+        }
+        updateExperienceTimeline(state.currentTime, deltaSec);
+        updateMusicLoop(state.currentTime);
+      }
+
+      // Continuous lake ripple motion even when paused
+      if (waterMaterial && waterMaterial.uniforms) {
+        waterMaterial.uniforms.uTime.value += deltaSec;
+      }
+      if (starField && starField.material && starField.material.uniforms) {
+        starField.material.uniforms.uTime.value += deltaSec;
+      }
+
+      // Gaze Interaction (VR Mode)
+      updateGazeInteraction(deltaSec);
+
+      // Rendering: Stereo Split Cardboard vs Monoscopic
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      if (state.isVRMode) {
+        renderer.setScissorTest(true);
+        cameraRig.updateMatrixWorld(true);
+        stereoCamera.update(camera);
+
+        // Left Eye Viewport
+        renderer.setScissor(0, 0, width / 2, height);
+        renderer.setViewport(0, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraL);
+
+        // Right Eye Viewport
+        renderer.setScissor(width / 2, 0, width / 2, height);
+        renderer.setViewport(width / 2, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraR);
+
+        renderer.setScissorTest(false);
+      } else {
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, width, height);
+        renderer.render(scene, camera);
+      }
+    }
+
+    /* ======================================================================
+       FLUTTER HARDWARE BRIDGE & CLEAN TEARDOWN
+       ====================================================================== */
+    function notifyFlutter(action, payload) {
+      const msg = JSON.stringify({ action: action, event: action, data: payload || {} });
+      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+        window.flutter_inappwebview.callHandler(action, payload || {});
+        window.flutter_inappwebview.callHandler('GuidoVRBridge', msg);
+        window.flutter_inappwebview.callHandler('GuidoFlutterBridge', { event: action, data: payload || {} });
+      }
+      if (window.GuidoFlutterBridge && window.GuidoFlutterBridge.postMessage) {
+        window.GuidoFlutterBridge.postMessage(msg);
+      }
+      if (window.parent && window.parent.postMessage) {
+        window.parent.postMessage(msg, '*');
+      }
+    }
+
+    function disposeExperience() {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      state.isPlaying = false;
+
+      if (audioVoice) { audioVoice.pause(); audioVoice.src = ''; }
+      if (audioMusicA) { audioMusicA.pause(); audioMusicA.src = ''; }
+      if (audioMusicB) { audioMusicB.pause(); audioMusicB.src = ''; }
+
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close().catch(e => {});
+      }
+
+      // Release WebGL resources
+      if (scene) {
+        scene.traverse(obj => {
+          if (obj.geometry) obj.geometry.dispose();
+          if (obj.material) {
+            if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+            else obj.material.dispose();
+          }
+        });
+      }
+      if (renderer) {
+        renderer.dispose();
+        if (renderer.domElement && renderer.domElement.parentNode) {
+          renderer.domElement.parentNode.removeChild(renderer.domElement);
+        }
+      }
+    }
+
+    // Public window.GuidoVR API
+    window.GuidoVR = {
+      play: function() { playExperience(); },
+      startSession: function() { playExperience(); },
+      pause: function() { pauseExperience(); },
+      togglePlay: function() { togglePlay(); },
+      toggleVR: function(enable) { setVRMode(enable); },
+      seek: function(timeSec) { seekExperience(timeSec); },
+      setVolume: function(voiceVol, musicVol) {
+        state.voiceVolume = voiceVol;
+        state.musicVolume = musicVol;
+        syncVolumes();
+      },
+      setDeviceOrientation: function(alpha, beta, gamma) {
+        const a = THREE.MathUtils.degToRad(alpha || 0);
+        const b = THREE.MathUtils.degToRad(beta || 0);
+        const g = THREE.MathUtils.degToRad(gamma || 0);
+        const euler = new THREE.Euler(b, a, -g, 'YXZ');
+        camera.quaternion.setFromEuler(euler);
+      },
+      setCameraLook: function(pitchRad, yawRad) {
+        pitchAngle = pitchRad;
+        yawAngle = yawRad;
+        camera.rotation.set(pitchRad, yawRad, 0, 'YXZ');
+      },
+      camera: camera,
+      scene: scene,
+      state: state,
+      dispose: function() { disposeExperience(); },
+      getTimelineState: function() {
+        return {
+          currentTime: state.currentTime,
+          totalDuration: TOTAL_DURATION_SEC,
+          isPlaying: state.isPlaying,
+          isCompleted: state.isCompleted,
+          isVRMode: state.isVRMode
+        };
+      },
+      captureScreenshot: function() {
+        if (renderer && scene && camera) {
+          renderer.render(scene, camera);
+          return renderer.domElement.toDataURL('image/png');
+        }
+        return null;
+      },
+      _debugState: function() {
+        const watchW = new THREE.Vector3();
+        if (goldWatchGroup) goldWatchGroup.getWorldPosition(watchW);
+        return {
+          dragonLoaded: !!window.dragonLoaded,
+          dragonMixer: !!dragonMixer,
+          dragonVisible: njordGroup ? njordGroup.visible : false,
+          bridgeGroup: !!bridgeGroup,
+          bridgeVisible: bridgeGroup ? bridgeGroup.visible : false,
+          bridgeChildren: bridgeGroup ? bridgeGroup.children.length : 0,
+          goldWatchVisible: goldWatchGroup ? goldWatchGroup.visible : false,
+          goldWatchParentIsCameraRig: goldWatchGroup ? (goldWatchGroup.parent === cameraRig) : false,
+          goldWatchPos: goldWatchGroup ? { x: goldWatchGroup.position.x, y: goldWatchGroup.position.y, z: goldWatchGroup.position.z } : null,
+          goldWatchWorldPos: { x: watchW.x, y: watchW.y, z: watchW.z },
+          camRigPos: cameraRig ? { x: cameraRig.position.x, y: cameraRig.position.y, z: cameraRig.position.z } : null,
+          isFlutter: isFlutterEnvironment()
+        };
+      }
+    };
+
+    window.addEventListener('beforeunload', disposeExperience);
+
+    // Boot on DOM Ready
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeScene();
+      syncVolumes();
+      animate(0);
+
+      // Check query params (?vr=true, ?desktop=true)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('vr') === 'true' || urlParams.get('vr') === '1') {
+        setVRMode(true);
+      }
+      if (urlParams.get('desktop') === 'true') {
+        state.isDesktop = true;
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>

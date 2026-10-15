@@ -14,7 +14,18 @@ class SplashView extends ConsumerWidget {
   void _routeToHome(BuildContext context, WidgetRef ref) {
     final prefs = ref.read(sharedPrefsProvider);
     if (prefs == null) return;
+    final hasSeenWolf =
+        prefs.getBool("has_seen_wolf_onboarding") ?? false;
     final isOnboarded = prefs.getBool("IsOnboarded") ?? false;
+    final hasWolfRoute = GoRouter.of(context)
+        .configuration
+        .routes
+        .any((r) => r is GoRoute && r.path == '/wolf-onboarding');
+
+    if (!hasSeenWolf && hasWolfRoute) {
+      context.go('/wolf-onboarding');
+      return;
+    }
 
     if (isOnboarded) {
       context.go('/home');

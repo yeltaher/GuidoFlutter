@@ -41,9 +41,9 @@ flutter:
   # adding or updating assets for this project.
   plugin:
     platforms:
-      android:
-        package: com.xraph.plugin.flutter_unity_widget
-        pluginClass: FlutterUnityWidgetPlugin
+#      android:
+#        package: com.xraph.plugin.flutter_unity_widget
+#        pluginClass: FlutterUnityWidgetPlugin
       ios:
         pluginClass: FlutterUnityWidgetPlugin
      # windows:

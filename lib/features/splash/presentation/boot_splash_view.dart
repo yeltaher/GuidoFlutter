@@ -19,8 +19,16 @@ class BootSplashView extends ConsumerWidget {
           if (context.mounted) {
             final prefs = ref.read(sharedPrefsProvider);
             final isOnboarded = prefs?.getBool("IsOnboarded") ?? false;
+            final hasAcceptedVr =
+                prefs?.getBool("has_accepted_vr_disclaimer") ?? false;
+            final hasVrDisclaimerRoute = GoRouter.of(context)
+                .configuration
+                .routes
+                .any((r) => r is GoRoute && r.path == '/vr-disclaimer');
             if (isOnboarded) {
               context.go('/home');
+            } else if (!hasAcceptedVr && hasVrDisclaimerRoute) {
+              context.go('/vr-disclaimer');
             } else {
               context.go('/login');
             }

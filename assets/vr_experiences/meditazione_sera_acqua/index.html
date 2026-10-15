@@ -1,0 +1,3180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Guido VR - Meditazione della Sera (Elemento Acqua • 432 Hz)</title>
+  
+  <style>
+    :root {
+      --bg-dark: #020611;
+      --evening-cyan: #38bdf8;
+      --twilight-amber: #f59e0b;
+      --aurora-emerald: #10b981;
+      --sacred-blue: #2563eb;
+      --moon-silver: #e2e8f0;
+      --text-bright: #f8fafc;
+      --text-dim: rgba(248, 250, 252, 0.72);
+      --glass-panel: rgba(7, 16, 32, 0.78);
+      --glass-border: rgba(56, 189, 248, 0.24);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text-bright);
+    }
+
+    #webgl-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: none;
+    }
+
+    /* VR Cardboard Stereo Overlay */
+    #vr-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    #vr-overlay.active,
+    body.vr-active #vr-overlay {
+      display: block;
+    }
+
+    #vr-divider,
+    .vr-divider {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateX(-50%);
+      box-shadow: none !important;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* Clean Floating HUD UI Layer (Clutter-free, zero debug text) */
+    #ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 20;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    /* Strict removal of all debug titles, bars, VR button, and dock from WebXR view */
+    .header-bar,
+    .bottom-dock,
+    .desktop-dock,
+    .hud-title-badge,
+    .hud-title,
+    .hud-scene-name,
+    .hud-vr-btn,
+    #desktop-dock,
+    #btn-toggle-vr,
+    #audio-gate,
+    #rotate-hint {
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Subtitle Container - Raised higher up for optimal field of view in VR & Mobile */
+    .subtitle-container {
+      position: absolute;
+      bottom: 24%;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 24px;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    .subtitle-box {
+      max-width: 820px;
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      text-align: center;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: none !important;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    .subtitle-box.visible {
+      opacity: 1;
+    }
+
+    .subtitle-text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.95);
+      letter-spacing: 0.8px;
+      text-shadow: 0 0 16px rgba(56, 189, 248, 0.65), 0 2px 10px rgba(0, 0, 0, 0.95);
+    }
+
+    /* 2D Session Completion Modal (Japandi Aesthetics) */
+    .completion-modal-backdrop {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2147483647 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(7, 12, 20, 0.94) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .completion-modal-backdrop.visible {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .completion-modal-card {
+      width: 100%;
+      max-width: 440px;
+      background: linear-gradient(145deg, rgba(16, 26, 42, 0.96), rgba(9, 15, 26, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 24px;
+      padding: 34px 28px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(56, 189, 248, 0.1);
+      transform: scale(0.92) translateY(12px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .completion-modal-backdrop.visible .completion-modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .completion-modal-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px auto;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(56, 189, 248, 0.03) 70%);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38bdf8;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+    }
+
+    .completion-modal-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 10px 0;
+      letter-spacing: 0.3px;
+    }
+
+    .completion-modal-desc {
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.78);
+      margin: 0 0 26px 0;
+    }
+
+    .completion-modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .btn-completion {
+      flex: 1;
+      height: 48px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      border: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-completion-exit {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.65);
+      color: #fca5a5;
+    }
+
+    .btn-completion-exit:hover {
+      background: rgba(239, 68, 68, 0.28);
+      transform: translateY(-2px);
+    }
+
+    .btn-completion-repeat {
+      background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(14, 165, 233, 0.35);
+    }
+
+    .btn-completion-repeat:hover {
+      background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+      transform: translateY(-2px);
+    }
+  </style>
+
+  <!-- Three.js (Modern self-contained graphics library) -->
+  <script src="three.min.js"></script>
+  <!-- Pre-encoded Offline Data-URIs -->
+  <script src="evening_water_textures.js"></script>
+</head>
+<body>
+
+  <!-- WebGL Rendering Canvas -->
+  <div id="webgl-container"></div>
+
+  <!-- VR Cardboard Stereo Overlay -->
+  <div id="vr-overlay">
+    <div id="vr-divider" class="vr-divider"></div>
+  </div>
+
+  <!-- Pure Immersive UI Layer -->
+  <div id="ui-layer">
+    <!-- Subtitle Container (Pure typography, no dark box, positioned in VR sweet spot) -->
+    <div class="subtitle-container">
+      <div id="hud-subtitle-box" class="subtitle-box">
+        <p id="hud-subtitle-text" class="subtitle-text"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2D Session Completion Modal -->
+  <div id="completion-modal-2d" class="completion-modal-backdrop">
+    <div class="completion-modal-card">
+      <div class="completion-modal-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <h2 class="completion-modal-title">Meditazione Conclusa</h2>
+      <p class="completion-modal-desc">Hai completato il percorso della sera per l'elemento acqua. Lasciati avvolgere dalla pace e da un sonno ristoratore.</p>
+      <div class="completion-modal-actions">
+        <button id="btn-modal-exit" class="btn-completion btn-completion-exit">ESCI</button>
+        <button id="btn-modal-repeat" class="btn-completion btn-completion-repeat">RIPETI</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Elements -->
+  <audio id="audio-voice" src="audio/voice_it.mp3" preload="auto"></audio>
+  <audio id="audio-music" src="audio/music_432hz.mp3" preload="auto"></audio>
+
+  <script>
+    /* ======================================================================
+       GUIDO VR • MEDITAZIONE DELLA SERA (ELEMENTO ACQUA • 432 HZ)
+       Ultra-Photorealistic 360 WebXR Engine
+       ====================================================================== */
+
+    const TOTAL_DURATION_SEC = 332.4; // 05:32.4 total music duration
+    const VOICE_DURATION_SEC = 326.8; // 05:26.8 total voice duration
+
+    // Global State
+    const state = {
+      currentTime: 0,
+      isPlaying: false,
+      isVRMode: false,
+      isCompleted: false,
+      isMuted: false,
+      voiceVolume: 0.95,
+      musicVolume: 0.85,
+      currentSceneIndex: 0,
+      lastTimestamp: 0,
+      lastDeltaSec: 0.016
+    };
+
+    // Subtitle & Narrative Script Data — Aligned to voice_it.mp3 Waveform & Storyboard
+    const SCRIPT_CUES = [
+      { start: 1.1, end: 6.1, text: "Meditazione della sera, percorso, elemento acqua." },
+      { start: 7.0, end: 20.1, text: "La meditazione della sera è un momento da dedicare a se stessi per lasciare andare le tensioni accumulate durante la giornata..." },
+      { start: 20.4, end: 33.0, text: "...una coccola rigenerante che permette di focalizzare la nostra energia su ciò che è stato nutriente e sano durante il giorno." },
+      { start: 33.3, end: 45.0, text: "L'esperienza proposta può essere utilizzata per facilitare il sonno e il rilassamento..." },
+      { start: 45.0, end: 51.2, text: "...donando un senso di leggerezza e serenità." },
+      { start: 51.3, end: 63.0, text: "Puoi iniziare questa esperienza facendo un profondo respiro e prendendo contatto con la presenza del tuo corpo." },
+      { start: 63.0, end: 72.0, text: "È ormai giunta la fine di questa giornata." },
+      { start: 72.9, end: 83.0, text: "Il sole è tramontato e, insieme ad esso..." },
+      { start: 83.0, end: 97.0, text: "...puoi lasciare andare le energie di pesantezza che puoi avere accumulato fino ad ora." },
+      { start: 97.1, end: 108.5, text: "L'acqua è l'elemento più adatto per lavare via tutte le impurità, le tossine e la stanchezza." },
+      { start: 108.5, end: 123.8, text: "Lasciati rigenerare dal flusso di energia collegato ad essa." },
+      { start: 123.9, end: 142.8, text: "Lascia andare tutti i pensieri, liberando la mente affinché tu ora possa dedicarti del tempo di qualità e benessere." },
+      { start: 142.9, end: 157.0, text: "Accogli tutto ciò che di positivo hai vissuto nella giornata odierna, affinché ti possa nutrire nel profondo." },
+      { start: 157.1, end: 165.9, text: "Lascia andare invece tutto quello che hai percepito pesante o incompleto." },
+      { start: 166.0, end: 176.7, text: "Ogni cosa avviene nel momento perfetto per la tua massima evoluzione." },
+      { start: 176.8, end: 182.9, text: "Sii contento per tutto ciò che di buono hai realizzato oggi." },
+      { start: 195.9, end: 214.2, text: "Affida tutte le tue preoccupazioni e le ansie collegate al futuro, a quella parte di te più saggia, che è in contatto con le tue risorse interiori." },
+      { start: 214.2, end: 226.2, text: "Questa tua parte è rappresentata dalla stella che vedi passare sopra di te." },
+      { start: 226.2, end: 243.2, text: "Affidale tutto ciò che ti appesantisce, affinché ti vegli e crei le situazioni perfette per il tuo massimo bene, illuminando i tuoi passi nella vita." },
+      { start: 243.2, end: 259.6, text: "Nella piena consapevolezza di te stesso puoi prepararti a un sonno ristoratore..." },
+      { start: 259.6, end: 285.4, text: "...lasciandoti cullare dal tuo saggio inconscio e sentendoti avvolto dall'amore." },
+      { start: 285.4, end: 296.2, text: "Prima di addormentarti, puoi utilizzare l'intenzione di ricevere soluzioni o idee durante il sonno..." },
+      { start: 296.2, end: 313.2, text: "...e di risvegliarti al mattino completamente rigenerato e in armonia con la vita." },
+      { start: 313.2, end: 326.0, text: "Con dolcezza puoi fare un respiro profondo e riprendere contatto con la tua realtà." },
+      { start: 326.0, end: 332.4, text: "Pace, presenza e serenità nella tua notte." }
+    ];
+
+    const SCENES_CONFIG = [
+      { id: 1, name: "Scena 1 • Tramonto sul Fiordo Artico", start: 0, end: 51.0 },
+      { id: 2, name: "Scena 2 • Crepuscolo, Luna & Aurora Boreale", start: 51.0, end: 83.0 },
+      { id: 3, name: "Scena 3 • Cascata di Luce Bianca Celestiale", start: 83.0, end: 195.0 },
+      { id: 4, name: "Scena 4 • Stella Cometa Azzurra", start: 195.0, end: 243.0 },
+      { id: 5, name: "Scena 5 • Doppio Cerchio Sacro Rigenerante", start: 243.0, end: 285.0 },
+      { id: 6, name: "Scena 6 • Tunnel Cilindrico di Luce Spirale", start: 285.0, end: 313.0 },
+      { id: 7, name: "Scena 7 • Quiete Notturna, Pace & Completamento", start: 313.0, end: 332.4 }
+    ];
+
+    // DOM References
+    const container = document.getElementById('webgl-container');
+    const vrOverlay = document.getElementById('vr-overlay');
+    const hudSubtitleBox = document.getElementById('hud-subtitle-box');
+    const hudSubtitleText = document.getElementById('hud-subtitle-text');
+    const modal2D = document.getElementById('completion-modal-2d');
+    const btnModalExit = document.getElementById('btn-modal-exit');
+    const btnModalRepeat = document.getElementById('btn-modal-repeat');
+    const audioVoice = document.getElementById('audio-voice');
+    const audioMusic = document.getElementById('audio-music');
+
+    /* ======================================================================
+       WEB AUDIO API & 432 HZ CARRIER ENGINE
+       ====================================================================== */
+    let audioCtx = null;
+    let synthOsc432 = null;
+    let synthGain = null;
+
+    function initAudioContext() {
+      if (audioCtx) return;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        audioCtx = new AudioContextClass();
+        synthGain = audioCtx.createGain();
+        synthGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        synthGain.connect(audioCtx.destination);
+
+        synthOsc432 = audioCtx.createOscillator();
+        synthOsc432.type = 'sine';
+        synthOsc432.frequency.setValueAtTime(432.0, audioCtx.currentTime);
+        synthOsc432.connect(synthGain);
+        try { synthOsc432.start(); } catch(e) {}
+      }
+    }
+
+    function unlockAudio() {
+      initAudioContext();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      audioVoice.play().then(() => {
+        if (!state.isPlaying) audioVoice.pause();
+      }).catch(() => {});
+      audioMusic.play().then(() => {
+        if (!state.isPlaying) audioMusic.pause();
+      }).catch(() => {});
+    }
+
+    function syncVolumes() {
+      const vMul = state.isMuted ? 0 : 1;
+      audioVoice.volume = state.voiceVolume * vMul;
+      audioMusic.volume = state.musicVolume * vMul;
+      if (synthGain && audioCtx) {
+        synthGain.gain.setValueAtTime(state.isMuted ? 0.0001 : 0.015, audioCtx.currentTime);
+      }
+    }
+
+    /* ======================================================================
+       PROCEDURAL SIMPLEX NOISE & PROCEDURAL TEXTURE GENERATION
+       ====================================================================== */
+    function createNoise2D(seed = 1337) {
+      const p = new Uint8Array(512);
+      const perm = new Uint8Array(256);
+      for (let i = 0; i < 256; i++) perm[i] = i;
+      let s = seed;
+      for (let i = 255; i > 0; i--) {
+        s = (s * 16807 + 11) % 2147483647;
+        const j = s % (i + 1);
+        const tmp = perm[i];
+        perm[i] = perm[j];
+        perm[j] = tmp;
+      }
+      for (let i = 0; i < 512; i++) p[i] = perm[i & 255];
+
+      const F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
+      const G2 = (3.0 - Math.sqrt(3.0)) / 6.0;
+
+      const grad2 = [
+        [1, 1], [-1, 1], [1, -1], [-1, -1],
+        [1, 0], [-1, 0], [0, 1], [0, -1]
+      ];
+
+      return function(x, y) {
+        const s = (x + y) * F2;
+        const i = Math.floor(x + s);
+        const j = Math.floor(y + s);
+        const t = (i + j) * G2;
+        const x0 = x - (i - t);
+        const y0 = y - (j - t);
+
+        let i1 = 0, j1 = 1;
+        if (x0 > y0) { i1 = 1; j1 = 0; }
+
+        const x1 = x0 - i1 + G2;
+        const y1 = y0 - j1 + G2;
+        const x2 = x0 - 1.0 + 2.0 * G2;
+        const y2 = y0 - 1.0 + 2.0 * G2;
+
+        const ii = i & 255;
+        const jj = j & 255;
+
+        const gi0 = p[ii + p[jj]] % 8;
+        const gi1 = p[ii + i1 + p[jj + j1]] % 8;
+        const gi2 = p[ii + 1 + p[jj + 1]] % 8;
+
+        let t0 = 0.5 - x0 * x0 - y0 * y0;
+        let n0 = 0;
+        if (t0 > 0) {
+          t0 *= t0;
+          n0 = t0 * t0 * (grad2[gi0][0] * x0 + grad2[gi0][1] * y0);
+        }
+
+        let t1 = 0.5 - x1 * x1 - y1 * y1;
+        let n1 = 0;
+        if (t1 > 0) {
+          t1 *= t1;
+          n1 = t1 * t1 * (grad2[gi1][0] * x1 + grad2[gi1][1] * y1);
+        }
+
+        let t2 = 0.5 - x2 * x2 - y2 * y2;
+        let n2 = 0;
+        if (t2 > 0) {
+          t2 *= t2;
+          n2 = t2 * t2 * (grad2[gi2][0] * x2 + grad2[gi2][1] * y2);
+        }
+
+        return 70.0 * (n0 + n1 + n2);
+      };
+    }
+
+    const _terrainNoiseA = createNoise2D(7070);
+    const _terrainNoiseB = createNoise2D(3141);
+
+    function terrainFbm(x, z, oct = 5) {
+      let v = 0, a = 0.5, f = 1.0;
+      for (let i = 0; i < oct; i++) {
+        v += a * _terrainNoiseA(x * f, z * f);
+        f *= 2.02;
+        a *= 0.5;
+      }
+      return v;
+    }
+
+    function terrainRidgedMF(x, z, oct = 5) {
+      let v = 0, a = 0.5, f = 1.0, w = 1.0;
+      for (let i = 0; i < oct; i++) {
+        let s = 1.0 - Math.abs(_terrainNoiseA(x * f, z * f));
+        s *= s;
+        v += s * a * w;
+        w = Math.min(1.0, s * 2.0);
+        f *= 2.02;
+        a *= 0.5;
+      }
+      return v;
+    }
+
+    function terrainBillow(x, z, oct = 4) {
+      let v = 0, a = 0.5, f = 1.0;
+      for (let i = 0; i < oct; i++) {
+        v += a * Math.abs(_terrainNoiseB(x * f, z * f));
+        f *= 2.0;
+        a *= 0.5;
+      }
+      return v;
+    }
+
+    function createProceduralNormalFallback() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.createImageData(256, 256);
+      for (let i = 0; i < 256 * 256 * 4; i += 4) {
+        imgData.data[i] = 128;
+        imgData.data[i + 1] = 128;
+        imgData.data[i + 2] = 255;
+        imgData.data[i + 3] = 255;
+      }
+      ctx.putImageData(imgData, 0, 0);
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    function createGlowMoteTexture(type = 'default') {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      if (type === 'moon') {
+        grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+        grad.addColorStop(0.25, 'rgba(190, 225, 255, 0.85)');
+        grad.addColorStop(0.65, 'rgba(100, 180, 255, 0.25)');
+        grad.addColorStop(1.0, 'rgba(0, 0, 0, 0.0)');
+      } else if (type === 'azure') {
+        grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+        grad.addColorStop(0.3, 'rgba(56, 189, 248, 0.9)');
+        grad.addColorStop(0.7, 'rgba(14, 165, 233, 0.3)');
+        grad.addColorStop(1.0, 'rgba(0, 0, 0, 0.0)');
+      } else {
+        grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+        grad.addColorStop(0.3, 'rgba(210, 235, 255, 0.8)');
+        grad.addColorStop(0.7, 'rgba(80, 160, 240, 0.25)');
+        grad.addColorStop(1.0, 'rgba(0, 0, 0, 0.0)');
+      }
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 128, 128);
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    function createSunCoronaTexture(size = 128, mode = 'inner') {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const center = size / 2;
+      const grad = ctx.createRadialGradient(center, center, 0, center, center, center);
+
+      if (mode === 'inner') {
+        grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+        grad.addColorStop(0.20, 'rgba(255, 240, 190, 0.95)');
+        grad.addColorStop(0.48, 'rgba(255, 170, 60, 0.45)');
+        grad.addColorStop(0.78, 'rgba(255, 110, 20, 0.10)');
+        grad.addColorStop(1.0, 'rgba(255, 70, 0, 0.0)');
+      } else {
+        grad.addColorStop(0.0, 'rgba(255, 220, 150, 0.75)');
+        grad.addColorStop(0.28, 'rgba(255, 160, 50, 0.40)');
+        grad.addColorStop(0.60, 'rgba(255, 100, 25, 0.12)');
+        grad.addColorStop(0.85, 'rgba(255, 60, 10, 0.02)');
+        grad.addColorStop(1.0, 'rgba(255, 40, 0, 0.0)');
+      }
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, size, size);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.generateMipmaps = true;
+      return tex;
+    }
+
+    function createMoonTexture(size = 256) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const center = size / 2;
+      const grad = ctx.createRadialGradient(center, center, 0, center, center, center);
+      grad.addColorStop(0.00, 'rgba(255, 255, 255, 1.0)');
+      grad.addColorStop(0.22, 'rgba(255, 255, 255, 1.0)');
+      grad.addColorStop(0.26, 'rgba(242, 248, 255, 0.96)');
+      grad.addColorStop(0.34, 'rgba(210, 235, 255, 0.62)');
+      grad.addColorStop(0.52, 'rgba(160, 210, 255, 0.22)');
+      grad.addColorStop(0.76, 'rgba(100, 175, 255, 0.06)');
+      grad.addColorStop(1.00, 'rgba(60, 130, 255, 0.0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, size, size);
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.generateMipmaps = true;
+      return tex;
+    }
+
+    /* ======================================================================
+       THREE.JS ENGINE SETUP & 100% PHOTOREALISTIC ARCTIC ENVIRONMENT
+       ====================================================================== */
+    let scene, camera, renderer, stereoCamera, cameraRig;
+    let textureLoader;
+
+    // Lighting
+    let ambientLight, sunLight, moonLight, auroraLight;
+
+    // Environmental 3D Meshes
+    let skySphere, starField, auroraMesh;
+    let sunMesh, sunCorona1, sunCorona2;
+    let moonMesh, moonCorona1, moonCorona2;
+    let waterMesh, waterSubSurfaceMesh;
+    let terrainAlpineMassives, terrainPromontoryWest, terrainPromontoryEast, terrainForegroundShore, terrainBoulders;
+    let terrainMaterial;
+
+    // Scena 3: Cascata di Luce Bianca
+    let waterfallGroup, waterfallBeamMesh, waterfallPhotons, waterfallCausticPool;
+
+    // Scena 4: Stella Cometa Azzurra
+    let cometGroup, cometNucleusMesh, cometCoronaSprite, cometTrailPoints;
+
+    // Scena 5: Doppio Cerchio Sacro
+    let sacredCirclesGroup, outerRingMesh, innerRingMesh, sacredPoolReflectMesh;
+
+    // Scena 6: Tunnel Cilindrico di Luce Spirale
+    let tunnelGroup, tunnelMesh, tunnelStardust;
+
+    // Transition Threshold Veil
+    let thresholdMesh;
+
+    // 3D VR Subtitle Billboard
+    let billboardMesh, billboardCanvas, billboardContext, billboardTexture;
+
+    // VR Gaze Reticle & Completion Popup
+    let vrReticleGroup, vrReticleRing;
+    let vrCompletionPopupGroup;
+    const gazeRaycaster = new THREE.Raycaster();
+    const gazeIntersectTargets = [];
+    let gazeHoverTarget = null;
+    let gazeDwellTimer = 0.0;
+    const DWELL_DURATION_SEC = 2.0;
+
+    // Camera Controls & Orientation
+    let yaw = 0, pitch = 0;
+    let targetYaw = 0, targetPitch = 0;
+    let isUserDragging = false;
+    let prevMouseX = 0, prevMouseY = 0;
+    let deviceOrientationEnabled = false;
+    let orientationAlpha = 0, orientationBeta = 0, orientationGamma = 0;
+    let vrAlphaOffset = 0;
+
+    const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
+    const _q0 = new THREE.Quaternion();
+    const _q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
+    const _zee = new THREE.Vector3(0, 0, 1);
+    const _gazeForwardDir = new THREE.Vector3();
+    const _gazeOrigin = new THREE.Vector3();
+
+    // Continuous Easing Helpers
+    function smoothstep(min, max, value) {
+      const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+      return x * x * (3 - 2 * x);
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function initThreeScene() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x020814);
+      scene.fog = new THREE.FogExp2(0x030a16, 0.0016);
+
+      // Elevated Panoramic Vantage Point overlooking the fjord lake (Z=42, Y=8.2; dry ground Y=6.5)
+      cameraRig = new THREE.Group();
+      cameraRig.position.set(0, 8.2, 42.0);
+      scene.add(cameraRig);
+
+      camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 2000);
+      camera.position.set(0, 0, 0);
+      cameraRig.add(camera);
+
+      stereoCamera = new THREE.StereoCamera();
+      stereoCamera.aspect = 0.5;
+      stereoCamera.eyeSep = 0.064;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
+      container.appendChild(renderer.domElement);
+
+      textureLoader = new THREE.TextureLoader();
+
+      buildLighting();
+      buildAtmosphericSky();
+      buildAlpineTerrain();
+      buildSacredLake();
+      buildSunMesh();
+      buildMoonMesh();
+      buildAuroraBorealis();
+      buildWaterfallOfLight();
+      buildAzureComet();
+      buildSacredDoubleCircles();
+      buildSpiralLightTunnel();
+      buildThresholdVeil();
+      build3DSubtitleBillboard();
+      initVRReticle();
+      createVRCompletionPopup();
+
+      initControls();
+      window.addEventListener('resize', onWindowResize, false);
+    }
+
+    /* --- 1. LIGHTING (Rich ambient fill to eliminate black silhouettes) --- */
+    function buildLighting() {
+      // Twilight ambient light (rich enough that shadowed basalt and boulders are never pure black)
+      ambientLight = new THREE.AmbientLight(0x0f2238, 1.15);
+      scene.add(ambientLight);
+
+      // Setting Sun light (Scene 1)
+      sunLight = new THREE.DirectionalLight(0xff9e50, 1.35);
+      sunLight.position.set(25, -2, -720);
+      scene.add(sunLight);
+
+      // Silvery Arctic Moonlight (Scene 2-7)
+      moonLight = new THREE.DirectionalLight(0xa5d8ff, 0.75);
+      moonLight.position.set(-110, 160, -520);
+      scene.add(moonLight);
+
+      // Aurora Borealis diffuse light
+      auroraLight = new THREE.PointLight(0x10b981, 0.45, 360);
+      auroraLight.position.set(0, 80, -80);
+      scene.add(auroraLight);
+    }
+
+    /* --- 2. PROCEDURAL DYNAMIC ATMOSPHERIC SKY (Rayleigh & Mie Scattering) --- */
+    function buildAtmosphericSky() {
+      const domeRadius = 1200;
+      const domeGeo = new THREE.SphereGeometry(domeRadius, 64, 48);
+
+      const domeMat = new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        depthWrite: false,
+        uniforms: {
+          uSunPos: { value: new THREE.Vector3(25, -5, -720) },
+          uMoonPos: { value: new THREE.Vector3(-110, 160, -520) },
+          uSunsetProg: { value: 1.0 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          void main() {
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          varying vec3 vWorldPosition;
+          uniform vec3 uSunPos;
+          uniform vec3 uMoonPos;
+          uniform float uSunsetProg;
+
+          void main() {
+            vec3 viewDir = normalize(vWorldPosition);
+            vec3 sunDir = normalize(uSunPos);
+            vec3 moonDir = normalize(uMoonPos);
+            float h = clamp(viewDir.y, 0.0, 1.0);
+
+            // Zenith Tones: Twilight Indigo -> Deep Arctic Night Sapphire
+            vec3 sunsetZenith = vec3(0.04, 0.11, 0.26);
+            vec3 nightZenith = vec3(0.008, 0.022, 0.065);
+            vec3 zenith = mix(nightZenith, sunsetZenith, uSunsetProg);
+
+            // Horizon Tones: Warm Sunset Amber/Peach -> Silvery Indigo Night
+            vec3 sunsetHorizon = vec3(0.95, 0.48, 0.22);
+            vec3 sunsetGold = vec3(1.0, 0.76, 0.42);
+            vec3 nightHorizon = vec3(0.025, 0.055, 0.11);
+
+            float sunAzimuth = max(0.0, dot(normalize(vec3(viewDir.x, 0.0, viewDir.z)), normalize(vec3(sunDir.x, 0.0, sunDir.z))));
+            vec3 sunsetWarm = mix(sunsetHorizon, sunsetGold, pow(sunAzimuth, 2.6));
+
+            vec3 horizon = mix(nightHorizon, sunsetWarm, uSunsetProg);
+            vec3 sky = mix(horizon, zenith, pow(h, 0.52));
+
+            // Forward Mie Scattering Solar Corona (fades with sunset)
+            float cosSun = max(0.0, dot(viewDir, sunDir));
+            float mieCorona = pow(cosSun, 14.0) * 0.65 * uSunsetProg;
+            float mieCore = pow(cosSun, 120.0) * 1.9 * uSunsetProg;
+            sky += (vec3(1.0, 0.60, 0.25) * mieCorona) + (vec3(1.0, 0.95, 0.85) * mieCore);
+
+            gl_FragColor = vec4(sky, 1.0);
+          }
+        `
+      });
+
+      skySphere = new THREE.Mesh(domeGeo, domeMat);
+      scene.add(skySphere);
+
+      // Celestial Starfield (800 stars, softly brightening as twilight fades)
+      const starCount = 800;
+      const starGeo = new THREE.BufferGeometry();
+      const starPos = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount; i++) {
+        const u = Math.random();
+        const v = Math.random();
+        const theta = u * 2.0 * Math.PI;
+        const phi = Math.acos(2.0 * v - 1.0);
+        const r = 940;
+        starPos[i * 3 + 0] = r * Math.sin(phi) * Math.cos(theta);
+        starPos[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 40;
+        starPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+      }
+      starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+      const starTex = createGlowMoteTexture('default');
+      const starMat = new THREE.PointsMaterial({
+        size: 3.0,
+        map: starTex,
+        transparent: true,
+        opacity: 0.15,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      starField = new THREE.Points(starGeo, starMat);
+      scene.add(starField);
+    }
+
+    /* --- 3. MULTI-LAYER HIGH-POLY 3D TERRAIN & ADVANCED PBR SNOW/BASALT SHADER --- */
+    function buildAlpineTerrain() {
+      terrainMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          uSunPos: { value: new THREE.Vector3(25, -5, -720) },
+          uMoonPos: { value: new THREE.Vector3(-110, 160, -520) },
+          uSunsetProg: { value: 1.0 },
+          uAuroraIntensity: { value: 0.0 },
+          uSunColor: { value: new THREE.Color(0xff9e50) },
+          uSunSunsetColor: { value: new THREE.Color(0xff6e2a) },
+          uMoonColor: { value: new THREE.Color(0xa5d8ff) }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying float vElevation;
+
+          void main() {
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPos.xyz;
+            vNormal = normalize(mat3(modelMatrix) * normal);
+            vElevation = worldPos.y;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying float vElevation;
+
+          uniform vec3 uSunPos;
+          uniform vec3 uMoonPos;
+          uniform float uSunsetProg;
+          uniform float uAuroraIntensity;
+          uniform vec3 uSunColor;
+          uniform vec3 uSunSunsetColor;
+          uniform vec3 uMoonColor;
+
+          float hash(vec2 p) {
+            return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+          }
+
+          // Quintic Hermite interpolation curve for continuous 2nd derivative
+          float smoothNoise(vec2 p) {
+            vec2 i = floor(p);
+            vec2 f = fract(p);
+            vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+            float a = hash(i);
+            float b = hash(i + vec2(1.0, 0.0));
+            float c = hash(i + vec2(0.0, 1.0));
+            float d = hash(i + vec2(1.0, 1.0));
+            return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+          }
+
+          // Rotated multi-octave FBM ensuring isotropic geological rock textures
+          float fbmSmooth(vec2 p) {
+            mat2 rot = mat2(0.80, 0.60, -0.60, 0.80);
+            float v = 0.0;
+            float a = 0.5;
+            for (int i = 0; i < 3; i++) {
+              v += a * smoothNoise(p);
+              p = rot * p * 2.05;
+              a *= 0.5;
+            }
+            return v;
+          }
+
+          void main() {
+            vec3 baseN = normalize(vNormal);
+
+            // Natural Basalt Rock Micro-Texture (Continuous, non-grid-aligned)
+            vec2 rockUv = vWorldPosition.xz * 0.35;
+            float nFissure = fbmSmooth(rockUv * 2.5) * 0.16;
+
+            // Subtle continuous normal perturbation for organic basalt roughness
+            float eps = 0.08;
+            float nCenter = smoothNoise(rockUv * 3.0);
+            float nDx = smoothNoise(rockUv * 3.0 + vec2(eps, 0.0)) - nCenter;
+            float nDz = smoothNoise(rockUv * 3.0 + vec2(0.0, eps)) - nCenter;
+            vec3 bumpN = normalize(baseN + vec3(nDx * 0.75, 0.0, nDz * 0.75));
+
+            float slope = baseN.y;
+
+            // Organic, smooth snow distribution without grid-stepping
+            float nLedge = fbmSmooth(vWorldPosition.xz * 0.06) * 0.22;
+            float nCouloir = fbmSmooth(vec2(vWorldPosition.x * 0.12 + vWorldPosition.y * 0.04, vWorldPosition.z * 0.12)) * 0.16;
+            float effectiveSlope = slope + nLedge + nCouloir;
+
+            // Snow calculation:
+            // High alpine mountains (vElevation > 10.0m) have snow clinging to ledges and couloirs
+            float isHighMountain = smoothstep(3.5, 12.0, vElevation);
+            float mountainSnow = smoothstep(0.42, 0.62, effectiveSlope);
+            float altBonus = smoothstep(18.0, 75.0, vElevation) * 0.38;
+            mountainSnow = clamp(mountainSnow + altBonus, 0.0, 1.0);
+
+            // Glacial erratic boulders (vElevation < 10.0m):
+            // Delicate layer of pure snow settling softly on the rounded top crest
+            float boulderSnow = smoothstep(0.56, 0.76, baseN.y + nLedge * 0.25);
+
+            float snowMask = mix(boulderSnow, mountainSnow, isHighMountain);
+
+            // Waterline clearing: no snow under water / right at wet shore (vElevation < 0.25)
+            float shoreClear = smoothstep(0.15, 0.55, vElevation);
+            snowMask *= shoreClear;
+            snowMask = clamp(snowMask, 0.0, 1.0);
+
+            vec3 N = normalize(mix(bumpN, baseN, snowMask * 0.80));
+            vec3 L_sun = normalize(uSunPos - vWorldPosition);
+            vec3 L_moon = normalize(uMoonPos - vWorldPosition);
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 H_sun = normalize(L_sun + V);
+            vec3 H_moon = normalize(L_moon + V);
+
+            // Albedo: Basalt rock with wet shoreline darkening vs crisp snow
+            float wetness = clamp(1.0 - smoothstep(0.0, 1.1, vElevation), 0.0, 1.0) * (1.0 - snowMask);
+            vec3 snowAlbedo = vec3(0.96, 0.98, 1.0);
+            float strata = sin(vElevation * 0.45 + fbmSmooth(vWorldPosition.xz * 0.05) * 3.5) * 0.04;
+            vec3 dryBasalt = vec3(0.18, 0.20, 0.22) + strata + nFissure * 0.08;
+            vec3 wetBasalt = dryBasalt * 0.55; // Darker saturated volcanic basalt when wet
+            vec3 rockAlbedo = mix(dryBasalt, wetBasalt, wetness);
+
+            vec3 albedo = mix(rockAlbedo, snowAlbedo, snowMask);
+
+            // 1. Direct Sunset Illumination + Alpenglow on peaks (Scene 1)
+            float NdotL_sun = max(0.0, dot(N, L_sun));
+            float peakHeight = smoothstep(18.0, 75.0, vElevation);
+            vec3 alpenglowCol = mix(vec3(1.0, 0.42, 0.22), vec3(1.0, 0.65, 0.35), uSunsetProg);
+            float alpenglow = pow(NdotL_sun, 1.3) * peakHeight * 1.5;
+            vec3 sunLit = (uSunColor * NdotL_sun * 1.35) + (alpenglowCol * alpenglow * 1.45);
+
+            // 2. Direct Silvery Moonlight Illumination (Scene 2-7)
+            float NdotL_moon = max(0.0, dot(N, L_moon));
+            vec3 moonLit = uMoonColor * (NdotL_moon * 0.75 + 0.25) * 0.82;
+            moonLit += vec3(0.88, 0.95, 1.0) * pow(max(0.0, dot(N, H_moon)), 45.0) * snowMask * 0.65;
+
+            // 3. Diffuse Aurora Borealis Sheen on Peaks (Scene 2-7)
+            vec3 auroraLit = vec3(0.06, 0.88, 0.62) * max(0.0, N.y) * uAuroraIntensity * 0.45;
+
+            // Combined Direct Light
+            vec3 directLit = mix(moonLit + auroraLit, sunLit, uSunsetProg);
+
+            // 4. Ambient Sky Light (Rich & luminous: ZERO pitch-black silhouettes!)
+            vec3 ambientSunset = vec3(0.08, 0.14, 0.24);
+            vec3 ambientNight = vec3(0.05, 0.09, 0.18);
+            vec3 ambientSky = mix(ambientNight, ambientSunset, uSunsetProg);
+            vec3 ambient = ambientSky * mix(0.75, 1.35, snowMask) * (0.45 + 0.55 * N.y);
+
+            // Rim scattering on snow
+            float rim = pow(1.0 - max(0.0, dot(V, N)), 3.5);
+            float backScatter = pow(max(0.0, dot(-V, L_sun)), 3.2);
+            vec3 rimScatter = uSunSunsetColor * rim * backScatter * snowMask * 1.4 * uSunsetProg;
+
+            // Specular highlights: wet rock glistens, snow sparkles under light
+            float specPow = mix(mix(16.0, 60.0, wetness), 110.0, snowMask);
+            float specCoeff = mix(mix(0.05, 0.45, wetness), 0.80, snowMask);
+            vec3 specH = mix(H_moon, H_sun, uSunsetProg);
+            vec3 specLightCol = mix(uMoonColor, uSunColor, uSunsetProg);
+            float spec = pow(max(0.0, dot(N, specH)), specPow) * specCoeff;
+
+            vec3 litSurface = albedo * (ambient + directLit) + rimScatter + specLightCol * spec;
+
+            // Atmospheric Fog Integration
+            float dist = length(cameraPosition - vWorldPosition);
+            float fogFactor = 1.0 - exp(-pow(dist * 0.0032, 1.50));
+            vec3 fogCol = mix(vec3(0.02, 0.05, 0.10), uSunSunsetColor * 0.75, pow(max(0.0, dot(-V, L_sun)), 2.2) * uSunsetProg);
+
+            vec3 finalColor = mix(litSurface, fogCol, fogFactor);
+            gl_FragColor = vec4(finalColor, 1.0);
+          }
+        `
+      });
+
+      // 1. Distant Alpine Mountain Range (360-degree Amphitheater)
+      const radialSegs = 320;
+      const ringSegs = 90;
+      const alpineGeo = new THREE.BufferGeometry();
+      const alpinePos = [];
+      const alpineUvs = [];
+      const alpineIndices = [];
+
+      for (let ri = 0; ri <= ringSegs; ri++) {
+        const tRing = ri / ringSegs;
+        const r = 135 + (440 - 135) * Math.pow(tRing, 1.35);
+
+        for (let ai = 0; ai <= radialSegs; ai++) {
+          const theta = (ai / radialSegs) * Math.PI * 2;
+          const x = r * Math.sin(theta);
+          const z = r * Math.cos(theta) - 70;
+
+          const sunAngleDiff = Math.abs(theta - Math.PI);
+
+          const qx = x * 0.0032;
+          const qz = z * 0.0032;
+          const warpX = qx + 0.28 * terrainFbm(qx * 1.5, qz * 1.5, 3);
+          const warpZ = qz + 0.28 * terrainFbm(qz * 1.5, qx * 1.5, 3);
+
+          const rmf1 = terrainRidgedMF(warpX, warpZ, 5);
+          const rmf2 = terrainRidgedMF(warpX * 2.1 + 4.2, warpZ * 2.1 + 2.7, 4);
+          const b1 = terrainBillow(warpX * 1.4, warpZ * 1.4, 3);
+          const fb = terrainFbm(warpX * 4.0, warpZ * 4.0, 3);
+
+          let mountainMass = rmf1 * 85.0 + rmf2 * 38.0 + b1 * 20.0 + fb * 10.0;
+
+          let saddleMod = 1.0;
+          let sentinelPeakBonus = 0.0;
+          if (sunAngleDiff < 0.36) {
+            saddleMod = 0.25 + (sunAngleDiff / 0.36) * 0.75;
+          }
+          if (Math.abs(sunAngleDiff - 0.45) < 0.20) {
+            sentinelPeakBonus = Math.cos((sunAngleDiff - 0.45) / 0.20 * Math.PI * 0.5) * 58.0;
+          }
+
+          const distEnvelope = Math.pow(Math.min(1.0, tRing * 1.5), 1.2);
+          let h = (mountainMass * saddleMod + sentinelPeakBonus) * distEnvelope + 3.0 * distEnvelope;
+
+          // Inner boundary submerged below water line
+          if (tRing < 0.05) {
+            const shoreT = tRing / 0.05;
+            h = (h * shoreT) - (4.0 * (1.0 - shoreT));
+          }
+
+          alpinePos.push(x, h, z);
+          alpineUvs.push(ai / radialSegs, ri / ringSegs);
+        }
+      }
+
+      for (let ri = 0; ri < ringSegs; ri++) {
+        for (let ai = 0; ai < radialSegs; ai++) {
+          const a = ri * (radialSegs + 1) + ai;
+          const b = (ri + 1) * (radialSegs + 1) + ai;
+          const c = (ri + 1) * (radialSegs + 1) + (ai + 1);
+          const d = ri * (radialSegs + 1) + (ai + 1);
+          alpineIndices.push(a, b, d);
+          alpineIndices.push(b, c, d);
+        }
+      }
+
+      alpineGeo.setAttribute('position', new THREE.Float32BufferAttribute(alpinePos, 3));
+      alpineGeo.setAttribute('uv', new THREE.Float32BufferAttribute(alpineUvs, 2));
+      alpineGeo.setIndex(alpineIndices);
+      alpineGeo.computeVertexNormals();
+
+      // Stitch seam normals perfectly across 0 and 2*PI boundary
+      const alpineNormals = alpineGeo.attributes.normal.array;
+      for (let ri = 0; ri <= ringSegs; ri++) {
+        const i0 = (ri * (radialSegs + 1) + 0) * 3;
+        const iEnd = (ri * (radialSegs + 1) + radialSegs) * 3;
+        const nx = (alpineNormals[i0] + alpineNormals[iEnd]) * 0.5;
+        const ny = (alpineNormals[i0 + 1] + alpineNormals[iEnd + 1]) * 0.5;
+        const nz = (alpineNormals[i0 + 2] + alpineNormals[iEnd + 2]) * 0.5;
+        const len = Math.hypot(nx, ny, nz) || 1.0;
+        alpineNormals[i0] = alpineNormals[iEnd] = nx / len;
+        alpineNormals[i0 + 1] = alpineNormals[iEnd + 1] = ny / len;
+        alpineNormals[i0 + 2] = alpineNormals[iEnd + 2] = nz / len;
+      }
+      alpineGeo.attributes.normal.needsUpdate = true;
+
+      terrainAlpineMassives = new THREE.Mesh(alpineGeo, terrainMaterial);
+      scene.add(terrainAlpineMassives);
+
+      // 2. Midground Fjord Promontories (West & East Headlands)
+      function createPromontoryMesh(isWest) {
+        const geo = new THREE.PlaneGeometry(130, 160, 110, 130);
+        geo.rotateX(-Math.PI / 2);
+        const pos = geo.attributes.position.array;
+
+        const sign = isWest ? -1 : 1;
+        const baseCenterX = sign * 95;
+        const baseCenterZ = -105;
+
+        for (let i = 0; i < pos.length; i += 3) {
+          const lx = pos[i];
+          const lz = pos[i + 2];
+          const wx = baseCenterX + lx;
+          const wz = baseCenterZ + lz;
+
+          const tipX = sign * 42;
+          const tipZ = -65;
+          const rootX = sign * 150;
+          const rootZ = -160;
+
+          const ridgeLen = Math.hypot(rootX - tipX, rootZ - tipZ);
+          const distFromTip = Math.hypot(wx - tipX, wz - tipZ);
+          const ridgeProg = Math.max(0.0, Math.min(1.0, distFromTip / ridgeLen));
+
+          const dirX = (rootX - tipX) / ridgeLen;
+          const dirZ = (rootZ - tipZ) / ridgeLen;
+          const perpX = -dirZ;
+          const perpZ = dirX;
+          const lateralDist = Math.abs((wx - tipX) * perpX + (wz - tipZ) * perpZ);
+
+          const rmf = terrainRidgedMF(wx * 0.012, wz * 0.012, 4);
+          const fb = terrainFbm(wx * 0.025, wz * 0.025, 3);
+
+          const ridgeWidth = 32.0 + ridgeProg * 35.0;
+          const lateralFade = Math.max(0.0, 1.0 - Math.pow(lateralDist / ridgeWidth, 2.0));
+
+          let h = (ridgeProg * 45.0 + rmf * 16.0 + fb * 6.0) * lateralFade;
+
+          const edgeDistX = 65.0 - Math.abs(lx);
+          const edgeDistZ = 80.0 - Math.abs(lz);
+          const borderDist = Math.min(edgeDistX, edgeDistZ);
+          if (borderDist < 12.0) {
+            const t = borderDist / 12.0;
+            h = (h * t) - (3.5 * (1.0 - t));
+          }
+
+          pos[i + 1] = h;
+        }
+
+        geo.attributes.position.needsUpdate = true;
+        geo.computeVertexNormals();
+        const mesh = new THREE.Mesh(geo, terrainMaterial);
+        mesh.position.set(baseCenterX, 0, baseCenterZ);
+        return mesh;
+      }
+
+      terrainPromontoryWest = createPromontoryMesh(true);
+      scene.add(terrainPromontoryWest);
+
+      terrainPromontoryEast = createPromontoryMesh(false);
+      scene.add(terrainPromontoryEast);
+
+      // 3. Foreground Elevated Panoramic Bluff & Shoreline (Observer at Z=42, Y=8.2; dry ground Y=6.5)
+      const shoreGeo = new THREE.PlaneGeometry(140, 100, 120, 90);
+      shoreGeo.rotateX(-Math.PI / 2);
+      const sPos = shoreGeo.attributes.position.array;
+
+      for (let i = 0; i < sPos.length; i += 3) {
+        const lx = sPos[i];
+        const lz = sPos[i + 2];
+        const wx = lx;
+        const wz = 52 + lz; // Spans from wz = 2 (in lake shelf) to wz = 102 (behind observer)
+
+        let h = 0.0;
+        if (wz >= 38.0) {
+          // Upper elevated dry promontory plateau where observer stands (Z=42, ground Y=6.5)
+          h = 6.5 + terrainFbm(wx * 0.04, wz * 0.04, 3) * 0.45;
+        } else if (wz >= 15.0) {
+          // Smooth, solid 23m descent from bluff (6.5m) to water edge (0m at Z=15)
+          const tSlope = (wz - 15.0) / (38.0 - 15.0); // 0 at Z=15, 1 at Z=38
+          const ramp = tSlope * tSlope * (3.0 - 2.0 * tSlope);
+          h = ramp * 6.5 + terrainFbm(wx * 0.04, wz * 0.04, 3) * (0.15 + 0.3 * ramp);
+        } else {
+          // Submerged lakebed shelf dipping below waterline (Y <= 0)
+          const tSub = Math.min(1.0, (15.0 - wz) / 10.0);
+          h = -tSub * 3.5;
+        }
+
+        // Lateral falloff towards far outer edges
+        const lateralFade = Math.max(0.0, 1.0 - Math.pow(Math.abs(lx) / 66.0, 4.0));
+        h *= lateralFade;
+        if (Math.abs(lx) > 55.0) {
+          const edgeT = (Math.abs(lx) - 55.0) / 15.0;
+          h -= edgeT * 4.0;
+        }
+        if (wz > 92.0) {
+          const rearT = (wz - 92.0) / 10.0;
+          h -= rearT * 2.0;
+        }
+
+        sPos[i + 1] = h;
+      }
+
+      shoreGeo.attributes.position.needsUpdate = true;
+      shoreGeo.computeVertexNormals();
+      terrainForegroundShore = new THREE.Mesh(shoreGeo, terrainMaterial);
+      terrainForegroundShore.position.set(0, 0, 52);
+      scene.add(terrainForegroundShore);
+
+      // 4. Photorealistic Arctic Glacial Erratics (Polished Boulders with organic top snow)
+      terrainBoulders = new THREE.Group();
+
+      function createGlacialErraticGeometry(radius, detail, cfg) {
+        const rawGeo = new THREE.IcosahedronGeometry(radius, detail);
+        const rawPos = rawGeo.attributes.position.array;
+
+        // Weld duplicate vertices to create an indexed geometry with shared normals
+        const uniquePos = [];
+        const indices = [];
+        const vertexMap = new Map();
+        const prec = 10000;
+
+        for (let i = 0; i < rawPos.length; i += 3) {
+          const vx = rawPos[i];
+          const vy = rawPos[i + 1];
+          const vz = rawPos[i + 2];
+          const key = `${Math.round(vx * prec)}_${Math.round(vy * prec)}_${Math.round(vz * prec)}`;
+          let idx = vertexMap.get(key);
+          if (idx === undefined) {
+            idx = uniquePos.length / 3;
+            vertexMap.set(key, idx);
+            uniquePos.push(vx, vy, vz);
+          }
+          indices.push(idx);
+        }
+
+        const seed = cfg.seed || 1.0;
+        const sx = cfg.sx || 1.0;
+        const sy = cfg.sy || 1.0;
+        const sz = cfg.sz || 1.0;
+
+        // Sculpt organic weathered glacial shape on continuous welded mesh
+        for (let i = 0; i < uniquePos.length; i += 3) {
+          const vx = uniquePos[i];
+          const vy = uniquePos[i + 1];
+          const vz = uniquePos[i + 2];
+          const len = Math.hypot(vx, vy, vz) || 1.0;
+          const nx = vx / len;
+          const ny = vy / len;
+          const nz = vz / len;
+
+          const n1 = _terrainNoiseA(nx * 1.5 + seed * 2.1, nz * 1.5 + seed * 1.7);
+          const n2 = _terrainNoiseB(ny * 2.1 + seed * 1.3, nx * 2.1 + seed * 0.9);
+          const n3 = _terrainNoiseA(nz * 3.6 + seed * 0.7, ny * 3.6 + seed * 1.4) * 0.35;
+
+          const topShelf = ny > 0.15 ? (1.0 - (ny - 0.15) * 0.12) : 1.0;
+          const r = 1.0 + (n1 * 0.16 + n2 * 0.09 + n3 * 0.04);
+
+          let px = nx * r * sx;
+          let py = ny * r * sy * topShelf;
+          let pz = nz * r * sz;
+
+          // Natural grounding: flatten base so boulder rests solidly in shore sand and water
+          if (ny < -0.30) {
+            const botT = (-ny - 0.30) / 0.70;
+            py = py * (1.0 - botT * 0.25);
+          }
+
+          uniquePos[i] = px;
+          uniquePos[i + 1] = py;
+          uniquePos[i + 2] = pz;
+        }
+
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(uniquePos, 3));
+        geo.setIndex(indices);
+        geo.computeVertexNormals();
+        return geo;
+      }
+
+      const bConfigs = [
+        // 1. Foreground Dry Promontory Plateau (Tactile boulders surrounding observer at Z=42, Y=6.5)
+        { x: -4.8,  y: 6.40, z: 40.0, sx: 1.8, sy: 1.1, sz: 1.6, ry: 0.85, seed: 13.1 },
+        { x:  5.2,  y: 6.40, z: 41.5, sx: 1.9, sy: 1.2, sz: 1.7, ry: 2.10, seed: 14.5 },
+        { x: -8.5,  y: 6.45, z: 45.0, sx: 2.4, sy: 1.5, sz: 2.2, ry: 1.45, seed: 15.2 },
+        { x:  9.0,  y: 6.45, z: 46.0, sx: 2.5, sy: 1.6, sz: 2.3, ry: 0.65, seed: 16.0 },
+        { x: -2.6,  y: 5.80, z: 36.0, sx: 1.4, sy: 0.9, sz: 1.3, ry: 1.90, seed: 11.8 },
+        { x:  3.8,  y: 5.60, z: 35.5, sx: 1.5, sy: 1.0, sz: 1.4, ry: 2.75, seed: 12.3 },
+
+        // 2. Mid-Slope Sentinels (Descending from bluff to waterline along Z=24..30)
+        { x: -15.0, y: 3.20, z: 26.0, sx: 2.8, sy: 1.8, sz: 2.5, ry: 1.35, seed: 2.8 },
+        { x:  -8.5, y: 3.80, z: 28.0, sx: 2.0, sy: 1.3, sz: 1.9, ry: 2.40, seed: 3.9 },
+        { x:  14.0, y: 2.90, z: 25.0, sx: 3.0, sy: 1.9, sz: 2.6, ry: 1.80, seed: 6.3 },
+        { x:   7.5, y: 4.10, z: 29.0, sx: 1.8, sy: 1.1, sz: 1.7, ry: 3.05, seed: 9.2 },
+        { x: -18.5, y: 2.40, z: 29.5, sx: 1.5, sy: 1.0, sz: 1.4, ry: 0.85, seed: 4.6 },
+        { x:  17.5, y: 2.50, z: 28.5, sx: 1.4, sy: 0.9, sz: 1.3, ry: 0.45, seed: 10.5 },
+
+        // 3. Shoreline Water's Edge Sentinels (Nestled at waterline Z=14..17, Y=0.0..0.4)
+        { x: -22.0, y: 0.15, z: 16.0, sx: 3.6, sy: 2.3, sz: 3.2, ry: 0.62, seed: 1.4 },
+        { x: -13.5, y: 0.05, z: 15.0, sx: 2.6, sy: 1.7, sz: 2.3, ry: 1.15, seed: 5.1 },
+        { x:  19.0, y: 0.10, z: 15.5, sx: 3.4, sy: 2.2, sz: 3.0, ry: 0.95, seed: 7.7 },
+        { x:  26.0, y: 0.35, z: 17.0, sx: 4.2, sy: 2.7, sz: 3.8, ry: 2.65, seed: 8.4 },
+        { x:  -3.2, y: 0.10, z: 16.5, sx: 1.2, sy: 0.7, sz: 1.1, ry: 1.70, seed: 17.1 },
+        { x:   2.8, y: 0.05, z: 15.8, sx: 1.0, sy: 0.6, sz: 0.9, ry: 2.20, seed: 18.2 }
+      ];
+
+      bConfigs.forEach(cfg => {
+        const bGeo = createGlacialErraticGeometry(1.0, 4, cfg);
+        const bMesh = new THREE.Mesh(bGeo, terrainMaterial);
+        bMesh.position.set(cfg.x, cfg.y + cfg.sy * 0.45, cfg.z);
+        bMesh.rotation.y = cfg.ry;
+        terrainBoulders.add(bMesh);
+      });
+      scene.add(terrainBoulders);
+    }
+
+    /* --- 4. SACRED LAKE (Physical PBR Water & Sunset/Moonlight Glitter Paths) --- */
+    function buildSacredLake() {
+      const texData = window.EVENING_WATER_TEXTURES || {};
+      const waterGeo = new THREE.PlaneGeometry(1600, 860, 160, 90);
+      waterGeo.rotateX(-Math.PI / 2);
+
+      let waterNormalTex = null;
+      if (texData.waterNormal) {
+        waterNormalTex = textureLoader.load(texData.waterNormal);
+      } else {
+        waterNormalTex = createProceduralNormalFallback();
+      }
+      waterNormalTex.wrapS = THREE.RepeatWrapping;
+      waterNormalTex.wrapT = THREE.RepeatWrapping;
+
+      const waterMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0.0 },
+          uNormalMap: { value: waterNormalTex },
+          uSunPos: { value: new THREE.Vector3(25, -5, -720) },
+          uMoonPos: { value: new THREE.Vector3(-110, 160, -520) },
+          uSunsetProg: { value: 1.0 },
+          uAuroraIntensity: { value: 0.0 },
+          uDeepColor: { value: new THREE.Color(0x011324) },
+          uShallowColor: { value: new THREE.Color(0x082b48) },
+          uSkyReflectColor: { value: new THREE.Color(0x122c47) }
+        },
+        vertexShader: `
+          uniform float uTime;
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+
+          void getGerstner(vec2 pos, float time, out vec3 displacedPos, out vec3 waveNormal) {
+            float x = pos.x;
+            float z = pos.y;
+            float y = 0.0;
+            
+            vec3 B = vec3(1.0, 0.0, 0.0);
+            vec3 T = vec3(0.0, 0.0, 1.0);
+
+            // Primary mountain lake swell
+            float k1 = 2.0 * 3.14159 / 36.0;
+            float c1 = 2.2;
+            vec2 d1 = normalize(vec2(0.25, 0.97));
+            float a1 = 0.12;
+            float phase1 = k1 * (dot(d1, pos) - c1 * time);
+            x += d1.x * (a1 * cos(phase1));
+            z += d1.y * (a1 * cos(phase1));
+            y += a1 * sin(phase1);
+            B += vec3(-d1.x * d1.x * a1 * k1 * sin(phase1), d1.x * a1 * k1 * cos(phase1), -d1.x * d1.y * a1 * k1 * sin(phase1));
+            T += vec3(-d1.x * d1.y * a1 * k1 * sin(phase1), d1.y * a1 * k1 * cos(phase1), -d1.y * d1.y * a1 * k1 * sin(phase1));
+
+            // Secondary crossing wave
+            float k2 = 2.0 * 3.14159 / 18.0;
+            float c2 = 2.8;
+            vec2 d2 = normalize(vec2(-0.55, 0.83));
+            float a2 = 0.06;
+            float phase2 = k2 * (dot(d2, pos) - c2 * time);
+            x += d2.x * (a2 * cos(phase2));
+            z += d2.y * (a2 * cos(phase2));
+            y += a2 * sin(phase2);
+            B += vec3(-d2.x * d2.x * a2 * k2 * sin(phase2), d2.x * a2 * k2 * cos(phase2), -d2.x * d2.y * a2 * k2 * sin(phase2));
+            T += vec3(-d2.x * d2.y * a2 * k2 * sin(phase2), d2.y * a2 * k2 * cos(phase2), -d2.y * d2.y * a2 * k2 * sin(phase2));
+
+            // Surface ripple chop
+            float k3 = 2.0 * 3.14159 / 8.0;
+            float c3 = 4.0;
+            vec2 d3 = normalize(vec2(0.7, 0.7));
+            float a3 = 0.024;
+            float phase3 = k3 * (dot(d3, pos) - c3 * time);
+            y += a3 * sin(phase3);
+
+            displacedPos = vec3(x, y, z);
+            waveNormal = normalize(cross(T, B));
+          }
+
+          void main() {
+            vUv = uv;
+            vec3 dispPos;
+            vec3 wNormal;
+            getGerstner(position.xz, uTime, dispPos, wNormal);
+
+            vec4 worldPos = modelMatrix * vec4(dispPos, 1.0);
+            vWorldPosition = worldPos.xyz;
+            vNormal = normalize(mat3(modelMatrix) * wNormal);
+
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform sampler2D uNormalMap;
+          uniform vec3 uSunPos;
+          uniform vec3 uMoonPos;
+          uniform float uSunsetProg;
+          uniform float uAuroraIntensity;
+          uniform vec3 uDeepColor;
+          uniform vec3 uShallowColor;
+          uniform vec3 uSkyReflectColor;
+
+          varying vec3 vWorldPosition;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+
+          void main() {
+            // Dual-speed scrolling normal map for organic capillary ripple facets
+            vec2 uv1 = vUv * 40.0 + vec2(uTime * 0.038, uTime * 0.030);
+            vec2 uv2 = vUv * 92.0 + vec2(-uTime * 0.042, uTime * 0.038);
+            vec3 n1 = texture2D(uNormalMap, uv1).rgb * 2.0 - 1.0;
+            vec3 n2 = texture2D(uNormalMap, uv2).rgb * 2.0 - 1.0;
+            vec3 microN = normalize(n1 + n2 * 0.65);
+
+            vec3 N = normalize(vec3(
+              vNormal.x + microN.x * 0.24,
+              vNormal.y + microN.z * 0.08,
+              vNormal.z + microN.y * 0.24
+            ));
+
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 L_sun = normalize(uSunPos - vWorldPosition);
+            vec3 L_moon = normalize(uMoonPos - vWorldPosition);
+            vec3 H_sun = normalize(L_sun + V);
+            vec3 H_moon = normalize(L_moon + V);
+
+            // Fresnel reflectance
+            float cosTheta = clamp(dot(N, V), 0.0, 1.0);
+            float fresnel = 0.025 + 0.975 * pow(1.0 - cosTheta, 5.0);
+
+            // Base depth color
+            vec3 waterDepth = mix(uDeepColor, uShallowColor, 0.35);
+
+            // Sky reflection: warm twilight tones at sunset, silvery sapphire at night
+            vec3 sunsetSkyRefl = vec3(0.24, 0.12, 0.16);
+            vec3 nightSkyRefl = vec3(0.03, 0.07, 0.15);
+            vec3 skyRefl = mix(nightSkyRefl, sunsetSkyRefl, uSunsetProg);
+            vec3 baseWater = mix(waterDepth, skyRefl, fresnel);
+
+            // 1. Sunset Glitter Path (Scene 1)
+            float NdotH_sun = max(0.0, dot(N, H_sun));
+            float sunGlitter = (pow(NdotH_sun, 18.0) * 0.55 + pow(NdotH_sun, 85.0) * 1.8) * uSunsetProg;
+            vec3 sunGlitterCol = vec3(1.0, 0.68, 0.35) * sunGlitter * 2.6;
+
+            // 2. Moonlight Glitter Path (Scene 2-7)
+            float NdotH_moon = max(0.0, dot(N, H_moon));
+            float moonGlitter = (pow(NdotH_moon, 24.0) * 0.45 + pow(NdotH_moon, 110.0) * 2.2) * (1.0 - uSunsetProg * 0.85);
+            vec3 moonGlitterCol = vec3(0.75, 0.90, 1.0) * moonGlitter * 2.2;
+
+            // 3. Aurora borealis emerald shimmer on water surface
+            vec3 auroraRefl = vec3(0.06, 0.88, 0.62) * fresnel * uAuroraIntensity * 0.65;
+
+            vec3 finalColor = baseWater + sunGlitterCol + moonGlitterCol + auroraRefl;
+
+            // Fog blending seamlessly with mountain panorama waterline
+            float dist = length(cameraPosition - vWorldPosition);
+            float fog = smoothstep(220.0, 850.0, dist);
+            vec3 horizonFogCol = mix(vec3(0.02, 0.05, 0.10), vec3(0.35, 0.15, 0.10), uSunsetProg);
+            finalColor = mix(finalColor, horizonFogCol, fog * 0.80);
+
+            gl_FragColor = vec4(finalColor, 0.98);
+          }
+        `,
+        transparent: true
+      });
+
+      waterMesh = new THREE.Mesh(waterGeo, waterMat);
+      waterMesh.position.set(0, 0, -415);
+      scene.add(waterMesh);
+
+      // Deep Submerged Cerulean Volume
+      const subGeo = new THREE.BoxGeometry(1400, 50, 860);
+      const subMat = new THREE.MeshBasicMaterial({
+        color: 0x01162b,
+        transparent: true,
+        opacity: 0.82,
+        side: THREE.BackSide
+      });
+      waterSubSurfaceMesh = new THREE.Mesh(subGeo, subMat);
+      waterSubSurfaceMesh.position.set(0, -25, -415);
+      scene.add(waterSubSurfaceMesh);
+    }
+
+    /* --- 5. PHOTOMETRIC INCANDESCENT SUN & REFINED ATMOSPHERIC CORONA (Scene 1) --- */
+    function buildSunMesh() {
+      const sunGeo = new THREE.SphereGeometry(14, 32, 32);
+      const sunMat = new THREE.MeshBasicMaterial({
+        color: 0xfffae8,
+        fog: false
+      });
+      sunMesh = new THREE.Mesh(sunGeo, sunMat);
+      sunMesh.position.set(25, -2, -720);
+      scene.add(sunMesh);
+
+      // Inner Warm Golden Solar Limb Glow
+      const corona1Tex = createSunCoronaTexture(128, 'inner');
+      const corona1Mat = new THREE.SpriteMaterial({
+        map: corona1Tex,
+        color: 0xffdf88,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        opacity: 0.90,
+        depthWrite: false,
+        fog: false
+      });
+      sunCorona1 = new THREE.Sprite(corona1Mat);
+      sunCorona1.scale.set(75, 75, 1);
+      sunMesh.add(sunCorona1);
+
+      // Soft Atmospheric Dawn Mie Halo
+      const corona2Tex = createSunCoronaTexture(256, 'outer');
+      const corona2Mat = new THREE.SpriteMaterial({
+        map: corona2Tex,
+        color: 0xff7722,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        opacity: 0.42,
+        depthWrite: false,
+        fog: false
+      });
+      sunCorona2 = new THREE.Sprite(corona2Mat);
+      sunCorona2.scale.set(260, 260, 1);
+      sunMesh.add(sunCorona2);
+    }
+
+    /* --- 6. LUMINOUS ARCTIC MOON & CELESTIAL HALO (Scene 2-7, Zero Flat Discs!) --- */
+    function buildMoonMesh() {
+      moonMesh = new THREE.Group();
+      moonMesh.position.set(-110, 160, -520);
+      moonMesh.visible = false; // Hidden strictly during Sunset (Scene 1)
+      scene.add(moonMesh);
+
+      // Silvery Inner Lunar Disc & Limb Glow (Zero depth-write clipping)
+      const moonTex = createMoonTexture(256);
+      const moonMat = new THREE.SpriteMaterial({
+        map: moonTex,
+        color: 0xffffff,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        opacity: 0.95,
+        depthWrite: false,
+        fog: false
+      });
+      moonCorona1 = new THREE.Sprite(moonMat);
+      moonCorona1.scale.set(130, 130, 1);
+      moonMesh.add(moonCorona1);
+
+      // Soft Celestial Night Sky Halo
+      const moonCorona2Mat = new THREE.SpriteMaterial({
+        map: createGlowMoteTexture('moon'),
+        color: 0x60a5fa,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        opacity: 0.35,
+        depthWrite: false,
+        fog: false
+      });
+      moonCorona2 = new THREE.Sprite(moonCorona2Mat);
+      moonCorona2.scale.set(280, 280, 1);
+      moonMesh.add(moonCorona2);
+    }
+
+    /* --- 7. PROCEDURAL SHIMMERING AURORA BOREALIS --- */
+    function buildAuroraBorealis() {
+      const auroraGeo = new THREE.CylinderGeometry(480, 520, 130, 64, 16, true, Math.PI * 0.2, Math.PI * 0.9);
+      const auroraMat = new THREE.ShaderMaterial({
+        side: THREE.DoubleSide,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uTime: { value: 0.0 },
+          uIntensity: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          varying float vWave;
+          uniform float uTime;
+
+          void main() {
+            vUv = uv;
+            vec3 pos = position;
+            float wave1 = sin(pos.x * 0.02 + uTime * 0.8) * 18.0;
+            float wave2 = cos(pos.z * 0.025 + uTime * 1.1) * 14.0;
+            pos.x += wave1;
+            pos.z += wave2;
+            vWave = wave1 + wave2;
+            gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(pos, 1.0);
+          }
+        `,
+        fragmentShader: `
+          varying vec2 vUv;
+          varying float vWave;
+          uniform float uTime;
+          uniform float uIntensity;
+
+          void main() {
+            float curtain = sin(vUv.y * 3.14159);
+            curtain = pow(curtain, 1.6);
+
+            float ribbons = sin(vUv.x * 40.0 + uTime * 1.2 + vWave * 0.1) * 0.5 + 0.5;
+            ribbons = pow(ribbons, 2.0);
+
+            vec3 colEmerald = vec3(0.06, 0.91, 0.60);
+            vec3 colCyan = vec3(0.02, 0.71, 0.83);
+            vec3 colViolet = vec3(0.38, 0.40, 0.94);
+
+            vec3 auroraColor = mix(colEmerald, colCyan, vUv.y);
+            auroraColor = mix(auroraColor, colViolet, ribbons * 0.3);
+
+            float alpha = curtain * (0.35 + ribbons * 0.65) * uIntensity;
+            gl_FragColor = vec4(auroraColor * 1.35, alpha);
+          }
+        `
+      });
+
+      auroraMesh = new THREE.Mesh(auroraGeo, auroraMat);
+      auroraMesh.position.set(0, 130, -320);
+      scene.add(auroraMesh);
+    }
+
+    /* --- 8. SCENA 3: CASCATA DI LUCE BIANCA CELESTIALE (83s - 195s) --- */
+    function buildWaterfallOfLight() {
+      waterfallGroup = new THREE.Group();
+      waterfallGroup.position.set(0, 0, 18.0);
+      waterfallGroup.visible = false;
+      scene.add(waterfallGroup);
+
+      const beamGeo = new THREE.CylinderGeometry(2.5, 4.2, 85, 32, 1, true);
+      const beamMat = new THREE.ShaderMaterial({
+        side: THREE.DoubleSide,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uTime: { value: 0.0 },
+          uOpacity: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          varying vec3 vNormal;
+          void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          varying vec2 vUv;
+          varying vec3 vNormal;
+          uniform float uTime;
+          uniform float uOpacity;
+
+          void main() {
+            float edge = abs(vNormal.z);
+            edge = pow(edge, 1.4);
+
+            float streaks = sin(vUv.x * 24.0 + uTime * 2.5) * 0.5 + 0.5;
+            float vFade = smoothstep(0.0, 0.15, vUv.y) * smoothstep(1.0, 0.85, vUv.y);
+
+            vec3 coreColor = vec3(0.96, 0.99, 1.0);
+            vec3 haloColor = vec3(0.50, 0.88, 1.0);
+            vec3 beamColor = mix(haloColor, coreColor, streaks * 0.7 + 0.3);
+
+            float alpha = edge * vFade * (0.5 + streaks * 0.5) * uOpacity;
+            gl_FragColor = vec4(beamColor * 1.5, alpha);
+          }
+        `
+      });
+
+      waterfallBeamMesh = new THREE.Mesh(beamGeo, beamMat);
+      waterfallBeamMesh.position.set(0, 42.5, 0);
+      waterfallGroup.add(waterfallBeamMesh);
+
+      // 1,500 Descending Light Photons
+      const photonCount = 1500;
+      const photonGeo = new THREE.BufferGeometry();
+      const pPositions = new Float32Array(photonCount * 3);
+      const pSpeeds = new Float32Array(photonCount);
+      const pRadii = new Float32Array(photonCount);
+      const pAngles = new Float32Array(photonCount);
+
+      for (let i = 0; i < photonCount; i++) {
+        pRadii[i] = Math.random() * 4.0;
+        pAngles[i] = Math.random() * 2.0 * Math.PI;
+        pSpeeds[i] = 12.0 + Math.random() * 18.0;
+        pPositions[i * 3 + 0] = Math.cos(pAngles[i]) * pRadii[i];
+        pPositions[i * 3 + 1] = Math.random() * 85.0;
+        pPositions[i * 3 + 2] = Math.sin(pAngles[i]) * pRadii[i];
+      }
+
+      photonGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+      photonGeo.userData = { pSpeeds, pRadii, pAngles };
+
+      const photonTex = createGlowMoteTexture('azure');
+      const photonMat = new THREE.PointsMaterial({
+        size: 0.28,
+        map: photonTex,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      waterfallPhotons = new THREE.Points(photonGeo, photonMat);
+      waterfallGroup.add(waterfallPhotons);
+
+      // Concentric Caustic Pool at Lake Base
+      const poolGeo = new THREE.RingGeometry(0.1, 8.5, 48);
+      poolGeo.rotateX(-Math.PI / 2);
+      const poolMat = new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uTime: { value: 0.0 },
+          uOpacity: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          varying vec2 vUv;
+          uniform float uTime;
+          uniform float uOpacity;
+
+          void main() {
+            vec2 center = vUv - vec2(0.5);
+            float r = length(center) * 2.0;
+            float wave = sin(r * 28.0 - uTime * 4.5) * 0.5 + 0.5;
+            float falloff = 1.0 - smoothstep(0.1, 1.0, r);
+
+            vec3 causticCol = vec3(0.55, 0.92, 1.0);
+            gl_FragColor = vec4(causticCol * 1.6, wave * falloff * uOpacity * 0.85);
+          }
+        `
+      });
+
+      waterfallCausticPool = new THREE.Mesh(poolGeo, poolMat);
+      waterfallCausticPool.position.set(0, 0.08, 0);
+      waterfallGroup.add(waterfallCausticPool);
+    }
+
+    /* --- 9. SCENA 4: STELLA COMETA AZZURRA (195s - 243s) --- */
+    function buildAzureComet() {
+      cometGroup = new THREE.Group();
+      cometGroup.visible = false;
+      scene.add(cometGroup);
+
+      const nucleusGeo = new THREE.SphereGeometry(1.2, 16, 16);
+      const nucleusMat = new THREE.MeshBasicMaterial({ color: 0xc8f5ff, fog: false, depthWrite: false });
+      cometNucleusMesh = new THREE.Mesh(nucleusGeo, nucleusMat);
+      cometGroup.add(cometNucleusMesh);
+
+      const cometSpriteMat = new THREE.SpriteMaterial({
+        map: createGlowMoteTexture('azure'),
+        color: 0x38bdf8,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        opacity: 0.95,
+        depthWrite: false,
+        fog: false
+      });
+      cometCoronaSprite = new THREE.Sprite(cometSpriteMat);
+      cometCoronaSprite.scale.set(18, 18, 1);
+      cometGroup.add(cometCoronaSprite);
+
+      // Comet Particle Trail (400 points)
+      const trailCount = 400;
+      const trailGeo = new THREE.BufferGeometry();
+      const tPos = new Float32Array(trailCount * 3);
+      for (let i = 0; i < trailCount * 3; i++) tPos[i] = 0;
+      trailGeo.setAttribute('position', new THREE.BufferAttribute(tPos, 3));
+
+      const tMat = new THREE.PointsMaterial({
+        size: 1.2,
+        map: createGlowMoteTexture('azure'),
+        transparent: true,
+        opacity: 0.88,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      cometTrailPoints = new THREE.Points(trailGeo, tMat);
+      cometTrailPoints.userData = { maxHistory: trailCount, count: 0 };
+      scene.add(cometTrailPoints);
+    }
+
+    /* --- 10. SCENA 5: DOPPIO CERCHIO SACRO (243s - 285s) --- */
+    function buildSacredDoubleCircles() {
+      sacredCirclesGroup = new THREE.Group();
+      sacredCirclesGroup.position.set(0, 8.5, 24.0);
+      sacredCirclesGroup.visible = false;
+      scene.add(sacredCirclesGroup);
+
+      // Outer Ring: Electric Blue Torus (radius 4.6)
+      const outerGeo = new THREE.TorusGeometry(4.6, 0.09, 16, 64);
+      const outerMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending
+      });
+      outerRingMesh = new THREE.Mesh(outerGeo, outerMat);
+      sacredCirclesGroup.add(outerRingMesh);
+
+      // Inner Ring: Emerald Green Torus (radius 3.1)
+      const innerGeo = new THREE.TorusGeometry(3.1, 0.09, 16, 64);
+      const innerMat = new THREE.MeshBasicMaterial({
+        color: 0x10b981,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending
+      });
+      innerRingMesh = new THREE.Mesh(innerGeo, innerMat);
+      sacredCirclesGroup.add(innerRingMesh);
+
+      // Luminous Water Reflection Pool beneath circles
+      const poolGeo = new THREE.RingGeometry(0.5, 7.0, 48);
+      poolGeo.rotateX(-Math.PI / 2);
+      const poolMat = new THREE.MeshBasicMaterial({
+        color: 0x06b6d4,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending
+      });
+      sacredPoolReflectMesh = new THREE.Mesh(poolGeo, poolMat);
+      sacredPoolReflectMesh.position.set(0, -8.4, 0);
+      sacredCirclesGroup.add(sacredPoolReflectMesh);
+    }
+
+    /* --- 11. SCENA 6: TUNNEL CILINDRICO DI LUCE SPIRALE (285s - 313s) --- */
+    function buildSpiralLightTunnel() {
+      tunnelGroup = new THREE.Group();
+      tunnelGroup.position.set(0, 8.2, -30);
+      tunnelGroup.visible = false;
+      scene.add(tunnelGroup);
+
+      const tunnelGeo = new THREE.CylinderGeometry(9.5, 9.5, 140, 48, 16, true);
+      tunnelGeo.rotateX(Math.PI / 2);
+
+      const texData = window.EVENING_WATER_TEXTURES || {};
+      let spiralTex = null;
+      if (texData.tunnelSpiral) {
+        spiralTex = textureLoader.load(texData.tunnelSpiral);
+        spiralTex.wrapS = THREE.RepeatWrapping;
+        spiralTex.wrapT = THREE.RepeatWrapping;
+      }
+
+      const tunnelMat = new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uTime: { value: 0.0 },
+          uOpacity: { value: 0.0 },
+          uSpiralTex: { value: spiralTex }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          varying vec3 vWorldPosition;
+          void main() {
+            vUv = uv;
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          varying vec2 vUv;
+          varying vec3 vWorldPosition;
+          uniform float uTime;
+          uniform float uOpacity;
+          uniform sampler2D uSpiralTex;
+
+          void main() {
+            vec2 uv = vec2(vUv.x * 3.0 + uTime * 0.15, vUv.y * 6.0 + uTime * 0.6);
+            vec4 texCol = texture2D(uSpiralTex, uv);
+
+            vec3 colTurquoise = vec3(0.02, 0.71, 0.83);
+            vec3 colEmerald = vec3(0.06, 0.72, 0.50);
+            vec3 tunnelColor = mix(colTurquoise, colEmerald, sin(vUv.y * 12.0 + uTime * 1.5) * 0.5 + 0.5);
+
+            float alpha = (texCol.a * 0.7 + 0.3) * uOpacity;
+            gl_FragColor = vec4(tunnelColor * 1.8, alpha);
+          }
+        `
+      });
+
+      tunnelMesh = new THREE.Mesh(tunnelGeo, tunnelMat);
+      tunnelGroup.add(tunnelMesh);
+
+      const dustCount = 600;
+      const dustGeo = new THREE.BufferGeometry();
+      const dPos = new Float32Array(dustCount * 3);
+      for (let i = 0; i < dustCount; i++) {
+        const theta = Math.random() * 2.0 * Math.PI;
+        const r = Math.random() * 8.5;
+        dPos[i * 3 + 0] = Math.cos(theta) * r;
+        dPos[i * 3 + 1] = Math.sin(theta) * r;
+        dPos[i * 3 + 2] = (Math.random() - 0.5) * 120.0;
+      }
+      dustGeo.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
+      const dustMat = new THREE.PointsMaterial({
+        size: 0.25,
+        map: createGlowMoteTexture('azure'),
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      tunnelStardust = new THREE.Points(dustGeo, dustMat);
+      tunnelGroup.add(tunnelStardust);
+    }
+
+    /* --- 12. THRESHOLD VEIL TRANSITION (Smooth entrance/exit) --- */
+    function buildThresholdVeil() {
+      const veilGeo = new THREE.PlaneGeometry(16, 16);
+      const veilMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.0,
+        depthTest: false,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      });
+      thresholdMesh = new THREE.Mesh(veilGeo, veilMat);
+      thresholdMesh.position.set(0, 0, -0.4);
+      thresholdMesh.visible = false;
+      camera.add(thresholdMesh);
+    }
+
+    /* --- 13. 3D FLOATING SUBTITLE BILLBOARD (VR Cardboard Mode, Centered Sweet-Spot) --- */
+    function build3DSubtitleBillboard() {
+      billboardCanvas = document.createElement('canvas');
+      billboardCanvas.width = 2048;
+      billboardCanvas.height = 512;
+      billboardContext = billboardCanvas.getContext('2d');
+
+      billboardTexture = new THREE.CanvasTexture(billboardCanvas);
+      billboardTexture.minFilter = THREE.LinearFilter;
+      billboardTexture.magFilter = THREE.LinearFilter;
+      billboardTexture.generateMipmaps = false;
+
+      const billboardGeo = new THREE.PlaneGeometry(3.2, 0.8);
+      const billboardMat = new THREE.MeshBasicMaterial({
+        map: billboardTexture,
+        transparent: true,
+        opacity: 1.0,
+        depthTest: false,
+        depthWrite: false,
+        fog: false
+      });
+      billboardMesh = new THREE.Mesh(billboardGeo, billboardMat);
+      billboardMesh.renderOrder = 9999;
+      // Positioned higher up (Y = -0.16, Z = -2.8) so Cardboard lenses never cut text off at bottom rim!
+      billboardMesh.position.set(0, -0.16, -2.8);
+      billboardMesh.rotation.x = 0.04;
+      billboardMesh.visible = false;
+      camera.add(billboardMesh);
+      update3DSubtitle("Respira profondamente... Inizia la meditazione della sera.");
+    }
+
+    let lastRenderedSubtitleText = null;
+
+    function update3DSubtitle(text) {
+      if (text === lastRenderedSubtitleText) return;
+      lastRenderedSubtitleText = text;
+      if (!billboardContext) return;
+      billboardContext.clearRect(0, 0, billboardCanvas.width, billboardCanvas.height);
+      if (!text) {
+        billboardTexture.needsUpdate = true;
+        return;
+      }
+
+      billboardContext.save();
+      billboardContext.shadowColor = 'rgba(0, 0, 0, 0.85)';
+      billboardContext.shadowBlur = 10;
+      billboardContext.shadowOffsetX = 0;
+      billboardContext.shadowOffsetY = 2;
+      billboardContext.fillStyle = '#FFFFFF';
+      billboardContext.font = 'bold 54px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Trebuchet MS", sans-serif';
+      billboardContext.textAlign = 'center';
+      billboardContext.textBaseline = 'middle';
+
+      wrapText(billboardContext, text, 1024, 256, 1860, 72);
+      billboardContext.restore();
+      billboardTexture.needsUpdate = true;
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let lines = [];
+      let currentLine = words[0];
+
+      for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        const width = ctx.measureText(currentLine + " " + word).width;
+        if (width < maxWidth) {
+          currentLine += " " + word;
+        } else {
+          lines.push(currentLine);
+          currentLine = word;
+        }
+      }
+      lines.push(currentLine);
+
+      const totalH = lines.length * lineHeight;
+      const startY = y - (totalH / 2) + (lineHeight / 2);
+      for (let k = 0; k < lines.length; k++) {
+        ctx.fillText(lines[k], x, startY + (k * lineHeight));
+      }
+    }
+
+    /* --- 14. VR GAZE RETICLE & HANDS-FREE COMPLETION POPUP --- */
+    function initVRReticle() {
+      vrReticleGroup = new THREE.Group();
+      vrReticleGroup.name = 'VR_Gaze_Reticle';
+
+      const dotGeo = new THREE.CircleGeometry(0.012, 32);
+      const dotMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.9,
+        depthTest: false,
+        depthWrite: false
+      });
+      const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+      dotMesh.renderOrder = 9999;
+      vrReticleGroup.add(dotMesh);
+
+      const ringGeo = new THREE.RingGeometry(0.024, 0.034, 32);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.7,
+        depthTest: false,
+        depthWrite: false
+      });
+      vrReticleRing = new THREE.Mesh(ringGeo, ringMat);
+      vrReticleRing.renderOrder = 9999;
+      vrReticleGroup.add(vrReticleRing);
+
+      vrReticleGroup.position.set(0, 0, -2.5);
+      vrReticleGroup.visible = false;
+      camera.add(vrReticleGroup);
+    }
+
+    function updateGazeInteraction(deltaSec) {
+      if (!state.isVRMode || !vrReticleGroup || !vrCompletionPopupGroup || !vrCompletionPopupGroup.visible || gazeIntersectTargets.length === 0) {
+        gazeHoverTarget = null;
+        gazeDwellTimer = 0.0;
+        if (vrReticleRing) {
+          vrReticleRing.scale.set(1.0, 1.0, 1.0);
+          vrReticleRing.material.opacity = 0.7;
+        }
+        return;
+      }
+
+      camera.getWorldPosition(_gazeOrigin);
+      camera.getWorldDirection(_gazeForwardDir);
+      gazeRaycaster.set(_gazeOrigin, _gazeForwardDir);
+      const hits = gazeRaycaster.intersectObjects(gazeIntersectTargets, true);
+
+      if (hits.length > 0) {
+        let hitObj = hits[0].object;
+        while (hitObj && (!hitObj.userData || typeof hitObj.userData.onDwellSelect !== 'function') && hitObj.parent && hitObj.parent !== scene) {
+          hitObj = hitObj.parent;
+        }
+
+        if (hitObj && hitObj.userData && typeof hitObj.userData.onDwellSelect === 'function') {
+          if (gazeHoverTarget === hitObj) {
+            gazeDwellTimer += deltaSec;
+            const progress = Math.min(1.0, gazeDwellTimer / DWELL_DURATION_SEC);
+
+            if (vrReticleRing) {
+              const s = 1.0 + progress * 0.75;
+              vrReticleRing.scale.set(s, s, 1.0);
+              vrReticleRing.material.opacity = 0.5 + progress * 0.5;
+            }
+
+            if (gazeDwellTimer >= DWELL_DURATION_SEC) {
+              gazeDwellTimer = 0.0;
+              if (vrReticleRing) {
+                vrReticleRing.scale.set(1.0, 1.0, 1.0);
+                vrReticleRing.material.opacity = 0.7;
+              }
+              hitObj.userData.onDwellSelect();
+            }
+          } else {
+            gazeHoverTarget = hitObj;
+            gazeDwellTimer = 0.0;
+          }
+          return;
+        }
+      }
+
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    function createVRCompletionPopup() {
+      if (vrCompletionPopupGroup) return vrCompletionPopupGroup;
+
+      vrCompletionPopupGroup = new THREE.Group();
+      vrCompletionPopupGroup.name = 'VR_Completion_Popup';
+
+      const bgGeo = new THREE.PlaneGeometry(2.4, 1.4);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: 0x071020,
+        transparent: true,
+        opacity: 0.90,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9998;
+      vrCompletionPopupGroup.add(bgMesh);
+
+      const titleSprite = createPopupTextSprite('Meditazione Conclusa', 'bold 30px sans-serif', '#38bdf8', 2.0, 0.4);
+      titleSprite.position.set(0, 0.38, 0.02);
+      vrCompletionPopupGroup.add(titleSprite);
+
+      const subSprite = createPopupTextSprite('Fissa un pulsante per 2s per selezionarlo', '20px sans-serif', 'rgba(255,255,255,0.75)', 2.2, 0.3);
+      subSprite.position.set(0, 0.12, 0.02);
+      vrCompletionPopupGroup.add(subSprite);
+
+      const exitBtn = create3DButton('ESCI', -0.55, -0.28, 0xef4444, () => {
+        notifyFlutter('onExitRequested', {});
+      });
+      vrCompletionPopupGroup.add(exitBtn);
+      gazeIntersectTargets.push(exitBtn);
+
+      const repeatBtn = create3DButton('RIPETI', 0.55, -0.28, 0x0284c7, () => {
+        hideVRCompletionPopup();
+        hide2DCompletionPopup();
+        state.isCompleted = false;
+        seekExperience(0);
+        playExperience();
+      });
+      vrCompletionPopupGroup.add(repeatBtn);
+      gazeIntersectTargets.push(repeatBtn);
+
+      vrCompletionPopupGroup.position.set(0, 0, -2.0);
+      vrCompletionPopupGroup.visible = false;
+      camera.add(vrCompletionPopupGroup);
+      return vrCompletionPopupGroup;
+    }
+
+    function createPopupTextSprite(text, font, color, w, h) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 512, 128);
+      ctx.font = font || 'bold 28px sans-serif';
+      ctx.fillStyle = color || '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 256, 64);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const mat = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false
+      });
+      mat.renderOrder = 9999;
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+      mesh.renderOrder = 9999;
+      return mesh;
+    }
+
+    function create3DButton(label, x, y, colorHex, onSelect) {
+      const group = new THREE.Group();
+      group.position.set(x, y, 0.02);
+
+      const bgGeo = new THREE.PlaneGeometry(0.85, 0.35);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.85,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9999;
+      bgMesh.userData = { onDwellSelect: onSelect };
+      group.add(bgMesh);
+
+      const textSprite = createPopupTextSprite(label, 'bold 32px sans-serif', '#FFFFFF', 0.8, 0.3);
+      textSprite.position.set(0, 0, 0.02);
+      textSprite.userData = { onDwellSelect: onSelect };
+      group.add(textSprite);
+
+      group.userData = { onDwellSelect: onSelect };
+      return group;
+    }
+
+    function showVRCompletionPopup() {
+      if (!vrCompletionPopupGroup) createVRCompletionPopup();
+      vrCompletionPopupGroup.visible = true;
+      if (vrReticleGroup) vrReticleGroup.visible = true;
+    }
+
+    function hideVRCompletionPopup() {
+      if (vrCompletionPopupGroup) vrCompletionPopupGroup.visible = false;
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    function show2DCompletionPopup() {
+      if (modal2D) {
+        modal2D.style.setProperty('display', 'flex', 'important');
+        modal2D.style.setProperty('opacity', '1', 'important');
+        modal2D.style.setProperty('pointer-events', 'auto', 'important');
+        modal2D.style.setProperty('visibility', 'visible', 'important');
+        modal2D.classList.add('visible');
+      }
+    }
+
+    function hide2DCompletionPopup() {
+      if (modal2D) {
+        modal2D.classList.remove('visible');
+        modal2D.style.opacity = '0';
+        modal2D.style.pointerEvents = 'none';
+        setTimeout(() => {
+          if (modal2D && !modal2D.classList.contains('visible')) {
+            modal2D.style.display = 'none';
+          }
+        }, 350);
+      }
+    }
+
+    function onExperienceEnded() {
+      if (state.isCompleted) return;
+      state.isCompleted = true;
+      try { pauseExperience(); } catch(e) {}
+      if (billboardMesh) billboardMesh.visible = false;
+
+      notifyFlutter('onSessionComplete', { duration: TOTAL_DURATION_SEC });
+
+      if (state.isVRMode) {
+        showVRCompletionPopup();
+      } else {
+        show2DCompletionPopup();
+      }
+    }
+
+    /* ======================================================================
+       TIMELINE & ENVIRONMENT SHADER UPDATES (Zero black silhouettes)
+       ====================================================================== */
+    function updateExperienceTimeline(timeSec, deltaSec, snapCamera = false) {
+      updateSubtitlesForTime(timeSec);
+
+      // Outdoor visibility check during Tunnel transit (285s - 313s)
+      const isTunnelActive = (timeSec >= 285 && timeSec < 313);
+      const outdoorVis = !isTunnelActive;
+
+      if (skySphere) skySphere.visible = outdoorVis;
+      if (waterMesh) waterMesh.visible = outdoorVis;
+      if (waterSubSurfaceMesh) waterSubSurfaceMesh.visible = outdoorVis;
+      if (terrainAlpineMassives) terrainAlpineMassives.visible = outdoorVis;
+      if (terrainPromontoryWest) terrainPromontoryWest.visible = outdoorVis;
+      if (terrainPromontoryEast) terrainPromontoryEast.visible = outdoorVis;
+      if (terrainForegroundShore) terrainForegroundShore.visible = outdoorVis;
+      if (terrainBoulders) terrainBoulders.visible = outdoorVis;
+
+      // Threshold Veil Transitions (Enter Tunnel 284-288s, Exit 309-313s)
+      if (thresholdMesh) {
+        if (timeSec >= 284 && timeSec <= 288) {
+          let alpha = 0;
+          if (timeSec < 286) alpha = smoothstep(284, 286, timeSec);
+          else alpha = 1.0 - smoothstep(286, 288, timeSec);
+          thresholdMesh.material.opacity = alpha * 0.98;
+          thresholdMesh.visible = true;
+        } else if (timeSec >= 309 && timeSec <= 313) {
+          let alpha = 0;
+          if (timeSec < 311) alpha = smoothstep(309, 311, timeSec);
+          else alpha = 1.0 - smoothstep(311, 313, timeSec);
+          thresholdMesh.material.opacity = alpha * 0.98;
+          thresholdMesh.visible = true;
+        } else {
+          thresholdMesh.material.opacity = 0;
+          thresholdMesh.visible = false;
+        }
+      }
+
+      // Observer Camera Ergonomics (Majestic elevated bluff at Z=42, Y=8.2; dry ground Y=6.5)
+      let targetCamX = 0;
+      let targetCamY = 8.2;
+      let targetCamZ = 42.0;
+
+      if (timeSec < 51.0) {
+        // Scena 1: Standing on panoramic bluff
+        targetCamY = 8.2;
+        targetCamZ = 42.0;
+      } else if (timeSec >= 51.0 && timeSec < 83.0) {
+        // Scena 2: Contemplative shift toward water view
+        const p = smoothstep(51.0, 83.0, timeSec);
+        targetCamY = lerp(8.2, 8.0, p);
+        targetCamZ = lerp(42.0, 40.0, p);
+      } else if (timeSec >= 83.0 && timeSec < 195.0) {
+        // Scena 3: Gentle respiration wave bobbing
+        const p = smoothstep(83.0, 100.0, timeSec);
+        const breathBob = Math.sin(timeSec * 0.78) * 0.04;
+        targetCamY = lerp(8.0, 7.8, p) + breathBob;
+        targetCamZ = lerp(40.0, 38.0, p);
+      } else if (timeSec >= 195.0 && timeSec < 243.0) {
+        // Scena 4: Comet viewing overhead
+        const p = smoothstep(195.0, 210.0, timeSec);
+        targetCamY = lerp(7.8, 8.0, p);
+        targetCamZ = lerp(38.0, 40.0, p);
+      } else if (timeSec >= 243.0 && timeSec < 285.0) {
+        // Scena 5: Concentric Sacred Circles
+        targetCamY = 8.0;
+        targetCamZ = 39.0;
+      } else if (timeSec >= 285.0 && timeSec < 313.0) {
+        // Scena 6: Light Tunnel Transit (forward glide through tunnel)
+        const p = smoothstep(285.0, 313.0, timeSec);
+        targetCamY = 8.2;
+        targetCamZ = lerp(20.0, -25.0, p);
+      } else {
+        // Scena 7: Outro at peaceful bluff
+        const p = smoothstep(313.0, 320.0, timeSec);
+        targetCamY = lerp(8.2, 8.2, p);
+        targetCamZ = lerp(39.0, 42.0, p);
+      }
+
+      if (snapCamera) {
+        cameraRig.position.set(targetCamX, targetCamY, targetCamZ);
+      } else {
+        const damp = 1.0 - Math.exp(-6.0 * deltaSec);
+        cameraRig.position.x += (targetCamX - cameraRig.position.x) * damp;
+        cameraRig.position.y += (targetCamY - cameraRig.position.y) * damp;
+        cameraRig.position.z += (targetCamZ - cameraRig.position.z) * damp;
+      }
+
+      // Sky & Lighting Progression (Sunset fades from 1.0 to 0.0 between 12s and 75s)
+      const sunsetProg = 1.0 - smoothstep(12.0, 75.0, timeSec);
+
+      if (skySphere && skySphere.material.uniforms) {
+        skySphere.material.uniforms.uSunsetProg.value = sunsetProg;
+      }
+      if (waterMesh && waterMesh.material.uniforms) {
+        waterMesh.material.uniforms.uSunsetProg.value = sunsetProg;
+      }
+      if (terrainMaterial && terrainMaterial.uniforms) {
+        terrainMaterial.uniforms.uSunsetProg.value = sunsetProg;
+      }
+
+      // Sun Setting Trajectory (Scene 1)
+      if (sunMesh) {
+        if (timeSec < 68.0) {
+          const sProg = smoothstep(0.0, 52.0, timeSec);
+          sunMesh.position.y = lerp(8.0, -32.0, sProg);
+          sunLight.position.copy(sunMesh.position);
+          sunLight.intensity = (1.0 - sProg * 0.8) * 1.35;
+          sunMesh.visible = (sunMesh.position.y > -26.0);
+        } else {
+          sunMesh.visible = false;
+          sunLight.intensity = 0.0;
+        }
+      }
+
+      // Moon Rising Trajectory (Scene 2-7, ZERO flat grey discs!)
+      if (moonMesh) {
+        if (timeSec >= 48.0) {
+          moonMesh.visible = outdoorVis;
+          const mIn = smoothstep(48.0, 75.0, timeSec);
+          if (moonCorona1) moonCorona1.material.opacity = mIn * 0.85;
+          if (moonCorona2) moonCorona2.material.opacity = mIn * 0.35;
+          moonLight.intensity = mIn * 0.85;
+        } else {
+          moonMesh.visible = false; // Never show moon during Sunset!
+          moonLight.intensity = 0.0;
+        }
+      }
+
+      // Starfield Brightening as sunset fades
+      if (starField) {
+        starField.material.opacity = lerp(0.12, 0.90, 1.0 - sunsetProg);
+      }
+
+      // Aurora Borealis Shimmer
+      let auroraIntensity = 0.0;
+      if (timeSec >= 51.0 && timeSec < 285.0) {
+        const aIn = smoothstep(51.0, 80.0, timeSec);
+        const aPulse = Math.sin(timeSec * 0.45) * 0.2 + 0.8;
+        auroraIntensity = aIn * aPulse * 0.9;
+      } else if (timeSec >= 313.0) {
+        auroraIntensity = smoothstep(313.0, 320.0, timeSec) * 0.75;
+      }
+      if (auroraMesh && auroraMesh.material.uniforms) {
+        auroraMesh.material.uniforms.uTime.value = timeSec;
+        auroraMesh.material.uniforms.uIntensity.value = auroraIntensity;
+      }
+      if (waterMesh && waterMesh.material.uniforms) {
+        waterMesh.material.uniforms.uAuroraIntensity.value = auroraIntensity;
+      }
+      if (terrainMaterial && terrainMaterial.uniforms) {
+        terrainMaterial.uniforms.uAuroraIntensity.value = auroraIntensity;
+      }
+
+      // SCENA 3: CASCATA DI LUCE BIANCA (83s - 195s)
+      const wIn = smoothstep(83.0, 92.0, timeSec);
+      const wOut = 1.0 - smoothstep(188.0, 195.0, timeSec);
+      const wAlpha = wIn * wOut;
+      if (wAlpha > 0.001) {
+        waterfallGroup.visible = true;
+        if (waterfallBeamMesh && waterfallBeamMesh.material.uniforms) {
+          waterfallBeamMesh.material.uniforms.uTime.value = timeSec;
+          waterfallBeamMesh.material.uniforms.uOpacity.value = wAlpha;
+        }
+        if (waterfallCausticPool && waterfallCausticPool.material.uniforms) {
+          waterfallCausticPool.material.uniforms.uTime.value = timeSec;
+          waterfallCausticPool.material.uniforms.uOpacity.value = wAlpha;
+        }
+        if (waterfallPhotons) {
+          waterfallPhotons.material.opacity = wAlpha * 0.92;
+          const pos = waterfallPhotons.geometry.attributes.position.array;
+          const { pSpeeds, pRadii, pAngles } = waterfallPhotons.geometry.userData;
+          for (let i = 0; i < 1500; i++) {
+            pos[i * 3 + 1] -= pSpeeds[i] * deltaSec;
+            if (pos[i * 3 + 1] < 0.1) pos[i * 3 + 1] = 85.0;
+            const ang = pAngles[i] + timeSec * 0.8;
+            pos[i * 3 + 0] = Math.cos(ang) * pRadii[i];
+            pos[i * 3 + 2] = Math.sin(ang) * pRadii[i];
+          }
+          waterfallPhotons.geometry.attributes.position.needsUpdate = true;
+        }
+      } else {
+        waterfallGroup.visible = false;
+      }
+
+      // SCENA 4: STELLA COMETA AZZURRA (195s - 243s)
+      const cIn = smoothstep(195.0, 202.0, timeSec);
+      const cOut = 1.0 - smoothstep(238.0, 243.0, timeSec);
+      const cAlpha = cIn * cOut;
+      if (cAlpha > 0.001) {
+        cometGroup.visible = true;
+        const pComet = smoothstep(195.0, 243.0, timeSec);
+        const startX = -30, startY = 46, startZ = -150;
+        const midX = 45, midY = 38, midZ = -75;
+        const endX = 140, endY = 25, endZ = 10;
+        const invP = 1.0 - pComet;
+        const curX = invP * invP * startX + 2.0 * invP * pComet * midX + pComet * pComet * endX;
+        const curY = invP * invP * startY + 2.0 * invP * pComet * midY + pComet * pComet * endY;
+        const curZ = invP * invP * startZ + 2.0 * invP * pComet * midZ + pComet * pComet * endZ;
+
+        cometGroup.position.set(curX, curY, curZ);
+        if (cometCoronaSprite) cometCoronaSprite.material.opacity = cAlpha * 0.95;
+
+        if (cometTrailPoints) {
+          cometTrailPoints.visible = true;
+          cometTrailPoints.material.opacity = cAlpha * 0.85;
+          const { maxHistory } = cometTrailPoints.userData;
+          const tPos = cometTrailPoints.geometry.attributes.position.array;
+          if (cometTrailPoints.userData.count === 0) {
+            for (let i = 0; i < maxHistory; i++) {
+              const t_i = Math.max(195.0, timeSec - i * 0.025);
+              const p_i = smoothstep(195.0, 243.0, t_i);
+              const invP_i = 1.0 - p_i;
+              tPos[i * 3 + 0] = invP_i * invP_i * startX + 2.0 * invP_i * p_i * midX + p_i * p_i * endX;
+              tPos[i * 3 + 1] = invP_i * invP_i * startY + 2.0 * invP_i * p_i * midY + p_i * p_i * endY;
+              tPos[i * 3 + 2] = invP_i * invP_i * startZ + 2.0 * invP_i * p_i * midZ + p_i * p_i * endZ;
+            }
+            cometTrailPoints.userData.count = 1;
+          } else {
+            for (let i = (maxHistory - 1) * 3; i >= 3; i -= 3) {
+              tPos[i] = tPos[i - 3];
+              tPos[i + 1] = tPos[i - 2];
+              tPos[i + 2] = tPos[i - 1];
+            }
+            tPos[0] = curX;
+            tPos[1] = curY;
+            tPos[2] = curZ;
+          }
+          cometTrailPoints.geometry.attributes.position.needsUpdate = true;
+        }
+      } else {
+        cometGroup.visible = false;
+        if (cometTrailPoints) cometTrailPoints.visible = false;
+      }
+
+      // SCENA 5: DOPPIO CERCHIO SACRO (243s - 285s)
+      const sIn = smoothstep(243.0, 248.0, timeSec);
+      const sOut = 1.0 - smoothstep(280.0, 285.0, timeSec);
+      const sAlpha = sIn * sOut;
+      if (sAlpha > 0.001) {
+        sacredCirclesGroup.visible = true;
+        if (outerRingMesh) {
+          outerRingMesh.rotation.z -= deltaSec * 0.015;
+          outerRingMesh.material.opacity = sAlpha * 0.92;
+        }
+        if (innerRingMesh) {
+          innerRingMesh.rotation.z += deltaSec * 0.022;
+          innerRingMesh.material.opacity = sAlpha * 0.95;
+        }
+        const breathPhase = Math.sin(timeSec * (2.0 * Math.PI / 6.0));
+        const breathScale = 1.0 + breathPhase * 0.07;
+        sacredCirclesGroup.scale.set(breathScale, breathScale, 1.0);
+
+        if (sacredPoolReflectMesh) {
+          sacredPoolReflectMesh.material.opacity = sAlpha * (0.35 + breathPhase * 0.15);
+        }
+      } else {
+        sacredCirclesGroup.visible = false;
+      }
+
+      // SCENA 6: TUNNEL CILINDRICO DI LUCE SPIRALE (285s - 313s)
+      const tIn = smoothstep(285.0, 288.0, timeSec);
+      const tOut = 1.0 - smoothstep(310.0, 313.0, timeSec);
+      const tAlpha = tIn * tOut;
+      if (tAlpha > 0.001) {
+        tunnelGroup.visible = true;
+        if (tunnelMesh && tunnelMesh.material.uniforms) {
+          tunnelMesh.material.uniforms.uTime.value = timeSec;
+          tunnelMesh.material.uniforms.uOpacity.value = tAlpha;
+        }
+        if (tunnelStardust) {
+          tunnelStardust.material.opacity = tAlpha * 0.9;
+          const pos = tunnelStardust.geometry.attributes.position.array;
+          for (let i = 0; i < 600; i++) {
+            pos[i * 3 + 2] += deltaSec * 16.0;
+            if (pos[i * 3 + 2] > 60.0) pos[i * 3 + 2] = -60.0;
+          }
+          tunnelStardust.geometry.attributes.position.needsUpdate = true;
+        }
+      } else {
+        tunnelGroup.visible = false;
+      }
+
+      // Completion Trigger
+      if (timeSec >= TOTAL_DURATION_SEC && !state.isCompleted) {
+        onExperienceEnded();
+      }
+    }
+
+    /* --- SUBTITLES UPDATE (2D Overlay & 3D VR Billboard) --- */
+    let currentSubtitleText = '';
+
+    function updateSubtitlesForTime(t) {
+      let activeText = '';
+      for (let i = 0; i < SCRIPT_CUES.length; i++) {
+        if (t >= SCRIPT_CUES[i].start && t <= SCRIPT_CUES[i].end) {
+          activeText = SCRIPT_CUES[i].text;
+          break;
+        }
+      }
+      currentSubtitleText = activeText;
+
+      // 2D Overlay (Only in monoscopic 2D mode, hidden in VR mode)
+      if (hudSubtitleText && hudSubtitleBox) {
+        if (activeText && !state.isVRMode) {
+          if (hudSubtitleText.textContent !== activeText) {
+            hudSubtitleText.textContent = activeText;
+          }
+          hudSubtitleBox.classList.add('visible');
+        } else {
+          hudSubtitleBox.classList.remove('visible');
+        }
+      }
+
+      // 3D VR Billboard
+      if (billboardMesh) {
+        if (state.isVRMode && activeText) {
+          billboardMesh.visible = true;
+          update3DSubtitle(activeText);
+        } else {
+          billboardMesh.visible = false;
+        }
+      }
+    }
+
+    /* ======================================================================
+       AUDIO PLAYBACK & SYNC ENGINE
+       ====================================================================== */
+    function playExperience() {
+      if (state.isCompleted) {
+        state.isCompleted = false;
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+        seekExperience(0);
+      }
+      unlockAudio();
+      state.isPlaying = true;
+      audioVoice.play().catch(e => console.warn('Voice play fallback', e));
+      audioMusic.play().catch(e => console.warn('Music play fallback', e));
+    }
+
+    function pauseExperience() {
+      state.isPlaying = false;
+      audioVoice.pause();
+      audioMusic.pause();
+    }
+
+    function togglePlay() {
+      if (state.isPlaying) pauseExperience();
+      else playExperience();
+    }
+
+    function seekExperience(targetSec) {
+      targetSec = Math.max(0, Math.min(TOTAL_DURATION_SEC, targetSec));
+      state.currentTime = targetSec;
+      if (state.isCompleted && targetSec < TOTAL_DURATION_SEC) {
+        state.isCompleted = false;
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+      }
+
+      function applyAudioSeek(el, t) {
+        if (!el) return;
+        if (el.readyState >= 1) {
+          try { el.currentTime = t; } catch(e) {}
+        } else {
+          el.addEventListener('loadedmetadata', () => {
+            try { el.currentTime = t; } catch(e) {}
+          }, { once: true });
+        }
+      }
+
+      applyAudioSeek(audioVoice, Math.min(targetSec, VOICE_DURATION_SEC));
+      applyAudioSeek(audioMusic, targetSec);
+
+      updateExperienceTimeline(targetSec, 0.016, true);
+    }
+
+    /* ======================================================================
+       INTERACTION & CONTROLS (VR Stereo Mode, Mouse Look, Gyroscope)
+       ====================================================================== */
+    function setVRMode(enable) {
+      state.isVRMode = !!enable;
+
+      const uiLayer = document.getElementById('ui-layer');
+      if (uiLayer) {
+        if (state.isVRMode) {
+          uiLayer.classList.add('hidden');
+          uiLayer.style.setProperty('display', 'none', 'important');
+        } else {
+          uiLayer.classList.remove('hidden');
+          uiLayer.style.removeProperty('display');
+        }
+      }
+
+      if (vrReticleGroup) {
+        vrReticleGroup.visible = state.isVRMode;
+      }
+
+      if (billboardMesh) {
+        billboardMesh.visible = state.isVRMode;
+        if (state.isVRMode) {
+          lastRenderedSubtitleText = null;
+          update3DSubtitle(currentSubtitleText || (state.currentTime > 0 ? "" : "Respira profondamente... Inizia la meditazione della sera."));
+        }
+      }
+
+      if (state.isVRMode) {
+        if (camera) camera.fov = 72;
+        if (renderer) renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        document.body.classList.add('vr-active');
+        if (vrOverlay) vrOverlay.classList.add('active');
+        requestDeviceOrientationPermission();
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+        if (state.isCompleted) {
+          hide2DCompletionPopup();
+          showVRCompletionPopup();
+        }
+      } else {
+        if (camera) camera.fov = 52;
+        if (renderer) renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        hideVRCompletionPopup();
+        document.body.classList.remove('vr-active');
+        if (vrOverlay) vrOverlay.classList.remove('active');
+        if (screen.orientation && screen.orientation.unlock) {
+          try { screen.orientation.unlock(); } catch (e) {}
+        }
+        if (state.isCompleted) {
+          show2DCompletionPopup();
+        }
+      }
+
+      if (camera) camera.updateProjectionMatrix();
+      onWindowResize();
+      notifyFlutter('onVRModeChanged', { isVR: state.isVRMode });
+    }
+
+    function toggleVR() {
+      setVRMode(!state.isVRMode);
+    }
+
+    function recenterView() {
+      targetYaw = 0;
+      targetPitch = 0;
+      yaw = 0;
+      pitch = 0;
+      vrAlphaOffset = -orientationAlpha;
+      if (state.isVRMode) {
+        updateCameraRotation();
+      }
+    }
+
+    function enableDeviceOrientation() {
+      window.addEventListener('deviceorientation', (e) => {
+        if (e && e.alpha !== null && e.alpha !== undefined && e.beta !== null && e.gamma !== null && (Math.abs(e.beta) > 0.05 || Math.abs(e.gamma) > 0.05)) {
+          deviceOrientationEnabled = true;
+          orientationAlpha = e.alpha;
+          orientationBeta = e.beta;
+          orientationGamma = e.gamma;
+        }
+      }, true);
+    }
+
+    function requestDeviceOrientationPermission() {
+      enableDeviceOrientation();
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(perm => {
+            if (perm === 'granted') enableDeviceOrientation();
+          })
+          .catch(err => console.warn('Orientation permission err:', err));
+      }
+    }
+
+    function getScreenOrientationAngle() {
+      if (screen.orientation && typeof screen.orientation.angle === 'number') {
+        return screen.orientation.angle;
+      }
+      if (typeof window.orientation === 'number') {
+        return window.orientation;
+      }
+      if (window.innerWidth > window.innerHeight) {
+        return 90;
+      }
+      return 0;
+    }
+
+    function updateCameraRotation() {
+      if (deviceOrientationEnabled && state.isVRMode) {
+        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset);
+        const betaRad = THREE.MathUtils.degToRad(orientationBeta);
+        const gammaRad = THREE.MathUtils.degToRad(orientationGamma);
+        const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
+
+        // 1. Converti gli angoli W3C nel frame della telecamera Three.js
+        _euler.set(betaRad, alphaRad, -gammaRad, 'YXZ');
+        camera.quaternion.setFromEuler(_euler);
+
+        // 2. Ruota per allineare l'asse del dispositivo con il frustum della camera (-90 deg attorno ad X)
+        camera.quaternion.multiply(_q1);
+
+        // 3. Compensa la rotazione landscape dello schermo (90 deg attorno a Z)
+        _q0.setFromAxisAngle(_zee, -orientRad);
+        camera.quaternion.multiply(_q0);
+      } else {
+        const rotDamp = 1.0 - Math.exp(-14.0 * (state.lastDeltaSec || 0.016));
+        yaw += (targetYaw - yaw) * rotDamp;
+        pitch += (targetPitch - pitch) * rotDamp;
+        camera.rotation.set(pitch, yaw, 0, 'YXZ');
+      }
+    }
+
+    function initControls() {
+      if (btnModalExit) {
+        btnModalExit.addEventListener('click', () => {
+          notifyFlutter('onExitRequested', {});
+        });
+      }
+      if (btnModalRepeat) {
+        btnModalRepeat.addEventListener('click', () => {
+          hide2DCompletionPopup();
+          hideVRCompletionPopup();
+          state.isCompleted = false;
+          seekExperience(0);
+          playExperience();
+        });
+      }
+
+      // Pointer / Mouse Look
+      window.addEventListener('mousedown', (e) => {
+        isUserDragging = true;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isUserDragging) return;
+        const dx = e.clientX - prevMouseX;
+        const dy = e.clientY - prevMouseY;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+
+        targetYaw -= dx * 0.003;
+        targetPitch -= dy * 0.003;
+        targetPitch = Math.max(-Math.PI * 0.42, Math.min(Math.PI * 0.42, targetPitch));
+      });
+
+      window.addEventListener('mouseup', () => { isUserDragging = false; });
+
+      // Touch drag
+      let touchStartX = 0, touchStartY = 0;
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1) {
+          const dx = e.touches[0].clientX - touchStartX;
+          const dy = e.touches[0].clientY - touchStartY;
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+
+          targetYaw -= dx * 0.004;
+          targetPitch -= dy * 0.004;
+          targetPitch = Math.max(-Math.PI * 0.42, Math.min(Math.PI * 0.42, targetPitch));
+        }
+      }, { passive: true });
+
+      // Keyboard Controls (1-7 scene seeking, Space toggle, V for VR, R for recenter)
+      window.addEventListener('keydown', (e) => {
+        if (e.key >= '1' && e.key <= '7') {
+          const sIdx = parseInt(e.key) - 1;
+          if (SCENES_CONFIG[sIdx]) {
+            seekExperience(SCENES_CONFIG[sIdx].start + 0.1);
+          }
+        } else if (e.code === 'Space') {
+          togglePlay();
+        } else if (e.key === 'v' || e.key === 'V') {
+          toggleVR();
+        } else if (e.key === 'r' || e.key === 'R') {
+          recenterView();
+        }
+      });
+    }
+
+    function onWindowResize() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      if (!camera || !renderer) return;
+
+      camera.aspect = w / h;
+      camera.fov = state.isVRMode ? 72 : 52;
+      camera.updateProjectionMatrix();
+
+      if (stereoCamera) {
+        stereoCamera.aspect = 0.5;
+      }
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(w, h);
+    }
+
+    /* ======================================================================
+       RENDER LOOP & FLUTTER DEVICE ORIENTATION
+       ====================================================================== */
+    let animationFrameId = null;
+    let ambientWaterTime = 0;
+
+    function animate(timestamp) {
+      animationFrameId = requestAnimationFrame(animate);
+
+      if (!state.lastTimestamp) state.lastTimestamp = timestamp;
+      const deltaSec = Math.min(0.06, (timestamp - state.lastTimestamp) / 1000);
+      state.lastTimestamp = timestamp;
+      state.lastDeltaSec = deltaSec;
+      ambientWaterTime += deltaSec;
+
+      if (state.isPlaying) {
+        if (!audioVoice.paused && audioVoice.currentTime > 0 && audioVoice.currentTime <= VOICE_DURATION_SEC) {
+          state.currentTime = audioVoice.currentTime;
+        } else if (!audioMusic.paused && audioMusic.currentTime > 0) {
+          state.currentTime = audioMusic.currentTime;
+        } else {
+          state.currentTime += deltaSec;
+        }
+        if (state.currentTime > TOTAL_DURATION_SEC) {
+          state.currentTime = TOTAL_DURATION_SEC;
+          onExperienceEnded();
+        }
+      }
+
+      // Continuous 60/120 FPS water time
+      if (waterMesh && waterMesh.material && waterMesh.material.uniforms) {
+        waterMesh.material.uniforms.uTime.value = ambientWaterTime;
+      }
+
+      // Timeline Updates
+      updateExperienceTimeline(state.currentTime, deltaSec);
+
+      // Camera Rotations & Orientation
+      updateCameraRotation();
+
+      // Gaze Interaction
+      updateGazeInteraction(deltaSec);
+
+      // Ensure camera matrix world is updated before stereoCamera update
+      if (cameraRig) {
+        cameraRig.updateMatrixWorld(true);
+      } else if (camera) {
+        camera.updateMatrixWorld(true);
+      }
+
+      // Stereo Cardboard VR or Monoscopic Rendering
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      if (state.isVRMode) {
+        renderer.setScissorTest(true);
+        stereoCamera.update(camera);
+
+        // Left Eye Viewport
+        renderer.setScissor(0, 0, width / 2, height);
+        renderer.setViewport(0, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraL);
+
+        // Right Eye Viewport
+        renderer.setScissor(width / 2, 0, width / 2, height);
+        renderer.setViewport(width / 2, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraR);
+
+        renderer.setScissorTest(false);
+      } else {
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, width, height);
+        renderer.render(scene, camera);
+      }
+    }
+
+    /* ======================================================================
+       FLUTTER BRIDGE & NATIVE API
+       ====================================================================== */
+    function notifyFlutter(eventName, data) {
+      try {
+        if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+          window.flutter_inappwebview.callHandler(eventName, data);
+        }
+        if (window.GuidoFlutterBridge && typeof window.GuidoFlutterBridge.postMessage === 'function') {
+          window.GuidoFlutterBridge.postMessage(JSON.stringify({ event: eventName, data: data }));
+        } else if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'GUIDO_VR', event: eventName, data: data }, '*');
+        }
+      } catch (e) {
+        console.warn('Flutter notify error:', e);
+      }
+    }
+
+    window.GuidoVR = {
+      start: function() { playExperience(); },
+      startSession: function() { playExperience(); },
+      pause: function() { pauseExperience(); },
+      pauseSession: function() { pauseExperience(); },
+      toggle: function() { togglePlay(); },
+      reset: function() { 
+        state.isCompleted = false;
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+        seekExperience(0);
+        pauseExperience();
+      },
+      seek: function(sec) { seekExperience(sec); },
+      recenter: function() { recenterView(); },
+      setVRMode: function(enable) { setVRMode(enable); },
+      enableVR: function() { setVRMode(true); },
+      disableVR: function() { setVRMode(false); },
+      toggleVR: function() { toggleVR(); },
+      setMuted: function(mute) {
+        state.isMuted = !!mute;
+        syncVolumes();
+      },
+      setDeviceOrientation: function(alpha, beta, gamma) {
+        deviceOrientationEnabled = true;
+        orientationAlpha = Number(alpha) || 0;
+        orientationBeta = Number(beta) || 0;
+        orientationGamma = Number(gamma) || 0;
+        if (state.isVRMode) {
+          updateCameraRotation();
+        }
+      },
+      showCompletionPopup: function() {
+        if (state.isVRMode) showVRCompletionPopup();
+        else show2DCompletionPopup();
+      },
+      hideCompletionPopup: function() {
+        hideVRCompletionPopup();
+        hide2DCompletionPopup();
+      },
+      getState: function() { return { ...state }; },
+      dispose: function() { disposeExperience(); }
+    };
+
+    // Global Window Aliases for WebXR bridges & automated testing
+    window.enterVR = function() { setVRMode(true); };
+    window.exitVR = function() { setVRMode(false); };
+    window.recenterVR = function() { recenterView(); };
+
+    /* --- iOS Audio Unlock On First User Gesture --- */
+    function unlockAudioOnGesture() {
+      unlockAudio();
+      window.removeEventListener('touchstart', unlockAudioOnGesture);
+      window.removeEventListener('touchend', unlockAudioOnGesture);
+      window.removeEventListener('pointerdown', unlockAudioOnGesture);
+      window.removeEventListener('click', unlockAudioOnGesture);
+    }
+    window.addEventListener('touchstart', unlockAudioOnGesture, { passive: true });
+    window.addEventListener('pointerdown', unlockAudioOnGesture, { passive: true });
+    window.addEventListener('click', unlockAudioOnGesture, { passive: true });
+
+    /* ======================================================================
+       RESOURCE TEARDOWN & LIFECYCLE MANAGEMENT (Zero WebGL Leaks)
+       ====================================================================== */
+    function disposeExperience() {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+
+      window.removeEventListener('resize', onWindowResize);
+      window.removeEventListener('beforeunload', disposeExperience);
+      window.removeEventListener('touchstart', unlockAudioOnGesture);
+      window.removeEventListener('pointerdown', unlockAudioOnGesture);
+      window.removeEventListener('click', unlockAudioOnGesture);
+
+      if (synthOsc432) {
+        try { synthOsc432.stop(); synthOsc432.disconnect(); } catch(e) {}
+        synthOsc432 = null;
+      }
+      if (synthGain) {
+        try { synthGain.disconnect(); } catch(e) {}
+        synthGain = null;
+      }
+      if (audioCtx) {
+        try { audioCtx.close(); } catch(e) {}
+        audioCtx = null;
+      }
+
+      try {
+        audioVoice.pause();
+        audioMusic.pause();
+        audioVoice.src = '';
+        audioMusic.src = '';
+      } catch (e) {}
+
+      if (scene) {
+        scene.traverse(obj => {
+          if (obj.geometry) {
+            try { obj.geometry.dispose(); } catch (e) {}
+          }
+          if (obj.material) {
+            const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+            mats.forEach(m => {
+              if (m.map) m.map.dispose();
+              if (m.uniforms) {
+                for (const u in m.uniforms) {
+                  if (m.uniforms[u] && m.uniforms[u].value && m.uniforms[u].value.isTexture) {
+                    try { m.uniforms[u].value.dispose(); } catch (e) {}
+                  }
+                }
+              }
+              try { m.dispose(); } catch (e) {}
+            });
+          }
+        });
+      }
+
+      if (billboardTexture) {
+        try { billboardTexture.dispose(); } catch (e) {}
+      }
+
+      if (renderer) {
+        try {
+          renderer.dispose();
+          renderer.forceContextLoss();
+          if (renderer.domElement && renderer.domElement.parentNode) {
+            renderer.domElement.parentNode.removeChild(renderer.domElement);
+          }
+        } catch (e) {}
+      }
+
+      notifyFlutter('onVRDisposed', { status: 'disposed', experience: 'meditazione_sera_acqua' });
+    }
+
+    window.addEventListener('beforeunload', disposeExperience);
+
+    // DOM Boot & Automatic Start
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeScene();
+      syncVolumes();
+      animate(0);
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const isVrParam = urlParams.get('vr') === 'true' || urlParams.get('vr') === '1' || urlParams.get('vr') === 'yes';
+      if (isVrParam) {
+        setVRMode(true);
+      }
+      if (urlParams.has('seek')) {
+        const targetSec = parseFloat(urlParams.get('seek'));
+        seekExperience(targetSec);
+      } else {
+        playExperience();
+      }
+
+      window.focus();
+      if (document.body) document.body.focus();
+
+      notifyFlutter('onVRReady', { status: 'ready', experience: 'meditazione_sera_acqua', duration: TOTAL_DURATION_SEC });
+    });
+  </script>
+</body>
+</html>

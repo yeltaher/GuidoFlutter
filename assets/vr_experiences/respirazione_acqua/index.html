@@ -1,0 +1,3235 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Guido VR - Respirazione Acqua (Santuario Sommerso 432 Hz)</title>
+  
+  <style>
+    :root {
+      --ocean-top: #0a4b78;
+      --ocean-mid: #052848;
+      --ocean-abyss: #021428;
+      --water-cyan: #70d6ff;
+      --water-azure: #00a8e8;
+      --calm-gold: #ffe082;
+      --calm-amber: #ffb74d;
+      --panel-bg: rgba(4, 28, 52, 0.62);
+      --panel-border: rgba(112, 214, 255, 0.24);
+      --text-light: #f4fbfc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--ocean-abyss);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text-light);
+    }
+
+    #webgl-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: none;
+    }
+
+    /* VR Cardboard Split Overlay */
+    #vr-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    #vr-overlay.active {
+      display: block;
+    }
+
+    .vr-divider {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.22);
+      transform: translateX(-50%);
+      box-shadow: none !important;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+
+    /* Floating Clean Minimal HUD UI */
+    #ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    #ui-layer.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .header-bar {
+      display: none !important;
+    }
+
+    .brand-title {
+      display: none !important;
+    }
+
+    .top-controls {
+      display: none !important;
+    }
+
+    /* Minimal Floating Ethereal Guidance Text */
+    .pacing-pill-container {
+      position: absolute;
+      top: env(safe-area-inset-top, 24px);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+      z-index: 12;
+      width: auto;
+      max-width: 90%;
+      transition: opacity 0.4s ease;
+    }
+
+    .pacing-pill {
+      width: auto;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .phase-primary-text {
+      font-size: 18px;
+      font-weight: 300;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 0 18px rgba(112, 214, 255, 0.7), 0 2px 8px rgba(0, 0, 0, 0.8);
+      transition: color 0.3s ease;
+    }
+
+    .phase-sub-text {
+      font-size: 11px;
+      font-weight: 300;
+      color: rgba(112, 214, 255, 0.85);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
+    }
+
+    .pacing-progress-track {
+      display: none !important;
+    }
+
+    .pacing-progress-fill {
+      display: none !important;
+    }
+
+    /* Bottom Control Bar */
+    .bottom-bar {
+      display: none !important;
+    }
+
+    .status-card {
+      width: 100%;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      padding: 12px 20px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .cycle-counter {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cycle-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .cycle-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--water-cyan);
+      letter-spacing: 0.3px;
+    }
+
+    .session-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-main {
+      padding: 10px 22px;
+      border-radius: 22px;
+      border: none;
+      background: linear-gradient(135deg, #70d6ff 0%, #0077b6 100%);
+      color: #021428;
+      font-size: 13.5px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 119, 182, 0.35);
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(112, 214, 255, 0.45);
+    }
+
+    .btn-main:active {
+      transform: scale(0.97);
+    }
+
+    .btn-vr-cardboard {
+      padding: 10px 18px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #FFFFFF;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-vr-cardboard:hover {
+      background: rgba(112, 214, 255, 0.2);
+      border-color: var(--water-cyan);
+      color: var(--water-cyan);
+    }
+
+    /* Audio gate completely bypassed/hidden in mobile app */
+    #audio-gate {
+      display: none !important;
+    }
+
+    /* Orientation Prompt disabled: orientation is forced natively by OS */
+    #rotate-hint {
+      display: none !important;
+    }
+
+    /* 2D Session Completion Modal (Japandi Aesthetics) */
+    .completion-modal-backdrop {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2147483647 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(7, 12, 20, 0.94) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .completion-modal-backdrop.visible {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .completion-modal-card {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(145deg, rgba(16, 26, 42, 0.94), rgba(9, 15, 26, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 24px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(112, 214, 255, 0.12);
+      transform: scale(0.92) translateY(12px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .completion-modal-backdrop.visible .completion-modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .completion-modal-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px auto;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(112, 214, 255, 0.25) 0%, rgba(112, 214, 255, 0.03) 70%);
+      border: 1px solid rgba(112, 214, 255, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #70d6ff;
+      box-shadow: 0 0 20px rgba(112, 214, 255, 0.25);
+    }
+
+    .completion-modal-title {
+      font-family: inherit;
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 10px 0;
+      letter-spacing: 0.3px;
+    }
+
+    .completion-modal-desc {
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.76);
+      margin: 0 0 26px 0;
+    }
+
+    .completion-modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .btn-completion {
+      flex: 1;
+      height: 48px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      border: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-completion-exit {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.65);
+      color: #fca5a5;
+    }
+
+    .btn-completion-exit:hover, .btn-completion-exit:active {
+      background: rgba(239, 68, 68, 0.32);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-completion-repeat {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.32), rgba(5, 150, 105, 0.55));
+      border: 1px solid rgba(52, 211, 153, 0.85);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-completion-repeat:hover, .btn-completion-repeat:active {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.48), rgba(5, 150, 105, 0.72));
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+  </style>
+
+  <!-- Three.js CDN with Local Fallback -->
+  <script src="three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- WebGL Three.js Viewport -->
+  <div id="webgl-container"></div>
+
+  <!-- Dual-Eye VR Cardboard Overlay -->
+  <div id="vr-overlay">
+    <div class="vr-divider"></div>
+  </div>
+
+  <!-- Minimal Discreet HUD UI -->
+  <div id="ui-layer">
+    <!-- Top Header Bar -->
+    <div class="header-bar">
+      <div class="brand-title">
+        <div class="brand-logo"></div>
+        <span class="brand-text">Guido VR</span>
+        <span class="brand-badge">Oceano • 432 Hz</span>
+      </div>
+
+      <div class="top-controls">
+        <button class="btn-icon" id="btn-audio-toggle" title="Disattiva/Attiva Audio" aria-label="Audio">
+          <svg id="icon-sound-on" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          <svg id="icon-sound-off" viewBox="0 0 24 24" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27l4.73 4.73H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+        </button>
+        <button class="btn-icon" id="btn-recenter" title="Riposiziona Visuale (Tasto R)" aria-label="Recenter">
+          <svg viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" title="Schermo Intero (Tasto F)" aria-label="Fullscreen">
+          <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Discreet Pacing Pill at Top Center -->
+    <div class="pacing-pill-container">
+      <div class="pacing-pill">
+        <div class="phase-primary-text" id="hud-phase-label">INSPIRA NARICE SINISTRA</div>
+        <div class="phase-sub-text" id="hud-timer-sub">4.5s • Narice Sinistra</div>
+        <div class="pacing-progress-track">
+          <div class="pacing-progress-fill" id="hud-progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Control & Status Bar -->
+    <div class="bottom-bar">
+      <div class="status-card">
+        <div class="cycle-counter">
+          <span class="cycle-label">Nāḍī Śodhana</span>
+          <span class="cycle-value" id="hud-cycle-counter">Ciclo 1 di 2</span>
+        </div>
+
+        <div class="session-actions">
+          <button class="btn-vr-cardboard" id="btn-vr-toggle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.9 6.2c-.4-.4-.9-.6-1.5-.6H4.6c-.6 0-1.1.2-1.5.6-.4.4-.6.9-.6 1.5v8.6c0 .6.2 1.1.6 1.5.4.4.9.6 1.5.6h4.3l2.2-2.5c.4-.5 1.3-.5 1.8 0l2.2 2.5h4.3c.6 0 1.1-.2 1.5-.6.4-.4.6-.9.6-1.5V7.7c.1-.6-.1-1.1-.5-1.5zM7.5 14c-1.4 0-2.5-1.1-2.5-2.5S6.1 9 7.5 9s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5zm9 0c-1.4 0-2.5-1.1-2.5-2.5S15.1 9 16.5 9s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5z"/></svg>
+            Visore VR
+          </button>
+
+          <button class="btn-main" id="btn-play-pause">
+            <svg id="icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="icon-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <span id="label-play-pause">Avvia</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Gate / Gesture Unlock -->
+  <div id="audio-gate">
+    <div class="gate-card">
+      <div class="gate-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+      </div>
+      <div class="gate-title">Santuario Sommerso</div>
+      <div class="gate-desc">
+        Purificazione dei canali energetici (<strong>Nāḍī Śodhana</strong>). Segui i flussi d'aria e la grande goccia d'acqua viva accordata a <strong>432 Hz</strong> nelle limpide profondità oceaniche.
+      </div>
+      <div class="gate-specs">
+        <span class="gate-tag">Narici Alternate</span>
+        <span class="gate-tag">4.5s Inspiro</span>
+        <span class="gate-tag">4.5s Espiro</span>
+        <span class="gate-tag">Armonica 432 Hz</span>
+      </div>
+      <button class="gate-btn" id="gate-start-btn">Inizia Esperienza</button>
+    </div>
+  </div>
+
+  <!-- Mobile Landscape Warning for VR -->
+  <div id="rotate-hint">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--water-cyan)"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 5.39 19.11.83 13.5.13v1.54c2.61.34 4.96 1.7 6.48 3.85h-3.5v2h6v-6h-2v2.52zM2.05 13c-.34-2.61.34-5.26 1.95-7.39V8h2V2h-6v2h2.52C-.63 6.64-.17 11.23.05 13h2zm5.43 8.48c-3.27-1.55-5.61-4.72-5.97-8.48H0c.51 5.61 4.84 10.17 10.45 10.87v-1.54c-2.61-.34-4.96-1.7-6.48-3.85h3.5v-2h-6v6h2v-2.52zm14.47-4.48c.34 2.61-.34 5.26-1.95 7.39V22h-2v6h6v-2h-2.52c3.12-2.64 3.58-7.23 3.36-9h-2.89z"/></svg>
+    <h3 style="margin-top:16px; font-size:18px;">Ruota lo smartphone in orizzontale</h3>
+    <p style="margin-top:8px; font-size:13px; color:rgba(255,255,255,0.7);">Per utilizzare il visore VR Cardboard stereoscopico.</p>
+  </div>
+
+  <!-- 2D Session Completion Modal (Normal / Smartphone Mode) -->
+  <div id="session-completion-modal" class="completion-modal-backdrop" style="display: none;">
+    <div class="completion-modal-card">
+      <div class="completion-modal-icon">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <h2 class="completion-modal-title">Sessione Completata</h2>
+      <p class="completion-modal-desc">Porta questa armonia fluida, purificazione e profonda quiete interiore nella tua giornata.</p>
+      <div class="completion-modal-actions">
+        <button id="btn-completion-exit" class="btn-completion btn-completion-exit" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+          <span>ESCI</span>
+        </button>
+        <button id="btn-completion-repeat" class="btn-completion btn-completion-repeat" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.95 20 14.54 20 13c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 8.74C4.46 10.05 4 11.46 4 13c0 4.42 3.58 8 8 8v4l5-5-5-5v4c-3.31 0-6-2.69-6-6z"/></svg>
+          <span>RIPETI</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN SCRIPT -->
+  <script>
+  (function() {
+    'use strict';
+
+    /* ======================================================================
+       1. BIO-PACING STATE MACHINE & CONSTANTS (NĀḌĪ ŚODHANA)
+       ====================================================================== */
+    const PACING_CONFIG = {
+      TOTAL_CYCLES: 2,
+      DESCENT_DURATION: 3600,        // 3.6s initial graceful descent from ocean surface
+      SETUP_DURATION: 3800,          // 3.8s setup posture / Vishnu Mudra
+      INHALE_DURATION: 4500,         // 4.5s inhale
+      SWITCH_DURATION: 1500,         // 1.5s nostril switch with 432 Hz chime
+      EXHALE_DURATION: 4500,         // 4.5s exhale
+      PAUSE_DURATION: 8000,          // 8.0s inter-cycle calm integration pause
+      OUTRO_DURATION: 5000,          // 5.0s peaceful resolution
+      DROP_BASE_X: 0.0,
+      DROP_BASE_Y: -0.65,            // Lowered to provide ample, majestic underwater headspace below water surface
+      DROP_START_Y: 8.5,             // Starting altitude near ocean surface
+      DROP_BASE_Z: -4.8,             // Distance from viewer (comfortable stereoscopic parallax at FOV 80°)
+      MIN_SCALE: 0.75,                // Rest scale (ridotto del 25%)
+      MAX_SCALE: 1.0                  // Inhale volumetric peak scale (0.75x -> 1.0x)
+    };
+
+    const STEPS = {
+      STANDBY: 'STANDBY',
+      DESCENT: 'DESCENT',
+      SETUP: 'SETUP',
+      // Cycle 1
+      C1_INHALE_SX: 'C1_INHALE_SX',
+      C1_SWITCH_1: 'C1_SWITCH_1',
+      C1_EXHALE_DX: 'C1_EXHALE_DX',
+      C1_INHALE_DX: 'C1_INHALE_DX',
+      C1_SWITCH_2: 'C1_SWITCH_2',
+      C1_EXHALE_SX: 'C1_EXHALE_SX',
+      C1_PAUSE: 'C1_PAUSE',
+      // Cycle 2
+      C2_INHALE_SX: 'C2_INHALE_SX',
+      C2_SWITCH_1: 'C2_SWITCH_1',
+      C2_EXHALE_DX: 'C2_EXHALE_DX',
+      C2_INHALE_DX: 'C2_INHALE_DX',
+      C2_SWITCH_2: 'C2_SWITCH_2',
+      C2_EXHALE_SX: 'C2_EXHALE_SX',
+      C2_PAUSE: 'C2_PAUSE',
+      // Finish
+      OUTRO: 'OUTRO',
+      COMPLETED: 'COMPLETED'
+    };
+
+    const state = {
+      currentStep: STEPS.STANDBY,
+      currentCycle: 1,
+      stepStartTime: 0,
+      stepDuration: 0,
+      pauseStartTime: 0,
+      isRunning: false,
+      isCompleted: false,
+      isVRMode: false,
+      isAudioMuted: false,
+      dropY: PACING_CONFIG.DROP_START_Y,
+      dropScale: PACING_CONFIG.MIN_SCALE,
+      pauseWarmth: 0.0,              // Subtle golden crystalline reflection factor during pause
+      // Bubble flow dynamics
+      leftStreamActive: false,
+      leftStreamFlow: 0.0,           // 0.0 to 1.0 intensity
+      leftStreamDir: 1.0,            // +1.0 (Inhale - ascending), -1.0 (Exhale - descending)
+      leftStreamTargetDir: 1.0,
+      rightStreamActive: false,
+      rightStreamFlow: 0.0,
+      rightStreamDir: 1.0,           // +1.0 (Inhale - ascending), -1.0 (Exhale - descending)
+      rightStreamTargetDir: 1.0,
+      lastTimestamp: 0
+    };
+
+    /* ======================================================================
+       2. FLUTTER INAPPWEBVIEW BRIDGE
+       ====================================================================== */
+    function notifyFlutter(eventName, data) {
+      try {
+        if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+          window.flutter_inappwebview.callHandler(eventName, data);
+        } else if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'GUIDO_VR', event: eventName, data: data }, '*');
+        }
+      } catch (err) {
+        console.warn('Flutter Bridge post error:', err);
+      }
+    }
+
+    window.GuidoVR = {
+      start: function() { dismissGateAndStart(); },
+      pause: function() { pauseSession(); },
+      toggle: function() { togglePlayPause(); },
+      reset: function() { resetSession(); },
+      setVRMode: function(enable) { setVR(enable); },
+      setMuted: function(mute) { setAudioMuted(mute); },
+      recenter: function() { recenterView(); },
+      setDeviceOrientation: function(alpha, beta, gamma) {
+        deviceOrientationEnabled = true;
+        orientationAlpha = Number(alpha) || 0;
+        orientationBeta = Number(beta) || 0;
+        orientationGamma = Number(gamma) || 0;
+      },
+      showCompletionPopup: function() { onExperienceEnded(); },
+      hideCompletionPopup: function() { hideVRCompletionPopup(); hide2DCompletionPopup(); },
+      getState: function() { return { ...state }; },
+      dispose: function() { disposeExperience(); }
+    };
+
+    /* ======================================================================
+       3. HIGH-PRECISION WEB AUDIO API 432 Hz ENGINE + OCEAN AMBIENCE
+       ====================================================================== */
+    let audioCtx = null;
+    let masterGain = null;
+    let padGain = null;
+    let oceanGain = null;
+    let isAudioInitialized = false;
+
+    // Binaural Pad Nodes (432 Hz Theta Beat)
+    let padOscLeft = null;
+    let padOscRight = null;
+    let padOscSub = null;
+    let padOscOctave = null;
+    let padOscFifth = null;
+    let padFilter = null;
+
+    // Ocean Hydrophone Ambient Nodes
+    let oceanSource = null;
+    let oceanFilter1 = null;
+    let oceanFilter2 = null;
+    let oceanLfo1 = null;
+    let oceanLfo2 = null;
+
+    function initAudioEngine() {
+      if (isAudioInitialized) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        audioCtx = new AudioContextClass();
+
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+        masterGain.connect(audioCtx.destination);
+
+        // A) 432 Hz Binaural Pad (Theta Beat 4 Hz: 432 Hz vs 436 Hz)
+        padGain = audioCtx.createGain();
+        padGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+
+        padFilter = audioCtx.createBiquadFilter();
+        padFilter.type = 'lowpass';
+        padFilter.frequency.setValueAtTime(560, audioCtx.currentTime);
+        padFilter.Q.setValueAtTime(1.2, audioCtx.currentTime);
+
+        const merger = audioCtx.createChannelMerger(2);
+
+        // Left ear: 432.0 Hz
+        padOscLeft = audioCtx.createOscillator();
+        padOscLeft.type = 'sine';
+        padOscLeft.frequency.setValueAtTime(432.0, audioCtx.currentTime);
+        const gainLeft = audioCtx.createGain();
+        gainLeft.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        padOscLeft.connect(gainLeft);
+        gainLeft.connect(merger, 0, 0);
+
+        // Right ear: 436.0 Hz (4 Hz Theta Beat)
+        padOscRight = audioCtx.createOscillator();
+        padOscRight.type = 'sine';
+        padOscRight.frequency.setValueAtTime(436.0, audioCtx.currentTime);
+        const gainRight = audioCtx.createGain();
+        gainRight.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        padOscRight.connect(gainRight);
+        gainRight.connect(merger, 0, 1);
+
+        // Sub-harmonic: 97.2 Hz
+        padOscSub = audioCtx.createOscillator();
+        padOscSub.type = 'triangle';
+        padOscSub.frequency.setValueAtTime(97.2, audioCtx.currentTime);
+        const gainSub = audioCtx.createGain();
+        gainSub.gain.setValueAtTime(0.10, audioCtx.currentTime);
+        padOscSub.connect(gainSub);
+        gainSub.connect(merger, 0, 0);
+        gainSub.connect(merger, 0, 1);
+
+        // Octave: 216.0 Hz
+        padOscOctave = audioCtx.createOscillator();
+        padOscOctave.type = 'sine';
+        padOscOctave.frequency.setValueAtTime(216.0, audioCtx.currentTime);
+        const gainOctave = audioCtx.createGain();
+        gainOctave.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        padOscOctave.connect(gainOctave);
+        gainOctave.connect(merger, 0, 0);
+        gainOctave.connect(merger, 0, 1);
+
+        // Fifth: 648.0 Hz
+        padOscFifth = audioCtx.createOscillator();
+        padOscFifth.type = 'sine';
+        padOscFifth.frequency.setValueAtTime(648.0, audioCtx.currentTime);
+        const gainFifth = audioCtx.createGain();
+        gainFifth.gain.setValueAtTime(0.03, audioCtx.currentTime);
+        padOscFifth.connect(gainFifth);
+        gainFifth.connect(merger, 0, 0);
+        gainFifth.connect(merger, 0, 1);
+
+        merger.connect(padFilter);
+        padFilter.connect(padGain);
+        padGain.connect(masterGain);
+
+        padOscLeft.start();
+        padOscRight.start();
+        padOscSub.start();
+        padOscOctave.start();
+        padOscFifth.start();
+
+        // B) Deep Ocean Hydrophone Ambient (Filtered Pink Noise)
+        const bufferSize = audioCtx.sampleRate * 4;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const out = noiseBuffer.getChannelData(0);
+        let lastOut = 0.0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          lastOut = (lastOut + (0.02 * white)) / 1.02;
+          out[i] = lastOut * 3.5;
+        }
+
+        oceanSource = audioCtx.createBufferSource();
+        oceanSource.buffer = noiseBuffer;
+        oceanSource.loop = true;
+
+        oceanFilter1 = audioCtx.createBiquadFilter();
+        oceanFilter1.type = 'bandpass';
+        oceanFilter1.frequency.setValueAtTime(260, audioCtx.currentTime);
+        oceanFilter1.Q.setValueAtTime(1.8, audioCtx.currentTime);
+
+        oceanFilter2 = audioCtx.createBiquadFilter();
+        oceanFilter2.type = 'lowpass';
+        oceanFilter2.frequency.setValueAtTime(750, audioCtx.currentTime);
+
+        oceanGain = audioCtx.createGain();
+        oceanGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+
+        oceanSource.connect(oceanFilter1);
+        oceanFilter1.connect(oceanFilter2);
+        oceanFilter2.connect(oceanGain);
+        oceanGain.connect(masterGain);
+        oceanSource.start();
+
+        oceanLfo1 = audioCtx.createOscillator();
+        oceanLfo1.frequency.setValueAtTime(0.1, audioCtx.currentTime);
+        const oceanLfoGain1 = audioCtx.createGain();
+        oceanLfoGain1.gain.setValueAtTime(90, audioCtx.currentTime);
+        oceanLfo1.connect(oceanLfoGain1);
+        oceanLfoGain1.connect(oceanFilter1.frequency);
+        oceanLfo1.start();
+
+        isAudioInitialized = true;
+      } catch (e) {
+        console.error('Audio initialization error:', e);
+      }
+    }
+
+    function unlockAudioContext() {
+      if (!audioCtx) initAudioEngine();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function setMasterAudioGain(vol, ramp = 1.0) {
+      if (!audioCtx || !masterGain) return;
+      const now = audioCtx.currentTime;
+      masterGain.gain.cancelScheduledValues(now);
+      masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+      masterGain.gain.linearRampToValueAtTime(vol, now + ramp);
+    }
+
+    function setPadAudioGain(vol, ramp = 1.5) {
+      if (!audioCtx || !padGain) return;
+      const now = audioCtx.currentTime;
+      padGain.gain.cancelScheduledValues(now);
+      padGain.gain.setValueAtTime(padGain.gain.value, now);
+      padGain.gain.linearRampToValueAtTime(vol, now + ramp);
+    }
+
+    function setOceanAudioGain(vol, ramp = 1.5) {
+      if (!audioCtx || !oceanGain) return;
+      const now = audioCtx.currentTime;
+      oceanGain.gain.cancelScheduledValues(now);
+      oceanGain.gain.setValueAtTime(oceanGain.gain.value, now);
+      oceanGain.gain.linearRampToValueAtTime(vol, now + ramp);
+    }
+
+    // Procedural Organic Underwater Bubble Chirp
+    function playBubbleChirp(baseFreq = 680, duration = 0.045, volume = 0.04) {
+      if (!audioCtx || state.isAudioMuted) return;
+      try {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(baseFreq, now);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, now + duration);
+
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.linearRampToValueAtTime(volume, now + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        osc.connect(g);
+        g.connect(masterGain);
+        osc.start(now);
+        osc.stop(now + duration + 0.02);
+
+        setTimeout(() => {
+          try { osc.disconnect(); g.disconnect(); } catch (e) {}
+        }, (duration + 0.05) * 1000);
+      } catch (err) {}
+    }
+
+    // Tibetan Singing Bowl Chime (432 Hz fundamental with pure serene harmonics)
+    function playTibetanBowl(fundamental = 432.0, duration = 4.5) {
+      if (!audioCtx || state.isAudioMuted) return;
+      try {
+        const now = audioCtx.currentTime;
+        const chimeMaster = audioCtx.createGain();
+        chimeMaster.gain.setValueAtTime(0.38, now);
+        chimeMaster.connect(masterGain);
+
+        const harmonics = [
+          { mult: 1.00, gain: 0.65, decay: duration * 1.0 },
+          { mult: 2.76, gain: 0.26, decay: duration * 0.75 },
+          { mult: 5.40, gain: 0.12, decay: duration * 0.5 },
+          { mult: 0.50, gain: 0.30, decay: duration * 0.95 }
+        ];
+
+        harmonics.forEach(h => {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(fundamental * h.mult, now);
+
+          const bend = (Math.random() - 0.5) * 0.6;
+          osc.frequency.linearRampToValueAtTime(fundamental * h.mult + bend, now + h.decay);
+
+          g.gain.setValueAtTime(0.0001, now);
+          g.gain.linearRampToValueAtTime(h.gain, now + 0.015);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + h.decay);
+
+          osc.onended = () => {
+            try { osc.disconnect(); g.disconnect(); } catch (e) {}
+          };
+
+          osc.connect(g);
+          g.connect(chimeMaster);
+          osc.start(now);
+          osc.stop(now + h.decay + 0.1);
+        });
+
+        setTimeout(() => {
+          try { chimeMaster.disconnect(); } catch (e) {}
+        }, (duration + 0.5) * 1000);
+      } catch (err) {
+        console.warn('Tibetan bowl chime error:', err);
+      }
+    }
+
+    function setAudioMuted(mute) {
+      state.isAudioMuted = mute;
+      if (masterGain && audioCtx) {
+        setMasterAudioGain(mute ? 0 : 0.85, 0.3);
+      }
+      const iconOn = document.getElementById('icon-sound-on');
+      const iconOff = document.getElementById('icon-sound-off');
+      if (iconOn && iconOff) {
+        iconOn.style.display = mute ? 'none' : 'block';
+        iconOff.style.display = mute ? 'block' : 'none';
+      }
+    }
+
+    /* ======================================================================
+       4. PROCEDURAL HIGH-RESOLUTION TEXTURES
+       ====================================================================== */
+    // Photorealistic Translucent Air Bubble Texture in Deep Water
+    function createAirBubbleTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      const cx = 128, cy = 128, r = 118;
+
+      // 1. Iridescent outer Fresnel rim (crystalline silver-cyan edge)
+      const rimGrad = ctx.createRadialGradient(cx, cy, r * 0.72, cx, cy, r);
+      rimGrad.addColorStop(0.0, 'rgba(112, 214, 255, 0.0)');
+      rimGrad.addColorStop(0.70, 'rgba(112, 220, 255, 0.22)');
+      rimGrad.addColorStop(0.90, 'rgba(235, 250, 255, 0.92)');
+      rimGrad.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+
+      ctx.fillStyle = rimGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Translucent refraction body
+      const bodyGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 0.88);
+      bodyGrad.addColorStop(0.0, 'rgba(140, 225, 255, 0.04)');
+      bodyGrad.addColorStop(0.70, 'rgba(112, 214, 255, 0.18)');
+      bodyGrad.addColorStop(0.95, 'rgba(190, 245, 255, 0.42)');
+      bodyGrad.addColorStop(1.0, 'rgba(230, 250, 255, 0.10)');
+
+      ctx.fillStyle = bodyGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.88, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 3. Sharp white specular solar glint at top-left
+      const specGrad = ctx.createRadialGradient(84, 84, 0, 84, 84, 38);
+      specGrad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+      specGrad.addColorStop(0.38, 'rgba(255, 255, 255, 0.90)');
+      specGrad.addColorStop(0.68, 'rgba(200, 245, 255, 0.35)');
+      specGrad.addColorStop(1.0, 'rgba(140, 230, 255, 0.0)');
+
+      ctx.fillStyle = specGrad;
+      ctx.beginPath();
+      ctx.arc(84, 84, 38, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 4. Secondary micro specular spot for spherical depth
+      const spec2Grad = ctx.createRadialGradient(148, 70, 0, 148, 70, 16);
+      spec2Grad.addColorStop(0.0, 'rgba(255, 255, 255, 0.85)');
+      spec2Grad.addColorStop(0.5, 'rgba(210, 245, 255, 0.35)');
+      spec2Grad.addColorStop(1.0, 'rgba(112, 214, 255, 0.0)');
+
+      ctx.fillStyle = spec2Grad;
+      ctx.beginPath();
+      ctx.arc(148, 70, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 5. Soft bottom-right caustic bounce reflection
+      const bounceGrad = ctx.createRadialGradient(164, 164, 0, 164, 164, 36);
+      bounceGrad.addColorStop(0.0, 'rgba(200, 248, 255, 0.60)');
+      bounceGrad.addColorStop(0.65, 'rgba(112, 220, 255, 0.20)');
+      bounceGrad.addColorStop(1.0, 'rgba(112, 214, 255, 0.0)');
+
+      ctx.fillStyle = bounceGrad;
+      ctx.beginPath();
+      ctx.arc(164, 164, 36, 0, Math.PI * 2);
+      ctx.fill();
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.generateMipmaps = true;
+      return tex;
+    }
+
+    // Soft Marine Snow Particle
+    function createMoteTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+
+      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0.0, 'rgba(255, 255, 255, 0.9)');
+      grad.addColorStop(0.35, 'rgba(140, 220, 255, 0.5)');
+      grad.addColorStop(0.7, 'rgba(10, 75, 120, 0.15)');
+      grad.addColorStop(1.0, 'rgba(2, 20, 40, 0.0)');
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 64, 64);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.generateMipmaps = true;
+      return tex;
+    }
+
+    // Procedural 360° Oceanic Environment Map for Crystal Water Reflections
+    function createOceanEnvironmentMap(renderer) {
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      pmremGenerator.compileEquirectangularShader();
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+
+      // 360° Natural Oceanic Depth Gradient (#0c3b63, #082c4d, #011326)
+      const grad = ctx.createLinearGradient(0, 0, 0, 256);
+      grad.addColorStop(0.0, '#0c3b63');   // Surface zenith
+      grad.addColorStop(0.3, '#082c4d');   // Upper ocean
+      grad.addColorStop(0.65, '#05223e');  // Mid depth sapphire
+      grad.addColorStop(0.9, '#02162a');   // Deep column
+      grad.addColorStop(1.0, '#011020');   // Abyssal nadir
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 256);
+
+      // Soft overhead sunlit diffusion
+      const sunGrad = ctx.createRadialGradient(256, 40, 0, 256, 40, 85);
+      sunGrad.addColorStop(0.0, 'rgba(230, 248, 255, 0.95)');
+      sunGrad.addColorStop(0.35, 'rgba(112, 214, 255, 0.65)');
+      sunGrad.addColorStop(0.7, 'rgba(12, 59, 99, 0.25)');
+      sunGrad.addColorStop(1.0, 'rgba(8, 44, 77, 0.0)');
+      ctx.fillStyle = sunGrad;
+      ctx.fillRect(0, 0, 512, 256);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      const envRT = pmremGenerator.fromEquirectangular(tex);
+      tex.dispose();
+      pmremGenerator.dispose();
+      return envRT.texture;
+    }
+
+    /* ======================================================================
+       5. 3D SCENE SETUP & PROCEDURAL GRAPHICS (UNDERWATER SANCTUARY)
+       ====================================================================== */
+    let scene, camera, renderer, stereoCamera;
+    let container;
+
+    // Atmospheric oceanic elements
+    let oceanDomeMesh;
+    let sunLight, hemiLight, backRimLight, bottomBounce, bottomSoftPoint, pauseWarmLight;
+    let leftStudioKey, rightStudioKey, leftFlankSpot, rightFlankSpot;
+    let causticSpotLight, causticPointLight;
+
+    // Surface Micro-Glints
+    let surfaceGlintsPoints;
+    let surfaceGlintsData = [];
+    const NUM_SURFACE_GLINTS = 190;
+
+    // Marine snow / Plankton
+    let planktonPoints;
+    let planktonAnchors = [];
+    const NUM_PLANKTON = 650;
+
+    // Central Droplet (Solid, Opaque PBR Liquid Masterpiece)
+    let waterDropGroup;
+    let waterDropMesh;
+    let waterDropMaterial;
+
+    // Nostril Bubble Streams
+    let leftBubblePoints, rightBubblePoints;
+    let leftBubbleData = [], rightBubbleData = [];
+    const NUM_STREAM_BUBBLES = 110;
+
+    // 3D VR Billboard
+    let textSpriteMesh;
+    let textCanvas, textContext, textTexture;
+
+    // Camera Controls
+    let isMouseDown = false;
+    let prevMouseX = 0, prevMouseY = 0;
+    let cameraYaw = 0, cameraPitch = 0;
+    let targetYaw = 0, targetPitch = 0;
+    let deviceOrientationEnabled = true;
+    let orientationAlpha = 0, orientationBeta = 0, orientationGamma = 0;
+    let screenOrientationAngle = 0;
+    let vrAlphaOffset = 0;
+
+    const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
+    const _q0 = new THREE.Quaternion();
+    const _q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
+    const _zee = new THREE.Vector3(0, 0, 1);
+
+    function canvasWidth() { return window.innerWidth; }
+    function canvasHeight() { return window.innerHeight; }
+
+    /* ======================================================================
+       MATHEMATICAL TEARDROP GEOMETRY MODELING (CANONICAL SLENDER TEARDROP)
+       ======================================================================
+       1. Apice superiore (Y ≈ +2.5): appuntito, affusolato ed elegante (r → 0.02).
+       2. Corpo superiore (Y ∈ [0.4, 2.5]): curva concava sinuosa che scende allargandosi gradualmente.
+       3. Ventre e Fondo (Y ∈ [-1.5, 0.4]): corpo bulboso e fondo perfettamente sferico (raggio massimo R ≈ 1.35 a Y ≈ -0.3, fondo a Y ≈ -1.5).
+       4. Curva analitica continua a 128 punti verticali × 128 segmenti radiali con computeVertexNormals().
+       ====================================================================== */
+    function createTeardropGeometry(segments = 128) {
+      // 1. Lower spherical cap / bulbous belly (scalato a 0.75)
+      const pts = [];
+      const N_BOT = 48;
+      for (let i = 0; i <= N_BOT; i++) {
+        const t = -Math.PI / 2 + (i / N_BOT) * (Math.PI / 2);
+        const y = -0.225 + 0.90 * Math.sin(t);
+        const r = 1.0125 * Math.cos(t);
+        pts.push(new THREE.Vector2(r, y));
+      }
+
+      // 2. Upper concave neck up to slender apex at Y = 1.875
+      const upperSpline = [
+        new THREE.Vector2(1.0125, -0.225),   // Equator R = 1.0125 at Y = -0.225
+        new THREE.Vector2(0.99, -0.0375),    // Upper belly shoulder
+        new THREE.Vector2(0.915, 0.15),      // Shoulder transition
+        new THREE.Vector2(0.765, 0.375),     // Inflection point
+        new THREE.Vector2(0.51, 0.735),      // Concave flaring upper wall
+        new THREE.Vector2(0.285, 1.11),      // Slender concave neck
+        new THREE.Vector2(0.135, 1.44),      // Affusolato ed elegante
+        new THREE.Vector2(0.045, 1.68),      // Pre-apice
+        new THREE.Vector2(0.015, 1.845),     // Apice sottile r → 0.015
+        new THREE.Vector2(0.00, 1.875)       // Apice superiore Y ≈ +1.875
+      ];
+      const upperCurve = new THREE.SplineCurve(upperSpline);
+      const upperPts = upperCurve.getPoints(79);
+
+      const fullProfile = pts.slice(0, pts.length - 1).concat(upperPts);
+      fullProfile[0].x = 0;
+      fullProfile[fullProfile.length - 1].x = 0;
+
+      const geom = new THREE.LatheGeometry(fullProfile, segments);
+      geom.computeVertexNormals();
+
+      const pos = geom.attributes.position.array;
+      const norm = geom.attributes.normal.array;
+      const count = geom.attributes.position.count;
+      for (let i = 0; i < count; i++) {
+        const y = pos[i * 3 + 1];
+        if (Math.abs(y - (-1.50)) < 0.002) {
+          norm[i * 3 + 0] = 0;
+          norm[i * 3 + 1] = -1;
+          norm[i * 3 + 2] = 0;
+        } else if (Math.abs(y - 1.875) < 0.002) {
+          norm[i * 3 + 0] = 0;
+          norm[i * 3 + 1] = 1;
+          norm[i * 3 + 2] = 0;
+        }
+      }
+      geom.attributes.normal.needsUpdate = true;
+      return geom;
+    }
+
+    function initThreeScene() {
+      container = document.getElementById('webgl-container');
+
+      scene = new THREE.Scene();
+      // Gentle exponential abyss fog
+      scene.fog = new THREE.FogExp2(0x021428, 0.014);
+
+      camera = new THREE.PerspectiveCamera(48, canvasWidth() / canvasHeight(), 0.1, 900);
+      camera.position.set(0, 0, 0);
+
+      stereoCamera = new THREE.StereoCamera();
+      stereoCamera.aspect = 0.5;
+      stereoCamera.eyeSep = 0.064;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(canvasWidth(), canvasHeight());
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      renderer.setClearColor(0x052848, 1.0);
+      container.appendChild(renderer.domElement);
+
+      // Procedural 360° Oceanic Environment Map
+      const oceanEnv = createOceanEnvironmentMap(renderer);
+      scene.environment = oceanEnv;
+      scene.background = oceanEnv;
+
+      // 1. Oceanic 360° Skydome (Domain-Warped Smooth Fluid Waves with Integrated Volumetric Sunbeams)
+      createOceanicDome();
+
+      // 1b. Surface Micro-Glints (Sunlight Reflection Specks beneath ocean roof)
+      createSurfaceGlints();
+
+      // 2. Realistic Underwater Lighting & Recalibrated Studio Lights (No Overexposure)
+      sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+      sunLight.position.set(0, 10.0, -1.0);
+      scene.add(sunLight);
+
+      hemiLight = new THREE.HemisphereLight(0x4ab8f0, 0x031830, 0.45);
+      scene.add(hemiLight);
+
+      // KeyLight: PointLight intensity 1.0 at (2.5, 3.0, 3.0) for curved specular highlight on flank
+      const keyLight = new THREE.PointLight(0xffffff, 1.0, 15.0);
+      keyLight.position.set(2.5, 3.0, 3.0);
+      scene.add(keyLight);
+
+      // RimLight: PointLight intensity 0.8 at (-2.5, 1.0, 2.0) for contour reflection
+      const rimLight = new THREE.PointLight(0x70d6ff, 0.8, 15.0);
+      rimLight.position.set(-2.5, 1.0, 2.0);
+      scene.add(rimLight);
+
+      // BottomBounce: DirectionalLight intensity 0.4 from below (#0088cc)
+      bottomBounce = new THREE.DirectionalLight(0x0088cc, 0.4);
+      bottomBounce.position.set(0, -6.0, -3.5);
+      scene.add(bottomBounce);
+
+      // 3. Central Water Droplet Group
+      createCentralWaterDrop();
+
+      bottomBounce.target = waterDropGroup;
+
+      // 4. Subtle Marine Snow / Plankton
+      createPlanktonParticles();
+
+      // 5. Soft Nostril Air Bubble Streams
+      createNostrilBubbleStreams();
+
+      // 6. 3D World Space VR Text (VR Mode Only)
+      createVRBillboardText();
+
+      window.addEventListener('resize', onWindowResize, false);
+
+      // 7. 3D Stereoscopic Gaze Reticle
+      initVRReticle();
+    }
+
+    let vrReticleGroup = null;
+    let vrReticleRing = null;
+
+    function initVRReticle() {
+      vrReticleGroup = new THREE.Group();
+      vrReticleGroup.name = 'VR_Gaze_Reticle';
+
+      // 1. Punto focale centrale dorato
+      const dotGeo = new THREE.CircleGeometry(0.012, 32);
+      const dotMat = new THREE.MeshBasicMaterial({
+        color: 0xffd700,
+        transparent: true,
+        opacity: 0.9,
+        depthTest: false,
+        depthWrite: false
+      });
+      const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+      dotMesh.renderOrder = 9999;
+      vrReticleGroup.add(dotMesh);
+
+      // 2. Anello esterno di puntamento
+      const ringGeo = new THREE.RingGeometry(0.024, 0.034, 32);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.7,
+        depthTest: false,
+        depthWrite: false
+      });
+      vrReticleRing = new THREE.Mesh(ringGeo, ringMat);
+      vrReticleRing.renderOrder = 9999;
+      vrReticleGroup.add(vrReticleRing);
+
+      // 3. Posiziona a 2.5 metri di fronte alla camera
+      vrReticleGroup.position.set(0, 0, -2.5);
+      vrReticleGroup.visible = false; // Visibile solo in modalità VR
+
+      // 4. Aggiungi come figlio diretto di camera
+      camera.add(vrReticleGroup);
+      scene.add(camera);
+    }
+
+    // ----------------------------------------------------
+    // Gaze Interaction & Dwell Timer System (2.0s Dwell)
+    // ----------------------------------------------------
+    const gazeRaycaster = new THREE.Raycaster();
+    const gazeIntersectTargets = [];
+    let gazeHoverTarget = null;
+    let gazeDwellTimer = 0.0;
+    const DWELL_DURATION_SEC = 2.0;
+    const _gazeForwardDir = new THREE.Vector3();
+
+    function updateGazeInteraction(deltaSec) {
+      if (!state.isVRMode || !vrReticleGroup || !completionPopupGroup || !completionPopupGroup.visible || gazeIntersectTargets.length === 0) return;
+
+      camera.getWorldDirection(_gazeForwardDir);
+      gazeRaycaster.set(camera.position, _gazeForwardDir);
+      const hits = gazeRaycaster.intersectObjects(gazeIntersectTargets, true);
+
+      if (hits.length > 0) {
+        let hitObj = hits[0].object;
+        while (hitObj && (!hitObj.userData || !hitObj.userData.onDwellSelect) && hitObj.parent) {
+          if (hitObj.parent === completionPopupGroup) break;
+          hitObj = hitObj.parent;
+        }
+
+        if (hitObj && hitObj.userData && typeof hitObj.userData.onDwellSelect === 'function') {
+          if (gazeHoverTarget === hitObj) {
+            gazeDwellTimer += deltaSec;
+            const progress = Math.min(1.0, gazeDwellTimer / DWELL_DURATION_SEC);
+
+            if (vrReticleRing) {
+              const s = 1.0 + progress * 0.75;
+              vrReticleRing.scale.set(s, s, 1.0);
+              vrReticleRing.material.opacity = 0.5 + progress * 0.5;
+            }
+
+            if (gazeDwellTimer >= DWELL_DURATION_SEC) {
+              gazeDwellTimer = 0.0;
+              if (vrReticleRing) {
+                vrReticleRing.scale.set(1.0, 1.0, 1.0);
+                vrReticleRing.material.opacity = 0.7;
+              }
+              hitObj.userData.onDwellSelect();
+            }
+          } else {
+            gazeHoverTarget = hitObj;
+            gazeDwellTimer = 0.0;
+          }
+          return;
+        }
+      }
+
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    // ----------------------------------------------------
+    // 3D Stereoscopic Completion Popup (Hands-Free Gaze)
+    // ----------------------------------------------------
+    let completionPopupGroup = null;
+
+    function createVRCompletionPopup() {
+      if (completionPopupGroup) return completionPopupGroup;
+
+      completionPopupGroup = new THREE.Group();
+      completionPopupGroup.name = 'VR_Completion_Popup';
+
+      // 1. Sfondo glassmorphic Japandi
+      const bgGeo = new THREE.PlaneGeometry(2.4, 1.4);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: 0x070c14,
+        transparent: true,
+        opacity: 0.88,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9998;
+      completionPopupGroup.add(bgMesh);
+
+      // 2. Texture con Titolo "Esperienza Completata"
+      const titleSprite = createPopupTextSprite('Esperienza Completata', 'bold 30px sans-serif', '#70D6FF', 2.0, 0.4);
+      titleSprite.position.set(0, 0.38, 0.02);
+      completionPopupGroup.add(titleSprite);
+
+      const subSprite = createPopupTextSprite('Fissa un pulsante per 2s per selezionarlo', '20px sans-serif', 'rgba(255,255,255,0.75)', 2.2, 0.3);
+      subSprite.position.set(0, 0.12, 0.02);
+      completionPopupGroup.add(subSprite);
+
+      // 3. Pulsante 3D "ESCI" (Sinistra)
+      const exitBtn = create3DButton('ESCI', -0.55, -0.28, 0xef4444, () => {
+        notifyFlutter('onExitRequested', {});
+      });
+      completionPopupGroup.add(exitBtn);
+      gazeIntersectTargets.push(exitBtn);
+
+      // 4. Pulsante 3D "RIPETI" (Destra)
+      const repeatBtn = create3DButton('RIPETI', 0.55, -0.28, 0x10b981, () => {
+        hideVRCompletionPopup();
+        hide2DCompletionPopup();
+        state.isCompleted = false;
+        resetSession();
+        startSession();
+      });
+      completionPopupGroup.add(repeatBtn);
+      gazeIntersectTargets.push(repeatBtn);
+
+      completionPopupGroup.position.set(0, 0, -2.0);
+      completionPopupGroup.visible = false;
+
+      camera.add(completionPopupGroup);
+      return completionPopupGroup;
+    }
+
+    function createPopupTextSprite(text, font, color, w, h) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 512, 128);
+      ctx.font = font || 'bold 28px sans-serif';
+      ctx.fillStyle = color || '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 256, 64);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const mat = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false
+      });
+      mat.renderOrder = 9999;
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+      mesh.renderOrder = 9999;
+      return mesh;
+    }
+
+    function create3DButton(label, x, y, colorHex, onSelect) {
+      const group = new THREE.Group();
+      group.position.set(x, y, 0.02);
+
+      const bgGeo = new THREE.PlaneGeometry(0.85, 0.35);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.85,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9999;
+      bgMesh.userData = { onDwellSelect: onSelect };
+      group.add(bgMesh);
+
+      const textSprite = createPopupTextSprite(label, 'bold 32px sans-serif', '#FFFFFF', 0.8, 0.3);
+      textSprite.position.set(0, 0, 0.02);
+      textSprite.userData = { onDwellSelect: onSelect };
+      group.add(textSprite);
+
+      group.userData = { onDwellSelect: onSelect };
+      return group;
+    }
+
+    function showVRCompletionPopup() {
+      if (!completionPopupGroup) createVRCompletionPopup();
+      completionPopupGroup.visible = true;
+    }
+
+    function hideVRCompletionPopup() {
+      if (completionPopupGroup) completionPopupGroup.visible = false;
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    function show2DCompletionPopup() {
+      const modal = document.getElementById('session-completion-modal');
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('opacity', '1', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
+        modal.classList.add('visible');
+      }
+    }
+
+    function hide2DCompletionPopup() {
+      const modal = document.getElementById('session-completion-modal');
+      if (modal) {
+        modal.classList.remove('visible');
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+        setTimeout(() => {
+          if (!modal.classList.contains('visible')) {
+            modal.style.display = 'none';
+          }
+        }, 360);
+      }
+    }
+
+    function rampAudioLevels(padVol = 0.01, oceanVol = 0.01, rampSec = 1.5) {
+      try {
+        setPadAudioGain(padVol, rampSec);
+        setOceanAudioGain(oceanVol, rampSec);
+      } catch(e) {
+        console.warn('rampAudioLevels error:', e);
+      }
+    }
+
+    function onExperienceEnded() {
+      if (state.isCompleted) return;
+      if (typeof outroSafetyTimer !== 'undefined' && outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = true;
+      state.isRunning = false;
+      state.leftStreamActive = false;
+      state.rightStreamActive = false;
+      state.leftStreamTargetDir = 1.0;
+      state.rightStreamTargetDir = 1.0;
+
+      try {
+        rampAudioLevels(0.01, 0.01, 1.5);
+      } catch(e) {
+        console.warn('Audio fade err:', e);
+      }
+
+      try {
+        if (typeof textSpriteMesh !== 'undefined' && textSpriteMesh && textSpriteMesh.material) {
+          textSpriteMesh.material.opacity = 0;
+        }
+      } catch(e) {}
+
+      try {
+        updateUIElements();
+      } catch(e) {}
+
+      try {
+        notifyFlutter('onSessionComplete', {
+          cyclesCompleted: PACING_CONFIG.TOTAL_CYCLES,
+          totalTimeSec: PACING_CONFIG.TOTAL_DURATION_SEC
+        });
+      } catch(e) {
+        console.warn('Flutter notify error:', e);
+      }
+
+      if (state.isVRMode) {
+        showVRCompletionPopup();
+      } else {
+        show2DCompletionPopup();
+      }
+    }
+
+    // Oceanic Dome & Underwater Skybox (Photorealistic Sea Surface / Snell's Window / Gerstner Waves / Wave Caustics)
+    function createOceanicDome() {
+      const domeGeo = new THREE.SphereGeometry(450, 64, 48);
+      const domeMat = new THREE.ShaderMaterial({
+        uniforms: {
+          time: { value: 0 },
+          deepColor: { value: new THREE.Color(0x021428) },      // Abyssal deep blue nadir (#021428)
+          oceanBaseColor: { value: new THREE.Color(0x052848) }, // Deep sapphire ocean column (#052848)
+          waveCrestColor: { value: new THREE.Color(0x5ebbf5) }, // Radiant cerulean crest (#5ebbf5)
+          sunGlintColor: { value: new THREE.Color(0xf2faff) }   // Filtered sunlight zenith glint (#f2faff)
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          void main() {
+            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPosition.xyz;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 deepColor;
+          uniform vec3 oceanBaseColor;
+          uniform vec3 waveCrestColor;
+          uniform vec3 sunGlintColor;
+          uniform float time;
+          varying vec3 vWorldPosition;
+
+          // Multi-harmonic domain-warped fluid surface evaluation
+          vec4 evaluateOceanSurface(vec2 uv, float t) {
+            float t1 = t * 0.20;
+            float t2 = t * 0.16;
+
+            // Primary rolling ocean swell warp
+            vec2 q = vec2(
+              sin(uv.x * 0.55 + t1) * 0.90 + cos(uv.y * 0.48 - t2) * 0.80,
+              cos(uv.x * 0.45 - t2) * 0.80 + sin(uv.y * 0.60 + t1 * 1.1) * 0.90
+            );
+
+            // Secondary transverse cross-current warp
+            vec2 r = vec2(
+              sin((uv.x + q.x * 0.70) * 0.92 + t1 * 1.25 + 0.6),
+              cos((uv.y + q.y * 0.70) * 0.85 - t2 * 1.15 + 1.1)
+            );
+
+            vec2 p = uv + r * 0.80;
+
+            // Silky wave harmonics (Broad, velvety undulating ribbons)
+            float w1 = sin(p.x * 1.05 + p.y * 0.62 + t1 * 1.4);
+            float w2 = cos(p.x * 0.75 - p.y * 0.95 - t2 * 1.3);
+            float w3 = sin((p.x * 0.85 - p.y * 0.85) * 1.35 + t1 * 1.6);
+            float w4 = cos(length(p * 0.65) * 1.6 - t2 * 1.5);
+
+            float elevation = (w1 * 0.38 + w2 * 0.32 + w3 * 0.18 + w4 * 0.12) * 0.5 + 0.5;
+
+            float dWdx = (1.05 * cos(p.x * 1.05 + p.y * 0.62 + t1 * 1.4) * 0.38 - 0.75 * sin(p.x * 0.75 - p.y * 0.95 - t2 * 1.3) * 0.32);
+            float dWdy = (0.62 * cos(p.x * 1.05 + p.y * 0.62 + t1 * 1.4) * 0.38 + 0.95 * sin(p.x * 0.75 - p.y * 0.95 - t2 * 1.3) * 0.32);
+
+            return vec4(elevation, dWdx, dWdy, length(r));
+          }
+
+          void main() {
+            vec3 p = normalize(vWorldPosition);
+            float y = p.y;
+            
+            // Overhead celestial sun vector (zenith with slight natural tilt)
+            vec3 sunDir = normalize(vec3(0.08, 0.98, 0.10));
+
+            // 1. Distance-based frequency damping & safe bounded coordinates (ZERO moire / comb lines)
+            float waveFade = smoothstep(0.08, 0.48, y);
+            vec2 surfUV = p.xz / max(y + 0.32, 0.35) * 1.55;
+
+            // 2. Realistic fluid surface evaluation
+            vec4 waveData = evaluateOceanSurface(surfUV, time);
+            float wave = waveData.x;
+            vec2 waveGrad = vec2(waveData.y, waveData.z) * waveFade;
+
+            // Silky ribbon bands (Matching photo reference)
+            float ribbonSwell = smoothstep(0.32, 0.78, wave);
+            float ribbonBody = pow(smoothstep(0.46, 0.90, wave), 1.7);
+            float ribbonCrest = pow(smoothstep(0.60, 0.96, wave), 2.5);
+            float ribbonHighlight = pow(smoothstep(0.74, 0.99, wave), 3.2);
+
+            // 3. Realistic underwater color palette (100% positive luminous blues/cyans, zero black dots)
+            vec3 cAbyssTrough = vec3(0.015, 0.11, 0.22);    // Deep sapphire trough (#041c38)
+            vec3 cOceanSapphire = vec3(0.038, 0.22, 0.42);  // Rich oceanic column (#0a386b)
+            vec3 cCeruleanBand = vec3(0.12, 0.46, 0.74);   // Velvety cerulean ribbon (#1f75bd)
+            vec3 cRadiantAzure = vec3(0.26, 0.66, 0.93);   // Luminous aquatic azure (#42a8ed)
+            vec3 cSatinCyan = vec3(0.58, 0.88, 1.00);      // Satin cyan wave crest (#94e0ff)
+            vec3 cSunZenithGlint = vec3(0.96, 0.98, 1.00); // Filtered sunlight glint (#f5fafe)
+
+            // Composite oceanic surface shading
+            vec3 surfCol = mix(cAbyssTrough, cOceanSapphire, wave);
+            surfCol = mix(surfCol, cCeruleanBand, ribbonSwell * 0.92);
+            surfCol = mix(surfCol, cRadiantAzure, ribbonBody * 0.88);
+            surfCol = mix(surfCol, cSatinCyan, ribbonCrest * 0.80);
+            surfCol = mix(surfCol, cSunZenithGlint, ribbonHighlight * 0.65 * waveFade);
+
+            // Gentle wave caustic shimmer in fluid folds
+            float caustVal = pow(clamp(sin(surfUV.x * 2.5 + time * 0.5) * cos(surfUV.y * 2.3 - time * 0.4) * 0.5 + 0.5, 0.0, 1.0), 3.0);
+            surfCol += cSatinCyan * caustVal * 0.22 * waveFade;
+
+            // Zenith sun diffusion (viewed from 2-3m depth)
+            float sunDot = clamp(dot(p, sunDir), 0.0, 1.0);
+            float sunGlow = pow(sunDot, 16.0) * 0.95 + pow(sunDot, 4.0) * 0.42 + pow(sunDot, 1.5) * 0.18;
+            surfCol += cSunZenithGlint * sunGlow * waveFade;
+
+            // 4. Deep water column & horizon blending
+            float nadir = clamp(-y * 1.2 + 0.1, 0.0, 1.0);
+            vec3 abyssCol = mix(cOceanSapphire, deepColor, nadir);
+
+            // Soft natural horizon meniscus transition (Surface emerges overhead at y > 0.12)
+            float surfaceBlend = smoothstep(0.12, 0.42, y);
+            vec3 col = mix(abyssCol, surfCol, surfaceBlend);
+
+            // 5. Ethereal volumetric sunbeams (Cascading from surface waves into depths)
+            float theta = atan(p.x, p.z);
+            float tRay = time * 0.18;
+            float ray1 = sin(theta * 5.0 + tRay * 0.75) * 0.5 + 0.5;
+            float ray2 = sin(theta * 8.0 - tRay * 0.55 + 1.3) * 0.5 + 0.5;
+            float ray3 = cos(theta * 13.0 + tRay * 0.90 + 2.4) * 0.5 + 0.5;
+            float rays = (pow(ray1, 2.2) * 0.42 + pow(ray2, 2.6) * 0.38 + pow(ray3, 3.0) * 0.20);
+
+            float rayVert = smoothstep(-0.45, 0.45, y) * pow(clamp(y + 0.55, 0.0, 1.5) / 1.5, 0.75);
+            float rayBreath = 0.88 + 0.12 * sin(time * 0.5);
+            float rayIntensity = rays * rayVert * rayBreath;
+
+            vec3 rayCol = mix(vec3(0.24, 0.70, 0.96), vec3(0.92, 0.98, 1.0), rayIntensity);
+            col += rayCol * rayIntensity * 0.42;
+
+            // Ambient oceanic celestial halo
+            float celestialHalo = pow(max(0.0, dot(p, sunDir)), 2.8) * 0.30;
+            col += vec3(0.48, 0.84, 1.0) * celestialHalo;
+
+            gl_FragColor = vec4(col, 1.0);
+          }
+        `,
+        side: THREE.BackSide,
+        depthWrite: false
+      });
+
+      oceanDomeMesh = new THREE.Mesh(domeGeo, domeMat);
+      scene.add(oceanDomeMesh);
+    }
+
+    // 1c. Surface Micro-Glints (Sunlight Reflection Specks beneath ocean roof)
+    function createSurfaceGlints() {
+      const geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(NUM_SURFACE_GLINTS * 3);
+      surfaceGlintsData = [];
+
+      for (let i = 0; i < NUM_SURFACE_GLINTS; i++) {
+        const bx = (Math.random() - 0.5) * 22;
+        const by = 4.2 + Math.random() * 5.2; // High under ocean roof
+        const bz = (Math.random() - 0.5) * 20 - 3.5;
+
+        pos[i * 3 + 0] = bx;
+        pos[i * 3 + 1] = by;
+        pos[i * 3 + 2] = bz;
+
+        surfaceGlintsData.push({
+          baseX: bx,
+          baseY: by,
+          baseZ: bz,
+          twinkleSpeed: 1.5 + Math.random() * 2.5,
+          phase: Math.random() * Math.PI * 2,
+          radiusSwell: 0.15 + Math.random() * 0.25
+        });
+      }
+
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+
+      const mat = new THREE.PointsMaterial({
+        size: 0.16,
+        map: createMoteTexture(),
+        transparent: true,
+        opacity: 0.65,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      surfaceGlintsPoints = new THREE.Points(geo, mat);
+      scene.add(surfaceGlintsPoints);
+    }
+
+    function animateSurfaceGlints(timeSec) {
+      if (!surfaceGlintsPoints || !surfaceGlintsData.length) return;
+      const pos = surfaceGlintsPoints.geometry.attributes.position.array;
+      const swellOmega = 2.0 * Math.PI * 0.15;
+
+      for (let i = 0; i < NUM_SURFACE_GLINTS; i++) {
+        const g = surfaceGlintsData[i];
+        const localPhase = timeSec * swellOmega + g.phase;
+        
+        pos[i * 3 + 0] = g.baseX + Math.sin(localPhase) * g.radiusSwell;
+        pos[i * 3 + 1] = g.baseY + Math.cos(localPhase) * (g.radiusSwell * 0.7);
+        pos[i * 3 + 2] = g.baseZ + Math.sin(localPhase * 0.8 + g.phase) * (g.radiusSwell * 0.5);
+      }
+      surfaceGlintsPoints.geometry.attributes.position.needsUpdate = true;
+      
+      // Global gentle twinkle
+      surfaceGlintsPoints.material.opacity = 0.45 + 0.25 * Math.sin(timeSec * 2.0);
+    }
+
+    // Central Liquid Water Droplet Masterpiece (Harmonized Radiant Oceanic Sapphire Crystal)
+    function createCentralWaterDrop() {
+      waterDropGroup = new THREE.Group();
+      waterDropGroup.position.set(PACING_CONFIG.DROP_BASE_X, PACING_CONFIG.DROP_START_Y, PACING_CONFIG.DROP_BASE_Z);
+
+      const dropGeo = createTeardropGeometry(128);
+
+      waterDropMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          time: { value: 0 },
+          baseColor: { value: new THREE.Color(0x1a82d8) },  // Luminous radiant cerulean crystal (vec3(0.10, 0.51, 0.85))
+          deepColor: { value: new THREE.Color(0x06284a) },  // Oceanic deep sapphire crystal (vec3(0.024, 0.16, 0.29))
+          sunColor: { value: new THREE.Color(0xfff8ee) }
+        },
+        vertexShader: `
+          varying vec3 vNormal;
+          varying vec3 vPosition;
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+          void main() {
+            vNormal = normalize(normalMatrix * normal);
+            vPosition = position;
+            vUv = uv;
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform float time;
+          uniform vec3 baseColor;
+          uniform vec3 deepColor;
+          uniform vec3 sunColor;
+          varying vec3 vNormal;
+          varying vec3 vPosition;
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+
+          // Cellular Voronoi Noise for Sharpened High-Contrast Caustic Web
+          float voronoiCaustic(vec2 uv, float t) {
+            vec2 p = floor(uv);
+            vec2 f = fract(uv);
+            float res = 8.0;
+            for(int j=-1; j<=1; j++) {
+              for(int i=-1; i<=1; i++) {
+                vec2 b = vec2(float(i), float(j));
+                vec2 r = b - f + sin(t + 6.2831 * sin(p + b)) * 0.5 + 0.5;
+                res = min(res, dot(r, r));
+              }
+            }
+            return res;
+          }
+
+          void main() {
+            vec3 N = normalize(vNormal);
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+
+            // 1. Optical Refraction UV Distortion (IOR = 1.333 water)
+            vec3 refractDir = refract(-V, N, 1.0 / 1.333);
+            vec2 refrUV = vPosition.xz * 2.0 + refractDir.xy * 0.25;
+
+            // 2. Animated Sharpened Voronoi Caustics Network
+            float c1 = voronoiCaustic(refrUV * 3.5 + time * 0.35, time * 0.4);
+            float c2 = voronoiCaustic(refrUV * 6.5 - time * 0.25, time * 0.3);
+            float caustics = 1.0 - smoothstep(0.0, 0.06, c1);
+            caustics += (1.0 - smoothstep(0.0, 0.04, c2)) * 0.6;
+
+            // 3. Bottom Solar Focal Hotspot (Intense circular brilliant beam at base)
+            vec3 lightDir = vec3(0.0, -1.0, 0.5);
+            float bottomDot = max(0.0, dot(N, lightDir));
+            float focalHotspot = pow(bottomDot, 16.0) * 2.5 * smoothstep(-1.5, -0.5, vPosition.y);
+
+            // 4. Deep Cobalt/Sapphire Fresnel Rim (Soft oceanic boundary at grazing angles)
+            float NdotV = max(0.0, dot(N, V));
+            float fresnel = pow(1.0 - NdotV, 2.5);
+            vec3 fresnelRimColor = vec3(0.015, 0.12, 0.28); // Blends softly with abyss
+
+            // Subtle radiant edge glint at extreme grazing angle
+            float extremeEdge = pow(1.0 - NdotV, 5.0);
+            vec3 edgeGlint = vec3(0.40, 0.82, 1.0) * extremeEdge * 0.55;
+
+            // 5. Harmonized Oceanic Body Color (Radiant sapphire crystal slightly brighter than ocean)
+            float heightGradient = smoothstep(-1.5, 1.875, vPosition.y);
+            vec3 bodyCol = mix(deepColor, baseColor, 0.48 + 0.52 * heightGradient);
+
+            // Internal crystalline radiance (adds inner luminous glow)
+            float internalRadiance = pow(max(0.0, dot(N, -V)), 2.0) * 0.22;
+            bodyCol += vec3(0.12, 0.52, 0.88) * internalRadiance;
+
+            // Compose Final Shading
+            vec3 col = bodyCol;
+            col += vec3(0.82, 0.94, 1.0) * caustics * 0.70;
+            col += sunColor * focalHotspot * 1.5;
+            col += fresnelRimColor * fresnel * 1.8;
+            col += edgeGlint;
+
+            // Specular highlights on neck and apex
+            float spec = pow(max(0.0, dot(reflect(-V, N), vec3(0.0, 1.0, 0.3))), 24.0);
+            col += sunColor * spec * 1.4;
+
+            gl_FragColor = vec4(col, 0.93);
+          }
+        `,
+        transparent: true,
+        side: THREE.DoubleSide
+      });
+
+      waterDropMesh = new THREE.Mesh(dropGeo, waterDropMaterial);
+      waterDropGroup.add(waterDropMesh);
+
+      pauseWarmLight = new THREE.PointLight(0xffdf80, 0.0, 6.0);
+      pauseWarmLight.position.set(0, 0.2, 1.2);
+      waterDropGroup.add(pauseWarmLight);
+
+      scene.add(waterDropGroup);
+    }
+
+    // Soft Marine Snow Plankton (Coherent Living Oceanic Swell Dynamics)
+    function createPlanktonParticles() {
+      const geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(NUM_PLANKTON * 3);
+      planktonAnchors = [];
+
+      for (let i = 0; i < NUM_PLANKTON; i++) {
+        const bx = (Math.random() - 0.5) * 26;
+        const by = -5.0 + Math.random() * 14.0;
+        const bz = (Math.random() - 0.5) * 26 - 4.0;
+
+        pos[i * 3 + 0] = bx;
+        pos[i * 3 + 1] = by;
+        pos[i * 3 + 2] = bz;
+
+        planktonAnchors.push({
+          baseX: bx,
+          baseY: by,
+          baseZ: bz,
+          speedY: 0.003 + Math.random() * 0.005,
+          phase: Math.random() * Math.PI * 2,
+          radiusSwell: 0.28 + Math.random() * 0.38
+        });
+      }
+
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+
+      const mat = new THREE.PointsMaterial({
+        size: 0.13,
+        map: createMoteTexture(),
+        transparent: true,
+        opacity: 0.48,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      planktonPoints = new THREE.Points(geo, mat);
+      scene.add(planktonPoints);
+    }
+
+    function animatePlankton(timeSec) {
+      if (!planktonPoints || !planktonAnchors.length) return;
+      const pos = planktonPoints.geometry.attributes.position.array;
+      const swellOmega = 2.0 * Math.PI * 0.15; // 0.15 Hz slow ocean swell frequency (~6.67s tidal cycle)
+
+      for (let i = 0; i < NUM_PLANKTON; i++) {
+        const p = planktonAnchors[i];
+        
+        // Continuous gentle upward buoyancy drift
+        p.baseY += p.speedY;
+        if (p.baseY > 9.0) {
+          p.baseY = -5.0;
+          p.baseX = (Math.random() - 0.5) * 26;
+          p.baseZ = (Math.random() - 0.5) * 26 - 4.0;
+        }
+
+        // Orbital wave motion (current swell): horizontal surge + vertical heave
+        const localPhase = timeSec * swellOmega + p.phase;
+        const surgeX = Math.sin(localPhase) * p.radiusSwell;
+        const heaveY = Math.cos(localPhase) * (p.radiusSwell * 0.65);
+        const surgeZ = Math.sin(localPhase * 0.75 + p.phase) * (p.radiusSwell * 0.45);
+
+        pos[i * 3 + 0] = p.baseX + surgeX;
+        pos[i * 3 + 1] = p.baseY + heaveY;
+        pos[i * 3 + 2] = p.baseZ + surgeZ;
+      }
+      planktonPoints.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // Bio-Pacing Guided Air Bubble Streams (Natural Hydrodynamics & Distinct Respiratory Guidance)
+    function createNostrilBubbleStreams() {
+      const bubbleTex = createAirBubbleTexture();
+
+      const bubbleVertexShader = `
+        attribute float aSize;
+        attribute float aAlpha;
+        attribute float aPhase;
+        varying float vAlpha;
+        varying float vPhase;
+        varying float vPosY;
+        uniform float uStreamFlow;
+        uniform float uTime;
+
+        void main() {
+          vAlpha = aAlpha;
+          vPhase = aPhase;
+          vPosY = position.y;
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+
+          // Volumetric expansion when stream is actively breathing
+          float activeScale = 1.0 + uStreamFlow * 0.22;
+          gl_PointSize = aSize * activeScale * (360.0 / -mvPosition.z);
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `;
+
+      const bubbleFragmentShader = `
+        uniform sampler2D uTexture;
+        uniform float uStreamFlow;
+        uniform float uTime;
+        varying float vAlpha;
+        varying float vPhase;
+        varying float vPosY;
+
+        void main() {
+          vec4 tex = texture2D(uTexture, gl_PointCoord);
+          if (tex.a < 0.01) discard;
+
+          // Organic vertical depth fade (smooth emergence at abyss Y in [-4.2, -3.2] & soft dissipation at top Y in [1.2, 2.2])
+          float bottomFade = smoothstep(-4.2, -3.2, vPosY);
+          float topFade = 1.0 - smoothstep(1.2, 2.2, vPosY);
+          float verticalBounds = bottomFade * topFade;
+
+          // Gentle crystalline twinkle shimmer
+          float shimmer = 0.88 + 0.12 * sin(uTime * 3.8 + vPhase * 6.2831);
+
+          // Color transition: Calm deep cyan when idle -> Radiant silvery-cerulean brilliance when active
+          vec3 idleCol = vec3(0.55, 0.85, 0.98);
+          vec3 activeCol = vec3(0.95, 0.98, 1.0);
+          vec3 col = mix(idleCol, activeCol, uStreamFlow) * tex.rgb * shimmer;
+
+          // Distinct Bio-Pacing Opacity:
+          // Inactive nostril: very discreet, soft presence (opacity ~0.18)
+          // Active nostril: clearly visible, luminous breathing guide (opacity ~0.90)
+          float targetOpacity = mix(0.18, 0.92, uStreamFlow);
+          float finalAlpha = targetOpacity * vAlpha * verticalBounds * tex.a;
+
+          gl_FragColor = vec4(col, finalAlpha);
+        }
+      `;
+
+      function buildStream(isLeft) {
+        const xBase = isLeft ? -2.15 : 2.15;
+        const pos = new Float32Array(NUM_STREAM_BUBBLES * 3);
+        const sizes = new Float32Array(NUM_STREAM_BUBBLES);
+        const alphas = new Float32Array(NUM_STREAM_BUBBLES);
+        const phases = new Float32Array(NUM_STREAM_BUBBLES);
+        const data = [];
+
+        for (let i = 0; i < NUM_STREAM_BUBBLES; i++) {
+          // Weighted natural size distribution:
+          // 50% fine micro-bubbles (0.08 - 0.13)
+          // 35% medium pearl bubbles (0.15 - 0.22)
+          // 15% hero air bubbles (0.25 - 0.32)
+          const randType = Math.random();
+          let bubbleSize;
+          if (randType < 0.50) {
+            bubbleSize = 0.08 + Math.random() * 0.05;
+          } else if (randType < 0.85) {
+            bubbleSize = 0.15 + Math.random() * 0.07;
+          } else {
+            bubbleSize = 0.25 + Math.random() * 0.07;
+          }
+
+          const bx = xBase + (Math.random() - 0.5) * 0.42;
+          const by = -4.2 + Math.random() * 6.4;
+          const bz = PACING_CONFIG.DROP_BASE_Z + (Math.random() - 0.5) * 0.45;
+
+          pos[i * 3 + 0] = bx;
+          pos[i * 3 + 1] = by;
+          pos[i * 3 + 2] = bz;
+
+          sizes[i] = bubbleSize;
+          alphas[i] = 0.80 + Math.random() * 0.20;
+          phases[i] = Math.random() * Math.PI * 2;
+
+          // Stokes-inspired buoyancy: larger bubbles have higher rising velocity & distinct Kelvin-Helmholtz wobble frequency
+          const baseSpeed = 0.006 + bubbleSize * 0.022;
+          const wobbleFreqX = 1.8 + Math.random() * 1.8;
+          const wobbleFreqZ = wobbleFreqX * 0.85;
+          const wobbleAmpX = 0.03 + Math.random() * 0.035;
+          const wobbleAmpZ = wobbleAmpX * 0.65;
+
+          data.push({
+            baseX: bx,
+            baseZ: bz,
+            baseSpeed: baseSpeed,
+            wobbleFreqX: wobbleFreqX,
+            wobbleFreqZ: wobbleFreqZ,
+            wobbleAmpX: wobbleAmpX,
+            wobbleAmpZ: wobbleAmpZ,
+            phase: phases[i]
+          });
+        }
+
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        geo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+        geo.setAttribute('aAlpha', new THREE.BufferAttribute(alphas, 1));
+        geo.setAttribute('aPhase', new THREE.BufferAttribute(phases, 1));
+
+        const mat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTexture: { value: bubbleTex },
+            uStreamFlow: { value: 0.0 },
+            uTime: { value: 0.0 }
+          },
+          vertexShader: bubbleVertexShader,
+          fragmentShader: bubbleFragmentShader,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+
+        const pts = new THREE.Points(geo, mat);
+        scene.add(pts);
+        return { pts, data };
+      }
+
+      const left = buildStream(true);
+      leftBubblePoints = left.pts;
+      leftBubbleData = left.data;
+
+      const right = buildStream(false);
+      rightBubblePoints = right.pts;
+      rightBubbleData = right.data;
+    }
+
+    function animateBubbleStreams(timeSec, deltaSec) {
+      // Coherent oceanic swell wave affecting rising/descending bubble columns
+      const swellBubbleX = Math.sin(timeSec * (2.0 * Math.PI * 0.15)) * 0.040;
+      const swellBubbleZ = Math.cos(timeSec * (2.0 * Math.PI * 0.15) * 0.75) * 0.025;
+
+      function updateStream(bubblePoints, bubbleData, isLeft) {
+        if (!bubblePoints || !bubbleData.length) return;
+        const pArr = bubblePoints.geometry.attributes.position.array;
+        const flow = isLeft ? state.leftStreamFlow : state.rightStreamFlow;
+        const curDir = isLeft ? state.leftStreamDir : state.rightStreamDir;
+        const baseDirX = isLeft ? -2.15 : 2.15;
+
+        // Dynamic speed multiplier: active breathing creates lively plume, resting state is slow & peaceful
+        const speedMult = flow > 0.05 ? (1.0 + flow * 0.85) : 0.35;
+        // When active, movement follows curDir (+1.0 inhale, -1.0 exhale); at resting state (flow <= 0.05), gentle natural upward micro-buoyancy
+        const dirFactor = flow > 0.05 ? curDir : 1.0;
+
+        for (let i = 0; i < NUM_STREAM_BUBBLES; i++) {
+          const d = bubbleData[i];
+          pArr[i * 3 + 1] += d.baseSpeed * speedMult * dirFactor;
+          
+          const y = pArr[i * 3 + 1];
+
+          // Natural conical dispersion as bubbles move through the water column
+          const heightNorm = Math.max(0.0, Math.min(1.0, (y + 4.2) / 6.4));
+          const dispersion = 1.0 + heightNorm * 0.40;
+
+          // 3D Hydrodynamic helical wobble (sine X, cosine Z)
+          const wobX = Math.sin(timeSec * d.wobbleFreqX + d.phase) * d.wobbleAmpX * dispersion;
+          const wobZ = Math.cos(timeSec * d.wobbleFreqZ + d.phase + 1.1) * d.wobbleAmpZ * dispersion;
+
+          pArr[i * 3 + 0] = d.baseX + wobX + swellBubbleX;
+          pArr[i * 3 + 2] = d.baseZ + wobZ + swellBubbleZ;
+
+          // Seamless loop without popping:
+          // When rising (Y > 2.2): wrap back to abyss (Y = -4.2) where alpha is 0
+          if (pArr[i * 3 + 1] > 2.2) {
+            pArr[i * 3 + 1] = -4.2;
+            d.baseX = baseDirX + (Math.random() - 0.5) * 0.42;
+            d.baseZ = PACING_CONFIG.DROP_BASE_Z + (Math.random() - 0.5) * 0.45;
+          } 
+          // When descending (Y < -4.2): wrap back to top (Y = 2.2) where alpha is 0
+          else if (pArr[i * 3 + 1] < -4.2) {
+            pArr[i * 3 + 1] = 2.2;
+            d.baseX = baseDirX + (Math.random() - 0.5) * 0.42;
+            d.baseZ = PACING_CONFIG.DROP_BASE_Z + (Math.random() - 0.5) * 0.45;
+          }
+        }
+        bubblePoints.geometry.attributes.position.needsUpdate = true;
+
+        // Update Shader Uniforms
+        if (bubblePoints.material.uniforms) {
+          bubblePoints.material.uniforms.uStreamFlow.value = flow;
+          bubblePoints.material.uniforms.uTime.value = timeSec;
+        }
+      }
+
+      updateStream(leftBubblePoints, leftBubbleData, true);
+      updateStream(rightBubblePoints, rightBubbleData, false);
+    }
+
+    // 3D VR Billboard Text (Shown exclusively in VR Mode)
+    function createVRBillboardText() {
+      textCanvas = document.createElement('canvas');
+      textCanvas.width = 1024;
+      textCanvas.height = 256;
+      textContext = textCanvas.getContext('2d');
+
+      textTexture = new THREE.CanvasTexture(textCanvas);
+      textTexture.minFilter = THREE.LinearFilter;
+
+      const mat = new THREE.SpriteMaterial({
+        map: textTexture,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: false
+      });
+
+      textSpriteMesh = new THREE.Sprite(mat);
+      textSpriteMesh.scale.set(3.0, 0.75, 1);
+      textSpriteMesh.position.set(0, 1.4, PACING_CONFIG.DROP_BASE_Z);
+      scene.add(textSpriteMesh);
+    }
+
+    let _lastVRTitle = '', _lastVRSub = '';
+    function renderVRBillboardText(title, sub, opacity = 1.0) {
+      if (!textContext || !state.isVRMode) {
+        if (textSpriteMesh) textSpriteMesh.material.opacity = 0;
+        return;
+      }
+      if (_lastVRTitle === title && _lastVRSub === sub && Math.abs(textSpriteMesh.material.opacity - opacity) < 0.05) {
+        return;
+      }
+      _lastVRTitle = title;
+      _lastVRSub = sub;
+
+      textContext.clearRect(0, 0, 1024, 256);
+
+      textContext.shadowColor = 'rgba(112, 214, 255, 0.7)';
+      textContext.shadowBlur = 12;
+      textContext.fillStyle = '#FFFFFF';
+      textContext.font = 'bold 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      textContext.textAlign = 'center';
+      textContext.textBaseline = 'middle';
+      textContext.fillText(title, 512, 95);
+
+      textContext.shadowColor = 'rgba(112, 214, 255, 0.4)';
+      textContext.shadowBlur = 8;
+      textContext.fillStyle = '#70d6ff';
+      textContext.font = '500 30px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      textContext.fillText(sub, 512, 160);
+
+      textTexture.needsUpdate = true;
+      textSpriteMesh.material.opacity = opacity;
+    }
+
+    /* ======================================================================
+       6. USER CONTROLS, GESTURES & CARDBOARD VR
+       ====================================================================== */
+    function getScreenOrientationAngle() {
+      if (screen.orientation && typeof screen.orientation.angle === 'number') {
+        return screen.orientation.angle;
+      }
+      if (typeof window.orientation === 'number') {
+        return window.orientation;
+      }
+      if (window.innerWidth > window.innerHeight) {
+        return 90;
+      }
+      return 0;
+    }
+
+    function initControls() {
+      enableDeviceOrientation();
+      window.addEventListener('orientationchange', () => {}, false);
+
+      // PC Mouse Look
+      window.addEventListener('mousedown', (e) => {
+        if (e.target.closest('#ui-layer') || e.target.closest('#audio-gate') || e.target.closest('#vr-overlay')) {
+          if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+        }
+        isMouseDown = true;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      });
+
+      window.addEventListener('mouseup', () => { isMouseDown = false; });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isMouseDown) return;
+        const dx = e.clientX - prevMouseX;
+        const dy = e.clientY - prevMouseY;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+
+        targetYaw -= dx * 0.003;
+        targetPitch -= dy * 0.0025;
+        targetPitch = Math.max(-Math.PI / 2.4, Math.min(Math.PI / 2.4, targetPitch));
+      });
+
+      // Mouse Wheel Zoom
+      window.addEventListener('wheel', (e) => {
+        camera.fov = Math.max(36, Math.min(75, camera.fov + e.deltaY * 0.03));
+        camera.updateProjectionMatrix();
+      }, { passive: true });
+
+      // Mobile Touch Drag
+      let touchStartX = 0, touchStartY = 0;
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+        unlockAudioContext();
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (state.isVRMode && deviceOrientationEnabled) return;
+        if (e.touches.length === 1) {
+          const dx = e.touches[0].clientX - touchStartX;
+          const dy = e.touches[0].clientY - touchStartY;
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+
+          targetYaw -= dx * 0.0035;
+          targetPitch -= dy * 0.003;
+          targetPitch = Math.max(-Math.PI / 2.4, Math.min(Math.PI / 2.4, targetPitch));
+        }
+      }, { passive: true });
+
+      // Keyboard Controls
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          dismissGateAndStart();
+        } else if (e.key === 'r' || e.key === 'R') {
+          recenterView();
+        } else if (e.key === 'v' || e.key === 'V') {
+          toggleVR();
+        } else if (e.key === 'f' || e.key === 'F') {
+          toggleFullscreen();
+        } else if (e.key === 'm' || e.key === 'M') {
+          setAudioMuted(!state.isAudioMuted);
+        }
+      });
+    }
+
+    function enableDeviceOrientation() {
+      window.addEventListener('deviceorientation', (e) => {
+        if (e && e.alpha !== null && e.alpha !== undefined) {
+          deviceOrientationEnabled = true;
+          orientationAlpha = e.alpha;
+          orientationBeta = e.beta;
+          orientationGamma = e.gamma;
+        }
+      }, true);
+    }
+
+    function requestDeviceOrientation() {
+      enableDeviceOrientation();
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(perm => {
+            if (perm === 'granted') enableDeviceOrientation();
+          })
+          .catch(err => console.warn('Device orientation permission error:', err));
+      }
+    }
+
+    function updateCameraRotation(timeSec = 0) {
+      // Harmonic buoyancy swell cycle (T = 6.0s, omega = PI / 3)
+      // Subtle roll and pitch oscillation (+/- 0.008 rad) + vertical water heave
+      const camSwellOmega = Math.PI / 3.0;
+      const camPitchSwell = Math.sin(timeSec * camSwellOmega) * 0.008;
+      const camRollSwell = Math.cos(timeSec * camSwellOmega * 0.85) * 0.006;
+      const camHeaveY = Math.sin(timeSec * camSwellOmega) * 0.032; // +/- 3.2cm vertical buoyancy
+
+      if (deviceOrientationEnabled && state.isVRMode) {
+        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset);
+        const betaRad = THREE.MathUtils.degToRad(orientationBeta);
+        const gammaRad = THREE.MathUtils.degToRad(orientationGamma);
+        const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
+
+        // 1. Converti gli angoli W3C nel frame della telecamera Three.js
+        _euler.set(betaRad, alphaRad, -gammaRad, 'YXZ');
+        camera.quaternion.setFromEuler(_euler);
+
+        // 2. Ruota per allineare l'asse del dispositivo con il frustum della camera
+        camera.quaternion.multiply(_q1);
+
+        // 3. Compensa la rotazione landscape dello schermo
+        _q0.setFromAxisAngle(_zee, -orientRad);
+        camera.quaternion.multiply(_q0);
+        camera.position.set(0, camHeaveY, 0);
+      } else {
+        cameraYaw += (targetYaw - cameraYaw) * 0.12;
+        cameraPitch += (targetPitch - cameraPitch) * 0.12;
+        camera.rotation.set(cameraPitch + camPitchSwell, cameraYaw, camRollSwell, 'YXZ');
+        camera.position.set(0, camHeaveY, 0);
+      }
+    }
+
+    function recenterView() {
+      targetYaw = 0; targetPitch = 0;
+      cameraYaw = 0; cameraPitch = 0;
+      camera.rotation.set(0, 0, 0);
+      camera.position.set(0, 0, 0);
+      if (orientationAlpha !== 0) {
+        vrAlphaOffset = -orientationAlpha;
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    /* ======================================================================
+       7. BIO-PACING STATE MACHINE IMPLEMENTATION (NĀḌĪ ŚODHANA)
+       ====================================================================== */
+    function dismissGateAndStart() {
+      unlockAudioContext();
+      const gate = document.getElementById('audio-gate');
+      if (gate && gate.style.display !== 'none') {
+        gate.classList.add('fade-out');
+        setTimeout(() => gate.style.display = 'none', 600);
+      }
+      if (!state.isRunning) {
+        startSession();
+      }
+    }
+
+    let outroSafetyTimer = null;
+
+    function startSession() {
+      unlockAudioContext();
+      hide2DCompletionPopup();
+      hideVRCompletionPopup();
+      if (outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = false;
+      state.isRunning = true;
+      setPadAudioGain(0.85, 2.0);
+      setOceanAudioGain(0.12, 2.0);
+
+      // Begin with graceful descent from ocean surface
+      transitionToStep(STEPS.DESCENT, performance.now());
+      notifyFlutter('onSessionStart', { totalCycles: PACING_CONFIG.TOTAL_CYCLES });
+    }
+
+    function pauseSession() {
+      state.isRunning = false;
+      state.pauseStartTime = performance.now();
+      setPadAudioGain(0.2, 1.0);
+      setOceanAudioGain(0.04, 1.0);
+      updateUIElements();
+      notifyFlutter('onSessionPause', { step: state.currentStep, cycle: state.currentCycle });
+    }
+
+    function togglePlayPause() {
+      if (state.isRunning) {
+        pauseSession();
+      } else {
+        if (state.currentStep === STEPS.STANDBY || state.currentStep === STEPS.COMPLETED) {
+          startSession();
+        } else {
+          unlockAudioContext();
+          if (state.pauseStartTime > 0) {
+            const pausedDuration = performance.now() - state.pauseStartTime;
+            state.stepStartTime += pausedDuration;
+            state.pauseStartTime = 0;
+          }
+          state.isRunning = true;
+          setPadAudioGain(0.85, 1.5);
+          setOceanAudioGain(0.12, 1.5);
+          updateUIElements();
+          notifyFlutter('onSessionResume', { step: state.currentStep, cycle: state.currentCycle });
+        }
+      }
+    }
+
+    function resetSession() {
+      hide2DCompletionPopup();
+      hideVRCompletionPopup();
+      if (outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = false;
+      state.isRunning = false;
+      state.pauseStartTime = 0;
+      state.currentStep = STEPS.STANDBY;
+      state.currentCycle = 1;
+      state.dropY = PACING_CONFIG.DROP_START_Y;
+      state.dropScale = PACING_CONFIG.MIN_SCALE;
+      state.pauseWarmth = 0.0;
+      state.leftStreamActive = false;
+      state.rightStreamActive = false;
+      state.leftStreamFlow = 0.0;
+      state.rightStreamFlow = 0.0;
+      state.leftStreamDir = 1.0;
+      state.leftStreamTargetDir = 1.0;
+      state.rightStreamDir = 1.0;
+      state.rightStreamTargetDir = 1.0;
+      setPadAudioGain(0.001, 1.0);
+      setOceanAudioGain(0.001, 1.0);
+      updateUIElements();
+      notifyFlutter('onSessionReset', {});
+    }
+
+    function transitionToStep(newStep, now) {
+      state.currentStep = newStep;
+      state.stepStartTime = (typeof now === 'number' && now > 0) ? now : performance.now();
+
+      switch (newStep) {
+        // Initial Graceful Descent
+        case STEPS.DESCENT:
+          state.stepDuration = PACING_CONFIG.DESCENT_DURATION;
+          state.currentCycle = 1;
+          state.leftStreamActive = false;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = 1.0;
+          state.rightStreamTargetDir = 1.0;
+          playBubbleChirp(720, 0.06, 0.05);
+          notifyFlutter('onPhaseChange', { phase: 'descent', duration: state.stepDuration });
+          break;
+
+        case STEPS.SETUP:
+          state.stepDuration = PACING_CONFIG.SETUP_DURATION;
+          state.currentCycle = 1;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = 1.0;
+          state.rightStreamTargetDir = 1.0;
+          playTibetanBowl(432, 3.8);
+          notifyFlutter('onPhaseChange', { phase: 'setup', duration: state.stepDuration });
+          break;
+
+        // --- CYCLE 1 ---
+        case STEPS.C1_INHALE_SX:
+          state.stepDuration = PACING_CONFIG.INHALE_DURATION;
+          state.currentCycle = 1;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = true;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = 1.0;   // INHALE: Bubbles ascend (+Y)
+          state.rightStreamTargetDir = 1.0;
+          playTibetanBowl(432, 4.0);
+          playBubbleChirp(640, 0.05, 0.05);
+          notifyFlutter('onPhaseChange', { phase: 'inhale_left', cycle: 1, duration: state.stepDuration });
+          break;
+
+        case STEPS.C1_SWITCH_1:
+          state.stepDuration = PACING_CONFIG.SWITCH_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = 1.0;
+          state.rightStreamTargetDir = -1.0; // Prepare DX for EXHALE (-Y)
+          playTibetanBowl(432, 2.2);
+          playBubbleChirp(840, 0.05, 0.06);
+          notifyFlutter('onPhaseChange', { phase: 'switch_to_right', cycle: 1, duration: state.stepDuration });
+          break;
+
+        case STEPS.C1_EXHALE_DX:
+          state.stepDuration = PACING_CONFIG.EXHALE_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = true;
+          state.leftStreamTargetDir = 1.0;
+          state.rightStreamTargetDir = -1.0; // EXHALE: Bubbles descend (-Y)
+          playBubbleChirp(520, 0.05, 0.05);
+          notifyFlutter('onPhaseChange', { phase: 'exhale_right', cycle: 1, duration: state.stepDuration });
+          break;
+
+        case STEPS.C1_INHALE_DX:
+          state.stepDuration = PACING_CONFIG.INHALE_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = true;
+          state.leftStreamTargetDir = 1.0;
+          state.rightStreamTargetDir = 1.0;  // INHALE: Bubbles ascend (+Y)
+          playTibetanBowl(432, 4.0);
+          playBubbleChirp(640, 0.05, 0.05);
+          notifyFlutter('onPhaseChange', { phase: 'inhale_right', cycle: 1, duration: state.stepDuration });
+          break;
+
+        case STEPS.C1_SWITCH_2:
+          state.stepDuration = PACING_CONFIG.SWITCH_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = -1.0; // Prepare SX for EXHALE (-Y)
+          state.rightStreamTargetDir = 1.0;
+          playTibetanBowl(432, 2.2);
+          playBubbleChirp(840, 0.05, 0.06);
+          notifyFlutter('onPhaseChange', { phase: 'switch_to_left', cycle: 1, duration: state.stepDuration });
+          break;
+
+        case STEPS.C1_EXHALE_SX:
+          state.stepDuration = PACING_CONFIG.EXHALE_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = true;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = -1.0; // EXHALE: Bubbles descend (-Y)
+          state.rightStreamTargetDir = 1.0;
+          playBubbleChirp(520, 0.05, 0.05);
+          notifyFlutter('onPhaseChange', { phase: 'exhale_left', cycle: 1, duration: state.stepDuration });
+          break;
+
+        case STEPS.C1_PAUSE:
+          state.stepDuration = PACING_CONFIG.PAUSE_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = 1.0;  // Resting micro-buoyancy
+          state.rightStreamTargetDir = 1.0;
+          playTibetanBowl(864, 4.8);
+          notifyFlutter('onPhaseChange', { phase: 'pause_halo', cycle: 1, duration: state.stepDuration });
+          break;
+
+        // --- CYCLE 2 ---
+        case STEPS.C2_INHALE_SX:
+          state.stepDuration = PACING_CONFIG.INHALE_DURATION;
+          state.currentCycle = 2;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = true;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = 1.0;   // INHALE: Bubbles ascend (+Y)
+          state.rightStreamTargetDir = 1.0;
+          playTibetanBowl(432, 4.0);
+          playBubbleChirp(640, 0.05, 0.05);
+          notifyFlutter('onPhaseChange', { phase: 'inhale_left', cycle: 2, duration: state.stepDuration });
+          break;
+
+        case STEPS.C2_SWITCH_1:
+          state.stepDuration = PACING_CONFIG.SWITCH_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = 1.0;
+          state.rightStreamTargetDir = -1.0; // Prepare DX for EXHALE (-Y)
+          playTibetanBowl(432, 2.2);
+          playBubbleChirp(840, 0.05, 0.06);
+          notifyFlutter('onPhaseChange', { phase: 'switch_to_right', cycle: 2, duration: state.stepDuration });
+          break;
+
+        case STEPS.C2_EXHALE_DX:
+          state.stepDuration = PACING_CONFIG.EXHALE_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = true;
+          state.leftStreamTargetDir = 1.0;
+          state.rightStreamTargetDir = -1.0; // EXHALE: Bubbles descend (-Y)
+          playBubbleChirp(520, 0.05, 0.05);
+          notifyFlutter('onPhaseChange', { phase: 'exhale_right', cycle: 2, duration: state.stepDuration });
+          break;
+
+        case STEPS.C2_INHALE_DX:
+          state.stepDuration = PACING_CONFIG.INHALE_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = true;
+          state.leftStreamTargetDir = 1.0;
+          state.rightStreamTargetDir = 1.0;  // INHALE: Bubbles ascend (+Y)
+          playTibetanBowl(432, 4.0);
+          playBubbleChirp(640, 0.05, 0.05);
+          notifyFlutter('onPhaseChange', { phase: 'inhale_right', cycle: 2, duration: state.stepDuration });
+          break;
+
+        case STEPS.C2_SWITCH_2:
+          state.stepDuration = PACING_CONFIG.SWITCH_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = -1.0; // Prepare SX for EXHALE (-Y)
+          state.rightStreamTargetDir = 1.0;
+          playTibetanBowl(432, 2.2);
+          playBubbleChirp(840, 0.05, 0.06);
+          notifyFlutter('onPhaseChange', { phase: 'switch_to_left', cycle: 2, duration: state.stepDuration });
+          break;
+
+        case STEPS.C2_EXHALE_SX:
+          state.stepDuration = PACING_CONFIG.EXHALE_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = true;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = -1.0; // EXHALE: Bubbles descend (-Y)
+          state.rightStreamTargetDir = 1.0;
+          playBubbleChirp(520, 0.05, 0.05);
+          notifyFlutter('onPhaseChange', { phase: 'exhale_left', cycle: 2, duration: state.stepDuration });
+          break;
+
+        case STEPS.C2_PAUSE:
+          state.stepDuration = PACING_CONFIG.PAUSE_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = 1.0;  // Resting micro-buoyancy
+          state.rightStreamTargetDir = 1.0;
+          playTibetanBowl(864, 4.8);
+          notifyFlutter('onPhaseChange', { phase: 'pause_halo', cycle: 2, duration: state.stepDuration });
+          break;
+
+        case STEPS.OUTRO:
+          state.stepDuration = PACING_CONFIG.OUTRO_DURATION;
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.leftStreamActive = false;
+          state.rightStreamActive = false;
+          state.leftStreamTargetDir = 1.0;
+          state.rightStreamTargetDir = 1.0;
+          playTibetanBowl(432, 5.5);
+          notifyFlutter('onPhaseChange', { phase: 'outro', duration: state.stepDuration });
+          // Deterministic fallback safety timer: guaranteed trigger even if clock / rAF stalls
+          if (outroSafetyTimer) clearTimeout(outroSafetyTimer);
+          outroSafetyTimer = setTimeout(() => {
+            if (!state.isCompleted) {
+              console.log('[GuidoVR] Outro safety timer triggered session completion');
+              transitionToStep(STEPS.COMPLETED, performance.now());
+            }
+          }, PACING_CONFIG.OUTRO_DURATION + 250);
+          break;
+
+        case STEPS.COMPLETED:
+          onExperienceEnded();
+          break;
+      }
+
+      updateUIElements();
+    }
+
+    function updateBioPacing(now) {
+      if (!state.isRunning) return;
+
+      const currentTime = (typeof now === 'number' && now > 0) ? now : performance.now();
+      const elapsed = currentTime - state.stepStartTime;
+      const duration = state.stepDuration || 1000;
+      const t = Math.min(elapsed / duration, 1.0);
+      const remainingSec = Math.max(0, (duration - elapsed) / 1000).toFixed(1);
+
+      // Sinusoidal organic easing curve
+      const easeSine = (1 - Math.cos(Math.PI * t)) / 2;
+
+      // Stream flow and direction smoothing
+      const targetLeftFlow = state.leftStreamActive ? 1.0 : 0.0;
+      const targetRightFlow = state.rightStreamActive ? 1.0 : 0.0;
+      state.leftStreamFlow += (targetLeftFlow - state.leftStreamFlow) * 0.1;
+      state.rightStreamFlow += (targetRightFlow - state.rightStreamFlow) * 0.1;
+
+      state.leftStreamDir += (state.leftStreamTargetDir - state.leftStreamDir) * 0.08;
+      state.rightStreamDir += (state.rightStreamTargetDir - state.rightStreamDir) * 0.08;
+
+      switch (state.currentStep) {
+        // Initial Graceful Descent
+        case STEPS.DESCENT:
+          const easeCubic = 1.0 - Math.pow(1.0 - t, 3.0);
+          const targetY = PACING_CONFIG.DROP_START_Y + (PACING_CONFIG.DROP_BASE_Y - PACING_CONFIG.DROP_START_Y) * easeCubic;
+
+          if (t > 0.85) {
+            const settleT = (t - 0.85) / 0.15;
+            const bounce = Math.sin(settleT * Math.PI * 3.0) * Math.exp(-settleT * 3.5) * 0.08;
+            state.dropY = targetY + bounce;
+          } else {
+            state.dropY = targetY;
+          }
+
+          state.pauseWarmth = 0.0;
+          updateHUD(t, "ARRIVO", `${remainingSec}s`, "Discesa nell'Oceano");
+          renderVRBillboardText("SANTUARIO", "DISCESA NELL'OCEANO", 1.0);
+
+          if (elapsed >= duration) {
+            state.dropY = PACING_CONFIG.DROP_BASE_Y;
+            transitionToStep(STEPS.SETUP, now);
+          }
+          break;
+
+        case STEPS.SETUP:
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.dropScale = PACING_CONFIG.MIN_SCALE;
+          state.pauseWarmth = 0.0;
+          updateHUD(t, "PREPARATI", `${remainingSec}s`, "Mudra Vishnu");
+          renderVRBillboardText("PREPARATI", "MUDRA VISHNU", 1.0);
+          if (elapsed >= duration) transitionToStep(STEPS.C1_INHALE_SX, now);
+          break;
+
+        // INHALE LEFT (4.5s)
+        case STEPS.C1_INHALE_SX:
+        case STEPS.C2_INHALE_SX:
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.dropScale = PACING_CONFIG.MIN_SCALE + (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
+          state.pauseWarmth = 0.0;
+          updateHUD(t, "INSPIRA", `${remainingSec}s`, "Narice Sinistra");
+          renderVRBillboardText("INSPIRA", "NARICE SINISTRA", 1.0);
+          if (elapsed >= duration) {
+            transitionToStep((state.currentStep === STEPS.C1_INHALE_SX) ? STEPS.C1_SWITCH_1 : STEPS.C2_SWITCH_1, now);
+          }
+          break;
+
+        // SWITCH 1 (1.5s): Close SX, Open DX
+        case STEPS.C1_SWITCH_1:
+        case STEPS.C2_SWITCH_1:
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.dropScale = PACING_CONFIG.MAX_SCALE;
+          state.pauseWarmth = 0.0;
+          updateHUD(t, "CAMBIO NARICE", `${remainingSec}s`, "Apri Narice Destra");
+          renderVRBillboardText("CAMBIO", "APRI DESTRA", 1.0);
+          if (elapsed >= duration) {
+            transitionToStep((state.currentStep === STEPS.C1_SWITCH_1) ? STEPS.C1_EXHALE_DX : STEPS.C2_EXHALE_DX, now);
+          }
+          break;
+
+        // EXHALE RIGHT (4.5s)
+        case STEPS.C1_EXHALE_DX:
+        case STEPS.C2_EXHALE_DX:
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.dropScale = PACING_CONFIG.MAX_SCALE - (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
+          state.pauseWarmth = 0.0;
+          updateHUD(t, "ESPIRA", `${remainingSec}s`, "Narice Destra");
+          renderVRBillboardText("ESPIRA", "NARICE DESTRA", 1.0);
+          if (elapsed >= duration) {
+            transitionToStep((state.currentStep === STEPS.C1_EXHALE_DX) ? STEPS.C1_INHALE_DX : STEPS.C2_INHALE_DX, now);
+          }
+          break;
+
+        // INHALE RIGHT (4.5s)
+        case STEPS.C1_INHALE_DX:
+        case STEPS.C2_INHALE_DX:
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.dropScale = PACING_CONFIG.MIN_SCALE + (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
+          state.pauseWarmth = 0.0;
+          updateHUD(t, "INSPIRA", `${remainingSec}s`, "Narice Destra");
+          renderVRBillboardText("INSPIRA", "NARICE DESTRA", 1.0);
+          if (elapsed >= duration) {
+            transitionToStep((state.currentStep === STEPS.C1_INHALE_DX) ? STEPS.C1_SWITCH_2 : STEPS.C2_SWITCH_2, now);
+          }
+          break;
+
+        // SWITCH 2 (1.5s): Close DX, Open SX
+        case STEPS.C1_SWITCH_2:
+        case STEPS.C2_SWITCH_2:
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.dropScale = PACING_CONFIG.MAX_SCALE;
+          state.pauseWarmth = 0.0;
+          updateHUD(t, "CAMBIO NARICE", `${remainingSec}s`, "Apri Narice Sinistra");
+          renderVRBillboardText("CAMBIO", "APRI SINISTRA", 1.0);
+          if (elapsed >= duration) {
+            transitionToStep((state.currentStep === STEPS.C1_SWITCH_2) ? STEPS.C1_EXHALE_SX : STEPS.C2_EXHALE_SX, now);
+          }
+          break;
+
+        // EXHALE LEFT (4.5s)
+        case STEPS.C1_EXHALE_SX:
+        case STEPS.C2_EXHALE_SX:
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.dropScale = PACING_CONFIG.MAX_SCALE - (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
+          state.pauseWarmth = 0.0;
+          updateHUD(t, "ESPIRA", `${remainingSec}s`, "Narice Sinistra");
+          renderVRBillboardText("ESPIRA", "NARICE SINISTRA", 1.0);
+          if (elapsed >= duration) {
+            transitionToStep((state.currentStep === STEPS.C1_EXHALE_SX) ? STEPS.C1_PAUSE : STEPS.C2_PAUSE, now);
+          }
+          break;
+
+        // INTER-CYCLE INTEGRATIVE PAUSE (8.0s)
+        // Droplet breathes gently and reflects a delicate warm golden crystalline illumination
+        case STEPS.C1_PAUSE:
+        case STEPS.C2_PAUSE:
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          // Subtle resting breath
+          state.dropScale = PACING_CONFIG.MIN_SCALE + Math.sin(t * Math.PI * 2) * 0.04;
+          // Smooth golden warmth reflection on drop surface
+          state.pauseWarmth = Math.sin(t * Math.PI) * 1.0;
+          updateHUD(t, "PAUSA", `${remainingSec}s`, "Respiro Libero • Integrazione");
+          renderVRBillboardText("PAUSA", "RESPIRO LIBERO", 1.0);
+          if (elapsed >= duration) {
+            if (state.currentStep === STEPS.C1_PAUSE) {
+              transitionToStep(STEPS.C2_INHALE_SX, now);
+            } else {
+              transitionToStep(STEPS.OUTRO, now);
+            }
+          }
+          break;
+
+        // OUTRO (5.0s)
+        case STEPS.OUTRO:
+          state.dropY = PACING_CONFIG.DROP_BASE_Y;
+          state.dropScale = PACING_CONFIG.MIN_SCALE;
+          state.pauseWarmth = (1.0 - t) * 0.4;
+          updateHUD(1.0, "PACE", "Serenità", "Equilibrio Interiore");
+          renderVRBillboardText("PACE", "EQUILIBRIO INTERIORE", 1.0 - t * 0.2);
+          if (elapsed >= duration) {
+            transitionToStep(STEPS.COMPLETED, now);
+          }
+          break;
+      }
+    }
+
+    /* ======================================================================
+       8. UI INTERACTION & DISCREET HUD UPDATES
+       ====================================================================== */
+    let hudPhaseLabelEl = null;
+    let hudTimerSubEl = null;
+    let hudProgressFillEl = null;
+    let hudCycleCounterEl = null;
+    let iconPlayEl = null;
+    let iconPauseEl = null;
+    let labelPlayEl = null;
+
+    function initUIReferences() {
+      hudPhaseLabelEl = document.getElementById('hud-phase-label');
+      hudTimerSubEl = document.getElementById('hud-timer-sub');
+      hudProgressFillEl = document.getElementById('hud-progress-fill');
+      hudCycleCounterEl = document.getElementById('hud-cycle-counter');
+      iconPlayEl = document.getElementById('icon-play');
+      iconPauseEl = document.getElementById('icon-pause');
+      labelPlayEl = document.getElementById('label-play-pause');
+    }
+
+    function updateUIElements() {
+      if (!iconPlayEl) initUIReferences();
+      if (iconPlayEl && iconPauseEl && labelPlayEl) {
+        if (state.isRunning) {
+          iconPlayEl.style.display = 'none';
+          iconPauseEl.style.display = 'block';
+          labelPlayEl.innerText = 'Pausa';
+        } else {
+          iconPlayEl.style.display = 'block';
+          iconPauseEl.style.display = 'none';
+          labelPlayEl.innerText = (state.currentStep === STEPS.COMPLETED) ? 'Ricomincia' : 'Avvia';
+        }
+      }
+
+      if (hudCycleCounterEl) {
+        hudCycleCounterEl.innerText = `Ciclo ${state.currentCycle} di ${PACING_CONFIG.TOTAL_CYCLES}`;
+      }
+    }
+
+    function updateHUD(progress0to1, mainText, timerText, subText) {
+      if (!hudPhaseLabelEl) initUIReferences();
+
+      if (hudPhaseLabelEl && hudPhaseLabelEl.innerText !== mainText) {
+        hudPhaseLabelEl.innerText = mainText;
+        if (mainText.includes('ESPIRA')) {
+          hudPhaseLabelEl.style.color = 'var(--calm-amber)';
+        } else if (mainText.includes('PAUSA') || mainText.includes('PACE')) {
+          hudPhaseLabelEl.style.color = 'var(--calm-gold)';
+        } else {
+          hudPhaseLabelEl.style.color = '#FFFFFF';
+        }
+      }
+
+      if (hudTimerSubEl) {
+        const fullSub = `${timerText} • ${subText}`;
+        if (hudTimerSubEl.innerText !== fullSub) {
+          hudTimerSubEl.innerText = fullSub;
+        }
+      }
+
+      if (hudProgressFillEl) {
+        hudProgressFillEl.style.width = `${Math.min(100, Math.max(0, progress0to1 * 100))}%`;
+        if (mainText.includes('ESPIRA')) {
+          hudProgressFillEl.style.backgroundColor = 'var(--calm-amber)';
+        } else if (mainText.includes('PAUSA') || mainText.includes('PACE')) {
+          hudProgressFillEl.style.backgroundColor = 'var(--calm-gold)';
+        } else {
+          hudProgressFillEl.style.backgroundColor = 'var(--water-cyan)';
+        }
+      }
+    }
+
+    function toggleVR() {
+      setVR(!state.isVRMode);
+    }
+
+    function setVR(enable) {
+      state.isVRMode = enable;
+      if (vrReticleGroup) {
+        vrReticleGroup.visible = enable;
+      }
+      const overlay = document.getElementById('vr-overlay');
+      const uiLayer = document.getElementById('ui-layer');
+      const btnVR = document.getElementById('btn-vr-toggle');
+
+      if (enable) {
+        camera.fov = 72;
+        document.body.classList.add('vr-active');
+        overlay.classList.add('active');
+        uiLayer.classList.add('hidden');
+        btnVR.style.background = 'rgba(112, 214, 255, 0.35)';
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        requestDeviceOrientation();
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+        if (state.isCompleted) {
+          hide2DCompletionPopup();
+          showVRCompletionPopup();
+        }
+      } else {
+        camera.fov = 48;
+        document.body.classList.remove('vr-active');
+        overlay.classList.remove('active');
+        uiLayer.classList.remove('hidden');
+        btnVR.style.background = '';
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        hideVRCompletionPopup();
+        if (state.isCompleted) {
+          show2DCompletionPopup();
+        }
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock().catch(() => {});
+        }
+        if (textSpriteMesh) textSpriteMesh.material.opacity = 0;
+      }
+
+      camera.updateProjectionMatrix();
+      onWindowResize();
+      notifyFlutter('onVRModeChanged', { isVR: state.isVRMode });
+    }
+
+    function onWindowResize() {
+      const w = canvasWidth();
+      const h = canvasHeight();
+      const aspect = w / h;
+      camera.aspect = aspect;
+
+      // Responsive FOV: preserve majestic drop framing in mobile portrait while maintaining 72 deg in VR
+      if (state.isVRMode) {
+        camera.fov = 72;
+      } else if (aspect < 1.0) {
+        camera.fov = Math.min(74, 48 / aspect * 0.82);
+      } else {
+        camera.fov = 48;
+      }
+      camera.updateProjectionMatrix();
+
+      stereoCamera.aspect = 0.5;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(w, h);
+    }
+
+    /* ======================================================================
+       9. MAIN ANIMATION & RENDERING LOOP (60/120 FPS STABLE)
+       ====================================================================== */
+    let animFrameId = null;
+
+    function animate(timestamp) {
+      animFrameId = requestAnimationFrame(animate);
+
+      if (!state.lastTimestamp) state.lastTimestamp = timestamp;
+      const deltaMs = Math.min(timestamp - state.lastTimestamp, 64);
+      const deltaSec = deltaMs / 1000;
+      const timeSec = timestamp * 0.001;
+      state.lastTimestamp = timestamp;
+
+      // Update Bio-Pacing Machine
+      updateBioPacing(timestamp);
+
+      // Camera Look with 6s floating buoyancy swell
+      updateCameraRotation(timeSec);
+
+      // Hands-free Gaze Interaction (Dwell Timer)
+      updateGazeInteraction(deltaSec);
+
+      // Oceanic Dome subtle fluid wave motion
+      if (oceanDomeMesh && oceanDomeMesh.material.uniforms) {
+        oceanDomeMesh.material.uniforms.time.value = timeSec;
+      }
+
+      // Surface Micro-Glints Twinkle & Swell Motion
+      animateSurfaceGlints(timeSec);
+
+      // Marine Snow drift with 0.15 Hz ocean swell
+      animatePlankton(timeSec);
+
+      // Dynamic Caustic Light Modulation (Currents dancing on droplet)
+      if (causticSpotLight) {
+        const ct1 = timeSec * 1.3;
+        const cSwayX = Math.sin(ct1 * 0.85) * 1.4;
+        const cSwayZ = Math.cos(ct1 * 0.70) * 1.0;
+        const cSwayY = Math.sin(ct1 * 1.15) * 0.6;
+        causticSpotLight.position.set(2.0 + cSwayX, 6.0 + cSwayY, -2.5 + cSwayZ);
+
+        // Sinusoidal multi-wave caustic intensity modulation
+        const causticPulse1 = Math.sin(ct1 * 1.6) * Math.cos(ct1 * 2.2 + 0.7);
+        causticSpotLight.intensity = 1.9 + causticPulse1 * 1.0;
+      }
+
+      if (causticPointLight) {
+        const ct2 = timeSec * 1.5;
+        const cPtX = Math.sin(ct2 * 0.75 + 1.2) * 1.2;
+        const cPtY = Math.cos(ct2 * 1.05) * 0.7;
+        const cPtZ = Math.sin(ct2 * 0.90 + 2.0) * 0.9;
+        causticPointLight.position.set(-1.8 + cPtX, 1.2 + cPtY, -4.0 + cPtZ);
+
+        const causticPulse2 = Math.cos(ct2 * 1.8 + 1.3) * Math.sin(ct2 * 2.5);
+        causticPointLight.intensity = 1.4 + causticPulse2 * 0.8;
+      }
+
+      // Central Water Droplet Animation (Living Underwater Water Drop)
+      if (waterDropGroup) {
+        // Coherent oceanic swell drift on central drop position
+        const dropSwellBobY = (state.currentStep !== STEPS.DESCENT) 
+          ? Math.sin(timeSec * (2.0 * Math.PI * 0.15)) * 0.038 + Math.sin(timeSec * 0.8) * 0.012 
+          : 0.0;
+        const dropSwellDriftX = (state.currentStep !== STEPS.DESCENT)
+          ? Math.sin(timeSec * (2.0 * Math.PI * 0.15) * 0.7) * 0.018
+          : 0.0;
+
+        waterDropGroup.position.set(
+          PACING_CONFIG.DROP_BASE_X + dropSwellDriftX,
+          state.dropY + dropSwellBobY,
+          PACING_CONFIG.DROP_BASE_Z
+        );
+        waterDropGroup.scale.set(state.dropScale, state.dropScale, state.dropScale);
+
+        // Micro-Ondeggio Idrodinamico (Living Water Drop - Rayleigh Surface Tension)
+        // Offset frequencies 0.4 Hz fundamental breath + 0.7 Hz surface tension harmonic
+        const wave04 = Math.sin(timeSec * (2.0 * Math.PI * 0.4));
+        const wave07 = Math.cos(timeSec * (2.0 * Math.PI * 0.7) + 0.85);
+        const liquidTensionY = (wave04 * 0.010 + wave07 * 0.005);
+        const liquidTensionXZ = -liquidTensionY * 0.50; // Volume conservation (d(XZ)/dY = -0.5)
+
+        // Subtle lateral hydrodynamic ripple
+        const rippleX = Math.sin(timeSec * 1.9) * 0.002;
+        const rippleZ = Math.cos(timeSec * 2.3) * 0.002;
+
+        waterDropMesh.scale.set(
+          1.0 + liquidTensionXZ + rippleX,
+          1.0 + liquidTensionY,
+          1.0 + liquidTensionXZ + rippleZ
+        );
+
+        // 3D Dynamic Tilt & Multi-axial Rotation for 360° volume & caustic glints
+        waterDropMesh.rotation.y = Math.sin(timeSec * 0.35) * 0.15;
+        waterDropMesh.rotation.x = Math.cos(timeSec * 0.28) * 0.08;
+        waterDropMesh.rotation.z = Math.sin(timeSec * 0.20) * 0.06;
+
+        // Dynamic caustics animation on droplet
+        if (waterDropMaterial && waterDropMaterial.uniforms) {
+          waterDropMaterial.uniforms.time.value = timeSec;
+        }
+
+        // Golden warmth illumination on drop during pause
+        if (pauseWarmLight) {
+          pauseWarmLight.intensity = state.pauseWarmth * 1.8;
+        }
+
+        // VR Billboard position tracking (floats right above slender drop apex)
+        if (textSpriteMesh && state.isVRMode) {
+          textSpriteMesh.position.set(
+            PACING_CONFIG.DROP_BASE_X + dropSwellDriftX,
+            state.dropY + dropSwellBobY + 2.2 * state.dropScale + 0.35,
+            PACING_CONFIG.DROP_BASE_Z
+          );
+        }
+      }
+
+      // Nostril Bubble Streams
+      animateBubbleStreams(timeSec, deltaSec);
+
+      // Stereoscopic vs Monoscopic Rendering
+      const width = canvasWidth();
+      const height = canvasHeight();
+
+      if (state.isVRMode) {
+        renderer.setScissorTest(true);
+        stereoCamera.update(camera);
+
+        // Left Eye
+        renderer.setScissor(0, 0, width / 2, height);
+        renderer.setViewport(0, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraL);
+
+        // Right Eye
+        renderer.setScissor(width / 2, 0, width / 2, height);
+        renderer.setViewport(width / 2, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraR);
+
+        renderer.setScissorTest(false);
+      } else {
+        renderer.setViewport(0, 0, width, height);
+        renderer.render(scene, camera);
+      }
+    }
+
+    /* ======================================================================
+       10. RESOURCE TEARDOWN & LIFECYCLE MANAGEMENT
+       ====================================================================== */
+    function disposeExperience() {
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+      }
+      state.isRunning = false;
+
+      if (audioCtx) {
+        try {
+          audioCtx.close();
+        } catch (e) {}
+        audioCtx = null;
+      }
+
+      if (scene) {
+        scene.traverse((obj) => {
+          if (obj.geometry) {
+            try { obj.geometry.dispose(); } catch (e) {}
+          }
+          if (obj.material) {
+            if (Array.isArray(obj.material)) {
+              obj.material.forEach(m => {
+                if (m.map) m.map.dispose();
+                m.dispose();
+              });
+            } else {
+              if (obj.material.map) obj.material.map.dispose();
+              obj.material.dispose();
+            }
+          }
+        });
+      }
+
+      if (renderer) {
+        try {
+          renderer.dispose();
+          if (renderer.domElement && renderer.domElement.parentNode) {
+            renderer.domElement.parentNode.removeChild(renderer.domElement);
+          }
+        } catch (e) {}
+      }
+    }
+
+    /* ======================================================================
+       11. DOM INITIALIZATION & EVENT ATTACHMENT
+       ====================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeScene();
+      initControls();
+      initUIReferences();
+
+      document.getElementById('gate-start-btn')?.addEventListener('click', dismissGateAndStart);
+
+      document.getElementById('btn-play-pause')?.addEventListener('click', () => {
+        const gate = document.getElementById('audio-gate');
+        if (gate && gate.style.display !== 'none') {
+          dismissGateAndStart();
+        } else {
+          togglePlayPause();
+        }
+      });
+
+      document.getElementById('btn-vr-toggle')?.addEventListener('click', toggleVR);
+      document.getElementById('btn-recenter')?.addEventListener('click', recenterView);
+      document.getElementById('btn-fullscreen')?.addEventListener('click', toggleFullscreen);
+
+      document.getElementById('btn-audio-toggle')?.addEventListener('click', () => {
+        setAudioMuted(!state.isAudioMuted);
+      });
+
+      // Immediate cardboard screen-tap activation for completion buttons
+      window.addEventListener('click', () => {
+        if (state.isVRMode && completionPopupGroup && completionPopupGroup.visible) {
+          if (gazeHoverTarget && gazeHoverTarget.userData && typeof gazeHoverTarget.userData.onDwellSelect === 'function') {
+            gazeDwellTimer = 0.0;
+            gazeHoverTarget.userData.onDwellSelect();
+          }
+        }
+      });
+
+      // 2D Session Completion Modal Actions
+      document.getElementById('btn-completion-exit')?.addEventListener('click', () => {
+        notifyFlutter('onExitRequested', {});
+      });
+
+      document.getElementById('btn-completion-repeat')?.addEventListener('click', () => {
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+        state.isCompleted = false;
+        resetSession();
+        startSession();
+      });
+
+      window.addEventListener('beforeunload', disposeExperience);
+
+      // Auto-start immediately in app / autostart
+      const urlParams = new URLSearchParams(window.location.search);
+      const gate = document.getElementById('audio-gate');
+      if (gate) {
+        gate.style.setProperty('display', 'none', 'important');
+      }
+      if (urlParams.get('vr') === 'true') {
+        setVR(true);
+      }
+      dismissGateAndStart();
+      window.focus();
+      if (document.body) document.body.focus();
+
+      animFrameId = requestAnimationFrame(animate);
+      notifyFlutter('onVRReady', { status: 'ready', experience: 'respirazione_acqua' });
+    });
+
+  })();
+  </script>
+</body>
+</html>

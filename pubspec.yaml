@@ -32,8 +32,11 @@ dependencies:
   video_player: ^2.11.1
   animated_text_kit: ^4.3.0
   go_router: ^17.3.0
+  flutter_inappwebview: ^6.1.5
   flutter_unity_widget_2:
     path: packages/flutter_unity_widget_2
+  flutter_rotation_sensor: ^0.2.0
+  screen_brightness: ^2.1.11
 
 
 dev_dependencies:
@@ -99,6 +102,19 @@ flutter:
     - "assets/Esperienze_Guido/Video/"
     - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_4K_Mono.mp4"
     - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_VR360_SBS.mp4"
+    - assets/vr_experiences/respirazione_aria/
+    - assets/vr_experiences/respirazione_acqua/
+    - assets/vr_experiences/respirazione_fuoco/
+    - assets/vr_experiences/respirazione_terra/
+    - assets/vr_experiences/meditazione_mattino_acqua/
+    - assets/vr_experiences/meditazione_mattino_acqua/audio/
+    - assets/vr_experiences/meditazione_mattino_acqua/textures/
+    - assets/vr_experiences/meditazione_sera_acqua/
+    - assets/vr_experiences/meditazione_sera_acqua/audio/
+    - assets/vr_experiences/meditazione_pomeriggio_acqua/
+    - assets/vr_experiences/meditazione_pomeriggio_acqua/audio/
+    - assets/vr_experiences/meditazione_generale_acqua/
+    - assets/vr_experiences/meditazione_generale_acqua/audio/
   fonts:
     - family: Oswald
       fonts:

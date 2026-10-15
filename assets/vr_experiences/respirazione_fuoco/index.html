@@ -1,0 +1,3470 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Guido VR - Respirazione Fuoco (Fuoco Sacro 432 Hz - Sama Vritti)</title>
+  
+  <style>
+    :root {
+      --fire-ember: #ff3c00;
+      --fire-flame: #ff7700;
+      --fire-gold: #ffc400;
+      --fire-core: #fff4d0;
+      --night-bg: #050914;
+      --night-deep: #02040a;
+      --panel-bg: rgba(14, 10, 12, 0.72);
+      --panel-border: rgba(255, 130, 45, 0.32);
+      --text-light: #fff8f0;
+      --text-muted: rgba(255, 240, 230, 0.68);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--night-deep);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text-light);
+    }
+
+    #webgl-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: none;
+    }
+
+    /* Dual-Eye VR Cardboard Overlay */
+    #vr-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    #vr-overlay.active {
+      display: block;
+    }
+
+    .vr-divider {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      background: rgba(255, 180, 100, 0.28);
+      transform: translateX(-50%);
+      box-shadow: none !important;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+
+    /* Floating Clean HUD UI */
+    #ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    #ui-layer.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .header-bar {
+      display: none !important;
+    }
+
+    .brand-title {
+      display: none !important;
+    }
+
+    .top-controls {
+      display: none !important;
+    }
+
+    /* Minimal Floating Ethereal Guidance Text */
+    .pacing-pill-container {
+      position: absolute;
+      top: env(safe-area-inset-top, 24px);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+      z-index: 12;
+      width: auto;
+      max-width: 90%;
+      transition: opacity 0.4s ease;
+    }
+
+    .pacing-pill {
+      width: auto;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .phase-primary-text {
+      font-size: 18px;
+      font-weight: 300;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 0 18px rgba(255, 120, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.8);
+      transition: color 0.3s ease;
+    }
+
+    .phase-sub-text {
+      font-size: 11px;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.85);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
+    }
+
+    .pacing-progress-track {
+      display: none !important;
+    }
+
+    .pacing-progress-fill {
+      display: none !important;
+    }
+
+    /* Bottom Control Bar */
+    .bottom-bar {
+      display: none !important;
+    }
+
+    .status-card {
+      width: 100%;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      padding: 12px 20px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .cycle-counter {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cycle-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .cycle-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--fire-gold);
+      letter-spacing: 0.3px;
+    }
+
+    .session-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-main {
+      padding: 10px 22px;
+      border-radius: 22px;
+      border: none;
+      background: linear-gradient(135deg, #ff9400 0%, #e63900 100%);
+      color: #FFFFFF;
+      font-size: 13.5px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(230, 57, 0, 0.45);
+      transition: all 0.25s ease;
+    }
+
+    .btn-main:hover {
+      background: linear-gradient(135deg, #ffa826 0%, #ff4d1a 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 77, 26, 0.55);
+    }
+
+    .btn-main:active {
+      transform: scale(0.96);
+    }
+
+    .btn-vr-cardboard {
+      padding: 10px 18px;
+      border-radius: 22px;
+      border: 1px solid var(--panel-border);
+      background: rgba(28, 14, 12, 0.75);
+      color: var(--text-light);
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+    }
+
+    .btn-vr-cardboard:hover {
+      background: rgba(255, 120, 0, 0.25);
+      border-color: var(--fire-gold);
+      color: var(--fire-gold);
+      transform: translateY(-2px);
+    }
+
+    /* Modal Gesture Audio Unlock Gate bypassed in mobile app */
+    #audio-gate {
+      display: none !important;
+    }
+
+    /* Orientation Prompt disabled: orientation forced by OS */
+    #rotate-hint {
+      display: none !important;
+    }
+
+    /* 2D Session Completion Modal (Japandi Aesthetics) */
+    .completion-modal-backdrop {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2147483647 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(7, 12, 20, 0.94) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .completion-modal-backdrop.visible {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .completion-modal-card {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(145deg, rgba(16, 26, 42, 0.94), rgba(9, 15, 26, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 24px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(255, 120, 0, 0.12);
+      transform: scale(0.92) translateY(12px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .completion-modal-backdrop.visible .completion-modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .completion-modal-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px auto;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 120, 0, 0.25) 0%, rgba(255, 120, 0, 0.03) 70%);
+      border: 1px solid rgba(255, 120, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ff9900;
+      box-shadow: 0 0 20px rgba(255, 120, 0, 0.25);
+    }
+
+    .completion-modal-title {
+      font-family: inherit;
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 10px 0;
+      letter-spacing: 0.3px;
+    }
+
+    .completion-modal-desc {
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.76);
+      margin: 0 0 26px 0;
+    }
+
+    .completion-modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .btn-completion {
+      flex: 1;
+      height: 48px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      border: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-completion-exit {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.65);
+      color: #fca5a5;
+    }
+
+    .btn-completion-exit:hover, .btn-completion-exit:active {
+      background: rgba(239, 68, 68, 0.32);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-completion-repeat {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.32), rgba(5, 150, 105, 0.55));
+      border: 1px solid rgba(52, 211, 153, 0.85);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-completion-repeat:hover, .btn-completion-repeat:active {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.48), rgba(5, 150, 105, 0.72));
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+  </style>
+
+  <!-- Three.js CDN with Local Fallbacks -->
+  <script src="three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      document.write('<script src="../three.min.js"><\/script>');
+      if (typeof THREE === 'undefined') {
+        document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <!-- WebGL Three.js Viewport -->
+  <div id="webgl-container"></div>
+
+  <!-- Dual-Eye VR Cardboard Overlay -->
+  <div id="vr-overlay">
+    <div class="vr-divider"></div>
+  </div>
+
+  <!-- Minimal Discreet HUD UI -->
+  <div id="ui-layer">
+    <!-- Top Header Bar -->
+    <div class="header-bar">
+      <div class="brand-title">
+        <div class="brand-logo"></div>
+        <span class="brand-text">Guido VR</span>
+        <span class="brand-badge">Fuoco Sacro • 432 Hz</span>
+      </div>
+
+      <div class="top-controls">
+        <button class="btn-icon" id="btn-audio-toggle" title="Disattiva/Attiva Audio (Tasto M)" aria-label="Audio">
+          <svg id="icon-sound-on" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          <svg id="icon-sound-off" viewBox="0 0 24 24" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27l4.73 4.73H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+        </button>
+        <button class="btn-icon" id="btn-recenter" title="Riposiziona Visuale (Tasto R)" aria-label="Recenter">
+          <svg viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" title="Schermo Intero (Tasto F)" aria-label="Fullscreen">
+          <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Discreet Pacing Pill at Top Center -->
+    <div class="pacing-pill-container">
+      <div class="pacing-pill">
+        <div class="phase-primary-text" id="hud-phase-label">INSPIRA</div>
+        <div class="phase-sub-text" id="hud-timer-sub">4.0s • Il fuoco si espande</div>
+        <div class="pacing-progress-track">
+          <div class="pacing-progress-fill" id="hud-progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Control & Status Bar -->
+    <div class="bottom-bar">
+      <div class="status-card">
+        <div class="cycle-counter">
+          <span class="cycle-label">Sama Vritti (Quadrata 4-4-4-4)</span>
+          <span class="cycle-value" id="hud-cycle-counter">Ciclo 1 di 4</span>
+        </div>
+
+        <div class="session-actions">
+          <button class="btn-vr-cardboard" id="btn-vr-toggle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.9 6.2c-.4-.4-.9-.6-1.5-.6H4.6c-.6 0-1.1.2-1.5.6-.4.4-.6.9-.6 1.5v8.6c0 .6.2 1.1.6 1.5.4.4.9.6 1.5.6h4.3l2.2-2.5c.4-.5 1.3-.5 1.8 0l2.2 2.5h4.3c.6 0 1.1-.2 1.5-.6.4-.4.6-.9.6-1.5V7.7c.1-.6-.1-1.1-.5-1.5zM7.5 14c-1.4 0-2.5-1.1-2.5-2.5S6.1 9 7.5 9s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5zm9 0c-1.4 0-2.5-1.1-2.5-2.5S15.1 9 16.5 9s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5z"/></svg>
+            Visore VR
+          </button>
+
+          <button class="btn-main" id="btn-play-pause">
+            <svg id="icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="icon-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <span id="label-play-pause">Avvia</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Gate / Gesture Unlock -->
+  <div id="audio-gate">
+    <div class="gate-card">
+      <div class="gate-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C9.5 6 6 9.5 6 13.5c0 3.31 2.69 6 6 6s6-2.69 6-6c0-4-3.5-7.5-6-11.5zm0 16c-1.93 0-3.5-1.57-3.5-3.5 0-2 1.5-3.5 3.5-5.5 2 2 3.5 3.5 3.5 5.5 0 1.93-1.57 3.5-3.5 3.5z"/></svg>
+      </div>
+      <div class="gate-title">Respirazione Fuoco</div>
+      <div class="gate-desc">
+        Respirazione Quadrata (<strong>Sama Vritti Pranayama</strong>). Siediti davanti al fuoco sacro vivo, alle braci incandescenti e lasciati guidare dalle campane a <strong>432 Hz</strong> sotto la volta celeste.
+      </div>
+      <div class="gate-specs">
+        <span class="gate-tag">4s Inspiro</span>
+        <span class="gate-tag">4s Apnea Piena</span>
+        <span class="gate-tag">4s Espiro</span>
+        <span class="gate-tag">4s Apnea Vuota</span>
+        <span class="gate-tag">Accordo 432 Hz</span>
+      </div>
+      <button class="gate-btn" id="gate-start-btn">Inizia Esperienza</button>
+    </div>
+  </div>
+
+  <!-- Mobile Landscape Warning for VR -->
+  <div id="rotate-hint">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--fire-gold)"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 5.39 19.11.83 13.5.13v1.54c2.61.34 4.96 1.7 6.48 3.85h-3.5v2h6v-6h-2v2.52zM2.05 13c-.34-2.61.34-5.26 1.95-7.39V8h2V2h-6v2h2.52C-.63 6.64-.17 11.23.05 13h2zm5.43 8.48c-3.27-1.55-5.61-4.72-5.97-8.48H0c.51 5.61 4.84 10.17 10.45 10.87v-1.54c-2.61-.34-4.96-1.7-6.48-3.85h3.5v-2h-6v6h2v-2.52zm14.47-4.48c.34 2.61-.34 5.26-1.95 7.39V22h-2v6h6v-2h-2.52c3.12-2.64 3.58-7.23 3.36-9h-2.89z"/></svg>
+    <h3 style="margin-top:16px; font-size:18px;">Ruota lo smartphone in orizzontale</h3>
+    <p style="margin-top:8px; font-size:13px; color:rgba(255,255,255,0.7);">Per utilizzare il visore VR Cardboard stereoscopico.</p>
+  </div>
+
+  <!-- 2D Session Completion Modal (Normal / Smartphone Mode) -->
+  <div id="session-completion-modal" class="completion-modal-backdrop" style="display: none;">
+    <div class="completion-modal-card">
+      <div class="completion-modal-icon">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <h2 class="completion-modal-title">Sessione Completata</h2>
+      <p class="completion-modal-desc">Porta questo calore vigile, equilibrio e profonda centratura interiore nella tua giornata.</p>
+      <div class="completion-modal-actions">
+        <button id="btn-completion-exit" class="btn-completion btn-completion-exit" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+          <span>ESCI</span>
+        </button>
+        <button id="btn-completion-repeat" class="btn-completion btn-completion-repeat" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.95 20 14.54 20 13c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 8.74C4.46 10.05 4 11.46 4 13c0 4.42 3.58 8 8 8v4l5-5-5-5v4c-3.31 0-6-2.69-6-6z"/></svg>
+          <span>RIPETI</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN SCRIPT -->
+  <script>
+  (function() {
+    'use strict';
+
+    /* ======================================================================
+       1. BIO-PACING STATE MACHINE & CONSTANTS (SAMA VRITTI - BOX BREATHING)
+       ====================================================================== */
+    const PACING_CONFIG = {
+      TOTAL_CYCLES: 4,               // 4 cicli completi come da specifica
+      APPROACH_DURATION: 3800,       // 3.8s avvicinamento armonioso al focolare
+      INHALE_DURATION: 4000,         // 4.0s Inspiro (la fiamma sale ed arde maestosa)
+      HOLD_FULL_DURATION: 4000,      // 4.0s Apnea Piena (luce aurea e scintille dorate)
+      EXHALE_DURATION: 4000,         // 4.0s Espiro (la fiamma si placa e rilascia)
+      HOLD_EMPTY_DURATION: 4000,     // 4.0s Apnea Vuota (braci ardenti calde e calme)
+      OUTRO_DURATION: 6000,          // 6.0s integrazione e respiro spontaneo
+      
+      // Campfire Hearth in world coordinates
+      FIRE_BASE_X: 0.0,
+      FIRE_BASE_Y: 0.0,
+      FIRE_BASE_Z: 0.0,
+
+      // Camera natural seated viewpoint
+      CAM_INIT_POS_X: 0.0,
+      CAM_INIT_POS_Y: 1.3,
+      CAM_INIT_POS_Z: 6.8,
+      CAM_LOOK_TARGET_Y: 0.55,       // Centered comfortably on campfire heart
+      
+      MIN_SCALE: 0.82,               // Fiamma a riposo / espiro
+      MAX_SCALE: 1.45,               // Fiamma espansa all'apice dell'inspiro
+      MIN_LIGHT: 1.8,                // Intensità luce focolare a riposo
+      MAX_LIGHT: 3.8                 // Intensità luce focolare all'apice dell'inspiro
+    };
+
+    const STEPS = {
+      STANDBY: 'STANDBY',
+      APPROACH: 'APPROACH',
+      INHALE: 'INHALE',
+      HOLD_FULL: 'HOLD_FULL',
+      EXHALE: 'EXHALE',
+      HOLD_EMPTY: 'HOLD_EMPTY',
+      OUTRO: 'OUTRO',
+      COMPLETED: 'COMPLETED'
+    };
+
+    const state = {
+      currentStep: STEPS.STANDBY,
+      currentCycle: 1,
+      stepStartTime: 0,
+      stepDuration: 0,
+      pauseStartTime: 0,
+      isRunning: false,
+      isCompleted: false,
+      isVRMode: false,
+      isAudioMuted: false,
+      flameScale: PACING_CONFIG.MIN_SCALE,
+      flameLightIntensity: PACING_CONFIG.MIN_LIGHT,
+      sparkHaloIntensity: 0.0,
+      emberPulseWarmth: 0.0,
+      approachProgress: 0.0,
+      lastTimestamp: 0
+    };
+
+    /* ======================================================================
+       2. FLUTTER INAPPWEBVIEW BRIDGE
+       ====================================================================== */
+    function notifyFlutter(eventName, data) {
+      try {
+        if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+          window.flutter_inappwebview.callHandler(eventName, data);
+        } else if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'GUIDO_VR', event: eventName, data: data }, '*');
+        }
+      } catch (err) {
+        console.warn('Flutter Bridge post error:', err);
+      }
+    }
+
+    window.GuidoVR = {
+      start: function() { dismissGateAndStart(); },
+      pause: function() { pauseSession(); },
+      toggle: function() { togglePlayPause(); },
+      reset: function() { resetSession(); },
+      setVRMode: function(enable) { setVR(enable); },
+      setMuted: function(mute) { setAudioMuted(mute); },
+      recenter: function() { recenterView(); },
+      setDeviceOrientation: function(alpha, beta, gamma) {
+        gyroAvailable = true;
+        gyroAlpha = Number(alpha) || 0;
+        gyroBeta = Number(beta) || 0;
+        gyroGamma = Number(gamma) || 0;
+      },
+      showCompletionPopup: function() { onExperienceEnded(); },
+      hideCompletionPopup: function() { hideVRCompletionPopup(); hide2DCompletionPopup(); },
+      getState: function() { return { ...state }; },
+      dispose: function() { disposeExperience(); }
+    };
+
+    /* ======================================================================
+       3. HIGH-PRECISION WEB AUDIO API (432 HZ BINAURAL PAD + PROCEDURAL FIRE)
+       ====================================================================== */
+    let audioCtx = null;
+    let masterGain = null;
+    let padGain = null;
+    let fireRushGain = null;
+    let firePopGain = null;
+    let isAudioInitialized = false;
+
+    // Binaural Pad Nodes (432 Hz Theta Beat)
+    let padOscLeft = null;
+    let padOscRight = null;
+    let padOscSub = null;
+    let padOscFifth = null;
+    let padOscOctave = null;
+    let padFilter = null;
+
+    // Procedural Fire Rush & Noise Nodes
+    let noiseSource = null;
+    let noiseFilter1 = null;
+    let noiseFilter2 = null;
+
+    let popScheduleTimer = null;
+
+    function initAudioEngine() {
+      if (isAudioInitialized) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        audioCtx = new AudioContextClass();
+
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+        masterGain.connect(audioCtx.destination);
+
+        // A) 432 Hz Binaural Pad (Theta Beat 4 Hz: 432 Hz Left vs 436 Hz Right)
+        padGain = audioCtx.createGain();
+        padGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+
+        padFilter = audioCtx.createBiquadFilter();
+        padFilter.type = 'lowpass';
+        padFilter.frequency.setValueAtTime(640, audioCtx.currentTime);
+        padFilter.Q.setValueAtTime(1.1, audioCtx.currentTime);
+
+        const merger = audioCtx.createChannelMerger(2);
+
+        // Left ear: 432.0 Hz
+        padOscLeft = audioCtx.createOscillator();
+        padOscLeft.type = 'sine';
+        padOscLeft.frequency.setValueAtTime(432.0, audioCtx.currentTime);
+        const gainLeft = audioCtx.createGain();
+        gainLeft.gain.setValueAtTime(0.20, audioCtx.currentTime);
+        padOscLeft.connect(gainLeft);
+        gainLeft.connect(merger, 0, 0);
+
+        // Right ear: 436.0 Hz (4 Hz Theta Beat for calm focus)
+        padOscRight = audioCtx.createOscillator();
+        padOscRight.type = 'sine';
+        padOscRight.frequency.setValueAtTime(436.0, audioCtx.currentTime);
+        const gainRight = audioCtx.createGain();
+        gainRight.gain.setValueAtTime(0.20, audioCtx.currentTime);
+        padOscRight.connect(gainRight);
+        gainRight.connect(merger, 0, 1);
+
+        // Deep Sub: 108.0 Hz (432 / 4)
+        padOscSub = audioCtx.createOscillator();
+        padOscSub.type = 'triangle';
+        padOscSub.frequency.setValueAtTime(108.0, audioCtx.currentTime);
+        const gainSub = audioCtx.createGain();
+        gainSub.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        padOscSub.connect(gainSub);
+        gainSub.connect(merger, 0, 0);
+        gainSub.connect(merger, 0, 1);
+
+        // Harmonic Fifth: 648.0 Hz
+        padOscFifth = audioCtx.createOscillator();
+        padOscFifth.type = 'sine';
+        padOscFifth.frequency.setValueAtTime(648.0, audioCtx.currentTime);
+        const gainFifth = audioCtx.createGain();
+        gainFifth.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        padOscFifth.connect(gainFifth);
+        gainFifth.connect(merger, 0, 0);
+        gainFifth.connect(merger, 0, 1);
+
+        // Harmonic Octave: 864.0 Hz
+        padOscOctave = audioCtx.createOscillator();
+        padOscOctave.type = 'sine';
+        padOscOctave.frequency.setValueAtTime(864.0, audioCtx.currentTime);
+        const gainOctave = audioCtx.createGain();
+        gainOctave.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        padOscOctave.connect(gainOctave);
+        gainOctave.connect(merger, 0, 0);
+        gainOctave.connect(merger, 0, 1);
+
+        merger.connect(padFilter);
+        padFilter.connect(padGain);
+        padGain.connect(masterGain);
+
+        padOscLeft.start();
+        padOscRight.start();
+        padOscSub.start();
+        padOscFifth.start();
+        padOscOctave.start();
+
+        // B) Procedural Fire Audio
+        initProceduralFireAudio();
+
+        isAudioInitialized = true;
+      } catch (err) {
+        console.warn('Web Audio Init Error:', err);
+      }
+    }
+
+    function initProceduralFireAudio() {
+      if (!audioCtx) return;
+
+      // 1. Continuous Fire Thermal Rush (Filtered pink noise loop)
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.05;
+        b6 = white * 0.115926;
+      }
+
+      noiseSource = audioCtx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      noiseSource.loop = true;
+
+      noiseFilter1 = audioCtx.createBiquadFilter();
+      noiseFilter1.type = 'bandpass';
+      noiseFilter1.frequency.setValueAtTime(340, audioCtx.currentTime);
+      noiseFilter1.Q.setValueAtTime(1.6, audioCtx.currentTime);
+
+      noiseFilter2 = audioCtx.createBiquadFilter();
+      noiseFilter2.type = 'lowpass';
+      noiseFilter2.frequency.setValueAtTime(950, audioCtx.currentTime);
+
+      fireRushGain = audioCtx.createGain();
+      fireRushGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+
+      noiseSource.connect(noiseFilter1);
+      noiseFilter1.connect(noiseFilter2);
+      noiseFilter2.connect(fireRushGain);
+      fireRushGain.connect(masterGain);
+
+      noiseSource.start();
+
+      // 2. Fire Pop / Micro-burst crackles
+      firePopGain = audioCtx.createGain();
+      firePopGain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      firePopGain.connect(masterGain);
+
+      scheduleNextFirePop();
+    }
+
+    function scheduleNextFirePop() {
+      if (!audioCtx) return;
+      const isExpanded = (state.currentStep === STEPS.INHALE || state.currentStep === STEPS.HOLD_FULL);
+      const minDelay = isExpanded ? 70 : 130;
+      const maxDelay = isExpanded ? 240 : 450;
+      const delay = minDelay + Math.random() * (maxDelay - minDelay);
+
+      popScheduleTimer = setTimeout(() => {
+        triggerFirePop();
+        scheduleNextFirePop();
+      }, delay);
+    }
+
+    function triggerFirePop() {
+      if (!audioCtx || state.isAudioMuted || audioCtx.state !== 'running') return;
+      try {
+        const now = audioCtx.currentTime;
+        const popType = Math.random();
+
+        if (popType < 0.65) {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          const filter = audioCtx.createBiquadFilter();
+
+          const freq = 1100 + Math.random() * 2200;
+          osc.type = Math.random() > 0.4 ? 'triangle' : 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          osc.frequency.exponentialRampToValueAtTime(freq * 0.4, now + 0.035);
+
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(freq, now);
+          filter.Q.setValueAtTime(4.0 + Math.random() * 6.0, now);
+
+          const popVol = (0.08 + Math.random() * 0.16) * (state.isRunning ? 1.0 : 0.6);
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(popVol, now + 0.002);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035 + Math.random() * 0.04);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(firePopGain);
+
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else {
+          const puffLen = 0.04 + Math.random() * 0.06;
+          const puffBuffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * puffLen), audioCtx.sampleRate);
+          const data = puffBuffer.getChannelData(0);
+          for (let i = 0; i < data.length; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.015));
+          }
+
+          const puffSrc = audioCtx.createBufferSource();
+          puffSrc.buffer = puffBuffer;
+
+          const puffFilter = audioCtx.createBiquadFilter();
+          puffFilter.type = 'highpass';
+          puffFilter.frequency.setValueAtTime(2500 + Math.random() * 2000, now);
+
+          const puffGain = audioCtx.createGain();
+          puffGain.gain.setValueAtTime(0.05 + Math.random() * 0.08, now);
+          puffGain.gain.exponentialRampToValueAtTime(0.0001, now + puffLen);
+
+          puffSrc.connect(puffFilter);
+          puffFilter.connect(puffGain);
+          puffGain.connect(firePopGain);
+
+          puffSrc.start(now);
+        }
+      } catch (e) {}
+    }
+
+    function playTibetanBowl(baseFreq = 432, duration = 4.5) {
+      if (!audioCtx || state.isAudioMuted) return;
+      try {
+        const now = audioCtx.currentTime;
+        const partials = [
+          { fRatio: 1.000, gainRatio: 0.35, decay: duration * 1.0 },
+          { fRatio: 2.768, gainRatio: 0.22, decay: duration * 0.85 },
+          { fRatio: 5.124, gainRatio: 0.14, decay: duration * 0.65 },
+          { fRatio: 7.892, gainRatio: 0.08, decay: duration * 0.45 }
+        ];
+
+        partials.forEach(p => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(baseFreq * p.fRatio, now);
+
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(p.gainRatio * 0.45, now + 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + p.decay);
+
+          osc.connect(gain);
+          gain.connect(masterGain);
+
+          osc.start(now);
+          osc.stop(now + p.decay + 0.1);
+        });
+      } catch (err) {
+        console.warn('Bowl audio error:', err);
+      }
+    }
+
+    function rampAudioLevels(targetPadGain, targetFireGain, durationSec = 1.2) {
+      if (!audioCtx || !padGain || !fireRushGain) return;
+      try {
+        const now = audioCtx.currentTime;
+        padGain.gain.cancelScheduledValues(now);
+        padGain.gain.linearRampToValueAtTime(targetPadGain, now + durationSec);
+
+        fireRushGain.gain.cancelScheduledValues(now);
+        fireRushGain.gain.linearRampToValueAtTime(targetFireGain, now + durationSec);
+      } catch (e) {}
+    }
+
+    function setAudioMuted(mute) {
+      state.isAudioMuted = mute;
+      const onIcon = document.getElementById('icon-sound-on');
+      const offIcon = document.getElementById('icon-sound-off');
+      if (onIcon && offIcon) {
+        onIcon.style.display = mute ? 'none' : 'block';
+        offIcon.style.display = mute ? 'block' : 'none';
+      }
+      if (masterGain && audioCtx) {
+        masterGain.gain.linearRampToValueAtTime(mute ? 0.0 : 0.85, audioCtx.currentTime + 0.2);
+      }
+    }
+
+    /* ======================================================================
+       4. THREE.JS SCENE SETUP & PHOTOREALISTIC PROCEDURAL ENVIRONMENT
+       ====================================================================== */
+    let container = null;
+    let scene = null;
+    let camera = null;
+    let stereoCamera = null;
+    let renderer = null;
+
+    // Lighting
+    let firePointLight = null;
+    let fireSpotLight = null;
+    let ambientMoonLight = null;
+
+    // Mesh Groups & Objects
+    let campfireGroup = null;
+    let flameGroup = null;
+    let flameMeshes = [];
+    let flameHaloMesh = null;
+    let emberBedMesh = null;
+    let starrySkyMesh = null;
+    let groundMesh = null;
+    let hearthStonesGroup = null;
+    let campfireLogsGroup = null;
+    let logMaterials = [];
+
+    // Particle Systems
+    let emberParticles = null;
+    let emberGeometry = null;
+    let emberPositions = null;
+    let emberVelocities = null;
+    let emberLifespans = null;
+    let emberColors = null;
+    let emberSeeds = null;
+
+    let sacredSparkles = null;
+    let sparkGeometry = null;
+    let sparkPositions = null;
+    let sparkVelocities = null;
+    let sparkLifespans = null;
+    let sparkColors = null;
+    let sparkSeeds = null;
+
+    // 3D VR Floating Billboard
+    let textCanvas = null;
+    let textCtx = null;
+    let textTexture = null;
+    let textSpriteMesh = null;
+
+    function canvasWidth() { return window.innerWidth || 800; }
+    function canvasHeight() { return window.innerHeight || 600; }
+
+    function initThreeScene() {
+      container = document.getElementById('webgl-container');
+
+      scene = new THREE.Scene();
+      // Exponential dark mist that smoothly merges distant ground into deep night sky
+      scene.fog = new THREE.FogExp2(0x050914, 0.028);
+
+      // Camera positioned at seated distance (4.4m from fire)
+      camera = new THREE.PerspectiveCamera(60, canvasWidth() / canvasHeight(), 0.1, 800);
+      camera.position.set(PACING_CONFIG.CAM_INIT_POS_X, PACING_CONFIG.CAM_INIT_POS_Y, PACING_CONFIG.CAM_INIT_POS_Z);
+
+      // Initial pitch looking down at campfire heart
+      const initialPitch = Math.atan2(PACING_CONFIG.CAM_LOOK_TARGET_Y - PACING_CONFIG.CAM_INIT_POS_Y, PACING_CONFIG.CAM_INIT_POS_Z);
+      camPitch = initialPitch;
+      camYaw = 0;
+      camera.rotation.set(camPitch, camYaw, 0, 'YXZ');
+
+      stereoCamera = new THREE.StereoCamera();
+      stereoCamera.aspect = 0.5;
+      stereoCamera.eyeSep = 0.064;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(canvasWidth(), canvasHeight());
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.18;
+      renderer.setClearColor(0x050914, 1.0);
+      container.appendChild(renderer.domElement);
+
+      // 1. 360° Starry Night Dome
+      createStarryNightSky();
+
+      // 2. Seamless Forest Clearing Ground
+      createGroundClearing();
+
+      // 3. Campfire Hearth, Charred Logs with Glowing Cracks & Embers
+      createCampfireStructure();
+
+      // 4. Ultra-Realistic Multi-Layer Volumetric Fluid Flame
+      createProceduralFlame();
+
+      // 5. Dynamic Ember Particle System & Hold Sparks
+      createEmberParticles();
+      createSacredSparkHalo();
+
+      // 6. Photorealistic Multi-Point Campfire Lighting
+      setupCampfireLighting();
+
+      // 7. 3D World-Space VR Billboard
+      createVRBillboardText();
+
+      window.addEventListener('resize', onWindowResize, false);
+
+      // 8. 3D Stereoscopic Gaze Reticle
+      initVRReticle();
+    }
+
+    let vrReticleGroup = null;
+    let vrReticleRing = null;
+
+    function initVRReticle() {
+      vrReticleGroup = new THREE.Group();
+      vrReticleGroup.name = 'VR_Gaze_Reticle';
+
+      // 1. Punto focale centrale dorato
+      const dotGeo = new THREE.CircleGeometry(0.012, 32);
+      const dotMat = new THREE.MeshBasicMaterial({
+        color: 0xffd700,
+        transparent: true,
+        opacity: 0.9,
+        depthTest: false,
+        depthWrite: false
+      });
+      const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+      dotMesh.renderOrder = 9999;
+      vrReticleGroup.add(dotMesh);
+
+      // 2. Anello esterno di puntamento
+      const ringGeo = new THREE.RingGeometry(0.024, 0.034, 32);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.7,
+        depthTest: false,
+        depthWrite: false
+      });
+      vrReticleRing = new THREE.Mesh(ringGeo, ringMat);
+      vrReticleRing.renderOrder = 9999;
+      vrReticleGroup.add(vrReticleRing);
+
+      // 3. Posiziona a 2.5 metri di fronte alla camera
+      vrReticleGroup.position.set(0, 0, -2.5);
+      vrReticleGroup.visible = false; // Visibile solo in modalità VR
+
+      // 4. Aggiungi come figlio diretto di camera
+      camera.add(vrReticleGroup);
+      scene.add(camera);
+    }
+
+    // ----------------------------------------------------
+    // Gaze Dwell Interaction System (2.0s Dwell Timer)
+    // ----------------------------------------------------
+    const gazeRaycaster = new THREE.Raycaster();
+    const gazeIntersectTargets = [];
+    let gazeHoverTarget = null;
+    let gazeDwellTimer = 0.0;
+    const DWELL_DURATION_SEC = 2.0;
+    const _gazeForwardDir = new THREE.Vector3();
+
+    function updateGazeInteraction(deltaSec) {
+      if (!state.isVRMode || !vrReticleGroup || !completionPopupGroup || !completionPopupGroup.visible || gazeIntersectTargets.length === 0) return;
+
+      camera.getWorldDirection(_gazeForwardDir);
+      gazeRaycaster.set(camera.position, _gazeForwardDir);
+      const hits = gazeRaycaster.intersectObjects(gazeIntersectTargets, true);
+
+      if (hits.length > 0) {
+        let hitObj = hits[0].object;
+        while (hitObj && (!hitObj.userData || typeof hitObj.userData.onDwellSelect !== 'function') && hitObj.parent && hitObj.parent !== scene) {
+          hitObj = hitObj.parent;
+        }
+
+        if (hitObj && hitObj.userData && typeof hitObj.userData.onDwellSelect === 'function') {
+          if (gazeHoverTarget === hitObj) {
+            gazeDwellTimer += deltaSec;
+            const progress = Math.min(1.0, gazeDwellTimer / DWELL_DURATION_SEC);
+
+            if (vrReticleRing) {
+              const s = 1.0 + progress * 0.75;
+              vrReticleRing.scale.set(s, s, 1.0);
+              vrReticleRing.material.opacity = 0.5 + progress * 0.5;
+            }
+
+            if (gazeDwellTimer >= DWELL_DURATION_SEC) {
+              gazeDwellTimer = 0.0;
+              if (vrReticleRing) {
+                vrReticleRing.scale.set(1.0, 1.0, 1.0);
+                vrReticleRing.material.opacity = 0.7;
+              }
+              hitObj.userData.onDwellSelect();
+            }
+          } else {
+            gazeHoverTarget = hitObj;
+            gazeDwellTimer = 0.0;
+          }
+          return;
+        }
+      }
+
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    // ----------------------------------------------------
+    // 3D Stereoscopic Completion Popup (Hands-Free Gaze)
+    // ----------------------------------------------------
+    let completionPopupGroup = null;
+
+    function createVRCompletionPopup() {
+      if (completionPopupGroup) return completionPopupGroup;
+
+      completionPopupGroup = new THREE.Group();
+      completionPopupGroup.name = 'VR_Completion_Popup';
+
+      // 1. Sfondo glassmorphic Japandi
+      const bgGeo = new THREE.PlaneGeometry(2.4, 1.4);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: 0x070c14,
+        transparent: true,
+        opacity: 0.88,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9998;
+      completionPopupGroup.add(bgMesh);
+
+      // 2. Texture con Titolo "Esperienza Completata"
+      const titleSprite = createPopupTextSprite('Esperienza Completata', 'bold 30px sans-serif', '#FFD700', 2.0, 0.4);
+      titleSprite.position.set(0, 0.38, 0.02);
+      completionPopupGroup.add(titleSprite);
+
+      const subSprite = createPopupTextSprite('Fissa un pulsante per 2s per selezionarlo', '20px sans-serif', 'rgba(255,255,255,0.75)', 2.2, 0.3);
+      subSprite.position.set(0, 0.12, 0.02);
+      completionPopupGroup.add(subSprite);
+
+      // 3. Pulsante 3D "ESCI" (Sinistra)
+      const exitBtn = create3DButton('ESCI', -0.55, -0.28, 0xef4444, () => {
+        notifyFlutter('onExitRequested', {});
+      });
+      completionPopupGroup.add(exitBtn);
+      gazeIntersectTargets.push(exitBtn);
+
+      // 4. Pulsante 3D "RIPETI" (Destra)
+      const repeatBtn = create3DButton('RIPETI', 0.55, -0.28, 0x10b981, () => {
+        hideVRCompletionPopup();
+        hide2DCompletionPopup();
+        state.isCompleted = false;
+        resetSession();
+        startSession();
+      });
+      completionPopupGroup.add(repeatBtn);
+      gazeIntersectTargets.push(repeatBtn);
+
+      completionPopupGroup.position.set(0, 0, -2.0);
+      completionPopupGroup.visible = false;
+
+      camera.add(completionPopupGroup);
+      return completionPopupGroup;
+    }
+
+    function createPopupTextSprite(text, font, color, w, h) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 512, 128);
+      ctx.font = font || 'bold 28px sans-serif';
+      ctx.fillStyle = color || '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 256, 64);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const mat = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false
+      });
+      mat.renderOrder = 9999;
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+      mesh.renderOrder = 9999;
+      return mesh;
+    }
+
+    function create3DButton(label, x, y, colorHex, onSelect) {
+      const group = new THREE.Group();
+      group.position.set(x, y, 0.02);
+
+      const bgGeo = new THREE.PlaneGeometry(0.85, 0.35);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.85,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9999;
+      bgMesh.userData = { onDwellSelect: onSelect };
+      group.add(bgMesh);
+
+      const textSprite = createPopupTextSprite(label, 'bold 32px sans-serif', '#FFFFFF', 0.8, 0.3);
+      textSprite.position.set(0, 0, 0.02);
+      textSprite.userData = { onDwellSelect: onSelect };
+      group.add(textSprite);
+
+      group.userData = { onDwellSelect: onSelect };
+      return group;
+    }
+
+    function showVRCompletionPopup() {
+      if (!completionPopupGroup) createVRCompletionPopup();
+      completionPopupGroup.visible = true;
+    }
+
+    function hideVRCompletionPopup() {
+      if (completionPopupGroup) completionPopupGroup.visible = false;
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    function show2DCompletionPopup() {
+      const modal = document.getElementById('session-completion-modal');
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('opacity', '1', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
+        modal.classList.add('visible');
+      }
+    }
+
+    function hide2DCompletionPopup() {
+      const modal = document.getElementById('session-completion-modal');
+      if (modal) {
+        modal.classList.remove('visible');
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+        setTimeout(() => {
+          if (!modal.classList.contains('visible')) {
+            modal.style.display = 'none';
+          }
+        }, 360);
+      }
+    }
+
+    function onExperienceEnded() {
+      if (state.isCompleted) return;
+      if (typeof outroSafetyTimer !== 'undefined' && outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = true;
+      state.isRunning = false;
+      state.sparkHaloIntensity = 0.0;
+
+      try {
+        rampAudioLevels(0.0, 0.0, 1.5);
+      } catch(e) {
+        console.warn('Audio fade err:', e);
+      }
+
+      try {
+        if (typeof textSpriteMesh !== 'undefined' && textSpriteMesh && textSpriteMesh.material) {
+          textSpriteMesh.material.opacity = 0;
+        }
+      } catch(e) {}
+
+      try {
+        updateUIElements();
+      } catch(e) {}
+
+      try {
+        notifyFlutter('onSessionComplete', { cyclesCompleted: PACING_CONFIG.TOTAL_CYCLES });
+      } catch(e) {
+        console.warn('Flutter notify error:', e);
+      }
+
+      if (state.isVRMode) {
+        showVRCompletionPopup();
+      } else {
+        show2DCompletionPopup();
+      }
+    }
+
+    // 1. 360° Starry Night Sky Dome with Twinkling Stars & Nebula Ribbon
+    function createStarryNightSky() {
+      const skyGeo = new THREE.SphereGeometry(380, 48, 36);
+      const skyMat = new THREE.ShaderMaterial({
+        uniforms: {
+          time: { value: 0.0 },
+          topColor: { value: new THREE.Color(0x02040b) },      // Deep midnight indigo
+          bottomColor: { value: new THREE.Color(0x050914) },   // Mist horizon tone matching FogExp2
+          horizonColor: { value: new THREE.Color(0x050914) }  // Seamless horizon
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          void main() {
+            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPosition.xyz;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 topColor;
+          uniform vec3 bottomColor;
+          uniform vec3 horizonColor;
+          uniform float time;
+          varying vec3 vWorldPosition;
+
+          float hash(vec2 p) {
+            p = fract(p * vec2(123.34, 456.21));
+            p += dot(p, p + 45.32);
+            return fract(p.x * p.y);
+          }
+
+          void main() {
+            vec3 dir = normalize(vWorldPosition);
+            float y = dir.y;
+
+            // Seamless atmospheric vertical gradient
+            vec3 col = mix(horizonColor, topColor, clamp(pow(max(0.0, y), 0.7), 0.0, 1.0));
+            if (y < 0.0) {
+              col = mix(horizonColor, bottomColor, clamp(-y * 2.0, 0.0, 1.0));
+            }
+
+            // Subtle Cosmic Ribbon / Milky Way
+            float galacticPlane = abs(dir.x * 0.65 + dir.y * 0.45 - dir.z * 0.6);
+            float nebula = exp(-galacticPlane * galacticPlane * 9.0) * 0.16;
+            vec3 nebulaCol = mix(vec3(0.08, 0.06, 0.22), vec3(0.18, 0.09, 0.14), sin(dir.x * 2.8 + time * 0.03) * 0.5 + 0.5);
+            col += nebulaCol * nebula * smoothstep(0.02, 0.35, y);
+
+            // Twinkling Stars
+            if (y > 0.01) {
+              vec2 starUV = vec2(atan(dir.z, dir.x) * 32.0, asin(clamp(dir.y, -1.0, 1.0)) * 32.0);
+              vec2 cell = floor(starUV);
+              vec2 fractUV = fract(starUV) - 0.5;
+              float rnd = hash(cell);
+
+              if (rnd > 0.85) {
+                float dist = length(fractUV);
+                float twinkle = 0.6 + 0.4 * sin(time * 2.5 + rnd * 6.28);
+                float starBrightness = smoothstep(0.14, 0.0, dist) * (rnd - 0.85) * 8.5 * twinkle;
+                
+                vec3 starCol = (rnd > 0.96) ? vec3(1.0, 0.86, 0.65) : (rnd > 0.92 ? vec3(0.75, 0.90, 1.0) : vec3(1.0, 1.0, 1.0));
+                col += starCol * starBrightness * smoothstep(0.01, 0.18, y);
+              }
+            }
+
+            gl_FragColor = vec4(col, 1.0);
+          }
+        `,
+        side: THREE.BackSide
+      });
+
+      starrySkyMesh = new THREE.Mesh(skyGeo, skyMat);
+      scene.add(starrySkyMesh);
+    }
+
+    // 2. Seamless Photorealistic Forest Clearing Ground (PBR Grazing Light, Organic Soil & Soot Pit)
+    function createGroundClearing() {
+      const groundGeo = new THREE.PlaneGeometry(320, 320, 4, 4);
+      groundGeo.rotateX(-Math.PI / 2);
+
+      const groundMat = new THREE.ShaderMaterial({
+        uniforms: {
+          firePos: { value: new THREE.Vector3(PACING_CONFIG.FIRE_BASE_X, PACING_CONFIG.FIRE_BASE_Y, PACING_CONFIG.FIRE_BASE_Z) },
+          fireIntensity: { value: 2.0 },
+          fogColor: { value: new THREE.Color(0x050914) },
+          fogDensity: { value: 0.028 },
+          time: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 firePos;
+          uniform float fireIntensity;
+          uniform vec3 fogColor;
+          uniform float fogDensity;
+          uniform float time;
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+
+          // High-precision procedural hash
+          float hash(vec2 p) {
+            return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+          }
+
+          vec2 hash2(vec2 p) {
+            return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453123);
+          }
+
+          // Smooth Value Noise
+          float noise(vec2 p) {
+            vec2 i = floor(p);
+            vec2 f = fract(p);
+            f = f * f * (3.0 - 2.0 * f);
+            return mix(
+              mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), f.x),
+              mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+              f.y
+            );
+          }
+
+          // Fractional Brownian Motion for natural forest soil variations
+          float fbm(vec2 p) {
+            float v = 0.0;
+            float a = 0.5;
+            mat2 rot = mat2(0.87758, 0.47942, -0.47942, 0.87758);
+            for (int i = 0; i < 4; i++) {
+              v += a * noise(p);
+              p = rot * p * 2.08 + vec2(2.1, 7.3);
+              a *= 0.5;
+            }
+            return v;
+          }
+
+          // Cellular Voronoi Noise for gravel and micro-pebbles
+          float voronoiPebbles(vec2 p) {
+            vec2 g = floor(p);
+            vec2 f = fract(p);
+            float minDist = 1.0;
+            for (int y = -1; y <= 1; y++) {
+              for (int x = -1; x <= 1; x++) {
+                vec2 lattice = vec2(float(x), float(y));
+                vec2 offset = hash2(g + lattice);
+                vec2 d = lattice + offset - f;
+                float dist = length(d);
+                minDist = min(minDist, dist);
+              }
+            }
+            return minDist;
+          }
+
+          // Directional Pine Needles pattern
+          float pineNeedles(vec2 p) {
+            vec2 np = p * 16.0;
+            float n = noise(vec2(np.x * 0.35 + np.y * 1.8, np.y * 0.4));
+            return smoothstep(0.40, 0.76, n);
+          }
+
+          // Procedural Height Function for normal derivation (tactile micro-relief)
+          float getTerrainHeight(vec2 pos) {
+            float macroRough = fbm(pos * 1.4) * 0.07;
+            float microSoil  = noise(pos * 8.5) * 0.022 + noise(pos * 24.0) * 0.008;
+            float pebbles    = (1.0 - voronoiPebbles(pos * 10.5)) * 0.032;
+            return macroRough + microSoil + pebbles;
+          }
+
+          void main() {
+            vec2 worldXZ = vWorldPosition.xz;
+            float distToCenter = length(worldXZ - firePos.xz);
+            float distCam = length(vWorldPosition - cameraPosition);
+
+            // 1. Procedural Normal Perturbation via Finite Differences
+            float eps = 0.035;
+            float hL = getTerrainHeight(worldXZ - vec2(eps, 0.0));
+            float hR = getTerrainHeight(worldXZ + vec2(eps, 0.0));
+            float hD = getTerrainHeight(worldXZ - vec2(0.0, eps));
+            float hU = getTerrainHeight(worldXZ + vec2(0.0, eps));
+
+            // Tangent/World space perturbed normal
+            vec3 normal = normalize(vec3((hL - hR) / (2.0 * eps), 1.0, (hD - hU) / (2.0 * eps)));
+
+            // 2. Multi-layer Natural Forest Soil Albedo Palette
+            vec3 colDarkEarth   = vec3(0.052, 0.036, 0.024); // Rich humus / deep forest loam
+            vec3 colRichSoil    = vec3(0.098, 0.068, 0.044); // Warm earthy loam
+            vec3 colDryPebble   = vec3(0.135, 0.118, 0.100); // Granite/limestone gravel
+            vec3 colPineNeedle  = vec3(0.082, 0.048, 0.020); // Fallen dried pine needles
+            
+            // Hearth Pit: Soot, charcoal and powdery ash
+            vec3 colSootBlack   = vec3(0.016, 0.014, 0.012); // Burnt charred earth
+            vec3 colAshGrey     = vec3(0.068, 0.064, 0.062); // Carbon grey ash
+
+            // Compute albedo composition
+            float soilVar = fbm(worldXZ * 2.2);
+            vec3 albedo = mix(colDarkEarth, colRichSoil, soilVar);
+
+            // Gravel / pebbles distribution
+            float pebbleVal = 1.0 - voronoiPebbles(worldXZ * 10.5);
+            float pebbleMask = smoothstep(0.42, 0.78, pebbleVal);
+            albedo = mix(albedo, colDryPebble, pebbleMask * 0.60);
+
+            // Pine needles distribution
+            float needleMask = pineNeedles(worldXZ);
+            albedo = mix(albedo, colPineNeedle, needleMask * 0.45);
+
+            // Burnt Hearth Pit Zone (inside and surrounding rock ring r in [0, 1.85m])
+            float sootFactor = 1.0 - smoothstep(0.35, 1.85, distToCenter);
+            float ashNoise = noise(worldXZ * 18.0) * 0.65 + noise(worldXZ * 40.0) * 0.35;
+            float ashSpeckles = smoothstep(0.50, 0.85, ashNoise);
+            vec3 pitColor = mix(colSootBlack, colAshGrey, ashSpeckles * 0.70);
+
+            albedo = mix(albedo, pitColor, sootFactor * 0.90);
+
+            // 3. PBR Campfire Grazing Light Calculation
+            vec3 lightSourcePos = vec3(firePos.x, firePos.y + 0.50, firePos.z);
+            vec3 lightVec = lightSourcePos - vWorldPosition;
+            float distLight = length(lightVec);
+            vec3 L = normalize(lightVec);
+
+            // Inverse-square physical attenuation
+            float attenuation = 1.0 / (1.0 + distLight * 0.65 + distLight * distLight * 0.32);
+            
+            // Lambertian grazing diffuse
+            float NdotL = max(0.0, dot(normal, L));
+
+            // Blinn-Phong Specular
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 H = normalize(L + V);
+            float NdotH = max(0.0, dot(normal, H));
+            
+            // Roughness variation: ash pit is extremely matte, soil/pebbles have subtle organic sheen
+            float roughness = mix(0.85, 0.96, sootFactor);
+            float specPower = mix(28.0, 8.0, roughness);
+            float specFactor = pow(NdotH, specPower) * (1.0 - roughness) * 0.38;
+
+            // Warm Campfire Light Spectrum (Golden-Amber core fading to warm crimson)
+            vec3 fireLightCol = mix(vec3(1.0, 0.45, 0.10), vec3(1.0, 0.78, 0.38), smoothstep(3.8, 0.6, distLight));
+            vec3 directFireLight = (albedo * NdotL + specFactor * vec3(1.0, 0.88, 0.65)) * fireLightCol * fireIntensity * attenuation * 3.8;
+
+            // 4. Ambient Midnight Moonlight & Hemispheric Night Fill
+            vec3 moonLightCol = vec3(0.018, 0.026, 0.052);
+            vec3 ambientLight = albedo * moonLightCol * (normal.y * 0.5 + 0.5);
+
+            // Final composited surface color
+            vec3 finalColor = directFireLight + ambientLight;
+
+            // 5. Distance Mist / FogExp2 Atmospheric Integration
+            float fogFactor = 1.0 - exp(-fogDensity * fogDensity * distCam * distCam);
+            finalColor = mix(finalColor, fogColor, clamp(fogFactor, 0.0, 1.0));
+
+            gl_FragColor = vec4(finalColor, 1.0);
+          }
+        `
+      });
+
+      groundMesh = new THREE.Mesh(groundGeo, groundMat);
+      groundMesh.position.y = PACING_CONFIG.FIRE_BASE_Y;
+      scene.add(groundMesh);
+    }
+
+    // 3. Campfire Hearth, Charred Logs with Glowing Cracks & Embers Bed
+    function createCampfireStructure() {
+      campfireGroup = new THREE.Group();
+      campfireGroup.position.set(PACING_CONFIG.FIRE_BASE_X, PACING_CONFIG.FIRE_BASE_Y, PACING_CONFIG.FIRE_BASE_Z);
+      scene.add(campfireGroup);
+
+      // A) Organic Smooth River Hearth Stones (Weathered natural river boulders)
+      hearthStonesGroup = new THREE.Group();
+      const numStones = 16;
+      const stoneRingRadius = 1.32;
+
+      // Natural stone color variations (weathered granite, basalt, river silt, slate)
+      const stoneColors = [0x3c3631, 0x2e2925, 0x483f38, 0x262321, 0x423a33, 0x332e29];
+
+      for (let i = 0; i < numStones; i++) {
+        const baseAngle = (i / numStones) * Math.PI * 2;
+        const angle = baseAngle + (Math.random() - 0.5) * 0.15;
+        const dist = stoneRingRadius + (Math.random() - 0.5) * 0.12;
+        const sx = Math.cos(angle) * dist;
+        const sz = Math.sin(angle) * dist;
+
+        // Subdivided sphere for smooth, rounded river stone silhouette
+        const stoneGeo = new THREE.SphereGeometry(1.0, 20, 16);
+        
+        const baseSize = 0.23 + Math.random() * 0.08;
+        const scaleX = baseSize * (1.15 + (Math.random() - 0.5) * 0.25);
+        const scaleY = baseSize * (0.62 + (Math.random() - 0.5) * 0.12); // Naturally flattened vertically
+        const scaleZ = baseSize * (0.95 + (Math.random() - 0.5) * 0.25);
+
+        // Smooth organic river rock deformation with continuous harmonics
+        const posAttr = stoneGeo.attributes.position;
+        const seed1 = i * 1.73;
+        const seed2 = i * 2.41;
+        
+        for (let j = 0; j < posAttr.count; j++) {
+          const vx = posAttr.getX(j);
+          const vy = posAttr.getY(j);
+          const vz = posAttr.getZ(j);
+
+          const len = Math.sqrt(vx * vx + vy * vy + vz * vz);
+          if (len > 0.0001) {
+            const nx = vx / len;
+            const ny = vy / len;
+            const nz = vz / len;
+
+            // Harmonious, non-faceted continuous deformation
+            const w1 = Math.sin(nx * 3.2 + seed1) * 0.08;
+            const w2 = Math.cos(ny * 3.8 + seed2) * 0.06;
+            const w3 = Math.sin(nz * 3.0 + nx * 2.0) * 0.05;
+            const rFactor = 1.0 + w1 + w2 + w3;
+
+            posAttr.setXYZ(j, vx * rFactor * scaleX, vy * rFactor * scaleY, vz * rFactor * scaleZ);
+          }
+        }
+        stoneGeo.computeVertexNormals();
+
+        const stoneColor = stoneColors[i % stoneColors.length];
+        const stoneMat = new THREE.MeshStandardMaterial({
+          color: stoneColor,
+          roughness: 0.84,
+          metalness: 0.04,
+          flatShading: false
+        });
+
+        const stone = new THREE.Mesh(stoneGeo, stoneMat);
+        // Place stone naturally embedded into the earth
+        stone.position.set(sx, scaleY * 0.72, sz);
+        // Tangential orientation along the hearth circle with slight natural tilt
+        stone.rotation.y = angle + Math.PI / 2 + (Math.random() - 0.5) * 0.4;
+        stone.rotation.x = (Math.random() - 0.5) * 0.18;
+        stone.rotation.z = (Math.random() - 0.5) * 0.18;
+        hearthStonesGroup.add(stone);
+      }
+      campfireGroup.add(hearthStonesGroup);
+
+      // B) Authentic Organic Campfire Logs (6 naturally stacked pine logs with glowing hot veins)
+      campfireLogsGroup = new THREE.Group();
+      logMaterials = [];
+
+      // Custom GLSL Shader for Natural Charred Pine Logs with Magma/Ember Glowing Cracks
+      const logShaderDef = {
+        uniforms: {
+          time: { value: 0.0 },
+          pulse: { value: 1.0 },
+          fireIntensity: { value: 2.0 },
+          glowDeep: { value: new THREE.Color(0x990d00) },    // Deep incandescent crimson
+          glowMid: { value: new THREE.Color(0xff4d00) },     // Hot molten orange
+          glowHot: { value: new THREE.Color(0xffb81c) },     // Radiant golden yellow core
+          barkDark: { value: new THREE.Color(0x120c08) },    // Deep burnt bark
+          barkRich: { value: new THREE.Color(0x281a12) },    // Natural pine bark brown
+          ashGray: { value: new THREE.Color(0x3e3834) }      // Mineral carbon ash
+        },
+        vertexShader: `
+          varying vec3 vWorldPos;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+          varying vec3 vLocalPos;
+
+          void main() {
+            vUv = uv;
+            vLocalPos = position;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 wPos = modelMatrix * vec4(position, 1.0);
+            vWorldPos = wPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * wPos;
+          }
+        `,
+        fragmentShader: `
+          uniform float time;
+          uniform float pulse;
+          uniform float fireIntensity;
+          uniform vec3 glowDeep;
+          uniform vec3 glowMid;
+          uniform vec3 glowHot;
+          uniform vec3 barkDark;
+          uniform vec3 barkRich;
+          uniform vec3 ashGray;
+          varying vec3 vWorldPos;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+          varying vec3 vLocalPos;
+
+          float hash(vec2 p) {
+            return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+          }
+
+          float noise(vec2 p) {
+            vec2 i = floor(p);
+            vec2 f = fract(p);
+            f = f * f * (3.0 - 2.0 * f);
+            return mix(
+              mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), f.x),
+              mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+              f.y
+            );
+          }
+
+          float fbm(vec2 p) {
+            float v = 0.0;
+            float a = 0.5;
+            for (int i = 0; i < 4; i++) {
+              v += a * noise(p);
+              p = p * 2.15 + vec2(1.7, 9.2);
+              a *= 0.5;
+            }
+            return v;
+          }
+
+          void main() {
+            // Check if fragment is on the cut ends of the log
+            bool isEndCap = abs(vLocalPos.y) > (abs(vLocalPos.x) + abs(vLocalPos.z)) * 2.2;
+            
+            vec3 surfaceCol;
+            if (isEndCap) {
+              // Tree growth rings pattern on cut log cross-sections
+              float r = length(vLocalPos.xz);
+              float ringNoise = noise(vec2(atan(vLocalPos.z, vLocalPos.x) * 4.0, r * 12.0));
+              float rings = sin(r * 45.0 + ringNoise * 2.5) * 0.5 + 0.5;
+              surfaceCol = mix(barkRich * 1.2, barkDark, rings * 0.6 + 0.2);
+            } else {
+              // Longitudinal fibrous bark crevices
+              float barkStrands = noise(vec2(vUv.x * 12.0, vUv.y * 3.5));
+              float barkFine = fbm(vec2(vUv.x * 24.0, vUv.y * 45.0));
+              float barkPattern = barkStrands * 0.65 + barkFine * 0.35;
+              
+              surfaceCol = mix(barkDark, barkRich, barkPattern);
+              surfaceCol = mix(surfaceCol, ashGray, smoothstep(0.6, 0.85, barkFine) * 0.4);
+            }
+
+            // Thermal proximity to campfire center determines heat and glowing crack intensity
+            float distToCenter = length(vWorldPos.xz);
+            float heightProximity = smoothstep(0.85, 0.0, vWorldPos.y);
+            
+            // Fissure heat mask
+            float fissureNoise = fbm(vec2(vUv.x * 18.0 + vWorldPos.x * 2.0, vUv.y * 30.0 + vWorldPos.z * 2.0));
+            float crackMask = smoothstep(0.44, 0.82, fissureNoise);
+            
+            // Internal glowing veins in wood fractures
+            float heatFactor = clamp((0.95 - distToCenter * 0.82), 0.0, 1.0) * heightProximity * crackMask;
+            heatFactor *= (0.75 + 0.25 * sin(time * 3.6 + vWorldPos.x * 6.0 + vWorldPos.z * 6.0)) * pulse;
+
+            vec3 heatGlow = mix(glowDeep, glowMid, smoothstep(0.15, 0.60, heatFactor));
+            heatGlow = mix(heatGlow, glowHot, smoothstep(0.60, 0.95, heatFactor));
+
+            vec3 finalCol = surfaceCol + heatGlow * heatFactor * 2.4 * fireIntensity;
+
+            // Grazing campfire diffuse lighting on outside bark surface
+            vec3 lightDir = normalize(vec3(0.0, 0.55, 0.0) - vWorldPos);
+            float fireLambert = max(0.0, dot(vNormal, lightDir));
+            float atten = 1.0 / (1.0 + distToCenter * 1.8 + distToCenter * distToCenter * 1.2);
+            vec3 fireWarmLight = mix(vec3(1.0, 0.42, 0.10), vec3(1.0, 0.75, 0.30), smoothstep(1.5, 0.3, distToCenter));
+            finalCol += surfaceCol * fireWarmLight * fireLambert * 1.1 * fireIntensity * atten;
+
+            // Ambient moonlight fill
+            finalCol += surfaceCol * vec3(0.03, 0.045, 0.08) * (vNormal.y * 0.5 + 0.5);
+
+            gl_FragColor = vec4(finalCol, 1.0);
+          }
+        `
+      };
+
+      // 6 Natural Campfire Logs stacked organically in a campfire hearth
+      const logConfigs = [
+        // Log 1: Base thick log (bottom left to back)
+        { len: 1.65, rTop: 0.12, rBot: 0.145, px: -0.15, py: 0.14, pz: -0.20, rx: 0.10, ry: 0.70, rz: 1.50, bend: 0.04, seed: 1.1 },
+        // Log 2: Base cross log (bottom right across log 1)
+        { len: 1.60, rTop: 0.115, rBot: 0.135, px: 0.16, py: 0.18, pz: 0.10, rx: -0.12, ry: 2.20, rz: 1.52, bend: 0.045, seed: 2.7 },
+        // Log 3: Propped diagonal log (left front to center)
+        { len: 1.48, rTop: 0.10, rBot: 0.12, px: -0.25, py: 0.26, pz: 0.22, rx: 0.32, ry: -0.72, rz: 1.18, bend: 0.035, seed: 4.3 },
+        // Log 4: Leaning teepee log (right back to center apex)
+        { len: 1.52, rTop: 0.095, rBot: 0.115, px: 0.22, py: 0.30, pz: -0.24, rx: -0.38, ry: -2.35, rz: 1.14, bend: 0.04, seed: 5.9 },
+        // Log 5: Front charred leaning branch
+        { len: 1.38, rTop: 0.085, rBot: 0.105, px: 0.02, py: 0.24, pz: 0.32, rx: 0.52, ry: 0.18, rz: 1.28, bend: 0.03, seed: 7.5 },
+        // Log 6: Back diagonal brace log
+        { len: 1.42, rTop: 0.09, rBot: 0.11, px: -0.06, py: 0.25, pz: -0.34, rx: -0.48, ry: 3.10, rz: 1.22, bend: 0.035, seed: 8.8 }
+      ];
+
+      logConfigs.forEach(cfg => {
+        const geo = new THREE.CylinderGeometry(cfg.rTop, cfg.rBot, cfg.len, 24, 18);
+        const posAttr = geo.attributes.position;
+        for (let j = 0; j < posAttr.count; j++) {
+          const vx = posAttr.getX(j);
+          const vy = posAttr.getY(j);
+          const vz = posAttr.getZ(j);
+
+          const ang = Math.atan2(vz, vx);
+          const rad = Math.sqrt(vx * vx + vz * vz);
+          if (rad > 0.01) {
+            const barkWobble = 1.0 + Math.sin(ang * 7.0 + cfg.seed) * 0.07 + Math.cos(ang * 13.0 + vy * 6.0) * 0.035;
+            const bendOffset = Math.sin((vy / cfg.len + 0.5) * Math.PI) * cfg.bend;
+            posAttr.setXYZ(j, vx * barkWobble + bendOffset, vy, vz * barkWobble);
+          }
+        }
+        geo.computeVertexNormals();
+
+        const mat = new THREE.ShaderMaterial({
+          uniforms: THREE.UniformsUtils.clone(logShaderDef.uniforms),
+          vertexShader: logShaderDef.vertexShader,
+          fragmentShader: logShaderDef.fragmentShader
+        });
+        logMaterials.push(mat);
+
+        const logMesh = new THREE.Mesh(geo, mat);
+        logMesh.position.set(cfg.px, cfg.py, cfg.pz);
+        logMesh.rotation.set(cfg.rx, cfg.ry, cfg.rz, 'YXZ');
+        campfireLogsGroup.add(logMesh);
+      });
+      campfireGroup.add(campfireLogsGroup);
+
+      // C) Glowing Incandescent Embers Bed
+      const emberBedGeo = new THREE.CircleGeometry(0.92, 32);
+      emberBedGeo.rotateX(-Math.PI / 2);
+
+      const emberBedMat = new THREE.ShaderMaterial({
+        uniforms: {
+          time: { value: 0.0 },
+          pulse: { value: 1.0 },
+          colorHot: { value: new THREE.Color(0xffca33) },
+          colorDeep: { value: new THREE.Color(0xbb1600) },
+          colorAsh: { value: new THREE.Color(0x140a06) }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          varying vec3 vWorldPos;
+          void main() {
+            vUv = uv;
+            vec4 wPos = modelMatrix * vec4(position, 1.0);
+            vWorldPos = wPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * wPos;
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 colorHot;
+          uniform vec3 colorDeep;
+          uniform vec3 colorAsh;
+          uniform float time;
+          uniform float pulse;
+          varying vec2 vUv;
+          varying vec3 vWorldPos;
+
+          float hash(vec2 p) {
+            return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+          }
+
+          float noise(vec2 p) {
+            vec2 i = floor(p);
+            vec2 f = fract(p);
+            f = f * f * (3.0 - 2.0 * f);
+            return mix(
+              mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), f.x),
+              mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+              f.y
+            );
+          }
+
+          void main() {
+            vec2 centerUV = vUv - vec2(0.5);
+            float dist = length(centerUV) * 2.0;
+            if (dist > 1.0) discard;
+
+            float n1 = noise(vUv * 12.0 + vec2(time * 0.12, time * 0.06));
+            float n2 = noise(vUv * 24.0 - vec2(time * 0.18, time * 0.10));
+            float combined = (n1 * 0.65 + n2 * 0.35);
+
+            float heat = (1.0 - dist) * (0.55 + 0.45 * combined) * pulse;
+            vec3 col = mix(colorAsh, colorDeep, smoothstep(0.12, 0.50, heat));
+            col = mix(col, colorHot, smoothstep(0.50, 0.90, heat));
+            col *= (0.85 + 0.15 * sin(time * 3.5 + n1 * 5.0));
+
+            float alpha = smoothstep(1.0, 0.65, dist);
+            gl_FragColor = vec4(col, alpha);
+          }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      emberBedMesh = new THREE.Mesh(emberBedGeo, emberBedMat);
+      emberBedMesh.position.y = 0.05;
+      campfireGroup.add(emberBedMesh);
+    }
+
+    // 4. Ultra-Realistic Multi-Layer Volumetric Fluid Flame (100% Organic, Fluid Licking Tongues)
+    function createProceduralFlame() {
+      flameGroup = new THREE.Group();
+      flameGroup.position.set(0, 0.12, 0);
+      campfireGroup.add(flameGroup);
+
+      flameMeshes = [];
+
+      // Custom Photorealistic GLSL Flame Material (Calibrated Luminance, Zero White Cutout Clipping)
+      const flameShaderDef = {
+        uniforms: {
+          time: { value: 0.0 },
+          scaleFactor: { value: 1.0 },
+          blueBaseColor: { value: new THREE.Color(0x184898) }, // Translucent cobalt/cyan base
+          warmGoldColor: { value: new THREE.Color(0xffb81c) }, // Rich radiant golden heart (no white blowout)
+          fireOrangeColor: { value: new THREE.Color(0xff4d00) },// Fiery rich orange body
+          rubyTipColor: { value: new THREE.Color(0xb30d00) },  // Deep ruby red tongues
+          smokeColor: { value: new THREE.Color(0x140704) },    // Dissipating warm dark soot
+          layerOffset: { value: 0.0 },
+          layerAlphaMult: { value: 0.42 },
+          turbulenceSpeed: { value: 1.0 }
+        },
+        vertexShader: `
+          uniform float time;
+          uniform float scaleFactor;
+          uniform float layerOffset;
+          uniform float turbulenceSpeed;
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+          varying vec3 vNormal;
+
+          // 3D Simplex Noise Implementation
+          vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+          vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+          vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+          vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+
+          float snoise(vec3 v) {
+            const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+            const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+            vec3 i  = floor(v + dot(v, C.yyy));
+            vec3 x0 = v - i + dot(i, C.xxx);
+            vec3 g = step(x0.yzx, x0.xyz);
+            vec3 l = 1.0 - g;
+            vec3 i1 = min(g.xyz, l.zxy);
+            vec3 i2 = max(g.xyz, l.zxy);
+            vec3 x1 = x0 - i1 + C.xxx;
+            vec3 x2 = x0 - i2 + C.yyy;
+            vec3 x3 = x0 - D.yyy;
+            i = mod289(i);
+            vec4 p = permute(permute(permute(
+                      i.z + vec4(0.0, i1.z, i2.z, 1.0))
+                    + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+                    + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+            float n_ = 0.142857142857;
+            vec3 ns = n_ * D.wyz - D.xzx;
+            vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+            vec4 x_ = floor(j * ns.z);
+            vec4 y_ = floor(j - 7.0 * x_);
+            vec4 x = x_ *ns.x + ns.yyyy;
+            vec4 y = y_ *ns.x + ns.yyyy;
+            vec4 h = 1.0 - abs(x) - abs(y);
+            vec4 b0 = vec4(x.xy, y.xy);
+            vec4 b1 = vec4(x.zw, y.zw);
+            vec4 s0 = floor(b0)*2.0 + 1.0;
+            vec4 s1 = floor(b1)*2.0 + 1.0;
+            vec4 sh = -step(h, vec4(0.0));
+            vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+            vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+            vec3 p0 = vec3(a0.xy, h.x);
+            vec3 p1 = vec3(a0.zw, h.y);
+            vec3 p2 = vec3(a1.xy, h.z);
+            vec3 p3 = vec3(a1.zw, h.w);
+            vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+            p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+            vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+            m = m * m;
+            return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+          }
+
+          void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec3 pos = position;
+
+            float hFactor = smoothstep(0.0, 2.2, pos.y);
+            float tSpeed = time * (2.6 * turbulenceSpeed) + layerOffset;
+
+            // Multi-octave 3D Curl-like convective updraft
+            float n1 = snoise(vec3(pos.x * 2.0, pos.y * 1.4 - tSpeed, pos.z * 2.0));
+            float n2 = snoise(vec3(pos.x * 3.8 + 14.0, pos.y * 2.8 - tSpeed * 1.5, pos.z * 3.8));
+            float n3 = snoise(vec3(pos.x * 7.2, pos.y * 5.4 - tSpeed * 2.2, pos.z * 7.2));
+
+            // Swirling aerodynamic vortex rotation
+            float vortexAngle = (n1 * 0.45 + n2 * 0.20) * hFactor;
+            float cosV = cos(vortexAngle);
+            float sinV = sin(vortexAngle);
+            float rx = pos.x * cosV - pos.z * sinV;
+            float rz = pos.x * sinV + pos.z * cosV;
+            pos.x = rx;
+            pos.z = rz;
+
+            float dispX = (n1 * 0.18 + n2 * 0.09 + n3 * 0.035) * hFactor;
+            float dispZ = (n2 * 0.18 + n1 * 0.09 + n3 * 0.035) * hFactor;
+            float dispY = (n1 * 0.14 + n2 * 0.06) * hFactor;
+
+            pos.x += dispX;
+            pos.z += dispZ;
+            pos.y += dispY;
+
+            // Taper aerodynamic teardrop profile
+            float taper = 1.0 - hFactor * 0.42;
+            pos.xz *= taper;
+
+            // Bio-pacing scale expansion
+            pos.y *= scaleFactor;
+            pos.xz *= (0.88 + 0.12 * scaleFactor);
+
+            vec4 wPos = modelMatrix * vec4(pos, 1.0);
+            vWorldPosition = wPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * wPos;
+          }
+        `,
+        fragmentShader: `
+          uniform float time;
+          uniform vec3 blueBaseColor;
+          uniform vec3 warmGoldColor;
+          uniform vec3 fireOrangeColor;
+          uniform vec3 rubyTipColor;
+          uniform vec3 smokeColor;
+          uniform float layerOffset;
+          uniform float layerAlphaMult;
+          uniform float turbulenceSpeed;
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+          varying vec3 vNormal;
+
+          // 2D Simplex Noise for flame tongue erosion
+          vec3 mod289_2(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+          vec2 mod289_2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+          vec3 permute_2(vec3 x) { return mod289_2(((x*34.0)+1.0)*x); }
+          
+          float snoise2(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy));
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289_2(i);
+            vec3 p = permute_2(permute_2(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m; m = m*m;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+          }
+
+          void main() {
+            float t = time * (2.2 * turbulenceSpeed) + layerOffset;
+            
+            // Upward flowing multi-frequency turbulence map
+            vec2 flowUV = vec2(vUv.x * 3.0, vUv.y * 1.6 - t);
+            float n1 = snoise2(flowUV);
+            float n2 = snoise2(flowUV * 2.2 + vec2(2.1, -t * 0.5));
+            float n3 = snoise2(flowUV * 4.4 + vec2(-1.8, -t * 1.1));
+            float noiseVal = (n1 * 0.55 + n2 * 0.30 + n3 * 0.15);
+
+            float yRatio = clamp(vUv.y, 0.0, 1.0);
+            
+            // Thermodynamic temperature gradient from hearth to tip
+            float heat = (1.0 - yRatio * 0.85) + noiseVal * 0.36;
+
+            // Calibrated Thermophysical Color Spectrum:
+            // Smooth transitions from dark smoke -> ruby tip -> fire orange -> warm gold core
+            vec3 col = smokeColor;
+            col = mix(col, rubyTipColor, smoothstep(0.10, 0.38, heat));
+            col = mix(col, fireOrangeColor, smoothstep(0.38, 0.68, heat));
+            col = mix(col, warmGoldColor, smoothstep(0.68, 0.96, heat));
+
+            // Subtle translucent blue chemiluminescent flame root at the bottom
+            float blueBaseFactor = smoothstep(0.20, 0.0, yRatio) * smoothstep(0.18, 0.72, heat);
+            col = mix(col, blueBaseColor * 1.4, blueBaseFactor * 0.80);
+
+            // Smooth organic alpha dissipation (No harsh polygon boundaries or solid clipping)
+            float alpha = smoothstep(0.10, 0.46, heat);
+            
+            // Soft top flame tongue detachment & dissipation into smoke
+            alpha *= smoothstep(1.0, 0.74, yRatio);
+            
+            // Soft bottom transition blending smoothly with the glowing logs
+            alpha *= smoothstep(0.0, 0.07, yRatio);
+
+            gl_FragColor = vec4(col * 1.15, alpha * layerAlphaMult);
+          }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      };
+
+      // Construct 6 nested, aerodynamic concentric shells with high tessellation (64x64)
+      const flameShellConfigs = [
+        // Shell 0: Inner Core (radiant warm gold)
+        { rTop: 0.02, rBot: 0.28, height: 1.85, offset: 0.0, speed: 0.88, rotY: 0.0, alphaMult: 0.48 },
+        // Shell 1: Mid-Inner (vivid orange core)
+        { rTop: 0.03, rBot: 0.40, height: 2.10, offset: 1.30, speed: 0.96, rotY: 0.55, alphaMult: 0.44 },
+        // Shell 2: Mid-Outer (rich fire orange)
+        { rTop: 0.04, rBot: 0.48, height: 2.25, offset: 2.50, speed: 1.05, rotY: 1.10, alphaMult: 0.40 },
+        // Shell 3: Outer Envelope (ruby red flame edge)
+        { rTop: 0.05, rBot: 0.56, height: 2.40, offset: 3.75, speed: 1.14, rotY: 1.65, alphaMult: 0.36 },
+        // Shell 4: Swirling Lick Tongue A
+        { rTop: 0.025, rBot: 0.36, height: 2.20, offset: 4.90, speed: 1.22, rotY: 2.45, alphaMult: 0.38 },
+        // Shell 5: Swirling Lick Tongue B
+        { rTop: 0.028, rBot: 0.38, height: 2.30, offset: 6.10, speed: 1.28, rotY: 3.25, alphaMult: 0.36 }
+      ];
+
+      flameShellConfigs.forEach(cfg => {
+        const flameGeo = new THREE.CylinderGeometry(cfg.rTop, cfg.rBot, cfg.height, 64, 64, true);
+        flameGeo.translate(0, cfg.height * 0.5, 0);
+
+        const mat = new THREE.ShaderMaterial({
+          uniforms: THREE.UniformsUtils.clone(flameShaderDef.uniforms),
+          vertexShader: flameShaderDef.vertexShader,
+          fragmentShader: flameShaderDef.fragmentShader,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+
+        mat.uniforms.layerOffset.value = cfg.offset;
+        mat.uniforms.turbulenceSpeed.value = cfg.speed;
+        mat.uniforms.layerAlphaMult.value = cfg.alphaMult;
+
+        const mesh = new THREE.Mesh(flameGeo, mat);
+        mesh.rotation.y = cfg.rotY;
+        flameGroup.add(mesh);
+        flameMeshes.push(mesh);
+      });
+
+      // Soft Ethereal Radial Fire Glow Envelope
+      const haloGeo = new THREE.PlaneGeometry(4.2, 4.2);
+      const haloMat = new THREE.ShaderMaterial({
+        uniforms: {
+          time: { value: 0.0 },
+          haloColor: { value: new THREE.Color(0xff6800) },
+          pulse: { value: 1.0 }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 haloColor;
+          uniform float time;
+          uniform float pulse;
+          varying vec2 vUv;
+          void main() {
+            float dist = length(vUv - vec2(0.5)) * 2.0;
+            if (dist > 1.0) discard;
+            float glow = pow(1.0 - dist, 2.9) * pulse * (0.85 + 0.15 * sin(time * 3.5));
+            gl_FragColor = vec4(haloColor * 1.25, glow * 0.38);
+          }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      flameHaloMesh = new THREE.Mesh(haloGeo, haloMat);
+      flameHaloMesh.position.set(0, 1.15, 0);
+      flameGroup.add(flameHaloMesh);
+    }
+
+    // 5. Dynamic Ember Particles (Photorealistic Convective Thermal Vortex)
+    function createEmberParticles() {
+      const particleCount = 250;
+      emberGeometry = new THREE.BufferGeometry();
+      emberPositions = new Float32Array(particleCount * 3);
+      emberVelocities = new Float32Array(particleCount * 3);
+      emberLifespans = new Float32Array(particleCount * 2); // [currentLife, maxLife]
+      emberColors = new Float32Array(particleCount * 3);
+      emberSeeds = new Float32Array(particleCount * 3); // [spiralRadius, spiralSpeed, phaseOffset]
+
+      for (let i = 0; i < particleCount; i++) {
+        resetEmberParticle(i, true);
+      }
+
+      emberGeometry.setAttribute('position', new THREE.BufferAttribute(emberPositions, 3));
+      emberGeometry.setAttribute('color', new THREE.BufferAttribute(emberColors, 3));
+
+      // High-resolution photorealistic incandescent ember point texture
+      const pCanvas = document.createElement('canvas');
+      pCanvas.width = 64;
+      pCanvas.height = 64;
+      const pCtx = pCanvas.getContext('2d');
+      const grad = pCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+      grad.addColorStop(0.18, 'rgba(255, 220, 120, 0.95)');
+      grad.addColorStop(0.42, 'rgba(255, 120, 20, 0.75)');
+      grad.addColorStop(0.72, 'rgba(210, 30, 0, 0.30)');
+      grad.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+      pCtx.fillStyle = grad;
+      pCtx.fillRect(0, 0, 64, 64);
+
+      const particleTexture = new THREE.CanvasTexture(pCanvas);
+
+      const emberMat = new THREE.PointsMaterial({
+        size: 0.13,
+        map: particleTexture,
+        vertexColors: true,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      emberParticles = new THREE.Points(emberGeometry, emberMat);
+      campfireGroup.add(emberParticles);
+    }
+
+    function resetEmberParticle(i, initialScatter = false) {
+      const i3 = i * 3;
+      const i2 = i * 2;
+      
+      const radius = Math.random() * 0.44;
+      const angle = Math.random() * Math.PI * 2;
+
+      emberPositions[i3 + 0] = Math.cos(angle) * radius;
+      emberPositions[i3 + 1] = initialScatter ? (0.1 + Math.random() * 3.8) : (0.08 + Math.random() * 0.16);
+      emberPositions[i3 + 2] = Math.sin(angle) * radius;
+
+      emberVelocities[i3 + 0] = (Math.random() - 0.5) * 0.18;
+      emberVelocities[i3 + 1] = 0.95 + Math.random() * 1.35;
+      emberVelocities[i3 + 2] = (Math.random() - 0.5) * 0.20;
+
+      emberSeeds[i3 + 0] = 0.08 + Math.random() * 0.22; // Spiral amplitude
+      emberSeeds[i3 + 1] = 1.4 + Math.random() * 1.8;   // Spiral frequency
+      emberSeeds[i3 + 2] = Math.random() * Math.PI * 2; // Phase
+
+      const maxLife = 2.2 + Math.random() * 2.6;
+      emberLifespans[i2 + 0] = initialScatter ? Math.random() * maxLife : 0.0;
+      emberLifespans[i2 + 1] = maxLife;
+
+      const lifeRatio = emberLifespans[i2 + 0] / maxLife;
+      updateEmberColor(i, lifeRatio);
+    }
+
+    function updateEmberColor(i, lifeRatio) {
+      const i3 = i * 3;
+      if (lifeRatio < 0.25) {
+        const subT = lifeRatio / 0.25;
+        emberColors[i3 + 0] = 1.0;
+        emberColors[i3 + 1] = 0.92 - subT * 0.15;
+        emberColors[i3 + 2] = 0.45 - subT * 0.35;
+      } else if (lifeRatio < 0.65) {
+        const subT = (lifeRatio - 0.25) / 0.40;
+        emberColors[i3 + 0] = 1.0;
+        emberColors[i3 + 1] = 0.77 - subT * 0.45;
+        emberColors[i3 + 2] = 0.10 - subT * 0.08;
+      } else if (lifeRatio < 0.90) {
+        const subT = (lifeRatio - 0.65) / 0.25;
+        emberColors[i3 + 0] = 1.0 - subT * 0.25;
+        emberColors[i3 + 1] = 0.32 - subT * 0.22;
+        emberColors[i3 + 2] = 0.02;
+      } else {
+        const subT = (lifeRatio - 0.90) / 0.10;
+        const fade = 1.0 - subT;
+        emberColors[i3 + 0] = 0.75 * fade;
+        emberColors[i3 + 1] = 0.10 * fade;
+        emberColors[i3 + 2] = 0.01 * fade;
+      }
+    }
+
+    // 5b. Sacred Sparks / Faville Incandescenti (Emanate during Full Breath Hold - Apnea Piena)
+    function createSparkleTexture() {
+      const sCanvas = document.createElement('canvas');
+      sCanvas.width = 64;
+      sCanvas.height = 64;
+      const sCtx = sCanvas.getContext('2d');
+
+      // Authentic incandescent micro-ember from a bonfire:
+      // High-brightness warm circular core with soft radial glow (continuous gradient)
+      const grad = sCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0.00, 'rgba(255, 255, 230, 1.0)');  // Nucleo ultra-luminoso caldo al centro
+      grad.addColorStop(0.18, 'rgba(255, 240, 160, 0.95)'); // Incandescenza calda interna
+      grad.addColorStop(0.38, 'rgba(255, 180, 50, 0.80)');  // Medio raggio aureo/ambra caldo
+      grad.addColorStop(0.62, 'rgba(255, 110, 15, 0.38)');  // Alone termico diffuso
+      grad.addColorStop(0.82, 'rgba(220, 50, 0, 0.10)');   // Bordo rubino tenue
+      grad.addColorStop(1.00, 'rgba(255, 80, 0, 0.0)');    // Esterno completamente trasparente
+
+      sCtx.fillStyle = grad;
+      sCtx.fillRect(0, 0, 64, 64);
+
+      const sparkTexture = new THREE.CanvasTexture(sCanvas);
+      sparkTexture.generateMipmaps = true;
+      return sparkTexture;
+    }
+
+    function createSacredSparkHalo() {
+      const sparkCount = 260;
+      sparkGeometry = new THREE.BufferGeometry();
+      sparkPositions = new Float32Array(sparkCount * 3);
+      sparkVelocities = new Float32Array(sparkCount * 3);
+      sparkLifespans = new Float32Array(sparkCount * 2); // [currentAge, maxLifespan]
+      sparkColors = new Float32Array(sparkCount * 3);
+      sparkSeeds = new Float32Array(sparkCount * 3);     // [vortexAmp, vortexFreq, phaseOffset]
+
+      for (let i = 0; i < sparkCount; i++) {
+        const i3 = i * 3;
+        const i2 = i * 2;
+        sparkPositions[i3 + 0] = 0;
+        sparkPositions[i3 + 1] = -50;
+        sparkPositions[i3 + 2] = 0;
+
+        sparkVelocities[i3 + 0] = 0;
+        sparkVelocities[i3 + 1] = 0;
+        sparkVelocities[i3 + 2] = 0;
+
+        sparkLifespans[i2 + 0] = 1.0;
+        sparkLifespans[i2 + 1] = 1.0;
+
+        sparkColors[i3 + 0] = 0.0;
+        sparkColors[i3 + 1] = 0.0;
+        sparkColors[i3 + 2] = 0.0;
+
+        sparkSeeds[i3 + 0] = 0.10 + Math.random() * 0.22;
+        sparkSeeds[i3 + 1] = 1.6 + Math.random() * 2.2;
+        sparkSeeds[i3 + 2] = Math.random() * Math.PI * 2;
+      }
+
+      sparkGeometry.setAttribute('position', new THREE.BufferAttribute(sparkPositions, 3));
+      sparkGeometry.setAttribute('color', new THREE.BufferAttribute(sparkColors, 3));
+
+      const sparkMat = new THREE.PointsMaterial({
+        size: 0.18,
+        map: createSparkleTexture(),
+        vertexColors: true,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        opacity: 1.0
+      });
+
+      sacredSparkles = new THREE.Points(sparkGeometry, sparkMat);
+      campfireGroup.add(sacredSparkles);
+    }
+
+    function spawnSparkParticle(i, delayOffset = 0.0) {
+      const i3 = i * 3;
+      const i2 = i * 2;
+
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 0.05 + Math.random() * 0.28;
+      const spawnHeight = 0.95 + Math.random() * 0.50;
+
+      sparkPositions[i3 + 0] = Math.cos(angle) * radius;
+      sparkPositions[i3 + 1] = spawnHeight;
+      sparkPositions[i3 + 2] = Math.sin(angle) * radius;
+
+      const outSpeed = 0.25 + Math.random() * 0.55;
+      const upSpeed = 0.75 + Math.random() * 1.15;
+
+      sparkVelocities[i3 + 0] = Math.cos(angle) * outSpeed + (Math.random() - 0.5) * 0.15;
+      sparkVelocities[i3 + 1] = upSpeed;
+      sparkVelocities[i3 + 2] = Math.sin(angle) * outSpeed + (Math.random() - 0.5) * 0.15;
+
+      const maxLife = 2.4 + Math.random() * 1.6;
+      sparkLifespans[i2 + 0] = -delayOffset;
+      sparkLifespans[i2 + 1] = maxLife;
+
+      sparkSeeds[i3 + 0] = 0.10 + Math.random() * 0.22;
+      sparkSeeds[i3 + 1] = 1.6 + Math.random() * 2.2;
+      sparkSeeds[i3 + 2] = Math.random() * Math.PI * 2;
+
+      updateSparkParticleColor(i, 0.0);
+    }
+
+    function triggerSparkHaloBurst() {
+      if (!sparkPositions || !sparkLifespans) return;
+      const count = sparkLifespans.length / 2;
+      for (let i = 0; i < count; i++) {
+        const stagger = (i / count) * 2.2 + Math.random() * 0.25;
+        spawnSparkParticle(i, stagger);
+      }
+    }
+
+    function updateSparkParticleColor(i, lifeRatio) {
+      const i3 = i * 3;
+      if (lifeRatio < 0.0) {
+        sparkColors[i3 + 0] = 0.0;
+        sparkColors[i3 + 1] = 0.0;
+        sparkColors[i3 + 2] = 0.0;
+        return;
+      }
+
+      if (lifeRatio < 0.12) {
+        // Nascita / Accensione rapida morbida
+        const t = lifeRatio / 0.12;
+        const ramp = t * t * (3.0 - 2.0 * t);
+        sparkColors[i3 + 0] = 1.0 * ramp;
+        sparkColors[i3 + 1] = (0.92 + 0.06 * ramp) * ramp;
+        sparkColors[i3 + 2] = (0.75 + 0.15 * ramp) * ramp;
+      } else if (lifeRatio < 0.48) {
+        // Picco di incandescenza aurea sacra
+        const t = (lifeRatio - 0.12) / 0.36;
+        sparkColors[i3 + 0] = 1.0;
+        sparkColors[i3 + 1] = 0.98 - t * 0.26; // 0.98 -> 0.72
+        sparkColors[i3 + 2] = 0.90 - t * 0.72; // 0.90 -> 0.18
+      } else if (lifeRatio < 0.72) {
+        // Raffreddamento termico verso ambra ardente calda
+        const t = (lifeRatio - 0.48) / 0.24;
+        sparkColors[i3 + 0] = 1.0;
+        sparkColors[i3 + 1] = 0.72 - t * 0.37; // 0.72 -> 0.35
+        sparkColors[i3 + 2] = 0.18 - t * 0.16; // 0.18 -> 0.02
+      } else if (lifeRatio <= 1.0) {
+        // Dissolvenza termica fluida: virata da ambra a rosso rubino tenue e fade-out a zero (1.2-1.8s)
+        const t = (lifeRatio - 0.72) / 0.28;
+        const fade = 1.0 - (t * t * (3.0 - 2.0 * t)); // smoothstep cubico
+        sparkColors[i3 + 0] = (0.95 - t * 0.35) * fade; // 0.95 -> 0.60 * fade
+        sparkColors[i3 + 1] = (0.35 - t * 0.30) * fade; // 0.35 -> 0.05 * fade
+        sparkColors[i3 + 2] = (0.02 - t * 0.02) * fade; // 0.02 -> 0.00 * fade
+      } else {
+        sparkColors[i3 + 0] = 0.0;
+        sparkColors[i3 + 1] = 0.0;
+        sparkColors[i3 + 2] = 0.0;
+      }
+    }
+
+    // 6. Photorealistic Multi-Point Campfire Lighting
+    function setupCampfireLighting() {
+      // Dynamic primary point light inside fire core
+      firePointLight = new THREE.PointLight(0xff7722, 2.2, 18.0, 1.8);
+      firePointLight.position.set(0, 1.1, 0);
+      campfireGroup.add(firePointLight);
+
+      // Secondary wide spot light illuminating ground around campfire
+      fireSpotLight = new THREE.SpotLight(0xff9933, 1.4, 22.0, Math.PI / 2.8, 0.65, 1.4);
+      fireSpotLight.position.set(0, 3.2, 0);
+      fireSpotLight.target = campfireGroup;
+      campfireGroup.add(fireSpotLight);
+
+      // Ambient celestial moonlight (cool midnight blue fill)
+      ambientMoonLight = new THREE.HemisphereLight(0x283858, 0x060810, 0.40);
+      scene.add(ambientMoonLight);
+    }
+
+    // 7. 3D World-Space VR Billboard (VR Mode Text)
+    let lastVRMainTitle = '';
+    let lastVRSubTitle = '';
+
+    function createVRBillboardText() {
+      textCanvas = document.createElement('canvas');
+      textCanvas.width = 1024;
+      textCanvas.height = 256;
+      textCtx = textCanvas.getContext('2d');
+
+      textTexture = new THREE.CanvasTexture(textCanvas);
+      textTexture.minFilter = THREE.LinearFilter;
+      textTexture.magFilter = THREE.LinearFilter;
+
+      const spriteMat = new THREE.SpriteMaterial({
+        map: textTexture,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: false
+      });
+
+      textSpriteMesh = new THREE.Sprite(spriteMat);
+      textSpriteMesh.scale.set(3.0, 0.75, 1.0);
+      textSpriteMesh.position.set(0, 3.2, 0);
+      campfireGroup.add(textSpriteMesh);
+    }
+
+    function renderVRBillboardText(mainTitle, subTitle, opacity = 1.0) {
+      if (!textCtx || !state.isVRMode) {
+        if (textSpriteMesh) textSpriteMesh.material.opacity = 0;
+        return;
+      }
+
+      if (lastVRMainTitle === mainTitle && lastVRSubTitle === subTitle && Math.abs(textSpriteMesh.material.opacity - opacity) < 0.05) {
+        return;
+      }
+      lastVRMainTitle = mainTitle;
+      lastVRSubTitle = subTitle;
+
+      textCtx.clearRect(0, 0, 1024, 256);
+
+      // Titolo Principale (es. "INSPIRA", "TRATTIENI", "ESPIRA")
+      textCtx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+      textCtx.shadowBlur = 10;
+      textCtx.fillStyle = '#FFFFFF';
+      textCtx.font = 'bold 52px "Inter", "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      textCtx.textAlign = 'center';
+      textCtx.textBaseline = 'middle';
+      textCtx.fillText(mainTitle.toUpperCase(), 512, 95);
+
+      // Sottotitolo (es. "ESPANDI IL RESPIRO", "CALMA PROFONDA", "SVUOTA I POLMONI")
+      textCtx.shadowColor = 'rgba(255, 140, 40, 0.35)';
+      textCtx.shadowBlur = 8;
+      textCtx.fillStyle = '#ffe082';
+      textCtx.font = '600 30px "Inter", "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      textCtx.textAlign = 'center';
+      textCtx.textBaseline = 'middle';
+      textCtx.fillText(subTitle, 512, 160);
+
+      textTexture.needsUpdate = true;
+      textSpriteMesh.material.opacity = opacity;
+    }
+
+    /* ======================================================================
+       5. CONTROLS: PC (MOUSE/KEYBOARD) + MOBILE VR (GYRO & STEREO CARDBOARD)
+       ====================================================================== */
+    let isDragging = false;
+    let prevMouseX = 0;
+    let prevMouseY = 0;
+    let camYaw = 0;
+    let camPitch = -0.168; // Initial comfortable campfire lookdown angle
+    let currentFov = 60;
+    const MIN_FOV = 35;
+    const MAX_FOV = 85;
+
+    let gyroAvailable = true;
+    let gyroAlpha = 0, gyroBeta = 0, gyroGamma = 0;
+    let initialYawOffset = 0;
+    const _zee = new THREE.Vector3(0, 0, 1);
+    const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
+    const _q0 = new THREE.Quaternion();
+    const _q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)); // -PI/2 X
+
+    function getScreenOrientationAngle() {
+      if (screen.orientation && typeof screen.orientation.angle === 'number') {
+        return screen.orientation.angle;
+      }
+      if (typeof window.orientation === 'number') {
+        return window.orientation;
+      }
+      if (window.innerWidth > window.innerHeight) {
+        return 90;
+      }
+      return 0;
+    }
+
+    function initControls() {
+      requestDeviceOrientation();
+      // PC Pointer Drag
+      window.addEventListener('mousedown', (e) => {
+        if (e.target.closest('#ui-layer') && !e.target.closest('#webgl-container')) return;
+        isDragging = true;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - prevMouseX;
+        const dy = e.clientY - prevMouseY;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+
+        camYaw -= dx * 0.0025;
+        camPitch -= dy * 0.0025;
+        camPitch = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, camPitch));
+      });
+
+      window.addEventListener('mouseup', () => { isDragging = false; });
+
+      // Mouse Wheel Zoom
+      window.addEventListener('wheel', (e) => {
+        currentFov = Math.max(MIN_FOV, Math.min(MAX_FOV, currentFov + e.deltaY * 0.035));
+        camera.fov = currentFov;
+        camera.updateProjectionMatrix();
+      }, { passive: true });
+
+      // Touch Drag & Pinch-to-Zoom (Mobile)
+      let initialPinchDist = 0;
+      let initialPinchFov = 60;
+
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1 && !state.isVRMode) {
+          isDragging = true;
+          prevMouseX = e.touches[0].clientX;
+          prevMouseY = e.touches[0].clientY;
+          initialPinchDist = 0;
+        } else if (e.touches.length === 2 && !state.isVRMode) {
+          isDragging = false;
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          initialPinchDist = Math.hypot(dx, dy);
+          initialPinchFov = currentFov;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (state.isVRMode) return;
+        if (isDragging && e.touches.length === 1) {
+          const dx = e.touches[0].clientX - prevMouseX;
+          const dy = e.touches[0].clientY - prevMouseY;
+          prevMouseX = e.touches[0].clientX;
+          prevMouseY = e.touches[0].clientY;
+
+          camYaw -= dx * 0.003;
+          camPitch -= dy * 0.003;
+          camPitch = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, camPitch));
+        } else if (e.touches.length === 2 && initialPinchDist > 0) {
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          const dist = Math.hypot(dx, dy);
+          const pinchScale = initialPinchDist / Math.max(10, dist);
+          currentFov = Math.max(MIN_FOV, Math.min(MAX_FOV, initialPinchFov * pinchScale));
+          camera.fov = currentFov;
+          camera.updateProjectionMatrix();
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', (e) => {
+        if (e.touches.length === 0) {
+          isDragging = false;
+          initialPinchDist = 0;
+        } else if (e.touches.length === 1) {
+          isDragging = true;
+          prevMouseX = e.touches[0].clientX;
+          prevMouseY = e.touches[0].clientY;
+          initialPinchDist = 0;
+        }
+      });
+
+      // Keyboard Controls
+      window.addEventListener('keydown', (e) => {
+        switch (e.code) {
+          case 'Space':
+            e.preventDefault();
+            togglePlayPause();
+            break;
+          case 'KeyR':
+            recenterView();
+            break;
+          case 'KeyF':
+            toggleFullscreen();
+            break;
+          case 'KeyV':
+            toggleVR();
+            break;
+          case 'KeyM':
+            setAudioMuted(!state.isAudioMuted);
+            break;
+        }
+      });
+    }
+
+    function requestDeviceOrientation() {
+      window.addEventListener('deviceorientation', handleOrientation, true);
+      gyroAvailable = true;
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then((res) => {
+            if (res === 'granted') {
+              window.addEventListener('deviceorientation', handleOrientation, true);
+              gyroAvailable = true;
+            }
+          })
+          .catch(console.warn);
+      }
+    }
+
+    function handleOrientation(e) {
+      if (e && e.alpha !== null && e.alpha !== undefined) {
+        gyroAvailable = true;
+        gyroAlpha = e.alpha;
+        gyroBeta = e.beta;
+        gyroGamma = e.gamma;
+      }
+    }
+
+    function recenterView() {
+      camYaw = 0;
+      camPitch = Math.atan2(PACING_CONFIG.CAM_LOOK_TARGET_Y - PACING_CONFIG.CAM_INIT_POS_Y, PACING_CONFIG.CAM_INIT_POS_Z);
+      currentFov = 60;
+      camera.fov = 60;
+      camera.updateProjectionMatrix();
+      if (gyroAvailable) {
+        initialYawOffset = gyroAlpha;
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    function updateCameraRotation(timeSec) {
+      if (gyroAvailable && state.isVRMode) {
+        const alphaRad = THREE.MathUtils.degToRad(gyroAlpha - initialYawOffset);
+        const betaRad = THREE.MathUtils.degToRad(gyroBeta);
+        const gammaRad = THREE.MathUtils.degToRad(gyroGamma);
+        const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
+
+        // 1. Converti gli angoli W3C nel frame della telecamera Three.js
+        _euler.set(betaRad, alphaRad, -gammaRad, 'YXZ');
+        camera.quaternion.setFromEuler(_euler);
+
+        // 2. Ruota per allineare l'asse del dispositivo con il frustum della camera
+        camera.quaternion.multiply(_q1);
+
+        // 3. Compensa la rotazione landscape dello schermo
+        _q0.setFromAxisAngle(_zee, -orientRad);
+        camera.quaternion.multiply(_q0);
+      } else {
+        const breathDriftY = Math.sin(timeSec * 0.4) * 0.006;
+        const breathDriftX = Math.cos(timeSec * 0.3) * 0.005;
+        camera.rotation.set(camPitch + breathDriftY, camYaw + breathDriftX, 0, 'YXZ');
+      }
+    }
+
+    /* ======================================================================
+       6. SESSION CONTROLS & STATE MACHINE LIFECYCLE
+       ====================================================================== */
+    function dismissGateAndStart() {
+      const gate = document.getElementById('audio-gate');
+      if (gate) {
+        gate.style.opacity = '0';
+        gate.style.pointerEvents = 'none';
+        setTimeout(() => { gate.style.display = 'none'; }, 500);
+      }
+
+      initAudioEngine();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      startSession();
+    }
+
+    function startSession() {
+      hide2DCompletionPopup();
+      hideVRCompletionPopup();
+      if (outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = false;
+      state.isRunning = true;
+      state.currentCycle = 1;
+      rampAudioLevels(0.7, 0.45, 2.0);
+      transitionToStep(STEPS.APPROACH, performance.now());
+      notifyFlutter('onSessionStart', { experience: 'respirazione_fuoco', cycle: 1 });
+    }
+
+    function pauseSession() {
+      state.isRunning = false;
+      state.pauseStartTime = performance.now();
+      rampAudioLevels(0.15, 0.15, 0.8);
+      updateUIElements();
+      notifyFlutter('onSessionPause', { step: state.currentStep, cycle: state.currentCycle });
+    }
+
+    function resumeSession() {
+      if (state.currentStep === STEPS.STANDBY || state.currentStep === STEPS.COMPLETED) {
+        startSession();
+        return;
+      }
+      const pauseDuration = performance.now() - state.pauseStartTime;
+      state.stepStartTime += pauseDuration;
+      state.isRunning = true;
+      rampAudioLevels(0.7, 0.45, 1.0);
+      updateUIElements();
+      notifyFlutter('onSessionResume', { step: state.currentStep, cycle: state.currentCycle });
+    }
+
+    function togglePlayPause() {
+      if (state.isRunning) {
+        pauseSession();
+      } else {
+        resumeSession();
+      }
+    }
+
+    function resetSession() {
+      hide2DCompletionPopup();
+      hideVRCompletionPopup();
+      if (outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = false;
+      state.currentStep = STEPS.STANDBY;
+      state.currentCycle = 1;
+      state.isRunning = false;
+      state.flameScale = PACING_CONFIG.MIN_SCALE;
+      state.sparkHaloIntensity = 0.0;
+      if (sparkLifespans) {
+        for (let i = 0; i < sparkLifespans.length / 2; i++) {
+          sparkLifespans[i * 2 + 0] = sparkLifespans[i * 2 + 1];
+          sparkColors[i * 3 + 0] = 0;
+          sparkColors[i * 3 + 1] = 0;
+          sparkColors[i * 3 + 2] = 0;
+          sparkPositions[i * 3 + 1] = -50;
+        }
+        if (sparkGeometry) {
+          sparkGeometry.attributes.position.needsUpdate = true;
+          sparkGeometry.attributes.color.needsUpdate = true;
+        }
+      }
+      updateUIElements();
+      updateHUD(0, "PRONTO", "Premi Avvia", "Respirazione Fuoco");
+      notifyFlutter('onSessionReset', {});
+    }
+
+    let outroSafetyTimer = null;
+
+    function transitionToStep(newStep, now) {
+      state.currentStep = newStep;
+      state.stepStartTime = (typeof now === 'number' && now > 0) ? now : performance.now();
+
+      switch (newStep) {
+        case STEPS.APPROACH:
+          state.stepDuration = PACING_CONFIG.APPROACH_DURATION;
+          playTibetanBowl(432, 4.0);
+          notifyFlutter('onPhaseChange', { phase: 'approach', cycle: state.currentCycle, duration: state.stepDuration });
+          break;
+
+        case STEPS.INHALE:
+          state.stepDuration = PACING_CONFIG.INHALE_DURATION;
+          state.sparkHaloIntensity = 0.0;
+          notifyFlutter('onPhaseChange', { phase: 'inhale', cycle: state.currentCycle, duration: state.stepDuration });
+          break;
+
+        case STEPS.HOLD_FULL:
+          state.stepDuration = PACING_CONFIG.HOLD_FULL_DURATION;
+          state.sparkHaloIntensity = 1.0;
+          playTibetanBowl(432, 4.5);
+          triggerSparkHaloBurst();
+          notifyFlutter('onPhaseChange', { phase: 'hold_full', cycle: state.currentCycle, duration: state.stepDuration });
+          break;
+
+        case STEPS.EXHALE:
+          state.stepDuration = PACING_CONFIG.EXHALE_DURATION;
+          state.sparkHaloIntensity = 0.0;
+          notifyFlutter('onPhaseChange', { phase: 'exhale', cycle: state.currentCycle, duration: state.stepDuration });
+          break;
+
+        case STEPS.HOLD_EMPTY:
+          state.stepDuration = PACING_CONFIG.HOLD_EMPTY_DURATION;
+          state.sparkHaloIntensity = 0.0;
+          notifyFlutter('onPhaseChange', { phase: 'hold_empty', cycle: state.currentCycle, duration: state.stepDuration });
+          break;
+
+        case STEPS.OUTRO:
+          state.stepDuration = PACING_CONFIG.OUTRO_DURATION;
+          state.sparkHaloIntensity = 0.0;
+          playTibetanBowl(432, 5.5);
+          notifyFlutter('onPhaseChange', { phase: 'outro', duration: state.stepDuration });
+          // Deterministic fallback safety timer: guaranteed trigger even if clock / rAF stalls
+          if (outroSafetyTimer) clearTimeout(outroSafetyTimer);
+          outroSafetyTimer = setTimeout(() => {
+            if (!state.isCompleted) {
+              console.log('[GuidoVR] Outro safety timer triggered session completion');
+              transitionToStep(STEPS.COMPLETED, performance.now());
+            }
+          }, PACING_CONFIG.OUTRO_DURATION + 250);
+          break;
+
+        case STEPS.COMPLETED:
+          onExperienceEnded();
+          break;
+      }
+
+      updateUIElements();
+    }
+
+    /* ======================================================================
+       7. BIO-PACING MATH ENGINE & ORGANIC EASING
+       ====================================================================== */
+    function updateBioPacing(now) {
+      if (!state.isRunning) return;
+
+      const currentTime = (typeof now === 'number' && now > 0) ? now : performance.now();
+      const elapsed = currentTime - state.stepStartTime;
+      const duration = state.stepDuration || 1000;
+      const t = Math.min(elapsed / duration, 1.0);
+      const remainingSec = Math.max(0, (duration - elapsed) / 1000).toFixed(1);
+
+      // Sinusoidal organic easing: easeSine = (1 - cos(pi * t)) / 2
+      const easeSine = (1.0 - Math.cos(Math.PI * t)) * 0.5;
+
+      switch (state.currentStep) {
+        case STEPS.APPROACH:
+          state.approachProgress = t;
+          state.flameScale = PACING_CONFIG.MIN_SCALE * (0.85 + 0.15 * t);
+          state.flameLightIntensity = PACING_CONFIG.MIN_LIGHT * t;
+          updateHUD(t, "ACCOGLIENZA", `${remainingSec}s`, "Siediti accanto al fuoco sacro");
+          renderVRBillboardText("FUOCO SACRO", "ACCOGLIENZA", 1.0);
+          if (elapsed >= duration) {
+            transitionToStep(STEPS.INHALE, now);
+          }
+          break;
+
+        // FASE 1: INSPIRA (4.0s) - La fiamma sale ed arde viva
+        case STEPS.INHALE:
+          state.flameScale = PACING_CONFIG.MIN_SCALE + (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
+          state.flameLightIntensity = PACING_CONFIG.MIN_LIGHT + (PACING_CONFIG.MAX_LIGHT - PACING_CONFIG.MIN_LIGHT) * easeSine;
+          state.emberPulseWarmth = 0.0;
+          updateHUD(t, "INSPIRA", `${remainingSec}s`, "Il fuoco si espande");
+          renderVRBillboardText("INSPIRA", "ESPANDI IL RESPIRO", 1.0);
+          if (elapsed >= duration) {
+            transitionToStep(STEPS.HOLD_FULL, now);
+          }
+          break;
+
+        // FASE 2: TRATTIENI A POLMONI PIENI (4.0s) - Scintille auree & luce piena
+        case STEPS.HOLD_FULL:
+          state.flameScale = PACING_CONFIG.MAX_SCALE;
+          state.flameLightIntensity = PACING_CONFIG.MAX_LIGHT;
+          state.emberPulseWarmth = 0.0;
+          updateHUD(t, "TRATTIENI", `${remainingSec}s`, "Polmoni Pieni • Luce pura");
+          renderVRBillboardText("TRATTIENI", "POLMONI PIENI", 1.0);
+          if (elapsed >= duration) {
+            transitionToStep(STEPS.EXHALE, now);
+          }
+          break;
+
+        // FASE 3: ESPIRA (4.0s) - La fiamma si placa dolcemente
+        case STEPS.EXHALE:
+          state.flameScale = PACING_CONFIG.MAX_SCALE - (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
+          state.flameLightIntensity = PACING_CONFIG.MAX_LIGHT - (PACING_CONFIG.MAX_LIGHT - PACING_CONFIG.MIN_LIGHT) * easeSine;
+          state.emberPulseWarmth = 0.0;
+          updateHUD(t, "ESPIRA", `${remainingSec}s`, "Lascia andare ogni tensione");
+          renderVRBillboardText("ESPIRA", "SVUOTA I POLMONI", 1.0);
+          if (elapsed >= duration) {
+            transitionToStep(STEPS.HOLD_EMPTY, now);
+          }
+          break;
+
+        // FASE 4: TRATTIENI A POLMONI VUOTI (4.0s) - Braci calde pulsanti
+        case STEPS.HOLD_EMPTY:
+          state.flameScale = PACING_CONFIG.MIN_SCALE;
+          state.flameLightIntensity = PACING_CONFIG.MIN_LIGHT;
+          state.emberPulseWarmth = Math.sin(t * Math.PI) * 0.85;
+          updateHUD(t, "TRATTIENI", `${remainingSec}s`, "Polmoni Vuoti • Calma profonda");
+          renderVRBillboardText("TRATTIENI", "CALMA PROFONDA", 1.0);
+          if (elapsed >= duration) {
+            if (state.currentCycle < PACING_CONFIG.TOTAL_CYCLES) {
+              state.currentCycle++;
+              transitionToStep(STEPS.INHALE, now);
+            } else {
+              transitionToStep(STEPS.OUTRO, now);
+            }
+          }
+          break;
+
+        // OUTRO & INTEGRAZIONE (6.0s)
+        case STEPS.OUTRO:
+          state.flameScale = PACING_CONFIG.MIN_SCALE;
+          state.flameLightIntensity = PACING_CONFIG.MIN_LIGHT;
+          state.emberPulseWarmth = 0.2;
+          updateHUD(1.0, "PACE", "Respiro Libero", "Integrazione & Serenità");
+          renderVRBillboardText("PACE", "EQUILIBRIO & SERENITÀ", 1.0 - t * 0.2);
+          if (elapsed >= duration) {
+            transitionToStep(STEPS.COMPLETED, now);
+          }
+          break;
+      }
+    }
+
+    /* ======================================================================
+       8. UI UPDATES & DOM INTERACTION
+       ====================================================================== */
+    let hudPhaseLabelEl = null;
+    let hudTimerSubEl = null;
+    let hudProgressFillEl = null;
+    let hudCycleCounterEl = null;
+    let iconPlayEl = null;
+    let iconPauseEl = null;
+    let labelPlayEl = null;
+
+    function initUIReferences() {
+      hudPhaseLabelEl = document.getElementById('hud-phase-label');
+      hudTimerSubEl = document.getElementById('hud-timer-sub');
+      hudProgressFillEl = document.getElementById('hud-progress-fill');
+      hudCycleCounterEl = document.getElementById('hud-cycle-counter');
+      iconPlayEl = document.getElementById('icon-play');
+      iconPauseEl = document.getElementById('icon-pause');
+      labelPlayEl = document.getElementById('label-play-pause');
+    }
+
+    function updateUIElements() {
+      if (!iconPlayEl) initUIReferences();
+      if (iconPlayEl && iconPauseEl && labelPlayEl) {
+        if (state.isRunning) {
+          iconPlayEl.style.display = 'none';
+          iconPauseEl.style.display = 'block';
+          labelPlayEl.innerText = 'Pausa';
+        } else {
+          iconPlayEl.style.display = 'block';
+          iconPauseEl.style.display = 'none';
+          labelPlayEl.innerText = (state.currentStep === STEPS.COMPLETED) ? 'Ricomincia' : 'Avvia';
+        }
+      }
+
+      if (hudCycleCounterEl) {
+        hudCycleCounterEl.innerText = `Ciclo ${state.currentCycle} di ${PACING_CONFIG.TOTAL_CYCLES}`;
+      }
+    }
+
+    function updateHUD(progress0to1, mainText, timerText, subText) {
+      if (!hudPhaseLabelEl) initUIReferences();
+
+      if (hudPhaseLabelEl && hudPhaseLabelEl.innerText !== mainText) {
+        hudPhaseLabelEl.innerText = mainText;
+        if (mainText.includes('ESPIRA')) {
+          hudPhaseLabelEl.style.color = '#ff9966';
+        } else if (mainText.includes('TRATTIENI') || mainText.includes('PACE')) {
+          hudPhaseLabelEl.style.color = 'var(--fire-gold)';
+        } else {
+          hudPhaseLabelEl.style.color = '#FFFFFF';
+        }
+      }
+
+      if (hudTimerSubEl) {
+        const fullSub = `${timerText} • ${subText}`;
+        if (hudTimerSubEl.innerText !== fullSub) {
+          hudTimerSubEl.innerText = fullSub;
+        }
+      }
+
+      if (hudProgressFillEl) {
+        hudProgressFillEl.style.width = `${Math.min(100, Math.max(0, progress0to1 * 100))}%`;
+        if (mainText.includes('ESPIRA')) {
+          hudProgressFillEl.style.background = 'linear-gradient(90deg, #ff5500, #ff8800)';
+        } else if (mainText.includes('TRATTIENI') || mainText.includes('PACE')) {
+          hudProgressFillEl.style.background = 'linear-gradient(90deg, #ff9900, #ffdd44)';
+        } else {
+          hudProgressFillEl.style.background = 'linear-gradient(90deg, #ff7700, #ffc400)';
+        }
+      }
+    }
+
+    function toggleVR() {
+      setVR(!state.isVRMode);
+    }
+
+    function setVR(enable) {
+      state.isVRMode = enable;
+      if (vrReticleGroup) {
+        vrReticleGroup.visible = enable;
+      }
+      const overlay = document.getElementById('vr-overlay');
+      const uiLayer = document.getElementById('ui-layer');
+      const btnVR = document.getElementById('btn-vr-toggle');
+
+      if (enable) {
+        camera.fov = 72;
+        document.body.classList.add('vr-active');
+        overlay.classList.add('active');
+        uiLayer.classList.add('hidden');
+        btnVR.style.background = 'rgba(255, 120, 0, 0.35)';
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        requestDeviceOrientation();
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+        if (state.isCompleted) {
+          hide2DCompletionPopup();
+          showVRCompletionPopup();
+        }
+      } else {
+        camera.fov = 60;
+        document.body.classList.remove('vr-active');
+        overlay.classList.remove('active');
+        uiLayer.classList.remove('hidden');
+        btnVR.style.background = '';
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        hideVRCompletionPopup();
+        if (state.isCompleted) {
+          show2DCompletionPopup();
+        }
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock().catch(() => {});
+        }
+        if (textSpriteMesh) textSpriteMesh.material.opacity = 0;
+      }
+
+      camera.updateProjectionMatrix();
+      onWindowResize();
+      notifyFlutter('onVRModeChanged', { isVR: state.isVRMode });
+    }
+
+    function onWindowResize() {
+      const w = canvasWidth();
+      const h = canvasHeight();
+      const aspect = w / h;
+      camera.aspect = aspect;
+
+      if (state.isVRMode) {
+        camera.fov = 72;
+      } else if (aspect < 1.0) {
+        camera.fov = Math.min(MAX_FOV, Math.max(MIN_FOV, currentFov / aspect * 0.88));
+      } else {
+        camera.fov = currentFov;
+      }
+      camera.updateProjectionMatrix();
+
+      stereoCamera.aspect = 0.5;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(w, h);
+    }
+
+    /* ======================================================================
+       9. MAIN ANIMATION & RENDERING LOOP (60/120 FPS STABLE)
+       ====================================================================== */
+    let animFrameId = null;
+
+    function animate(timestamp) {
+      animFrameId = requestAnimationFrame(animate);
+
+      if (!state.lastTimestamp) state.lastTimestamp = timestamp;
+      const deltaMs = Math.min(timestamp - state.lastTimestamp, 64);
+      const deltaSec = deltaMs / 1000;
+      const timeSec = timestamp * 0.001;
+      state.lastTimestamp = timestamp;
+
+      // 1. Update Bio-Pacing
+      updateBioPacing(timestamp);
+
+      // 2. Camera Orientation
+      updateCameraRotation(timeSec);
+
+      // Hands-free Gaze Interaction (Dwell Timer)
+      updateGazeInteraction(deltaSec);
+
+      // 3. Starry Sky Shader
+      if (starrySkyMesh && starrySkyMesh.material.uniforms) {
+        starrySkyMesh.material.uniforms.time.value = timeSec;
+      }
+
+      // 4. Ground Lighting Shader
+      if (groundMesh && groundMesh.material.uniforms) {
+        groundMesh.material.uniforms.time.value = timeSec;
+        groundMesh.material.uniforms.fireIntensity.value = state.flameLightIntensity;
+        if (firePointLight) {
+          groundMesh.material.uniforms.firePos.value.set(
+            firePointLight.position.x,
+            0.45,
+            firePointLight.position.z
+          );
+        }
+      }
+
+      // 5. Procedural 3D Flame Shaders & Dynamics
+      flameMeshes.forEach(mesh => {
+        if (mesh.material && mesh.material.uniforms) {
+          mesh.material.uniforms.time.value = timeSec;
+          mesh.material.uniforms.scaleFactor.value = state.flameScale;
+        }
+      });
+
+      if (flameHaloMesh && flameHaloMesh.material.uniforms) {
+        flameHaloMesh.material.uniforms.time.value = timeSec;
+        flameHaloMesh.material.uniforms.pulse.value = (state.flameScale - 0.6) * 1.5;
+        flameHaloMesh.quaternion.copy(camera.quaternion);
+      }
+
+      if (emberBedMesh && emberBedMesh.material.uniforms) {
+        emberBedMesh.material.uniforms.time.value = timeSec;
+        emberBedMesh.material.uniforms.pulse.value = 1.0 + state.emberPulseWarmth * 0.6 + (state.flameScale - 1.0) * 0.45;
+      }
+
+      // 6. Charred Wood Logs Glowing Veins Shaders
+      logMaterials.forEach(mat => {
+        if (mat.uniforms) {
+          mat.uniforms.time.value = timeSec;
+          mat.uniforms.pulse.value = 1.0 + state.emberPulseWarmth * 0.5 + (state.flameScale - 1.0) * 0.4;
+          mat.uniforms.fireIntensity.value = state.flameLightIntensity;
+        }
+      });
+
+      // 7. Campfire Dynamic Flicker & Multi-Harmonic Light Dance
+      if (firePointLight) {
+        const flicker = Math.sin(timeSec * 11.3) * 0.14 + Math.cos(timeSec * 23.7) * 0.09 + Math.sin(timeSec * 47.1) * 0.05;
+        firePointLight.intensity = Math.max(0.3, state.flameLightIntensity + flicker);
+        
+        const wobbleX = Math.sin(timeSec * 4.2) * 0.08;
+        const wobbleZ = Math.cos(timeSec * 3.7) * 0.08;
+        firePointLight.position.set(
+          wobbleX,
+          1.1 * state.flameScale,
+          wobbleZ
+        );
+      }
+
+      if (fireSpotLight) {
+        fireSpotLight.intensity = state.flameLightIntensity * 0.70;
+      }
+
+      // 8. Animate Ember Particles (Thermal Convection & Spiral Vortex Swirl)
+      if (emberParticles && emberPositions && emberColors && emberSeeds) {
+        const count = emberLifespans.length / 2;
+        for (let i = 0; i < count; i++) {
+          const i3 = i * 3;
+          const i2 = i * 2;
+          emberLifespans[i2 + 0] += deltaSec;
+
+          if (emberLifespans[i2 + 0] >= emberLifespans[i2 + 1]) {
+            resetEmberParticle(i, false);
+          } else {
+            const lifeRatio = emberLifespans[i2 + 0] / emberLifespans[i2 + 1];
+            updateEmberColor(i, lifeRatio);
+
+            const py = emberPositions[i3 + 1];
+            // Convective velocity: accelerates in the hot core plume, gently drifts as air cools
+            const thermalFactor = Math.max(0.40, 1.85 / (1.0 + py * 0.55)) * (0.85 + 0.35 * state.flameScale);
+            const spiralRadius = emberSeeds[i3 + 0] * (1.0 + py * 0.35);
+            const spiralFreq = emberSeeds[i3 + 1];
+            const phase = emberSeeds[i3 + 2];
+
+            const angle = timeSec * spiralFreq + phase;
+            const vortexX = Math.cos(angle) * spiralRadius * deltaSec * 3.5;
+            const vortexZ = Math.sin(angle) * spiralRadius * deltaSec * 3.5;
+
+            // Brownian micro-turbulence flutter
+            const flutterX = Math.sin(timeSec * 6.5 + i * 1.3) * 0.012 * deltaSec;
+            const flutterZ = Math.cos(timeSec * 7.1 + i * 2.1) * 0.012 * deltaSec;
+
+            emberPositions[i3 + 0] += emberVelocities[i3 + 0] * deltaSec + vortexX + flutterX;
+            emberPositions[i3 + 1] += emberVelocities[i3 + 1] * deltaSec * thermalFactor;
+            emberPositions[i3 + 2] += emberVelocities[i3 + 2] * deltaSec + vortexZ + flutterZ;
+          }
+        }
+        emberGeometry.attributes.position.needsUpdate = true;
+        emberGeometry.attributes.color.needsUpdate = true;
+      }
+
+      // 9. Animate Sacred Hold Sparkles (Thermodynamic Flight & Thermal Cooling Dissolvenza)
+      if (sacredSparkles && sparkPositions && sparkColors && sparkLifespans) {
+        const sCount = sparkLifespans.length / 2;
+
+        for (let i = 0; i < sCount; i++) {
+          const i3 = i * 3;
+          const i2 = i * 2;
+
+          sparkLifespans[i2 + 0] += deltaSec;
+          const currentAge = sparkLifespans[i2 + 0];
+          const maxLife = sparkLifespans[i2 + 1];
+
+          if (currentAge < 0.0) {
+            sparkColors[i3 + 0] = 0.0;
+            sparkColors[i3 + 1] = 0.0;
+            sparkColors[i3 + 2] = 0.0;
+          } else if (currentAge < maxLife) {
+            const lifeRatio = currentAge / maxLife;
+            updateSparkParticleColor(i, lifeRatio);
+
+            const py = sparkPositions[i3 + 1];
+
+            // Aerodynamic drag: air resistance slows horizontal expansion and upward drift
+            const drag = 1.0 - 0.55 * deltaSec;
+            sparkVelocities[i3 + 0] *= drag;
+            sparkVelocities[i3 + 2] *= drag;
+
+            // Thermal buoyancy: slower as particle climbs into cooler night air
+            const buoyancy = Math.max(0.35, 1.25 / (1.0 + py * 0.4));
+            sparkVelocities[i3 + 1] *= (1.0 - 0.25 * deltaSec);
+
+            // Gentle convective vortex spiral
+            const spiralRadius = sparkSeeds[i3 + 0] * (1.0 + py * 0.25);
+            const spiralFreq = sparkSeeds[i3 + 1];
+            const phase = sparkSeeds[i3 + 2];
+            const angle = timeSec * spiralFreq + phase;
+
+            const vortexX = Math.cos(angle) * spiralRadius * deltaSec * 2.2;
+            const vortexZ = Math.sin(angle) * spiralRadius * deltaSec * 2.2;
+
+            // Soft Brownian flutter
+            const flutterX = Math.sin(timeSec * 5.2 + i * 1.7) * 0.010 * deltaSec;
+            const flutterZ = Math.cos(timeSec * 5.8 + i * 2.3) * 0.010 * deltaSec;
+
+            sparkPositions[i3 + 0] += sparkVelocities[i3 + 0] * deltaSec + vortexX + flutterX;
+            sparkPositions[i3 + 1] += sparkVelocities[i3 + 1] * deltaSec * buoyancy;
+            sparkPositions[i3 + 2] += sparkVelocities[i3 + 2] * deltaSec + vortexZ + flutterZ;
+          } else {
+            // If still in HOLD_FULL, gently recycle spark to maintain sacred aura
+            if (state.currentStep === STEPS.HOLD_FULL && state.isRunning) {
+              spawnSparkParticle(i, Math.random() * 0.35);
+            } else {
+              // Expired particle: hide below floor
+              if (sparkColors[i3 + 0] > 0.0 || sparkPositions[i3 + 1] > -10.0) {
+                sparkColors[i3 + 0] = 0.0;
+                sparkColors[i3 + 1] = 0.0;
+                sparkColors[i3 + 2] = 0.0;
+                sparkPositions[i3 + 1] = -50.0;
+              }
+            }
+          }
+        }
+
+        sparkGeometry.attributes.position.needsUpdate = true;
+        sparkGeometry.attributes.color.needsUpdate = true;
+      }
+
+      // 10. VR Billboard Tracking
+      if (textSpriteMesh && state.isVRMode) {
+        textSpriteMesh.position.set(0, 2.2 * state.flameScale + 0.95, 0);
+      }
+
+      // 11. Stereoscopic vs Monoscopic Render
+      const width = canvasWidth();
+      const height = canvasHeight();
+
+      if (state.isVRMode) {
+        renderer.setScissorTest(true);
+        stereoCamera.update(camera);
+
+        // Left Eye
+        renderer.setScissor(0, 0, width / 2, height);
+        renderer.setViewport(0, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraL);
+
+        // Right Eye
+        renderer.setScissor(width / 2, 0, width / 2, height);
+        renderer.setViewport(width / 2, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraR);
+
+        renderer.setScissorTest(false);
+      } else {
+        renderer.setViewport(0, 0, width, height);
+        renderer.render(scene, camera);
+      }
+    }
+
+    /* ======================================================================
+       10. LIFECYCLE & MEMORY TEARDOWN
+       ====================================================================== */
+    function disposeExperience() {
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+      }
+      if (popScheduleTimer) {
+        clearTimeout(popScheduleTimer);
+        popScheduleTimer = null;
+      }
+      state.isRunning = false;
+
+      if (audioCtx) {
+        try { audioCtx.close(); } catch (e) {}
+        audioCtx = null;
+      }
+
+      if (scene) {
+        scene.traverse((obj) => {
+          if (obj.geometry) {
+            try { obj.geometry.dispose(); } catch (e) {}
+          }
+          if (obj.material) {
+            if (Array.isArray(obj.material)) {
+              obj.material.forEach(m => {
+                if (m.map) m.map.dispose();
+                m.dispose();
+              });
+            } else {
+              if (obj.material.map) obj.material.map.dispose();
+              obj.material.dispose();
+            }
+          }
+        });
+      }
+
+      if (renderer) {
+        try {
+          renderer.dispose();
+          if (renderer.domElement && renderer.domElement.parentNode) {
+            renderer.domElement.parentNode.removeChild(renderer.domElement);
+          }
+        } catch (e) {}
+      }
+    }
+
+    /* ======================================================================
+       11. INITIALIZATION & EVENT BINDINGS
+       ====================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeScene();
+      initControls();
+      initUIReferences();
+
+      document.getElementById('gate-start-btn')?.addEventListener('click', dismissGateAndStart);
+
+      document.getElementById('btn-play-pause')?.addEventListener('click', () => {
+        const gate = document.getElementById('audio-gate');
+        if (gate && gate.style.display !== 'none') {
+          dismissGateAndStart();
+        } else {
+          togglePlayPause();
+        }
+      });
+
+      document.getElementById('btn-vr-toggle')?.addEventListener('click', toggleVR);
+      document.getElementById('btn-recenter')?.addEventListener('click', recenterView);
+      document.getElementById('btn-fullscreen')?.addEventListener('click', toggleFullscreen);
+
+      document.getElementById('btn-audio-toggle')?.addEventListener('click', () => {
+        setAudioMuted(!state.isAudioMuted);
+      });
+
+      // Immediate cardboard screen-tap activation for completion buttons
+      window.addEventListener('click', () => {
+        if (state.isVRMode && completionPopupGroup && completionPopupGroup.visible) {
+          if (gazeHoverTarget && gazeHoverTarget.userData && typeof gazeHoverTarget.userData.onDwellSelect === 'function') {
+            gazeDwellTimer = 0.0;
+            gazeHoverTarget.userData.onDwellSelect();
+          }
+        }
+      });
+
+      // 2D Session Completion Modal Actions
+      document.getElementById('btn-completion-exit')?.addEventListener('click', () => {
+        notifyFlutter('onExitRequested', {});
+      });
+
+      document.getElementById('btn-completion-repeat')?.addEventListener('click', () => {
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+        state.isCompleted = false;
+        resetSession();
+        startSession();
+      });
+
+      window.addEventListener('beforeunload', disposeExperience);
+
+      // Auto-start immediately in app / autostart
+      const urlParams = new URLSearchParams(window.location.search);
+      const gate = document.getElementById('audio-gate');
+      if (gate) {
+        gate.style.setProperty('display', 'none', 'important');
+      }
+      if (urlParams.get('vr') === 'true') {
+        setVR(true);
+      }
+      dismissGateAndStart();
+      window.focus();
+      if (document.body) document.body.focus();
+
+      animFrameId = requestAnimationFrame(animate);
+      notifyFlutter('onVRReady', { status: 'ready', experience: 'respirazione_fuoco' });
+    });
+
+  })();
+  </script>
+</body>
+</html>

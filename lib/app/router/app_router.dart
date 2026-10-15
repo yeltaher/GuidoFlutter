@@ -9,6 +9,8 @@ import '../../features/breathing/breathing_feature.dart';
 import '../../features/premium/premium_feature.dart';
 import '../../features/menu/presentation/zen_sound_mixer_view.dart';
 import '../../features/meditation/presentation/native_3d_experience_screen.dart';
+import '../../features/vr_experiences/vr_experiences_feature.dart';
+import '../../features/vr_safety/vr_safety_feature.dart';
 
 /// Helper difensivo per l'estrazione e merge di parametri di rotta da GoRouter.
 /// Supporta `Map<String, dynamic>`, `Map<dynamic, dynamic>`, ed effettua il merge con queryParameters.
@@ -31,7 +33,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     routes: [
       GoRoute(path: '/', builder: (context, state) => const BootSplashView()),
+      GoRoute(
+        path: '/vr-disclaimer',
+        builder: (context, state) => const VrDisclaimerView(),
+      ),
       GoRoute(path: '/login', builder: (context, state) => const SplashView()),
+      GoRoute(
+        path: '/wolf-onboarding',
+        builder: (context, state) => const WolfOnboardingView(),
+      ),
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingWizardView(),
@@ -198,6 +208,32 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final params = _extractRouteParams(state);
           return Native3DExperienceScreen(
             experienceId: params['experienceId']?.toString(),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/vr-experience',
+        builder: (context, state) {
+          final params = _extractRouteParams(state);
+          final experienceId =
+              params['experienceId']?.toString() ?? 'respirazione_aria';
+          final rawVr = params['isVrMode'];
+          final bool isVrMode = rawVr is bool
+              ? rawVr
+              : (rawVr is String &&
+                  (rawVr.toLowerCase() == 'true' || rawVr == '1'));
+          final rawAutoStart = params['autoStart'];
+          final bool autoStart = rawAutoStart is bool
+              ? rawAutoStart
+              : (rawAutoStart is String
+                  ? (rawAutoStart.toLowerCase() != 'false' &&
+                      rawAutoStart != '0')
+                  : true);
+
+          return VrExperienceScreen(
+            experienceId: experienceId,
+            isVrMode: isVrMode,
+            autoStart: autoStart,
           );
         },
       ),

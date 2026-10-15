@@ -1,6 +1,7 @@
 // ignore_for_file: unused_local_variable, deprecated_member_use, use_build_context_synchronously, curly_braces_in_flow_control_structures, unused_element, unused_field
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -34,15 +35,77 @@ class JournalTab extends ConsumerStatefulWidget {
 
 class _JournalTabState extends ConsumerState<JournalTab> {
   final TextEditingController _textController = TextEditingController();
-  String _selectedMood = "Peaceful";
+  String _selectedMood = "Sereno";
   List<JournalEntry> _entries = [];
 
-  final List<Map<String, dynamic>> _moods = [
-    {'name': 'Peaceful', 'icon': Icons.sentiment_satisfied_alt_outlined},
-    {'name': 'Grateful', 'icon': Icons.favorite_border_rounded},
-    {'name': 'Quiet', 'icon': Icons.nights_stay_outlined},
-    {'name': 'Restless', 'icon': Icons.bubble_chart_outlined},
+  final List<Map<String, dynamic>> _moods = const [
+    {'name': 'Sereno', 'icon': Icons.sentiment_satisfied_alt_outlined},
+    {'name': 'Calmo', 'icon': Icons.spa_outlined},
+    {'name': 'Rilassato', 'icon': Icons.self_improvement_outlined},
+    {'name': 'Grato', 'icon': Icons.favorite_border_rounded},
+    {'name': 'Energico', 'icon': Icons.bolt_outlined},
+    {'name': 'Ansioso', 'icon': Icons.bubble_chart_outlined},
+    {'name': 'Stressato', 'icon': Icons.wb_cloudy_outlined},
+    {'name': 'Triste', 'icon': Icons.sentiment_dissatisfied_outlined},
   ];
+
+  static String formatMoodLabel(String mood) {
+    switch (mood.toLowerCase()) {
+      case 'peaceful':
+        return 'SERENO';
+      case 'grateful':
+        return 'GRATO';
+      case 'quiet':
+        return 'CALMO';
+      case 'restless':
+        return 'ANSIOSO';
+      case 'sereno':
+        return 'SERENO';
+      case 'calmo':
+        return 'CALMO';
+      case 'rilassato':
+        return 'RILASSATO';
+      case 'grato':
+        return 'GRATO';
+      case 'energico':
+        return 'ENERGICO';
+      case 'ansioso':
+        return 'ANSIOSO';
+      case 'stressato':
+        return 'STRESSATO';
+      case 'triste':
+        return 'TRISTE';
+      default:
+        return mood.toUpperCase();
+    }
+  }
+
+  static IconData getMoodIcon(String mood) {
+    switch (mood.toLowerCase()) {
+      case 'sereno':
+      case 'peaceful':
+        return Icons.sentiment_satisfied_alt_outlined;
+      case 'calmo':
+      case 'quiet':
+        return Icons.spa_outlined;
+      case 'rilassato':
+        return Icons.self_improvement_outlined;
+      case 'grato':
+      case 'grateful':
+        return Icons.favorite_border_rounded;
+      case 'energico':
+        return Icons.bolt_outlined;
+      case 'ansioso':
+      case 'restless':
+        return Icons.bubble_chart_outlined;
+      case 'stressato':
+        return Icons.wb_cloudy_outlined;
+      case 'triste':
+        return Icons.sentiment_dissatisfied_outlined;
+      default:
+        return Icons.sentiment_satisfied_alt_outlined;
+    }
+  }
 
   @override
   void initState() {
@@ -103,7 +166,7 @@ class _JournalTabState extends ConsumerState<JournalTab> {
     setState(() {
       _entries = updated;
       _textController.clear();
-      _selectedMood = "Peaceful";
+      _selectedMood = "Sereno";
     });
 
     if (!mounted) return;
@@ -182,62 +245,75 @@ class _JournalTabState extends ConsumerState<JournalTab> {
               ),
               const SizedBox(height: 12),
 
-              // Mood Selector Chips Grid
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: _moods.map((m) {
-                  final name = m['name'] as String;
-                  final icon = m['icon'] as IconData;
-                  final isSelected = _selectedMood == name;
+              // Mood Selector Chips Grid (Scrollabile orizzontale Japandi)
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: _moods.map((m) {
+                    final name = m['name'] as String;
+                    final icon = m['icon'] as IconData;
+                    final isSelected = _selectedMood == name;
 
-                  return Semantics(
-                    button: true,
-                    label: "Interactive element",
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedMood = name;
-                        });
-                      },
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.2,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? accentColor
-                              : (isDark
-                                    ? Colors.white.withValues(alpha: 0.03)
-                                    : Colors.black.withValues(alpha: 0.03)),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isSelected
-                                ? accentColor
-                                : (isDark ? Colors.white12 : Colors.black12),
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(
-                              icon,
-                              color: isSelected ? Colors.white : subTextColor,
-                              size: 24,
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 10.0),
+                      child: Semantics(
+                        button: true,
+                        label: "Stato d'animo $name",
+                        child: GestureDetector(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setState(() {
+                              _selectedMood = name;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            constraints: const BoxConstraints(minWidth: 76),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              name,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: isSelected ? Colors.white : subTextColor,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? accentColor
+                                  : (isDark
+                                      ? Colors.white.withValues(alpha: 0.04)
+                                      : Colors.black.withValues(alpha: 0.04)),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: isSelected
+                                    ? accentColor
+                                    : (isDark ? Colors.white12 : Colors.black12),
+                                width: 1.0,
                               ),
                             ),
-                          ],
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  icon,
+                                  color: isSelected ? Colors.white : subTextColor,
+                                  size: 22,
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  name,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color:
+                                        isSelected ? Colors.white : subTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
               ),
 
               const SizedBox(height: 24),
@@ -356,13 +432,8 @@ class _JournalTabState extends ConsumerState<JournalTab> {
                   itemCount: _entries.length,
                   itemBuilder: (context, index) {
                     final entry = _entries[index];
-                    IconData moodIcon = Icons.sentiment_satisfied_alt_outlined;
-                    if (entry.mood == 'Grateful')
-                      moodIcon = Icons.favorite_border_rounded;
-                    if (entry.mood == 'Quiet')
-                      moodIcon = Icons.nights_stay_outlined;
-                    if (entry.mood == 'Restless')
-                      moodIcon = Icons.bubble_chart_outlined;
+                    final moodIcon = getMoodIcon(entry.mood);
+                    final moodText = formatMoodLabel(entry.mood);
 
                     return Container(
                           margin: const EdgeInsets.only(bottom: 12),
@@ -388,7 +459,7 @@ class _JournalTabState extends ConsumerState<JournalTab> {
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
-                                        entry.mood.toUpperCase(),
+                                        moodText,
                                         style: GoogleFonts.plusJakartaSans(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w800,

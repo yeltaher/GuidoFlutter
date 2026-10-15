@@ -1,0 +1,2902 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Guido VR - Respirazione Terra (Pianeta Terra 432 Hz - Respirazione 4-6-8)</title>
+  
+  <style>
+    :root {
+      --earth-green: #00e676;
+      --earth-emerald: #00c853;
+      --earth-blue: #00b0ff;
+      --earth-cyan: #1de9b6;
+      --earth-gold: #ffd54f;
+      --earth-amber: #ffb300;
+      --earth-deep: #051410;
+      --space-bg: #010206;
+      --space-deep: #000103;
+      --panel-bg: rgba(4, 14, 12, 0.78);
+      --panel-border: rgba(0, 230, 118, 0.28);
+      --text-light: #f4fdf8;
+      --text-muted: rgba(210, 248, 230, 0.72);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--space-deep);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text-light);
+    }
+
+    #webgl-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: none;
+    }
+
+    /* Dual-Eye VR Cardboard Overlay */
+    #vr-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    #vr-overlay.active {
+      display: block;
+    }
+
+    .vr-divider {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      background: rgba(0, 230, 118, 0.25);
+      transform: translateX(-50%);
+      box-shadow: none !important;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+
+    /* Floating Clean HUD UI */
+    #ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    body.vr-active #ui-layer,
+    #ui-layer.hidden {
+      display: none !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .header-bar {
+      display: none !important;
+    }
+
+    .brand-title {
+      display: none !important;
+    }
+
+    .top-controls {
+      display: none !important;
+    }
+
+    /* Minimal Floating Ethereal Guidance Text */
+    .pacing-pill-container {
+      position: absolute;
+      top: env(safe-area-inset-top, 24px);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+      z-index: 12;
+      width: auto;
+      max-width: 90%;
+      transition: opacity 0.4s ease;
+    }
+
+    .pacing-pill {
+      width: auto;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .phase-primary-text {
+      font-size: 18px;
+      font-weight: 300;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 0 18px rgba(0, 230, 118, 0.7), 0 2px 8px rgba(0, 0, 0, 0.8);
+      transition: color 0.3s ease;
+    }
+
+    .phase-sub-text {
+      font-size: 11px;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.85);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
+    }
+
+    .pacing-progress-track {
+      display: none !important;
+    }
+
+    .pacing-progress-fill {
+      display: none !important;
+    }
+
+    /* Bottom Control & Status Bar */
+    .bottom-bar {
+      display: none !important;
+    }
+
+    .status-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      padding: 10px 22px;
+      border-radius: 28px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55);
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .cycle-counter {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cycle-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+
+    .cycle-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #FFFFFF;
+      letter-spacing: 0.5px;
+    }
+
+    .session-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #00e676 0%, #00c853 100%);
+      color: #021a10;
+      border: none;
+      padding: 9px 22px;
+      border-radius: 22px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 18px rgba(0, 230, 118, 0.45);
+    }
+
+    .btn-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(0, 230, 118, 0.65);
+      filter: brightness(1.08);
+    }
+
+    .btn-main:active {
+      transform: scale(0.96);
+    }
+
+    .btn-vr-cardboard {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 230, 118, 0.12);
+      border: 1px solid rgba(0, 230, 118, 0.35);
+      color: #FFFFFF;
+      padding: 9px 18px;
+      border-radius: 22px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn-vr-cardboard:hover {
+      background: rgba(0, 230, 118, 0.24);
+      border-color: var(--earth-cyan);
+    }
+
+    /* Audio Gate bypassed in mobile app */
+    #audio-gate {
+      display: none !important;
+    }
+
+    /* Orientation Prompt disabled: orientation forced by OS */
+    #rotate-hint {
+      display: none !important;
+    }
+
+    /* 2D Session Completion Modal (Japandi Aesthetics) */
+    .completion-modal-backdrop {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2147483647 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(7, 12, 20, 0.94) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .completion-modal-backdrop.visible {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .completion-modal-card {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(145deg, rgba(16, 26, 42, 0.94), rgba(9, 15, 26, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 24px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(0, 230, 118, 0.12);
+      transform: scale(0.92) translateY(12px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .completion-modal-backdrop.visible .completion-modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .completion-modal-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px auto;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 230, 118, 0.25) 0%, rgba(0, 230, 118, 0.03) 70%);
+      border: 1px solid rgba(0, 230, 118, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #00e676;
+      box-shadow: 0 0 20px rgba(0, 230, 118, 0.25);
+    }
+
+    .completion-modal-title {
+      font-family: inherit;
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 10px 0;
+      letter-spacing: 0.3px;
+    }
+
+    .completion-modal-desc {
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.76);
+      margin: 0 0 26px 0;
+    }
+
+    .completion-modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .btn-completion {
+      flex: 1;
+      height: 48px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      border: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-completion-exit {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.65);
+      color: #fca5a5;
+    }
+
+    .btn-completion-exit:hover, .btn-completion-exit:active {
+      background: rgba(239, 68, 68, 0.32);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-completion-repeat {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.32), rgba(5, 150, 105, 0.55));
+      border: 1px solid rgba(52, 211, 153, 0.85);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-completion-repeat:hover, .btn-completion-repeat:active {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.48), rgba(5, 150, 105, 0.72));
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+  </style>
+
+  <!-- High-Resolution Photorealistic NASA Textures Data-URIs -->
+  <script src="earth_textures.js"></script>
+
+  <!-- Three.js CDN with Local Fallbacks -->
+  <script src="three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      document.write('<script src="../three.min.js"><\/script>');
+      if (typeof THREE === 'undefined') {
+        document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <!-- WebGL Three.js Viewport -->
+  <div id="webgl-container"></div>
+
+  <!-- Dual-Eye VR Cardboard Overlay -->
+  <div id="vr-overlay">
+    <div class="vr-divider"></div>
+  </div>
+
+  <!-- Minimal Discreet HUD UI -->
+  <div id="ui-layer">
+    <!-- Top Header Bar -->
+    <div class="header-bar">
+      <div class="brand-title">
+        <div class="brand-logo"></div>
+        <span class="brand-text">Guido VR</span>
+        <span class="brand-badge">Pianeta Terra • 432 Hz</span>
+      </div>
+
+      <div class="top-controls">
+        <button class="btn-icon" id="btn-audio-toggle" title="Disattiva/Attiva Audio (Tasto M)" aria-label="Audio">
+          <svg id="icon-sound-on" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          <svg id="icon-sound-off" viewBox="0 0 24 24" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27l4.73 4.73H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+        </button>
+        <button class="btn-icon" id="btn-recenter" title="Riposiziona Visuale (Tasto R)" aria-label="Recenter">
+          <svg viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79 4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" title="Schermo Intero (Tasto F)" aria-label="Fullscreen">
+          <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Discreet Pacing Pill at Top Center -->
+    <div class="pacing-pill-container">
+      <div class="pacing-pill">
+        <div class="phase-primary-text" id="hud-phase-label">INSPIRA</div>
+        <div class="phase-sub-text" id="hud-timer-sub">4.0s • La Terra si espande</div>
+        <div class="pacing-progress-track">
+          <div class="pacing-progress-fill" id="hud-progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Control & Status Bar -->
+    <div class="bottom-bar">
+      <div class="status-card">
+        <div class="cycle-counter">
+          <span class="cycle-label">Respirazione 4-6-8 di Radicamento</span>
+          <span class="cycle-value" id="hud-cycle-counter">Ciclo 1 di 3</span>
+        </div>
+
+        <div class="session-actions">
+          <button class="btn-vr-cardboard" id="btn-vr-toggle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.9 6.2c-.4-.4-.9-.6-1.5-.6H4.6c-.6 0-1.1.2-1.5.6-.4.4-.6.9-.6 1.5v8.6c0 .6.2 1.1.6 1.5.4.4.9.6 1.5.6h4.3l2.2-2.5c.4-.5 1.3-.5 1.8 0l2.2 2.5h4.3c.6 0 1.1-.2 1.5-.6.4-.4.6-.9.6-1.5V7.7c.1-.6-.1-1.1-.5-1.5zM7.5 14c-1.4 0-2.5-1.1-2.5-2.5S6.1 9 7.5 9s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5zm9 0c-1.4 0-2.5-1.1-2.5-2.5S15.1 9 16.5 9s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5z"/></svg>
+            Visore VR
+          </button>
+
+          <button class="btn-main" id="btn-play-pause">
+            <svg id="icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="icon-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <span id="label-play-pause">Avvia</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Gate / Gesture Unlock -->
+  <div id="audio-gate">
+    <div class="gate-card">
+      <div class="gate-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+      </div>
+      <div class="gate-title">Respirazione Terra</div>
+      <div class="gate-desc">
+        Respirazione 4-6-8 di Radicamento (<strong>Andrew Weil Pranayama</strong>). Immergiti nello spazio cosmico di fronte alla Terra viva, segui le sue pulsazioni e lasciati guidare dalle frequenze di radicamento a <strong>432 Hz</strong> e <strong>174 Hz</strong>.
+      </div>
+      <div class="gate-specs">
+        <span class="gate-tag">4s Inspiro</span>
+        <span class="gate-tag">6s Trattieni (Scintille Orbitali)</span>
+        <span class="gate-tag">8s Espiro</span>
+        <span class="gate-tag">Accordo 432 Hz + 174 Hz</span>
+        <span class="gate-tag">Battito della Terra</span>
+      </div>
+      <button class="gate-btn" id="gate-start-btn">Inizia Esperienza</button>
+    </div>
+  </div>
+
+  <!-- Mobile Landscape Warning for VR -->
+  <div id="rotate-hint">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--earth-cyan)"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 5.39 19.11.83 13.5.13v1.54c2.61.34 4.96 1.7 6.48 3.85h-3.5v2h6v-6h-2v2.52zM2.05 13c-.34-2.61.34-5.26 1.95-7.39V8h2V2h-6v2h2.52C-.63 6.64-.17 11.23.05 13h2zm5.43 8.48c-3.27-1.55-5.61-4.72-5.97-8.48H0c.51 5.61 4.84 10.17 10.45 10.87v-1.54c-2.61-.34-4.96-1.7-6.48-3.85h3.5v-2h-6v6h2v-2.52zm14.47-4.48c.34 2.61-.34 5.26-1.95 7.39V22h-2v6h6v-2h-2.52c3.12-2.64 3.58-7.23 3.36-9h-2.89z"/></svg>
+    <h3 style="margin-top:16px; font-size:18px;">Ruota lo smartphone in orizzontale</h3>
+    <p style="margin-top:8px; font-size:13px; color:rgba(255,255,255,0.7);">Per utilizzare il visore VR Cardboard stereoscopico.</p>
+  </div>
+
+  <!-- 2D Session Completion Modal (Normal / Smartphone Mode) -->
+  <div id="session-completion-modal" class="completion-modal-backdrop" style="display: none;">
+    <div class="completion-modal-card">
+      <div class="completion-modal-icon">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <h2 class="completion-modal-title">Sessione Completata</h2>
+      <p class="completion-modal-desc">Porta questo profondo radicamento, stabilità e rigenerazione nella tua giornata.</p>
+      <div class="completion-modal-actions">
+        <button id="btn-completion-exit" class="btn-completion btn-completion-exit" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+          <span>ESCI</span>
+        </button>
+        <button id="btn-completion-repeat" class="btn-completion btn-completion-repeat" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.95 20 14.54 20 13c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 8.74C4.46 10.05 4 11.46 4 13c0 4.42 3.58 8 8 8v4l5-5-5-5v4c-3.31 0-6-2.69-6-6z"/></svg>
+          <span>RIPETI</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN THREE.JS SCRIPT -->
+  <script>
+  (function() {
+    'use strict';
+
+    /* ======================================================================
+       1. BIO-PACING STATE MACHINE & CONSTANTS (RESPIRAZIONE TERRA 4-6-8)
+       ====================================================================== */
+    const PACING_CONFIG = {
+      TOTAL_CYCLES: 3,               // 3 cicli completi conformi allo Storyboard
+      APPROACH_DURATION: 4000,       // 4.0s avvicinamento armonioso al pianeta Terra
+      INHALE_DURATION: 4000,         // 4.0s Inspiro (la Terra si gonfia ed irradia luce)
+      HOLD_DURATION: 6000,           // 6.0s Trattieni (la Terra rimane gonfia, scintille ed anelli PERIFIT)
+      EXHALE_DURATION: 8000,         // 8.0s Espiro (la Terra si sgonfia lentamente, scintille svaniscono)
+      OUTRO_DURATION: 7000,          // 7.0s integrazione e respiro spontaneo regolare
+      
+      // Coordinates
+      EARTH_BASE_X: 0.0,
+      EARTH_BASE_Y: 0.0,
+      EARTH_BASE_Z: 0.0,
+
+      // Camera natural space viewpoint
+      CAM_START_POS_Z: 7.2,          // Deep space approach starting position
+      CAM_TARGET_POS_Z: 4.40,        // Comfortable close orbit view
+      CAM_INIT_POS_Y: 0.20,
+      
+      MIN_SCALE: 0.92,               // Terra a riposo / espiro
+      MAX_SCALE: 1.25,               // Terra espansa all'apice dell'inspiro
+      MIN_ATMOSPHERE: 1.0,           // Bagliore atmosferico a riposo
+      MAX_ATMOSPHERE: 1.6            // Bagliore atmosferico all'inspiro/apnea
+    };
+
+    const STEPS = {
+      STANDBY: 'STANDBY',
+      APPROACH: 'APPROACH',
+      INHALE: 'INHALE',
+      HOLD: 'HOLD',
+      EXHALE: 'EXHALE',
+      OUTRO: 'OUTRO',
+      COMPLETED: 'COMPLETED'
+    };
+
+    const state = {
+      currentStep: STEPS.STANDBY,
+      currentCycle: 1,
+      stepStartTime: 0,
+      stepDuration: 0,
+      pauseStartTime: 0,
+      isRunning: false,
+      isVRMode: false,
+      isCompleted: false,
+      isAudioMuted: false,
+      earthScale: PACING_CONFIG.MIN_SCALE,
+      atmosphereGlow: PACING_CONFIG.MIN_ATMOSPHERE,
+      orbitalSparksIntensity: 0.0,
+      camPosZ: PACING_CONFIG.CAM_START_POS_Z,
+      lastTimestamp: 0
+    };
+
+    /* ======================================================================
+       2. FLUTTER INAPPWEBVIEW BRIDGE
+       ====================================================================== */
+    function notifyFlutter(eventName, data) {
+      try {
+        if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+          window.flutter_inappwebview.callHandler(eventName, data);
+        } else if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'GUIDO_VR', event: eventName, data: data }, '*');
+        }
+      } catch (err) {
+        console.warn('Flutter Bridge post error:', err);
+      }
+    }
+
+    window.GuidoVR = {
+      start: function() { dismissGateAndStart(); },
+      pause: function() { pauseSession(); },
+      toggle: function() { togglePlayPause(); },
+      reset: function() { resetSession(); },
+      setVRMode: function(enable) { setVR(enable); },
+      setMuted: function(mute) { setAudioMuted(mute); },
+      recenter: function() { recenterView(); },
+      setDeviceOrientation: function(alpha, beta, gamma) {
+        gyroAvailable = true;
+        gyroAlpha = Number(alpha) || 0;
+        gyroBeta = Number(beta) || 0;
+        gyroGamma = Number(gamma) || 0;
+      },
+      showCompletionPopup: function() { onExperienceEnded(); },
+      hideCompletionPopup: function() { hideVRCompletionPopup(); hide2DCompletionPopup(); },
+      getState: function() { return { ...state }; },
+      dispose: function() { disposeExperience(); }
+    };
+
+    /* ======================================================================
+       3. HIGH-PRECISION WEB AUDIO API (432 HZ + 174 HZ + BINAURAL + EARTH HEARTBEAT)
+       ====================================================================== */
+    let audioCtx = null;
+    let masterGain = null;
+    let padGain = null;
+    let heartbeatGain = null;
+    let spaceDroneGain = null;
+    let isAudioInitialized = false;
+
+    let padOscLeft = null;
+    let padOscRight = null;
+    let padOscRoot174 = null;
+    let padOscFifth = null;
+    let padOscOctave = null;
+    let padFilter = null;
+
+    let heartbeatTimer = null;
+
+    function initAudioEngine() {
+      if (isAudioInitialized) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        audioCtx = new AudioContextClass();
+
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+        masterGain.connect(audioCtx.destination);
+
+        // A) 432 Hz Harmonic Pad + 174 Hz Solfeggio Root (Binaural Theta Beat 3.8 Hz)
+        padGain = audioCtx.createGain();
+        padGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+
+        padFilter = audioCtx.createBiquadFilter();
+        padFilter.type = 'lowpass';
+        padFilter.frequency.setValueAtTime(580, audioCtx.currentTime);
+        padFilter.Q.setValueAtTime(1.0, audioCtx.currentTime);
+
+        const merger = audioCtx.createChannelMerger(2);
+
+        // Left ear: 432.0 Hz
+        padOscLeft = audioCtx.createOscillator();
+        padOscLeft.type = 'sine';
+        padOscLeft.frequency.setValueAtTime(432.0, audioCtx.currentTime);
+        const gainLeft = audioCtx.createGain();
+        gainLeft.gain.setValueAtTime(0.20, audioCtx.currentTime);
+        padOscLeft.connect(gainLeft);
+        gainLeft.connect(merger, 0, 0);
+
+        // Right ear: 435.8 Hz (3.8 Hz Theta Beat for deep grounding & relaxation)
+        padOscRight = audioCtx.createOscillator();
+        padOscRight.type = 'sine';
+        padOscRight.frequency.setValueAtTime(435.8, audioCtx.currentTime);
+        const gainRight = audioCtx.createGain();
+        gainRight.gain.setValueAtTime(0.20, audioCtx.currentTime);
+        padOscRight.connect(gainRight);
+        gainRight.connect(merger, 0, 1);
+
+        // Solfeggio 174.0 Hz Root Frequency (Earth Grounding & Stress Release)
+        padOscRoot174 = audioCtx.createOscillator();
+        padOscRoot174.type = 'sine';
+        padOscRoot174.frequency.setValueAtTime(174.0, audioCtx.currentTime);
+        const gainRoot = audioCtx.createGain();
+        gainRoot.gain.setValueAtTime(0.28, audioCtx.currentTime);
+        padOscRoot174.connect(gainRoot);
+        gainRoot.connect(merger, 0, 0);
+        gainRoot.connect(merger, 0, 1);
+
+        // Harmonic Fifth: 648.0 Hz (432 * 1.5)
+        padOscFifth = audioCtx.createOscillator();
+        padOscFifth.type = 'sine';
+        padOscFifth.frequency.setValueAtTime(648.0, audioCtx.currentTime);
+        const gainFifth = audioCtx.createGain();
+        gainFifth.gain.setValueAtTime(0.07, audioCtx.currentTime);
+        padOscFifth.connect(gainFifth);
+        gainFifth.connect(merger, 0, 0);
+        gainFifth.connect(merger, 0, 1);
+
+        // Harmonic Octave: 864.0 Hz (432 * 2)
+        padOscOctave = audioCtx.createOscillator();
+        padOscOctave.type = 'sine';
+        padOscOctave.frequency.setValueAtTime(864.0, audioCtx.currentTime);
+        const gainOctave = audioCtx.createGain();
+        gainOctave.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        padOscOctave.connect(gainOctave);
+        gainOctave.connect(merger, 0, 0);
+        gainOctave.connect(merger, 0, 1);
+
+        merger.connect(padFilter);
+        padFilter.connect(padGain);
+        padGain.connect(masterGain);
+
+        padOscLeft.start();
+        padOscRight.start();
+        padOscRoot174.start();
+        padOscFifth.start();
+        padOscOctave.start();
+
+        // B) Earth Heartbeat / Telluric Pulse (56 BPM deep cardiac thump)
+        heartbeatGain = audioCtx.createGain();
+        heartbeatGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        heartbeatGain.connect(masterGain);
+
+        scheduleEarthHeartbeat();
+
+        // C) Cosmic Ambient Resonance
+        initSpaceResonance();
+
+        isAudioInitialized = true;
+      } catch (err) {
+        console.warn('Web Audio Init Error:', err);
+      }
+    }
+
+    function initSpaceResonance() {
+      if (!audioCtx) return;
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0;
+
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99 * b0 + white * 0.05;
+        b1 = 0.95 * b1 + white * 0.08;
+        b2 = 0.85 * b2 + white * 0.15;
+        output[i] = (b0 + b1 + b2) * 0.035;
+      }
+
+      const noiseSource = audioCtx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      noiseSource.loop = true;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(240, audioCtx.currentTime);
+
+      spaceDroneGain = audioCtx.createGain();
+      spaceDroneGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+
+      noiseSource.connect(filter);
+      filter.connect(spaceDroneGain);
+      spaceDroneGain.connect(masterGain);
+
+      noiseSource.start();
+    }
+
+    function scheduleEarthHeartbeat() {
+      if (!audioCtx) return;
+      const bpm = 56;
+      const intervalMs = (60 / bpm) * 1000;
+
+      function triggerBeatPair() {
+        if (!state.isAudioMuted && audioCtx.state === 'running' && state.isRunning) {
+          playLubDubPulse();
+        }
+        heartbeatTimer = setTimeout(triggerBeatPair, intervalMs);
+      }
+
+      heartbeatTimer = setTimeout(triggerBeatPair, 1200);
+    }
+
+    function playLubDubPulse() {
+      if (!audioCtx || state.isAudioMuted) return;
+      const now = audioCtx.currentTime;
+      playSubThump(54, 0.14, now, 0.28);
+      playSubThump(62, 0.11, now + 0.28, 0.20);
+    }
+
+    function playSubThump(freq, duration, startTime, vol) {
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        osc.frequency.exponentialRampToValueAtTime(32, startTime + duration);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(120, startTime);
+
+        gain.gain.setValueAtTime(0.0001, startTime);
+        gain.gain.linearRampToValueAtTime(vol * 0.85, startTime + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(heartbeatGain);
+
+        osc.start(startTime);
+        osc.stop(startTime + duration + 0.05);
+      } catch (e) {}
+    }
+
+    function playTibetanBowl(baseFreq = 432, duration = 4.8) {
+      if (!audioCtx || state.isAudioMuted) return;
+      try {
+        const now = audioCtx.currentTime;
+        const partials = [
+          { fRatio: 1.000, gainRatio: 0.35, decay: duration * 1.0 },
+          { fRatio: 2.768, gainRatio: 0.22, decay: duration * 0.85 },
+          { fRatio: 5.124, gainRatio: 0.14, decay: duration * 0.65 },
+          { fRatio: 7.892, gainRatio: 0.08, decay: duration * 0.45 }
+        ];
+
+        partials.forEach(p => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(baseFreq * p.fRatio, now);
+
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(p.gainRatio * 0.45, now + 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + p.decay);
+
+          osc.connect(gain);
+          gain.connect(masterGain);
+
+          osc.start(now);
+          osc.stop(now + p.decay + 0.1);
+        });
+      } catch (err) {
+        console.warn('Bowl audio error:', err);
+      }
+    }
+
+    function rampAudioLevels(targetPadGain, targetHeartbeatGain, durationSec = 1.2) {
+      if (!audioCtx || !padGain || !heartbeatGain) return;
+      try {
+        const now = audioCtx.currentTime;
+        padGain.gain.cancelScheduledValues(now);
+        padGain.gain.linearRampToValueAtTime(targetPadGain, now + durationSec);
+
+        heartbeatGain.gain.cancelScheduledValues(now);
+        heartbeatGain.gain.linearRampToValueAtTime(targetHeartbeatGain, now + durationSec);
+
+        if (spaceDroneGain) {
+          spaceDroneGain.gain.cancelScheduledValues(now);
+          spaceDroneGain.gain.linearRampToValueAtTime(targetPadGain * 0.5, now + durationSec);
+        }
+      } catch (e) {}
+    }
+
+    function setAudioMuted(mute) {
+      state.isAudioMuted = mute;
+      const onIcon = document.getElementById('icon-sound-on');
+      const offIcon = document.getElementById('icon-sound-off');
+      if (onIcon && offIcon) {
+        onIcon.style.display = mute ? 'none' : 'block';
+        offIcon.style.display = mute ? 'block' : 'none';
+      }
+      if (masterGain && audioCtx) {
+        masterGain.gain.linearRampToValueAtTime(mute ? 0.0 : 0.85, audioCtx.currentTime + 0.2);
+      }
+    }
+
+    /* ======================================================================
+       4. THREE.JS SCENE SETUP & 100% PHOTOREALISTIC NASA BLUE MARBLE EARTH
+       ====================================================================== */
+    let container = null;
+    let scene = null;
+    let camera = null;
+    let stereoCamera = null;
+    let renderer = null;
+
+    // Celestial Mesh Groups & Objects
+    let celestialGroup = null;
+    let earthGroup = null;
+    let earthSurfaceMesh = null;
+    let cloudsMesh = null;
+    let atmosphereGlowMesh = null;
+    let starrySkyMesh = null;
+    let sunDirectionalLight = null;
+
+    // Textures
+    let texDay = null;
+    let texClouds = null;
+    let texSpecular = null;
+    let texNormal = null;
+    let texLights = null;
+
+    // Equatorial Energy Rings (PERIFIT circular aura)
+    let orbitalRingsGroup = null;
+    let ringMeshes = [];
+
+    // Particle Systems (Stelle / Scintille di Luce)
+    let orbitalSparks = null;
+    let sparkGeometry = null;
+
+    // 3D VR Floating Billboard
+    let textCanvas = null;
+    let textCtx = null;
+    let textTexture = null;
+    let textSpriteMesh = null;
+    let lastVRMainTitle = '';
+    let lastVRSubTitle = '';
+
+    function canvasWidth() { return window.innerWidth || 800; }
+    function canvasHeight() { return window.innerHeight || 600; }
+
+    function initThreeScene() {
+      container = document.getElementById('webgl-container');
+
+      scene = new THREE.Scene();
+
+      // Camera positioned at cosmic distance
+      camera = new THREE.PerspectiveCamera(54, canvasWidth() / canvasHeight(), 0.1, 1000);
+      camera.position.set(0, PACING_CONFIG.CAM_INIT_POS_Y, PACING_CONFIG.CAM_START_POS_Z);
+
+      stereoCamera = new THREE.StereoCamera();
+      stereoCamera.aspect = 0.5;
+      stereoCamera.eyeSep = 0.064;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(canvasWidth(), canvasHeight());
+      if (renderer.outputEncoding !== undefined) renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.05;
+      renderer.setClearColor(0x010206, 1.0);
+      container.appendChild(renderer.domElement);
+
+      // Root Celestial Group
+      celestialGroup = new THREE.Group();
+      scene.add(celestialGroup);
+
+      // 1. 360° Starry Cosmos Sky Dome
+      createStarryCosmosSky();
+
+      // 2. Planet Earth Structure (NASA Blue Marble PBR + Rayleigh Limb)
+      createPhotorealisticEarth();
+
+      // 3. Equatorial Energy Filaments (PERIFIT Luminous Rings)
+      createEquatorialEnergyRings();
+
+      // 4. Sacred Hold Stellar Crystalline Spark Particle System
+      createSacredOrbitalSparks();
+
+      // 5. Lighting
+      setupCosmicLighting();
+
+      // 6. 3D World-Space VR Billboard
+      createVRBillboardText();
+
+      window.addEventListener('resize', onWindowResize, false);
+
+      // 7. 3D Stereoscopic Gaze Reticle
+      initVRReticle();
+    }
+
+    let vrReticleGroup = null;
+    let vrReticleRing = null;
+
+    function initVRReticle() {
+      vrReticleGroup = new THREE.Group();
+      vrReticleGroup.name = 'VR_Gaze_Reticle';
+
+      // 1. Punto focale centrale dorato
+      const dotGeo = new THREE.CircleGeometry(0.012, 32);
+      const dotMat = new THREE.MeshBasicMaterial({
+        color: 0xffd700,
+        transparent: true,
+        opacity: 0.9,
+        depthTest: false,
+        depthWrite: false
+      });
+      const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+      dotMesh.renderOrder = 9999;
+      vrReticleGroup.add(dotMesh);
+
+      // 2. Anello esterno di puntamento
+      const ringGeo = new THREE.RingGeometry(0.024, 0.034, 32);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.7,
+        depthTest: false,
+        depthWrite: false
+      });
+      vrReticleRing = new THREE.Mesh(ringGeo, ringMat);
+      vrReticleRing.renderOrder = 9999;
+      vrReticleGroup.add(vrReticleRing);
+
+      // 3. Posiziona a 2.5 metri di fronte alla camera
+      vrReticleGroup.position.set(0, 0, -2.5);
+      vrReticleGroup.visible = false; // Visibile solo in modalità VR
+
+      // 4. Aggiungi come figlio diretto di camera
+      camera.add(vrReticleGroup);
+      scene.add(camera);
+    }
+
+    // ----------------------------------------------------
+    // Gaze Dwell Interaction System (2.0s Dwell Timer)
+    // ----------------------------------------------------
+    const gazeRaycaster = new THREE.Raycaster();
+    const gazeIntersectTargets = [];
+    let gazeHoverTarget = null;
+    let gazeDwellTimer = 0.0;
+    const DWELL_DURATION_SEC = 2.0;
+    const _gazeForwardDir = new THREE.Vector3();
+
+    function updateGazeInteraction(deltaSec) {
+      if (!state.isVRMode || !vrReticleGroup || !completionPopupGroup || !completionPopupGroup.visible || gazeIntersectTargets.length === 0) return;
+
+      camera.getWorldDirection(_gazeForwardDir);
+      gazeRaycaster.set(camera.position, _gazeForwardDir);
+      const hits = gazeRaycaster.intersectObjects(gazeIntersectTargets, true);
+
+      if (hits.length > 0) {
+        let hitObj = hits[0].object;
+        while (hitObj && (!hitObj.userData || typeof hitObj.userData.onDwellSelect !== 'function') && hitObj.parent && hitObj.parent !== scene) {
+          hitObj = hitObj.parent;
+        }
+
+        if (hitObj && hitObj.userData && typeof hitObj.userData.onDwellSelect === 'function') {
+          if (gazeHoverTarget === hitObj) {
+            gazeDwellTimer += deltaSec;
+            const progress = Math.min(1.0, gazeDwellTimer / DWELL_DURATION_SEC);
+
+            if (vrReticleRing) {
+              const s = 1.0 + progress * 0.75;
+              vrReticleRing.scale.set(s, s, 1.0);
+              vrReticleRing.material.opacity = 0.5 + progress * 0.5;
+            }
+
+            if (gazeDwellTimer >= DWELL_DURATION_SEC) {
+              gazeDwellTimer = 0.0;
+              if (vrReticleRing) {
+                vrReticleRing.scale.set(1.0, 1.0, 1.0);
+                vrReticleRing.material.opacity = 0.7;
+              }
+              hitObj.userData.onDwellSelect();
+            }
+          } else {
+            gazeHoverTarget = hitObj;
+            gazeDwellTimer = 0.0;
+          }
+          return;
+        }
+      }
+
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    // ----------------------------------------------------
+    // 3D Stereoscopic Completion Popup (Hands-Free Gaze)
+    // ----------------------------------------------------
+    let completionPopupGroup = null;
+
+    function createVRCompletionPopup() {
+      if (completionPopupGroup) return completionPopupGroup;
+
+      completionPopupGroup = new THREE.Group();
+      completionPopupGroup.name = 'VR_Completion_Popup';
+
+      // 1. Sfondo glassmorphic Japandi
+      const bgGeo = new THREE.PlaneGeometry(2.4, 1.4);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: 0x070c14,
+        transparent: true,
+        opacity: 0.88,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9998;
+      completionPopupGroup.add(bgMesh);
+
+      // 2. Texture con Titolo "Esperienza Completata"
+      const titleSprite = createPopupTextSprite('Esperienza Completata', 'bold 30px sans-serif', '#FFD700', 2.0, 0.4);
+      titleSprite.position.set(0, 0.38, 0.02);
+      completionPopupGroup.add(titleSprite);
+
+      const subSprite = createPopupTextSprite('Fissa un pulsante per 2s per selezionarlo', '20px sans-serif', 'rgba(255,255,255,0.75)', 2.2, 0.3);
+      subSprite.position.set(0, 0.12, 0.02);
+      completionPopupGroup.add(subSprite);
+
+      // 3. Pulsante 3D "ESCI" (Sinistra)
+      const exitBtn = create3DButton('ESCI', -0.55, -0.28, 0xef4444, () => {
+        notifyFlutter('onExitRequested', {});
+      });
+      completionPopupGroup.add(exitBtn);
+      gazeIntersectTargets.push(exitBtn);
+
+      // 4. Pulsante 3D "RIPETI" (Destra)
+      const repeatBtn = create3DButton('RIPETI', 0.55, -0.28, 0x10b981, () => {
+        hideVRCompletionPopup();
+        hide2DCompletionPopup();
+        state.isCompleted = false;
+        resetSession();
+        startSession();
+      });
+      completionPopupGroup.add(repeatBtn);
+      gazeIntersectTargets.push(repeatBtn);
+
+      completionPopupGroup.position.set(0, 0, -2.0);
+      completionPopupGroup.visible = false;
+
+      camera.add(completionPopupGroup);
+      return completionPopupGroup;
+    }
+
+    function createPopupTextSprite(text, font, color, w, h) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 512, 128);
+      ctx.font = font || 'bold 28px sans-serif';
+      ctx.fillStyle = color || '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 256, 64);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const mat = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false
+      });
+      mat.renderOrder = 9999;
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+      mesh.renderOrder = 9999;
+      return mesh;
+    }
+
+    function create3DButton(label, x, y, colorHex, onSelect) {
+      const group = new THREE.Group();
+      group.position.set(x, y, 0.02);
+
+      const bgGeo = new THREE.PlaneGeometry(0.85, 0.35);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.85,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9999;
+      bgMesh.userData = { onDwellSelect: onSelect };
+      group.add(bgMesh);
+
+      const textSprite = createPopupTextSprite(label, 'bold 32px sans-serif', '#FFFFFF', 0.8, 0.3);
+      textSprite.position.set(0, 0, 0.02);
+      textSprite.userData = { onDwellSelect: onSelect };
+      group.add(textSprite);
+
+      group.userData = { onDwellSelect: onSelect };
+      return group;
+    }
+
+    function showVRCompletionPopup() {
+      if (!completionPopupGroup) createVRCompletionPopup();
+      completionPopupGroup.visible = true;
+    }
+
+    function hideVRCompletionPopup() {
+      if (completionPopupGroup) completionPopupGroup.visible = false;
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    function show2DCompletionPopup() {
+      const modal = document.getElementById('session-completion-modal');
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('opacity', '1', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
+        modal.classList.add('visible');
+      }
+    }
+
+    function hide2DCompletionPopup() {
+      const modal = document.getElementById('session-completion-modal');
+      if (modal) {
+        modal.classList.remove('visible');
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+        setTimeout(() => {
+          if (!modal.classList.contains('visible')) {
+            modal.style.display = 'none';
+          }
+        }, 360);
+      }
+    }
+
+    function onExperienceEnded() {
+      if (state.isCompleted) return;
+      if (typeof outroSafetyTimer !== 'undefined' && outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = true;
+      state.isRunning = false;
+      state.orbitalSparksIntensity = 0.0;
+
+      try {
+        rampAudioLevels(0.0, 0.0, 1.5);
+      } catch(e) {
+        console.warn('Audio fade err:', e);
+      }
+
+      try {
+        if (typeof textSpriteMesh !== 'undefined' && textSpriteMesh && textSpriteMesh.material) {
+          textSpriteMesh.material.opacity = 0;
+        }
+      } catch(e) {}
+
+      try {
+        updateUIElements();
+      } catch(e) {}
+
+      try {
+        notifyFlutter('onSessionComplete', { cyclesCompleted: PACING_CONFIG.TOTAL_CYCLES });
+      } catch(e) {
+        console.warn('Flutter notify error:', e);
+      }
+
+      if (state.isVRMode) {
+        showVRCompletionPopup();
+      } else {
+        show2DCompletionPopup();
+      }
+    }
+
+    // 1. 360° Deep Space Starfield & Milky Way
+    function createStarryCosmosSky() {
+      const skyGeo = new THREE.SphereGeometry(450, 40, 24);
+      const skyMat = new THREE.ShaderMaterial({
+        uniforms: {
+          time: { value: 0.0 }
+        },
+        vertexShader: `
+          varying vec3 vWorldPosition;
+          void main() {
+            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPosition.xyz;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform float time;
+          varying vec3 vWorldPosition;
+
+          float hash2(vec2 p) {
+            p = fract(p * vec2(123.34, 456.21));
+            p += dot(p, p + 45.32);
+            return fract(p.x * p.y);
+          }
+
+          void main() {
+            vec3 dir = normalize(vWorldPosition);
+            
+            // Deep cosmic void base
+            vec3 col = vec3(0.002, 0.004, 0.008);
+
+            // Subtle Cosmic Ribbon / Milky Way Galactic Dust Lane
+            float galacticPlane = abs(dir.x * 0.72 + dir.y * 0.38 - dir.z * 0.58);
+            float nebula = exp(-galacticPlane * galacticPlane * 14.0) * 0.16;
+            vec3 nebulaCol = mix(vec3(0.02, 0.07, 0.16), vec3(0.10, 0.04, 0.16), sin(dir.x * 1.8 + dir.y * 2.2) * 0.5 + 0.5);
+            col += nebulaCol * nebula;
+
+            // Multiscale Spherical Star Grid
+            vec2 starUV1 = vec2(atan(dir.z, dir.x) * 42.0, asin(clamp(dir.y, -1.0, 1.0)) * 42.0);
+            vec2 cell1 = floor(starUV1);
+            vec2 fract1 = fract(starUV1) - 0.5;
+            float rnd1 = hash2(cell1);
+
+            if (rnd1 > 0.88) {
+              float d1 = length(fract1);
+              float twinkle1 = 0.75 + 0.25 * sin(time * 2.5 + rnd1 * 62.8);
+              float starBright = smoothstep(0.16, 0.0, d1) * (rnd1 - 0.88) * 8.5 * twinkle1;
+              vec3 starCol = (rnd1 > 0.97) ? vec3(0.65, 0.82, 1.0) : (rnd1 > 0.94 ? vec3(1.0, 0.88, 0.72) : vec3(0.96, 0.98, 1.0));
+              col += starCol * starBright;
+            }
+
+            vec2 starUV2 = vec2(atan(dir.z, dir.x) * 84.0, asin(clamp(dir.y, -1.0, 1.0)) * 84.0);
+            vec2 cell2 = floor(starUV2);
+            vec2 fract2 = fract(starUV2) - 0.5;
+            float rnd2 = hash2(cell2 + 17.4);
+
+            if (rnd2 > 0.93) {
+              float d2 = length(fract2);
+              float starDust = smoothstep(0.10, 0.0, d2) * (rnd2 - 0.93) * 16.0;
+              col += vec3(0.85, 0.92, 1.0) * starDust;
+            }
+
+            gl_FragColor = vec4(col, 1.0);
+          }
+        `,
+        side: THREE.BackSide
+      });
+
+      starrySkyMesh = new THREE.Mesh(skyGeo, skyMat);
+      scene.add(starrySkyMesh);
+    }
+
+    // 2. 100% Photorealistic Planet Earth (NASA Blue Marble Level)
+    function createPhotorealisticEarth() {
+      earthGroup = new THREE.Group();
+      earthGroup.position.set(PACING_CONFIG.EARTH_BASE_X, PACING_CONFIG.EARTH_BASE_Y, PACING_CONFIG.EARTH_BASE_Z);
+      earthGroup.rotation.z = 23.4 * (Math.PI / 180); // Real Earth axial tilt (23.4°)
+      celestialGroup.add(earthGroup);
+
+      const loader = new THREE.TextureLoader();
+
+      // Load NASA Textures from Pre-encoded Data-URIs (Instant, CORS-proof, Offline-ready)
+      const data = window.EARTH_TEXTURE_DATA || {};
+
+      texDay = data.day ? loader.load(data.day) : null;
+      texClouds = data.clouds ? loader.load(data.clouds) : null;
+      texSpecular = data.specular ? loader.load(data.specular) : null;
+      texNormal = data.normal ? loader.load(data.normal) : null;
+      texLights = data.lights ? loader.load(data.lights) : null;
+
+      // Also attempt loading external HQ files when served via HTTP
+      if (!texDay) {
+        texDay = loader.load('earth_atmos_2048.jpg');
+      }
+      if (!texClouds) {
+        texClouds = loader.load('earth_clouds_1024.png');
+      }
+      if (!texSpecular) {
+        texSpecular = loader.load('earth_specular_2048.jpg');
+      }
+      if (!texNormal) {
+        texNormal = loader.load('earth_normal_2048.jpg');
+      }
+      if (!texLights) {
+        texLights = loader.load('earth_lights_2048.png');
+      }
+
+      const maxAniso = renderer ? renderer.capabilities.getMaxAnisotropy() : 16;
+      [texDay, texClouds, texSpecular, texNormal, texLights].forEach(t => {
+        if (t) {
+          t.wrapS = THREE.RepeatWrapping;
+          t.wrapT = THREE.ClampToEdgeWrapping;
+          t.minFilter = THREE.LinearMipmapLinearFilter;
+          t.magFilter = THREE.LinearFilter;
+          t.generateMipmaps = true;
+          t.anisotropy = maxAniso;
+          t.needsUpdate = true;
+        }
+      });
+
+      const sunDirVector = new THREE.Vector3(0.85, 0.22, 0.48).normalize();
+
+      // A) Earth Surface PBR Shader (NASA Blue Marble + Specular Ocean Glint + Night Lights + Limb Tint)
+      const earthGeo = new THREE.SphereGeometry(1.65, 96, 64);
+      const earthMat = new THREE.ShaderMaterial({
+        uniforms: {
+          dayTexture: { value: texDay },
+          specularTexture: { value: texSpecular },
+          normalTexture: { value: texNormal },
+          lightsTexture: { value: texLights },
+          cloudsTexture: { value: texClouds },
+          sunDirection: { value: sunDirVector },
+          time: { value: 0.0 },
+          scaleFactor: { value: PACING_CONFIG.MIN_SCALE }
+        },
+        vertexShader: `
+          varying vec3 vNormal;
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+          uniform float scaleFactor;
+
+          void main() {
+            vUv = uv;
+            vNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+            vec4 worldPos = modelMatrix * vec4(position * scaleFactor, 1.0);
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D dayTexture;
+          uniform sampler2D specularTexture;
+          uniform sampler2D normalTexture;
+          uniform sampler2D lightsTexture;
+          uniform sampler2D cloudsTexture;
+          uniform vec3 sunDirection;
+          uniform float time;
+          varying vec3 vNormal;
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+
+          void main() {
+            vec3 N = normalize(vNormal);
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 L = normalize(sunDirection);
+            vec3 H = normalize(L + V);
+
+            // 1. Day / Night Dot Product & Terminator (True World Space)
+            float NdotL = dot(N, L);
+            float directSun = max(0.0, NdotL);
+            float dayFactor = smoothstep(-0.06, 0.14, NdotL);
+            float nightFactor = smoothstep(0.06, -0.14, NdotL);
+
+            // 2. Base Surface Textures
+            vec3 dayColor = texture2D(dayTexture, vUv).rgb;
+            float specVal = texture2D(specularTexture, vUv).r;
+            float isWater = smoothstep(0.25, 0.75, specVal);
+
+            // 3. Authentic NASA Albedo (100% natural, crisp, rich colors on land and ocean)
+            vec3 surfaceAlbedo = dayColor;
+
+            // 4. Subtle Topographic Relief on Land Only (Zero moire artifacts on ocean)
+            vec3 topoNormalMap = texture2D(normalTexture, vUv).xyz * 2.0 - 1.0;
+            vec3 landNormalOffset = vec3(topoNormalMap.xy * 0.04 * (1.0 - isWater), 0.0);
+            vec3 surfaceNormal = normalize(N + landNormalOffset);
+
+            // 5. Physically-Accurate Crisp Solar Reflection Spot on Ocean (Zero broad wash)
+            float NdotH = max(0.0, dot(surfaceNormal, H));
+            float VdotH = max(0.0, dot(V, H));
+            float fresnelOcean = 0.04 + 0.96 * pow(1.0 - VdotH, 5.0);
+
+            float glintCore = pow(NdotH, 256.0) * 3.5;
+            float totalSunGlint = glintCore * fresnelOcean * isWater * directSun;
+            vec3 specularColor = vec3(1.0, 0.98, 0.92) * totalSunGlint;
+
+            // 6. Realistic Subtle Cloud Shadows Projected on Earth Surface
+            vec2 cloudUv = vec2(vUv.x + time * 0.0008, vUv.y);
+            vec2 shadowUv = cloudUv - vec2(L.x, L.y) * 0.0030;
+            vec4 cloudSample = texture2D(cloudsTexture, shadowUv);
+            float rawCloudVal = cloudSample.r;
+            float cloudShadow = 1.0 - smoothstep(0.20, 0.80, rawCloudVal) * 0.18 * dayFactor;
+
+            // 7. Ambient Space Light & Direct Sunlight
+            vec3 ambientSpace = surfaceAlbedo * vec3(0.015, 0.022, 0.038);
+            vec3 sunColor = vec3(1.0, 0.98, 0.94);
+            float surfaceDiff = max(0.0, dot(surfaceNormal, L));
+            vec3 litDay = surfaceAlbedo * sunColor * (surfaceDiff * 0.90 + 0.10) * cloudShadow;
+
+            // 8. Night City Lights (Warm Golden Pinpoints)
+            vec3 cityLights = texture2D(lightsTexture, vUv).rgb;
+            vec3 warmCityLights = cityLights * vec3(1.40, 1.10, 0.70) * 2.2 * nightFactor;
+
+            // 9. Surface Atmospheric Rayleigh Limb Glow
+            float vDotN = max(0.0, dot(V, N));
+            float surfaceFresnel = pow(1.0 - vDotN, 3.4);
+            vec3 surfaceAtmosLimb = vec3(0.14, 0.50, 1.0) * surfaceFresnel * 0.38 * dayFactor;
+
+            // 10. Twilight Sunset Rim along Terminator
+            float twilightFactor = smoothstep(0.14, -0.04, NdotL) * smoothstep(-0.20, 0.08, NdotL);
+            vec3 sunsetGlow = vec3(1.0, 0.46, 0.16) * twilightFactor * surfaceFresnel * 0.65;
+
+            vec3 finalColor = litDay + specularColor + ambientSpace + warmCityLights + surfaceAtmosLimb + sunsetGlow;
+
+            gl_FragColor = vec4(finalColor, 1.0);
+          }
+        `
+      });
+
+      earthSurfaceMesh = new THREE.Mesh(earthGeo, earthMat);
+      earthGroup.add(earthSurfaceMesh);
+
+      // B) Concentric Atmospheric Cloud Layer (Translucent Weather Systems at R = 1.656)
+      const cloudsGeo = new THREE.SphereGeometry(1.656, 96, 64);
+      const cloudsMat = new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.NormalBlending,
+        uniforms: {
+          cloudsTexture: { value: texClouds },
+          sunDirection: { value: sunDirVector },
+          time: { value: 0.0 },
+          scaleFactor: { value: PACING_CONFIG.MIN_SCALE }
+        },
+        vertexShader: `
+          varying vec3 vNormal;
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+          uniform float scaleFactor;
+
+          void main() {
+            vUv = uv;
+            vNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+            vec4 worldPos = modelMatrix * vec4(position * scaleFactor, 1.0);
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D cloudsTexture;
+          uniform vec3 sunDirection;
+          uniform float time;
+          varying vec3 vNormal;
+          varying vec3 vWorldPosition;
+          varying vec2 vUv;
+
+          void main() {
+            vec3 N = normalize(vNormal);
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 L = normalize(sunDirection);
+
+            // Dynamic Atmospheric Drift
+            vec2 cloudUv = vec2(vUv.x + time * 0.0008, vUv.y);
+            vec4 cloudSample = texture2D(cloudsTexture, cloudUv);
+            float rawCloud = cloudSample.r;
+
+            // Soft, wispy translucent cloud density (alpha 0.0 to 0.28 max)
+            float cloudAlpha = smoothstep(0.20, 0.80, rawCloud) * 0.28;
+
+            if (cloudAlpha <= 0.005) discard;
+
+            // Day / Night Illumination
+            float NdotL = dot(N, L);
+            float dayFactor = smoothstep(-0.10, 0.20, NdotL);
+            float directSun = max(0.0, NdotL);
+
+            // Pure Brilliant Luminous White Cloud Tops
+            vec3 dayCloudColor = vec3(1.0, 1.0, 1.0) * (0.45 + 0.65 * directSun);
+
+            // Forward Mie Scattering (glowing cloud edges when looking towards sun)
+            float mieScatter = pow(max(0.0, dot(V, -L)), 3.5) * 0.25 * dayFactor;
+            dayCloudColor += vec3(1.0, 0.98, 0.92) * mieScatter;
+
+            // Sunset scattering on cloud tops along terminator
+            float twilight = smoothstep(0.16, -0.04, NdotL) * smoothstep(-0.20, 0.08, NdotL);
+            dayCloudColor = mix(dayCloudColor, vec3(1.0, 0.62, 0.35), twilight * 0.80);
+
+            vec3 nightCloudColor = vec3(0.003, 0.005, 0.008);
+            vec3 finalCloudColor = mix(nightCloudColor, dayCloudColor, dayFactor);
+
+            // Soft limb grazing fade
+            float vDotN = max(0.0, dot(V, N));
+            float limbFade = pow(vDotN, 0.25);
+
+            gl_FragColor = vec4(finalCloudColor, cloudAlpha * limbFade);
+          }
+        `
+      });
+
+      cloudsMesh = new THREE.Mesh(cloudsGeo, cloudsMat);
+      earthGroup.add(cloudsMesh);
+
+      // C) Authentic Physical Atmospheric Rayleigh Limb Halo (Ethereal BackSide Shader at R = 1.675)
+      const atmosGeo = new THREE.SphereGeometry(1.675, 64, 48);
+      const atmosMat = new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: false,
+        side: THREE.BackSide,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          sunDirection: { value: sunDirVector },
+          glowIntensity: { value: PACING_CONFIG.MIN_ATMOSPHERE },
+          scaleFactor: { value: PACING_CONFIG.MIN_SCALE }
+        },
+        vertexShader: `
+          varying vec3 vNormal;
+          varying vec3 vWorldPosition;
+          uniform float scaleFactor;
+
+          void main() {
+            vNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+            vec4 worldPos = modelMatrix * vec4(position * scaleFactor, 1.0);
+            vWorldPosition = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 sunDirection;
+          uniform float glowIntensity;
+          varying vec3 vNormal;
+          varying vec3 vWorldPosition;
+
+          void main() {
+            vec3 N = normalize(-vNormal);
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 L = normalize(sunDirection);
+
+            float viewFactor = dot(V, N);
+            if (viewFactor < 0.0) discard;
+
+            // Ethereal limb curve with zero hard edges
+            float rim = pow(viewFactor, 3.8);
+
+            // Sunlight forward scattering and day/night envelope
+            float NdotL = dot(N, L);
+            float dayFactor = smoothstep(-0.20, 0.40, NdotL);
+            float sunScatter = pow(max(0.0, dot(V, -L)), 3.5) * 0.30;
+
+            // Deep celestial azure Rayleigh gradient
+            vec3 skyAzure = mix(vec3(0.08, 0.45, 1.0), vec3(0.25, 0.80, 1.0), rim);
+            vec3 sunsetAmber = vec3(1.0, 0.50, 0.18);
+
+            // Twilight horizon virage
+            float twilight = smoothstep(0.18, -0.08, NdotL) * smoothstep(-0.25, 0.12, NdotL);
+            vec3 atmosColor = mix(skyAzure, sunsetAmber, twilight * 0.70);
+
+            vec3 glow = (atmosColor * rim * 1.8 + vec3(0.85, 0.95, 1.0) * sunScatter) * glowIntensity * (dayFactor * 0.92 + 0.08);
+            float alpha = rim * 0.92 * (dayFactor * 0.92 + 0.08);
+
+            gl_FragColor = vec4(glow, alpha);
+          }
+        `
+      });
+
+      atmosphereGlowMesh = new THREE.Mesh(atmosGeo, atmosMat);
+      earthGroup.add(atmosphereGlowMesh);
+    }
+
+    // 3. Equatorial Energy Filaments (PERIFIT Aura Ribbons of Pure Cosmic Light)
+    function createEquatorialEnergyRings() {
+      orbitalRingsGroup = new THREE.Group();
+      earthGroup.add(orbitalRingsGroup);
+
+      const ringConfigs = [
+        { innerR: 1.95, outerR: 2.32, speed: 0.85, freq: 6.0, ringType: 0.0 }, // Primary Gold Core Aura
+        { innerR: 2.16, outerR: 2.58, speed: -0.65, freq: 9.0, ringType: 1.0 }, // Harmonic Cyan/Turquoise Plasma
+        { innerR: 2.40, outerR: 2.90, speed: 0.45, freq: 5.0, ringType: 2.0 }, // Outer Auric Corona Ribbon
+        { innerR: 2.00, outerR: 2.75, speed: 0.25, freq: 3.0, ringType: 3.0 }  // Whisper Atmospheric Horizon Field
+      ];
+
+      ringMeshes = [];
+
+      ringConfigs.forEach((cfg, idx) => {
+        const ringGeo = new THREE.RingGeometry(cfg.innerR, cfg.outerR, 128, 4);
+        ringGeo.rotateX(Math.PI / 2);
+
+        const ringMat = new THREE.ShaderMaterial({
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          uniforms: {
+            time: { value: 0.0 },
+            opacity: { value: 0.0 },
+            speed: { value: cfg.speed },
+            freq: { value: cfg.freq },
+            innerR: { value: cfg.innerR },
+            outerR: { value: cfg.outerR },
+            ringType: { value: cfg.ringType }
+          },
+          vertexShader: `
+            varying vec2 vUv;
+            varying vec3 vLocalPosition;
+            void main() {
+              vUv = uv;
+              vLocalPosition = position;
+              vec4 worldPos = modelMatrix * vec4(position, 1.0);
+              gl_Position = projectionMatrix * viewMatrix * worldPos;
+            }
+          `,
+          fragmentShader: `
+            uniform float time;
+            uniform float opacity;
+            uniform float speed;
+            uniform float freq;
+            uniform float innerR;
+            uniform float outerR;
+            uniform float ringType;
+            varying vec2 vUv;
+            varying vec3 vLocalPosition;
+
+            void main() {
+              float r = length(vLocalPosition.xz);
+              float r0 = (innerR + outerR) * 0.5;
+              float halfWidth = (outerR - innerR) * 0.5;
+              float normDist = (r - r0) / halfWidth;
+
+              if (abs(normDist) > 1.0) discard;
+
+              // 1. Soft Gaussian cross-section (Zero hard edges, pure radiant plasma)
+              float gaussian = exp(-normDist * normDist * 3.8);
+              float edgeFeather = smoothstep(1.0, 0.70, abs(normDist));
+              float radialEnvelope = gaussian * edgeFeather;
+
+              // 2. Harmonic Auric Plasma Wave Superposition
+              float angle = atan(vLocalPosition.z, vLocalPosition.x);
+              float w1 = sin(angle * freq + time * speed * 1.7);
+              float w2 = sin(angle * (freq * 1.618) - time * (speed * 1.2) + 1.25);
+              float w3 = cos(angle * 3.0 + time * (speed * 0.75) + 2.4);
+              float plasmaWave = (w1 * 0.45 + w2 * 0.35 + w3 * 0.20);
+              float waveIntensity = 0.65 + 0.35 * plasmaWave;
+
+              // Micro-shimmer crystalline light running along the ribbon
+              float microSparkle = sin(angle * (freq * 3.5) + time * 3.0) * 0.5 + 0.5;
+              microSparkle = pow(microSparkle, 3.0) * 0.35;
+
+              // 3. Radiant Chromatic Palette: Warm Gold/Amber Core -> Cyan/Emerald Glow -> Azure Rim
+              vec3 colCoreGold = vec3(1.0, 0.92, 0.58);
+              vec3 colAmber = vec3(1.0, 0.72, 0.24);
+              vec3 colCyan = vec3(0.16, 0.96, 0.84);
+              vec3 colEmerald = vec3(0.08, 0.88, 0.66);
+              vec3 colAzure = vec3(0.12, 0.62, 1.0);
+              vec3 colStarlight = vec3(1.0, 0.99, 0.95);
+
+              float coreFactor = exp(-normDist * normDist * 9.5);
+              vec3 ringColor;
+
+              if (ringType < 0.5) {
+                // Primary Core: Warm Amber/Gold Core with Cyan edge glow
+                vec3 baseCol = mix(colCyan, colAmber, clamp(waveIntensity, 0.0, 1.0));
+                ringColor = mix(baseCol, colCoreGold, coreFactor);
+                ringColor += colStarlight * microSparkle;
+              } else if (ringType < 1.5) {
+                // Harmonic Middle: Luminous Turquoise & Cyan
+                vec3 baseCol = mix(colEmerald, colCyan, clamp(waveIntensity, 0.0, 1.0));
+                ringColor = mix(baseCol, colCoreGold, coreFactor * 0.75);
+                ringColor += colStarlight * microSparkle;
+              } else if (ringType < 2.5) {
+                // Outer Corona: Ethereal Emerald to Deep Celestial Azure
+                vec3 baseCol = mix(colAzure, colEmerald, clamp(waveIntensity, 0.0, 1.0));
+                ringColor = mix(baseCol, colCyan, coreFactor * 0.5);
+                ringColor += colStarlight * (microSparkle * 0.5);
+              } else {
+                // Whisper Horizon: Soft Radiant Atmospheric Energy Field
+                vec3 baseCol = mix(colAzure, colCyan, 0.5 + 0.5 * sin(angle * 2.0 + time * 0.3));
+                ringColor = mix(baseCol, colCoreGold, coreFactor * 0.3);
+              }
+
+              // 4. Subtle Harmonic Breathing Pulse
+              float pulse = 0.92 + 0.08 * sin(time * 2.2 + r0 * 4.0);
+
+              // 5. Final Output Alpha & Luminous Additive Color
+              float alpha = opacity * radialEnvelope * waveIntensity * pulse;
+              alpha = clamp(alpha, 0.0, 1.0);
+
+              if (alpha <= 0.001) discard;
+
+              gl_FragColor = vec4(ringColor * (1.15 + 0.35 * coreFactor), alpha);
+            }
+          `
+        });
+
+        const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+        orbitalRingsGroup.add(ringMesh);
+        ringMeshes.push(ringMesh);
+      });
+    }
+
+    // 4. Sacred Hold Stellar Crystalline Spark Particle System (800 GPU-Accelerated Micro-Faville)
+    function createSacredOrbitalSparks() {
+      const sparkCount = 800;
+      sparkGeometry = new THREE.BufferGeometry();
+
+      const positions = new Float32Array(sparkCount * 3);
+      const aOrbitRadius = new Float32Array(sparkCount);
+      const aOrbitSpeed = new Float32Array(sparkCount);
+      const aPhaseAngle = new Float32Array(sparkCount);
+      const aVerticalOffset = new Float32Array(sparkCount);
+      const aVerticalFreq = new Float32Array(sparkCount);
+      const aSize = new Float32Array(sparkCount);
+      const aSeed = new Float32Array(sparkCount);
+      const aLifePeriod = new Float32Array(sparkCount);
+
+      for (let i = 0; i < sparkCount; i++) {
+        // Orbital zone around PERIFIT rings (1.88 to 3.05)
+        const rDist = Math.random();
+        const r = 1.88 + Math.pow(rDist, 1.3) * 1.15;
+        aOrbitRadius[i] = r;
+
+        // Keplerian orbital speed with dual-direction streams
+        const dir = (Math.random() > 0.42) ? 1.0 : -1.0;
+        const keplerSpeed = (0.32 + 0.38 / Math.sqrt(r)) * dir * (0.85 + Math.random() * 0.30);
+        aOrbitSpeed[i] = keplerSpeed;
+
+        aPhaseAngle[i] = Math.random() * Math.PI * 2;
+
+        // Gaussian-like organic vertical distribution around equator
+        const yRand = (Math.random() + Math.random() + Math.random() - 1.5) * 0.28;
+        aVerticalOffset[i] = yRand;
+        aVerticalFreq[i] = 1.2 + Math.random() * 1.8;
+
+        // Organically varied sizes: micro cosmic stardust (0.022) to prominent crystal sparks (0.065)
+        const sizeRnd = Math.random();
+        const sizeVal = (sizeRnd < 0.65) ? (0.022 + Math.random() * 0.018) : (0.042 + Math.random() * 0.023);
+        aSize[i] = sizeVal;
+
+        aSeed[i] = Math.random();
+        aLifePeriod[i] = 2.4 + Math.random() * 2.8;
+      }
+
+      sparkGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      sparkGeometry.setAttribute('aOrbitRadius', new THREE.BufferAttribute(aOrbitRadius, 1));
+      sparkGeometry.setAttribute('aOrbitSpeed', new THREE.BufferAttribute(aOrbitSpeed, 1));
+      sparkGeometry.setAttribute('aPhaseAngle', new THREE.BufferAttribute(aPhaseAngle, 1));
+      sparkGeometry.setAttribute('aVerticalOffset', new THREE.BufferAttribute(aVerticalOffset, 1));
+      sparkGeometry.setAttribute('aVerticalFreq', new THREE.BufferAttribute(aVerticalFreq, 1));
+      sparkGeometry.setAttribute('aSize', new THREE.BufferAttribute(aSize, 1));
+      sparkGeometry.setAttribute('aSeed', new THREE.BufferAttribute(aSeed, 1));
+      sparkGeometry.setAttribute('aLifePeriod', new THREE.BufferAttribute(aLifePeriod, 1));
+
+      // High-precision optical Point Spread Function (Warm luminous core + soft diffraction spikes)
+      const pCanvas = document.createElement('canvas');
+      pCanvas.width = 128;
+      pCanvas.height = 128;
+      const pCtx = pCanvas.getContext('2d');
+      pCtx.clearRect(0, 0, 128, 128);
+
+      const cx = 64, cy = 64;
+
+      // 1. Broad ethereal ambient bloom halo
+      const outerGlow = pCtx.createRadialGradient(cx, cy, 0, cx, cy, 62);
+      outerGlow.addColorStop(0.0, 'rgba(80, 245, 215, 0.45)');
+      outerGlow.addColorStop(0.20, 'rgba(40, 210, 180, 0.22)');
+      outerGlow.addColorStop(0.50, 'rgba(15, 140, 120, 0.06)');
+      outerGlow.addColorStop(1.0, 'rgba(0, 0, 0, 0.0)');
+      pCtx.fillStyle = outerGlow;
+      pCtx.beginPath();
+      pCtx.arc(cx, cy, 62, 0, Math.PI * 2);
+      pCtx.fill();
+
+      // 2. Mid-level Warm Golden Aura
+      const midGlow = pCtx.createRadialGradient(cx, cy, 0, cx, cy, 32);
+      midGlow.addColorStop(0.0, 'rgba(255, 250, 220, 0.95)');
+      midGlow.addColorStop(0.30, 'rgba(255, 215, 130, 0.65)');
+      midGlow.addColorStop(0.70, 'rgba(120, 230, 190, 0.20)');
+      midGlow.addColorStop(1.0, 'rgba(0, 0, 0, 0.0)');
+      pCtx.fillStyle = midGlow;
+      pCtx.beginPath();
+      pCtx.arc(cx, cy, 32, 0, Math.PI * 2);
+      pCtx.fill();
+
+      // 3. Compact Intense Pure-White Hot Core
+      const coreGlow = pCtx.createRadialGradient(cx, cy, 0, cx, cy, 14);
+      coreGlow.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+      coreGlow.addColorStop(0.35, 'rgba(255, 253, 240, 0.98)');
+      coreGlow.addColorStop(0.75, 'rgba(255, 235, 180, 0.55)');
+      coreGlow.addColorStop(1.0, 'rgba(255, 220, 140, 0.0)');
+      pCtx.fillStyle = coreGlow;
+      pCtx.beginPath();
+      pCtx.arc(cx, cy, 14, 0, Math.PI * 2);
+      pCtx.fill();
+
+      // 4. Subtle Optical Diffraction Spikes (Natural lens flare cross glint)
+      const hSpike = pCtx.createLinearGradient(cx - 56, cy, cx + 56, cy);
+      hSpike.addColorStop(0.0, 'rgba(255, 255, 255, 0.0)');
+      hSpike.addColorStop(0.35, 'rgba(255, 250, 230, 0.35)');
+      hSpike.addColorStop(0.50, 'rgba(255, 255, 255, 0.90)');
+      hSpike.addColorStop(0.65, 'rgba(255, 250, 230, 0.35)');
+      hSpike.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+      pCtx.fillStyle = hSpike;
+      pCtx.fillRect(cx - 56, cy - 1.0, 112, 2.0);
+
+      const vSpike = pCtx.createLinearGradient(cx, cy - 56, cx, cy + 56);
+      vSpike.addColorStop(0.0, 'rgba(255, 255, 255, 0.0)');
+      vSpike.addColorStop(0.35, 'rgba(255, 250, 230, 0.35)');
+      vSpike.addColorStop(0.50, 'rgba(255, 255, 255, 0.90)');
+      vSpike.addColorStop(0.65, 'rgba(255, 250, 230, 0.35)');
+      vSpike.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+      pCtx.fillStyle = vSpike;
+      pCtx.fillRect(cx - 1.0, cy - 56, 2.0, 112);
+
+      // Secondary diagonal diffraction
+      pCtx.save();
+      pCtx.translate(cx, cy);
+      pCtx.rotate(Math.PI / 4);
+      const dSpike = pCtx.createLinearGradient(-30, 0, 30, 0);
+      dSpike.addColorStop(0.0, 'rgba(200, 245, 235, 0.0)');
+      dSpike.addColorStop(0.5, 'rgba(255, 255, 255, 0.40)');
+      dSpike.addColorStop(1.0, 'rgba(200, 245, 235, 0.0)');
+      pCtx.fillStyle = dSpike;
+      pCtx.fillRect(-30, -0.75, 60, 1.5);
+      pCtx.fillRect(-0.75, -30, 1.5, 60);
+      pCtx.restore();
+
+      const pTexture = new THREE.CanvasTexture(pCanvas);
+      pTexture.minFilter = THREE.LinearMipmapLinearFilter;
+      pTexture.magFilter = THREE.LinearFilter;
+      pTexture.generateMipmaps = true;
+
+      const sparkMaterial = new THREE.ShaderMaterial({
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        uniforms: {
+          pointTexture: { value: pTexture },
+          time: { value: 0.0 },
+          earthScale: { value: PACING_CONFIG.MIN_SCALE },
+          sparksIntensity: { value: 0.0 }
+        },
+        vertexShader: `
+          uniform float time;
+          uniform float earthScale;
+          uniform float sparksIntensity;
+
+          attribute float aOrbitRadius;
+          attribute float aOrbitSpeed;
+          attribute float aPhaseAngle;
+          attribute float aVerticalOffset;
+          attribute float aVerticalFreq;
+          attribute float aSize;
+          attribute float aSeed;
+          attribute float aLifePeriod;
+
+          varying vec3 vColor;
+          varying float vAlpha;
+
+          void main() {
+            // 1. Keplerian Orbit with Earth Scale tracking
+            float currentAngle = aPhaseAngle + time * aOrbitSpeed * (0.88 + 0.12 * sparksIntensity);
+            float radius = aOrbitRadius * (earthScale / 0.92);
+
+            // 2. Vertical Harmonic Drift & Micro-Turbulence
+            float yDrift = aVerticalOffset + sin(time * aVerticalFreq + aSeed * 6.28318) * 0.035;
+            yDrift += cos(currentAngle * 2.0 + aSeed * 3.14159) * 0.015;
+
+            vec3 localPos = vec3(cos(currentAngle) * radius, yDrift, sin(currentAngle) * radius);
+            vec4 worldPos = modelMatrix * vec4(localPos, 1.0);
+            vec4 mvPosition = viewMatrix * worldPos;
+
+            // 3. Continuous Life Cycle & Organic Twinkle Envelope (Zero visual pop)
+            float lifePhase = fract((time + aSeed * aLifePeriod) / aLifePeriod);
+            float lifeEnvelope = sin(lifePhase * 3.14159265);
+            lifeEnvelope = pow(lifeEnvelope, 1.4);
+
+            float shimmer = 0.82 + 0.18 * sin(time * 5.5 + aSeed * 42.0);
+            vAlpha = sparksIntensity * lifeEnvelope * shimmer;
+
+            // 4. Radiant Stardust Color Ramp: Diamond White (#fffdf0) -> Amber Gold -> Ethereal Cyan
+            vec3 colWhite = vec3(1.0, 0.99, 0.94);
+            vec3 colGold = vec3(1.0, 0.86, 0.44);
+            vec3 colCyan = vec3(0.20, 0.96, 0.82);
+
+            vec3 baseCol;
+            if (aSeed < 0.35) {
+              baseCol = mix(colWhite, colGold, lifePhase);
+            } else if (aSeed < 0.72) {
+              baseCol = mix(colGold, colCyan, lifePhase * 0.88);
+            } else {
+              baseCol = mix(colWhite, colCyan, lifePhase);
+            }
+
+            // Smooth cooling down to soft starlight white during exhale fadeout
+            baseCol = mix(vec3(0.88, 0.94, 1.0), baseCol, smoothstep(0.0, 0.45, sparksIntensity));
+            vColor = baseCol;
+
+            // 5. Point Size Attenuation with viewport distance
+            float basePointSize = (aSize * 520.0 / -mvPosition.z) * (0.65 + 0.35 * lifeEnvelope);
+            gl_PointSize = clamp(basePointSize, 1.0, 96.0);
+
+            gl_Position = projectionMatrix * mvPosition;
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D pointTexture;
+          varying vec3 vColor;
+          varying float vAlpha;
+
+          void main() {
+            if (vAlpha <= 0.001) discard;
+
+            vec4 tex = texture2D(pointTexture, gl_PointCoord);
+            float alpha = tex.a * vAlpha;
+            if (alpha <= 0.002) discard;
+
+            vec3 finalColor = vColor * tex.rgb * 1.35;
+            gl_FragColor = vec4(finalColor, alpha);
+          }
+        `
+      });
+
+      orbitalSparks = new THREE.Points(sparkGeometry, sparkMaterial);
+      earthGroup.add(orbitalSparks);
+    }
+
+    function triggerOrbitalSparksBurst() {
+      // Continuous GPU system smoothly modulated by sparksIntensity
+    }
+
+    // 5. Cosmic Lighting
+    function setupCosmicLighting() {
+      sunDirectionalLight = new THREE.DirectionalLight(0xfff8e8, 1.85);
+      sunDirectionalLight.position.set(25, 8, 15);
+      scene.add(sunDirectionalLight);
+
+      const celestialAmbient = new THREE.AmbientLight(0x06101c, 0.40);
+      scene.add(celestialAmbient);
+    }
+
+    // 6. 3D World-Space VR Billboard
+    function createVRBillboardText() {
+      textCanvas = document.createElement('canvas');
+      textCanvas.width = 1024;
+      textCanvas.height = 256;
+      textCtx = textCanvas.getContext('2d');
+
+      textTexture = new THREE.CanvasTexture(textCanvas);
+      textTexture.minFilter = THREE.LinearFilter;
+      textTexture.magFilter = THREE.LinearFilter;
+
+      const spriteMat = new THREE.SpriteMaterial({
+        map: textTexture,
+        transparent: true,
+        opacity: 0,
+        depthTest: false,
+        depthWrite: false
+      });
+
+      textSpriteMesh = new THREE.Sprite(spriteMat);
+      textSpriteMesh.scale.set(3.4, 0.85, 1);
+      textSpriteMesh.position.set(0, 2.5, 0);
+      celestialGroup.add(textSpriteMesh);
+    }
+
+    function renderVRBillboardText(mainTitle, subTitle, opacity = 1.0) {
+      if (!textCtx || !state.isVRMode) {
+        if (textSpriteMesh) textSpriteMesh.material.opacity = 0;
+        return;
+      }
+
+      if (lastVRMainTitle === mainTitle && lastVRSubTitle === subTitle && Math.abs(textSpriteMesh.material.opacity - opacity) < 0.05) {
+        return;
+      }
+      lastVRMainTitle = mainTitle;
+      lastVRSubTitle = subTitle;
+
+      textCtx.clearRect(0, 0, 1024, 256);
+
+      textCtx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+      textCtx.shadowBlur = 14;
+      textCtx.fillStyle = '#FFFFFF';
+      textCtx.font = 'bold 52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
+      textCtx.textAlign = 'center';
+      textCtx.textBaseline = 'middle';
+      textCtx.fillText(mainTitle.toUpperCase(), 512, 95);
+
+      textCtx.shadowColor = 'rgba(0, 230, 118, 0.45)';
+      textCtx.shadowBlur = 10;
+      textCtx.fillStyle = '#1de9b6';
+      textCtx.font = '600 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
+      textCtx.textAlign = 'center';
+      textCtx.textBaseline = 'middle';
+      textCtx.fillText(subTitle, 512, 160);
+
+      textTexture.needsUpdate = true;
+      textSpriteMesh.material.opacity = opacity;
+    }
+
+    /* ======================================================================
+       6. CONTROLS: PC (MOUSE/KEYBOARD/ZOOM) + MOBILE VR (GYRO & PINCH)
+       ====================================================================== */
+    let isDragging = false;
+    let prevMouseX = 0;
+    let prevMouseY = 0;
+    let camYaw = 0;
+    let camPitch = 0;
+    let currentFov = 54;
+    const MIN_FOV = 32;
+    const MAX_FOV = 80;
+
+    let gyroAvailable = true;
+    let gyroAlpha = 0, gyroBeta = 0, gyroGamma = 0;
+    let initialYawOffset = 0;
+    const _zee = new THREE.Vector3(0, 0, 1);
+    const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
+    const _q0 = new THREE.Quaternion();
+    const _q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)); // -PI/2 X
+
+    function getScreenOrientationAngle() {
+      if (screen.orientation && typeof screen.orientation.angle === 'number') {
+        return screen.orientation.angle;
+      }
+      if (typeof window.orientation === 'number') {
+        return window.orientation;
+      }
+      if (window.innerWidth > window.innerHeight) {
+        return 90;
+      }
+      return 0;
+    }
+
+    function initControls() {
+      requestDeviceOrientation();
+      // PC Pointer Drag
+      window.addEventListener('mousedown', (e) => {
+        if (e.target.closest('#ui-layer') && !e.target.closest('#webgl-container')) return;
+        isDragging = true;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - prevMouseX;
+        const dy = e.clientY - prevMouseY;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+
+        camYaw -= dx * 0.0025;
+        camPitch -= dy * 0.0025;
+        camPitch = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, camPitch));
+      });
+
+      window.addEventListener('mouseup', () => { isDragging = false; });
+
+      // Mouse Wheel Zoom
+      window.addEventListener('wheel', (e) => {
+        currentFov = Math.max(MIN_FOV, Math.min(MAX_FOV, currentFov + e.deltaY * 0.035));
+        camera.fov = currentFov;
+        camera.updateProjectionMatrix();
+      }, { passive: true });
+
+      // Touch Drag & Pinch-to-Zoom (Mobile)
+      let initialPinchDist = 0;
+      let initialPinchFov = 54;
+
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1 && !state.isVRMode) {
+          isDragging = true;
+          prevMouseX = e.touches[0].clientX;
+          prevMouseY = e.touches[0].clientY;
+          initialPinchDist = 0;
+        } else if (e.touches.length === 2 && !state.isVRMode) {
+          isDragging = false;
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          initialPinchDist = Math.hypot(dx, dy);
+          initialPinchFov = currentFov;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (state.isVRMode) return;
+        if (isDragging && e.touches.length === 1) {
+          const dx = e.touches[0].clientX - prevMouseX;
+          const dy = e.touches[0].clientY - prevMouseY;
+          prevMouseX = e.touches[0].clientX;
+          prevMouseY = e.touches[0].clientY;
+
+          camYaw -= dx * 0.003;
+          camPitch -= dy * 0.003;
+          camPitch = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, camPitch));
+        } else if (e.touches.length === 2 && initialPinchDist > 0) {
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          const dist = Math.hypot(dx, dy);
+          const pinchScale = initialPinchDist / Math.max(10, dist);
+          currentFov = Math.max(MIN_FOV, Math.min(MAX_FOV, initialPinchFov * pinchScale));
+          camera.fov = currentFov;
+          camera.updateProjectionMatrix();
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', (e) => {
+        if (e.touches.length === 0) {
+          isDragging = false;
+          initialPinchDist = 0;
+        } else if (e.touches.length === 1) {
+          isDragging = true;
+          prevMouseX = e.touches[0].clientX;
+          prevMouseY = e.touches[0].clientY;
+          initialPinchDist = 0;
+        }
+      });
+
+      // Keyboard Shortcuts
+      window.addEventListener('keydown', (e) => {
+        switch (e.code) {
+          case 'Space':
+            e.preventDefault();
+            togglePlayPause();
+            break;
+          case 'KeyR':
+            recenterView();
+            break;
+          case 'KeyF':
+            toggleFullscreen();
+            break;
+          case 'KeyV':
+            toggleVR();
+            break;
+          case 'KeyM':
+            setAudioMuted(!state.isAudioMuted);
+            break;
+        }
+      });
+    }
+
+    function requestDeviceOrientation() {
+      window.addEventListener('deviceorientation', handleOrientation, true);
+      gyroAvailable = true;
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then((res) => {
+            if (res === 'granted') {
+              window.addEventListener('deviceorientation', handleOrientation, true);
+              gyroAvailable = true;
+            }
+          })
+          .catch(console.warn);
+      }
+    }
+
+    function handleOrientation(e) {
+      if (e && e.alpha !== null && e.alpha !== undefined) {
+        gyroAvailable = true;
+        gyroAlpha = e.alpha;
+        gyroBeta = e.beta;
+        gyroGamma = e.gamma;
+      }
+    }
+
+    function recenterView() {
+      camYaw = 0;
+      camPitch = 0;
+      currentFov = 54;
+      camera.fov = 54;
+      camera.updateProjectionMatrix();
+      if (gyroAvailable) {
+        initialYawOffset = gyroAlpha;
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    function updateCameraRotation(timeSec) {
+      if (gyroAvailable && state.isVRMode) {
+        const alphaRad = THREE.MathUtils.degToRad(gyroAlpha - initialYawOffset);
+        const betaRad = THREE.MathUtils.degToRad(gyroBeta);
+        const gammaRad = THREE.MathUtils.degToRad(gyroGamma);
+        const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
+
+        // 1. Converti gli angoli W3C nel frame della telecamera Three.js
+        _euler.set(betaRad, alphaRad, -gammaRad, 'YXZ');
+        camera.quaternion.setFromEuler(_euler);
+
+        // 2. Ruota per allineare l'asse del dispositivo con il frustum della camera
+        camera.quaternion.multiply(_q1);
+
+        // 3. Compensa la rotazione landscape dello schermo
+        _q0.setFromAxisAngle(_zee, -orientRad);
+        camera.quaternion.multiply(_q0);
+      } else {
+        const breathDriftY = Math.sin(timeSec * 0.35) * 0.005;
+        const breathDriftX = Math.cos(timeSec * 0.25) * 0.004;
+        camera.rotation.set(camPitch + breathDriftY, camYaw + breathDriftX, 0, 'YXZ');
+      }
+    }
+
+    /* ======================================================================
+       7. SESSION CONTROLS & STATE MACHINE LIFECYCLE
+       ====================================================================== */
+    function dismissGateAndStart() {
+      const gate = document.getElementById('audio-gate');
+      if (gate) {
+        gate.style.opacity = '0';
+        gate.style.pointerEvents = 'none';
+        setTimeout(() => { gate.style.display = 'none'; }, 500);
+      }
+
+      initAudioEngine();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      startSession();
+    }
+
+    let outroSafetyTimer = null;
+
+    function startSession() {
+      hide2DCompletionPopup();
+      hideVRCompletionPopup();
+      if (outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = false;
+      state.isRunning = true;
+      state.currentCycle = 1;
+      rampAudioLevels(0.7, 0.45, 2.0);
+      transitionToStep(STEPS.APPROACH, performance.now());
+      notifyFlutter('onSessionStart', { experience: 'respirazione_terra', cycle: 1 });
+    }
+
+    function pauseSession() {
+      state.isRunning = false;
+      state.pauseStartTime = performance.now();
+      rampAudioLevels(0.15, 0.15, 0.8);
+      updateUIElements();
+      notifyFlutter('onSessionPause', { step: state.currentStep, cycle: state.currentCycle });
+    }
+
+    function resumeSession() {
+      if (state.currentStep === STEPS.STANDBY || state.currentStep === STEPS.COMPLETED) {
+        startSession();
+        return;
+      }
+      const pauseDuration = performance.now() - state.pauseStartTime;
+      state.stepStartTime += pauseDuration;
+      state.isRunning = true;
+      rampAudioLevels(0.7, 0.45, 1.0);
+      updateUIElements();
+      notifyFlutter('onSessionResume', { step: state.currentStep, cycle: state.currentCycle });
+    }
+
+    function togglePlayPause() {
+      if (state.isRunning) {
+        pauseSession();
+      } else {
+        resumeSession();
+      }
+    }
+
+    function resetSession() {
+      hideVRCompletionPopup();
+      hide2DCompletionPopup();
+      if (outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = false;
+      state.currentStep = STEPS.STANDBY;
+      state.currentCycle = 1;
+      state.isRunning = false;
+      state.earthScale = PACING_CONFIG.MIN_SCALE;
+      state.orbitalSparksIntensity = 0.0;
+      state.camPosZ = PACING_CONFIG.CAM_START_POS_Z;
+      updateUIElements();
+      updateHUD(0, "PRONTO", "Premi Avvia", "Respirazione Terra");
+      notifyFlutter('onSessionReset', {});
+    }
+
+    function transitionToStep(newStep, now) {
+      state.currentStep = newStep;
+      state.stepStartTime = (typeof now === 'number' && now > 0) ? now : performance.now();
+
+      switch (newStep) {
+        case STEPS.APPROACH:
+          state.stepDuration = PACING_CONFIG.APPROACH_DURATION;
+          playTibetanBowl(432, 4.2);
+          notifyFlutter('onPhaseChange', { phase: 'approach', cycle: state.currentCycle, duration: state.stepDuration });
+          break;
+
+        case STEPS.INHALE:
+          state.stepDuration = PACING_CONFIG.INHALE_DURATION;
+          state.orbitalSparksIntensity = 0.0;
+          notifyFlutter('onPhaseChange', { phase: 'inhale', cycle: state.currentCycle, duration: state.stepDuration });
+          break;
+
+        case STEPS.HOLD:
+          state.stepDuration = PACING_CONFIG.HOLD_DURATION;
+          state.orbitalSparksIntensity = 0.0; // Initialized to 0.0, will fade in over 1.2s via smoothstep in updateBioPacing
+          playTibetanBowl(432, 5.0);
+          triggerOrbitalSparksBurst();
+          notifyFlutter('onPhaseChange', { phase: 'hold', cycle: state.currentCycle, duration: state.stepDuration });
+          break;
+
+        case STEPS.EXHALE:
+          state.stepDuration = PACING_CONFIG.EXHALE_DURATION;
+          notifyFlutter('onPhaseChange', { phase: 'exhale', cycle: state.currentCycle, duration: state.stepDuration });
+          break;
+
+        case STEPS.OUTRO:
+          state.stepDuration = PACING_CONFIG.OUTRO_DURATION;
+          state.orbitalSparksIntensity = 0.0;
+          playTibetanBowl(432, 6.0);
+          notifyFlutter('onPhaseChange', { phase: 'outro', duration: state.stepDuration });
+          // Deterministic fallback safety timer: guaranteed trigger even if clock / rAF stalls
+          if (outroSafetyTimer) clearTimeout(outroSafetyTimer);
+          outroSafetyTimer = setTimeout(() => {
+            if (!state.isCompleted) {
+              console.log('[GuidoVR] Outro safety timer triggered session completion');
+              transitionToStep(STEPS.COMPLETED, performance.now());
+            }
+          }, PACING_CONFIG.OUTRO_DURATION + 250);
+          break;
+
+        case STEPS.COMPLETED:
+          onExperienceEnded();
+          break;
+      }
+
+      updateUIElements();
+    }
+
+    /* ======================================================================
+       8. BIO-PACING MATH ENGINE & ORGANIC EASING (4-6-8 PACING)
+       ====================================================================== */
+    function updateBioPacing(now) {
+      if (!state.isRunning) return;
+
+      const currentTime = (typeof now === 'number' && now > 0) ? now : performance.now();
+      const elapsed = currentTime - state.stepStartTime;
+      const duration = state.stepDuration || 1000;
+      const t = Math.min(elapsed / duration, 1.0);
+      const remainingSec = Math.max(0, (duration - elapsed) / 1000).toFixed(1);
+
+      // Organic Sinusoidal Easing: easeSine = (1 - cos(pi * t)) / 2
+      const easeSine = (1.0 - Math.cos(Math.PI * t)) * 0.5;
+
+      switch (state.currentStep) {
+        case STEPS.APPROACH:
+          state.camPosZ = PACING_CONFIG.CAM_START_POS_Z - (PACING_CONFIG.CAM_START_POS_Z - PACING_CONFIG.CAM_TARGET_POS_Z) * easeSine;
+          state.earthScale = PACING_CONFIG.MIN_SCALE;
+          state.atmosphereGlow = PACING_CONFIG.MIN_ATMOSPHERE * (0.85 + 0.15 * t);
+          updateHUD(t, "ACCOGLIENZA", `${remainingSec}s`, "Svuota tutta l'aria dai polmoni");
+          renderVRBillboardText("PIANETA TERRA", "LASCIA USCIRE L'ARIA", 1.0);
+          if (elapsed >= duration) {
+            transitionToStep(STEPS.INHALE, now);
+          }
+          break;
+
+        // FASE 1: INSPIRA (4.0s) - La Terra si espande ed irradia energia
+        case STEPS.INHALE:
+          state.camPosZ = PACING_CONFIG.CAM_TARGET_POS_Z;
+          state.earthScale = PACING_CONFIG.MIN_SCALE + (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
+          state.atmosphereGlow = PACING_CONFIG.MIN_ATMOSPHERE + (PACING_CONFIG.MAX_ATMOSPHERE - PACING_CONFIG.MIN_ATMOSPHERE) * easeSine;
+          state.orbitalSparksIntensity = 0.0;
+
+          if (state.currentCycle === 1) {
+            updateHUD(t, "INSPIRA", `${remainingSec}s`, "Segui il respiro del pianeta Terra");
+            renderVRBillboardText("INSPIRA", "RESPIRO DELLA TERRA", 1.0);
+          } else if (state.currentCycle === 2) {
+            updateHUD(t, "INSPIRA", `${remainingSec}s`, "Inspira delicatamente");
+            renderVRBillboardText("INSPIRA", "INSPIRA DELICATAMENTE", 1.0);
+          } else {
+            updateHUD(t, "INSPIRA", `${remainingSec}s`, "Inspira profondamente");
+            renderVRBillboardText("INSPIRA", "ESPANDI IL RESPIRO", 1.0);
+          }
+
+          if (elapsed >= duration) {
+            transitionToStep(STEPS.HOLD, now);
+          }
+          break;
+
+        // FASE 2: TRATTIENI (6.0s) - La Terra rimane gonfia, scintille ed anelli PERIFIT
+        case STEPS.HOLD:
+          state.earthScale = PACING_CONFIG.MAX_SCALE;
+          state.atmosphereGlow = PACING_CONFIG.MAX_ATMOSPHERE;
+
+          // Transizione di fase sofficissima: fade-in fluido con curva smoothstep in 1.2s
+          const holdFadeProgress = Math.min(1.0, elapsed / 1200.0);
+          const holdFadeIn = holdFadeProgress * holdFadeProgress * (3.0 - 2.0 * holdFadeProgress);
+          state.orbitalSparksIntensity = holdFadeIn;
+
+          if (state.currentCycle === 2) {
+            updateHUD(t, "TRATTIENI", `${remainingSec}s`, "Trattieni il fiato • Luce e stabilità");
+            renderVRBillboardText("TRATTIENI", "TRATTIENI IL FIATO", 1.0);
+          } else {
+            updateHUD(t, "TRATTIENI", `${remainingSec}s`, "Trattieni il respiro • Scintille di luce");
+            renderVRBillboardText("TRATTIENI", "TRATTIENI IL RESPIRO", 1.0);
+          }
+
+          if (elapsed >= duration) {
+            transitionToStep(STEPS.EXHALE, now);
+          }
+          break;
+
+        // FASE 3: ESPIRA (8.0s) - La Terra si sgonfia dolcemente, scintille svaniscono
+        case STEPS.EXHALE:
+          state.earthScale = PACING_CONFIG.MAX_SCALE - (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
+          state.atmosphereGlow = PACING_CONFIG.MAX_ATMOSPHERE - (PACING_CONFIG.MAX_ATMOSPHERE - PACING_CONFIG.MIN_ATMOSPHERE) * easeSine;
+
+          // Dissolvenza progressiva, lenta e morbida fino all'estinzione completa senza scatti visivi
+          const exhaleFadeOut = Math.max(0.0, 1.0 - t);
+          state.orbitalSparksIntensity = exhaleFadeOut * exhaleFadeOut * (3.0 - 2.0 * exhaleFadeOut);
+
+          if (state.currentCycle === 1) {
+            updateHUD(t, "ESPIRA", `${remainingSec}s`, "Lascia uscire il fiato lentamente");
+            renderVRBillboardText("ESPIRA", "ESPIRA LENTAMENTE", 1.0);
+          } else if (state.currentCycle === 2) {
+            updateHUD(t, "ESPIRA", `${remainingSec}s`, "Lasciati guidare dalla Terra");
+            renderVRBillboardText("ESPIRA", "GUIDATO DALLA TERRA", 1.0);
+          } else {
+            updateHUD(t, "ESPIRA", `${remainingSec}s`, "Lascia uscire ogni tensione");
+            renderVRBillboardText("ESPIRA", "RILASCIA OGNI TENSIONE", 1.0);
+          }
+
+          if (elapsed >= duration) {
+            if (state.currentCycle < PACING_CONFIG.TOTAL_CYCLES) {
+              state.currentCycle++;
+              transitionToStep(STEPS.INHALE, now);
+            } else {
+              transitionToStep(STEPS.OUTRO, now);
+            }
+          }
+          break;
+
+        // OUTRO & INTEGRAZIONE (7.0s)
+        case STEPS.OUTRO:
+          state.camPosZ = PACING_CONFIG.CAM_TARGET_POS_Z + (PACING_CONFIG.CAM_START_POS_Z - PACING_CONFIG.CAM_TARGET_POS_Z) * 0.45 * easeSine;
+          state.earthScale = PACING_CONFIG.MIN_SCALE;
+          state.atmosphereGlow = PACING_CONFIG.MIN_ATMOSPHERE;
+          state.orbitalSparksIntensity = 0.0;
+          updateHUD(1.0, "RADICAMENTO", "Respiro Naturale", "Respiro calmo, regolare e profondo");
+          renderVRBillboardText("RADICAMENTO", "PACE E ARMONIA", 1.0 - t * 0.25);
+          if (elapsed >= duration) {
+            transitionToStep(STEPS.COMPLETED, now);
+          }
+          break;
+      }
+    }
+
+    /* ======================================================================
+       9. UI UPDATES & DOM INTERACTION
+       ====================================================================== */
+    let hudPhaseLabelEl = null;
+    let hudTimerSubEl = null;
+    let hudProgressFillEl = null;
+    let hudCycleCounterEl = null;
+    let iconPlayEl = null;
+    let iconPauseEl = null;
+    let labelPlayEl = null;
+
+    function initUIReferences() {
+      hudPhaseLabelEl = document.getElementById('hud-phase-label');
+      hudTimerSubEl = document.getElementById('hud-timer-sub');
+      hudProgressFillEl = document.getElementById('hud-progress-fill');
+      hudCycleCounterEl = document.getElementById('hud-cycle-counter');
+      iconPlayEl = document.getElementById('icon-play');
+      iconPauseEl = document.getElementById('icon-pause');
+      labelPlayEl = document.getElementById('label-play-pause');
+    }
+
+    function updateUIElements() {
+      if (!iconPlayEl) initUIReferences();
+      if (iconPlayEl && iconPauseEl && labelPlayEl) {
+        if (state.isRunning) {
+          iconPlayEl.style.display = 'none';
+          iconPauseEl.style.display = 'block';
+          labelPlayEl.innerText = 'Pausa';
+        } else {
+          iconPlayEl.style.display = 'block';
+          iconPauseEl.style.display = 'none';
+          labelPlayEl.innerText = (state.currentStep === STEPS.COMPLETED) ? 'Ricomincia' : 'Avvia';
+        }
+      }
+
+      if (hudCycleCounterEl) {
+        hudCycleCounterEl.innerText = `Ciclo ${state.currentCycle} di ${PACING_CONFIG.TOTAL_CYCLES}`;
+      }
+    }
+
+    function updateHUD(progress0to1, mainText, timerText, subText) {
+      if (!hudPhaseLabelEl) initUIReferences();
+
+      if (hudPhaseLabelEl && hudPhaseLabelEl.innerText !== mainText) {
+        hudPhaseLabelEl.innerText = mainText;
+        if (mainText.includes('ESPIRA')) {
+          hudPhaseLabelEl.style.color = '#80cbc4';
+        } else if (mainText.includes('TRATTIENI') || mainText.includes('RADICAMENTO')) {
+          hudPhaseLabelEl.style.color = 'var(--earth-gold)';
+        } else {
+          hudPhaseLabelEl.style.color = '#FFFFFF';
+        }
+      }
+
+      if (hudTimerSubEl) {
+        const fullSub = `${timerText} • ${subText}`;
+        if (hudTimerSubEl.innerText !== fullSub) {
+          hudTimerSubEl.innerText = fullSub;
+        }
+      }
+
+      if (hudProgressFillEl) {
+        hudProgressFillEl.style.width = `${Math.min(100, Math.max(0, progress0to1 * 100))}%`;
+        if (mainText.includes('ESPIRA')) {
+          hudProgressFillEl.style.background = 'linear-gradient(90deg, #00897b, #26a69a)';
+        } else if (mainText.includes('TRATTIENI')) {
+          hudProgressFillEl.style.background = 'linear-gradient(90deg, #ffd54f, #ffb300)';
+        } else {
+          hudProgressFillEl.style.background = 'linear-gradient(90deg, #00c853, #1de9b6, #ffd54f)';
+        }
+      }
+    }
+
+    function toggleVR() {
+      setVR(!state.isVRMode);
+    }
+
+    function setVR(enable) {
+      state.isVRMode = enable;
+      if (vrReticleGroup) {
+        vrReticleGroup.visible = enable;
+      }
+      const overlay = document.getElementById('vr-overlay');
+      const uiLayer = document.getElementById('ui-layer');
+      const btnVR = document.getElementById('btn-vr-toggle');
+
+      if (enable) {
+        camera.fov = 72;
+        document.body.classList.add('vr-active');
+        overlay.classList.add('active');
+        uiLayer.classList.add('hidden');
+        btnVR.style.background = 'rgba(0, 230, 118, 0.35)';
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        requestDeviceOrientation();
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+        if (state.isCompleted) {
+          hide2DCompletionPopup();
+          showVRCompletionPopup();
+        }
+      } else {
+        camera.fov = 54;
+        document.body.classList.remove('vr-active');
+        overlay.classList.remove('active');
+        uiLayer.classList.remove('hidden');
+        btnVR.style.background = '';
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        hideVRCompletionPopup();
+        if (state.isCompleted) {
+          show2DCompletionPopup();
+        }
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock().catch(() => {});
+        }
+        if (textSpriteMesh) textSpriteMesh.material.opacity = 0;
+      }
+
+      camera.updateProjectionMatrix();
+      onWindowResize();
+      notifyFlutter('onVRModeChanged', { isVR: state.isVRMode });
+    }
+
+    function onWindowResize() {
+      const w = canvasWidth();
+      const h = canvasHeight();
+      const aspect = w / h;
+      camera.aspect = aspect;
+
+      if (state.isVRMode) {
+        camera.fov = 72;
+      } else if (aspect < 1.0) {
+        camera.fov = Math.min(MAX_FOV, Math.max(MIN_FOV, currentFov / aspect * 0.88));
+      } else {
+        camera.fov = currentFov;
+      }
+      camera.updateProjectionMatrix();
+
+      stereoCamera.aspect = 0.5;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(w, h);
+    }
+
+    /* ======================================================================
+       10. MAIN ANIMATION & RENDERING LOOP (60/120 FPS STABLE)
+       ====================================================================== */
+    let animFrameId = null;
+
+    function animate(timestamp) {
+      animFrameId = requestAnimationFrame(animate);
+
+      if (!state.lastTimestamp) state.lastTimestamp = timestamp;
+      const deltaMs = Math.min(timestamp - state.lastTimestamp, 64);
+      const deltaSec = deltaMs / 1000;
+      const timeSec = timestamp * 0.001;
+      state.lastTimestamp = timestamp;
+
+      // 1. Update Bio-Pacing
+      updateBioPacing(timestamp);
+
+      // 2. Smooth Camera Distance Interpolation
+      camera.position.z = THREE.MathUtils.lerp(camera.position.z, state.camPosZ, 0.08);
+
+      // 3. Camera Orientation
+      updateCameraRotation(timeSec);
+
+      // Hands-free Gaze Interaction (Dwell Timer)
+      updateGazeInteraction(deltaSec);
+
+      // 4. Starry Cosmos Sky Shader
+      if (starrySkyMesh && starrySkyMesh.material.uniforms) {
+        starrySkyMesh.material.uniforms.time.value = timeSec;
+      }
+
+      // 5. Earth Rotation & Surface Shader
+      if (earthSurfaceMesh && earthSurfaceMesh.material.uniforms) {
+        earthSurfaceMesh.rotation.y = timeSec * 0.040;
+        earthSurfaceMesh.material.uniforms.time.value = timeSec;
+        earthSurfaceMesh.material.uniforms.scaleFactor.value = state.earthScale;
+      }
+
+      // 6. Dynamic Cloud Drift (slightly faster than earth for realistic wind drift)
+      if (cloudsMesh && cloudsMesh.material.uniforms) {
+        cloudsMesh.rotation.y = timeSec * 0.046;
+        cloudsMesh.material.uniforms.time.value = timeSec;
+        cloudsMesh.material.uniforms.scaleFactor.value = state.earthScale;
+      }
+
+      // 7. Atmospheric Rayleigh Glow
+      if (atmosphereGlowMesh && atmosphereGlowMesh.material.uniforms) {
+        atmosphereGlowMesh.material.uniforms.glowIntensity.value = state.atmosphereGlow;
+        atmosphereGlowMesh.material.uniforms.scaleFactor.value = state.earthScale;
+      }
+
+      // 8. Equatorial Energy Filaments (PERIFIT Aura)
+      if (orbitalRingsGroup) {
+        orbitalRingsGroup.rotation.y = -timeSec * 0.05;
+        const targetRingOpacity = state.orbitalSparksIntensity * 0.90;
+        ringMeshes.forEach(mesh => {
+          if (mesh.material && mesh.material.uniforms) {
+            mesh.material.uniforms.time.value = timeSec;
+            mesh.material.uniforms.opacity.value = THREE.MathUtils.lerp(mesh.material.uniforms.opacity.value, targetRingOpacity, 0.10);
+          }
+        });
+      }
+
+      // 9. Animate Sacred Orbital Sparks (GPU-Accelerated Zero-GC)
+      if (orbitalSparks && orbitalSparks.material && orbitalSparks.material.uniforms) {
+        orbitalSparks.material.uniforms.time.value = timeSec;
+        orbitalSparks.material.uniforms.earthScale.value = state.earthScale;
+        orbitalSparks.material.uniforms.sparksIntensity.value = state.orbitalSparksIntensity;
+      }
+
+      // 10. VR Billboard Tracking
+      if (textSpriteMesh && state.isVRMode) {
+        textSpriteMesh.position.set(0, 1.85 * state.earthScale + 0.65, 0);
+      }
+
+      // 11. Stereoscopic vs Monoscopic Render
+      const width = canvasWidth();
+      const height = canvasHeight();
+
+      if (state.isVRMode) {
+        renderer.setScissorTest(true);
+        stereoCamera.update(camera);
+
+        // Left Eye
+        renderer.setScissor(0, 0, width / 2, height);
+        renderer.setViewport(0, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraL);
+
+        // Right Eye
+        renderer.setScissor(width / 2, 0, width / 2, height);
+        renderer.setViewport(width / 2, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraR);
+
+        renderer.setScissorTest(false);
+      } else {
+        renderer.setViewport(0, 0, width, height);
+        renderer.render(scene, camera);
+      }
+    }
+
+    /* ======================================================================
+       11. LIFECYCLE & MEMORY TEARDOWN
+       ====================================================================== */
+    function disposeExperience() {
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+      }
+      if (heartbeatTimer) {
+        clearTimeout(heartbeatTimer);
+        heartbeatTimer = null;
+      }
+      state.isRunning = false;
+
+      if (audioCtx) {
+        try { audioCtx.close(); } catch (e) {}
+        audioCtx = null;
+      }
+
+      if (scene) {
+        scene.traverse((obj) => {
+          if (obj.geometry) {
+            try { obj.geometry.dispose(); } catch (e) {}
+          }
+          if (obj.material) {
+            if (Array.isArray(obj.material)) {
+              obj.material.forEach(m => {
+                if (m.map) m.map.dispose();
+                m.dispose();
+              });
+            } else {
+              if (obj.material.map) obj.material.map.dispose();
+              obj.material.dispose();
+            }
+          }
+        });
+      }
+
+      if (renderer) {
+        try {
+          renderer.dispose();
+          if (renderer.domElement && renderer.domElement.parentNode) {
+            renderer.domElement.parentNode.removeChild(renderer.domElement);
+          }
+        } catch (e) {}
+      }
+    }
+
+    /* ======================================================================
+       12. INITIALIZATION & EVENT BINDINGS
+       ====================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeScene();
+      initControls();
+      initUIReferences();
+
+      document.getElementById('gate-start-btn')?.addEventListener('click', dismissGateAndStart);
+
+      document.getElementById('btn-play-pause')?.addEventListener('click', () => {
+        const gate = document.getElementById('audio-gate');
+        if (gate && gate.style.display !== 'none') {
+          dismissGateAndStart();
+        } else {
+          togglePlayPause();
+        }
+      });
+
+      document.getElementById('btn-vr-toggle')?.addEventListener('click', toggleVR);
+      document.getElementById('btn-recenter')?.addEventListener('click', recenterView);
+      document.getElementById('btn-fullscreen')?.addEventListener('click', toggleFullscreen);
+
+      document.getElementById('btn-audio-toggle')?.addEventListener('click', () => {
+        setAudioMuted(!state.isAudioMuted);
+      });
+
+      window.addEventListener('beforeunload', disposeExperience);
+
+      // Start rendering loop immediately
+      animFrameId = requestAnimationFrame(animate);
+
+      // Auto-start immediately in app / autostart
+      const urlParams = new URLSearchParams(window.location.search);
+      const gate = document.getElementById('audio-gate');
+      if (gate) {
+        gate.style.setProperty('display', 'none', 'important');
+      }
+      if (urlParams.get('vr') === 'true' || window.location.hash.includes('vr')) {
+        setVR(true);
+      }
+      dismissGateAndStart();
+      window.focus();
+      // Touch / Tap support for Cardboard screen triggers
+      window.addEventListener('click', () => {
+        if (state.isVRMode && completionPopupGroup && completionPopupGroup.visible) {
+          if (gazeHoverTarget && gazeHoverTarget.userData && typeof gazeHoverTarget.userData.onDwellSelect === 'function') {
+            gazeDwellTimer = 0.0;
+            gazeHoverTarget.userData.onDwellSelect();
+          }
+        }
+      });
+
+      // 2D Completion Modal Button Listeners
+      document.getElementById('btn-completion-exit')?.addEventListener('click', () => {
+        notifyFlutter('onExitRequested', {});
+      });
+
+      document.getElementById('btn-completion-repeat')?.addEventListener('click', () => {
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+        state.isCompleted = false;
+        resetSession();
+        startSession();
+      });
+
+      notifyFlutter('onVRReady', { status: 'ready', experience: 'respirazione_terra' });
+    });
+
+  })();
+  </script>
+</body>
+</html>

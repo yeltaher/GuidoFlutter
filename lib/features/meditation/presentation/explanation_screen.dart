@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
+import '../../../core/audio/audio_resolver_service.dart';
+import '../../vr_experiences/vr_experiences_feature.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'session_launch_helper.dart';
 
@@ -31,8 +33,6 @@ class ExplanationScreen extends ConsumerStatefulWidget {
 }
 
 class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
-  bool _isTextFinished = false;
-
   @override
   void initState() {
     super.initState();
@@ -74,6 +74,61 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
     }
   }
 
+  void _launchExperience({required bool isVr}) {
+    ref.read(settingsProvider.notifier).toggleVrMode(isVr);
+
+    // Forza orientamento orizzontale e fullscreen immersivo immediato
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    final vrMatch = VrExperienceType.fromSceneOrTitle(
+          sceneName: widget.sceneName,
+          title: widget.title,
+        ) ??
+        VrExperienceType.fromSessionId(widget.sceneName) ??
+        VrExperienceType.fromSessionId(widget.title);
+
+    if (vrMatch != null) {
+      context.pushReplacement(
+        '/vr-experience',
+        extra: {
+          'experienceId': vrMatch.id,
+          'isVrMode': isVr,
+          'autoStart': true,
+        },
+      );
+      return;
+    }
+
+    final settings = ref.read(settingsProvider);
+    final bundle = AudioResolverService.resolveBundle(
+      title: widget.title,
+      sceneName: widget.sceneName,
+      voiceSex: settings.voiceSex,
+      language: settings.language,
+      customVoicePath: widget.voicePath.isNotEmpty
+          ? widget.voicePath
+          : (widget.breathingAudioPath ?? ''),
+      customAmbientPath: widget.ambientPath,
+      durationSeconds: widget.durationSeconds,
+    );
+
+    context.pushReplacement(
+      '/unity-experience',
+      extra: {
+        'title': widget.title,
+        'sceneName': bundle.sceneName,
+        'durationSeconds': bundle.durationSeconds,
+        'isVrMode': isVr,
+        'voicePath': bundle.voicePath,
+        'ambientPath': bundle.ambientPath,
+      },
+    );
+  }
+
   void _onProceed() {
     showDialog(
       context: context,
@@ -108,7 +163,7 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -116,127 +171,147 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
                 widget.title.toUpperCase(),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.playfairDisplay(
-                  fontSize: 26,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: accentColor,
                   letterSpacing: 2.0,
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 24),
               Expanded(
                 child: Center(
-                  child: AnimatedTextKit(
-                    animatedTexts: [
-                      TypewriterAnimatedText(
-                        _getExplanation(isIt),
-                        textAlign: TextAlign.center,
-                        textStyle: GoogleFonts.plusJakartaSans(
-                          fontSize: 18,
-                          height: 1.6,
-                          fontWeight: FontWeight.w400,
-                          color: textColor.withValues(alpha: 0.9),
-                        ),
-                        speed: const Duration(milliseconds: 50),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      _getExplanation(isIt),
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16.5,
+                        height: 1.6,
+                        fontWeight: FontWeight.w400,
+                        color: textColor.withValues(alpha: 0.9),
                       ),
-                    ],
-                    totalRepeatCount: 1,
-                    displayFullTextOnTap: true,
-                    onFinished: () {
-                      if (mounted) {
-                        setState(() {
-                          _isTextFinished = true;
-                        });
-                      }
-                    },
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               // Selettore Voce Guida Japandi (Michela / Luigi)
-              AnimatedOpacity(
-                opacity: _isTextFinished ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 600),
-                child: Column(
-                  children: [
-                    Text(
-                      isIt ? 'VOCE GUIDA' : 'GUIDE VOICE',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.5,
-                        color: textColor.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.05)
-                            : Colors.black.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.1)
-                              : Colors.black.withValues(alpha: 0.08),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildVoiceOption(
-                            label: isIt ? 'Michela (Femminile)' : 'Michela (Female)',
-                            isSelected: settings.voiceSex == 1,
-                            accentColor: accentColor,
-                            textColor: textColor,
-                            onTap: () {
-                              ref.read(settingsProvider.notifier).changeVoiceSex(1);
-                              HapticFeedback.selectionClick();
-                            },
-                          ),
-                          const SizedBox(width: 4),
-                          _buildVoiceOption(
-                            label: isIt ? 'Luigi (Maschile)' : 'Luigi (Male)',
-                            isSelected: settings.voiceSex == 0,
-                            accentColor: accentColor,
-                            textColor: textColor,
-                            onTap: () {
-                              ref.read(settingsProvider.notifier).changeVoiceSex(0);
-                              HapticFeedback.selectionClick();
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-              AnimatedOpacity(
-                opacity: _isTextFinished ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 600),
-                child: ElevatedButton(
-                  onPressed: _isTextFinished ? _onProceed : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: accentColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    elevation: 4,
-                  ),
-                  child: Text(
-                    isIt ? 'PROCEDI' : 'PROCEED',
+              Column(
+                children: [
+                  Text(
+                    isIt ? 'VOCE GUIDA' : 'GUIDE VOICE',
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 1.5,
+                      color: textColor.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.04),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.08),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildVoiceOption(
+                          label: isIt ? 'Michela (Femminile)' : 'Michela (Female)',
+                          isSelected: settings.voiceSex == 1,
+                          accentColor: accentColor,
+                          textColor: textColor,
+                          onTap: () {
+                            ref.read(settingsProvider.notifier).changeVoiceSex(1);
+                            HapticFeedback.selectionClick();
+                          },
+                        ),
+                        const SizedBox(width: 4),
+                        _buildVoiceOption(
+                          label: isIt ? 'Luigi (Maschile)' : 'Luigi (Male)',
+                          isSelected: settings.voiceSex == 0,
+                          accentColor: accentColor,
+                          textColor: textColor,
+                          onTap: () {
+                            ref.read(settingsProvider.notifier).changeVoiceSex(0);
+                            HapticFeedback.selectionClick();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+              // Quick Launch: Avvio Immersivo Diretto & Avvio Visore VR
+              ElevatedButton.icon(
+                onPressed: () => _launchExperience(isVr: false),
+                icon: const Icon(Icons.stay_current_landscape_rounded, size: 22),
+                label: Text(
+                  isIt ? 'AVVIA ESPERIENZA IMMERSIVA' : 'LAUNCH IMMERSIVE EXPERIENCE',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: accentColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  elevation: 4,
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () => _launchExperience(isVr: true),
+                icon: Icon(Icons.view_in_ar_rounded, size: 22, color: accentColor),
+                label: Text(
+                  isIt ? 'AVVIA IN VISORE VR' : 'LAUNCH IN VR HEADSET',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.1,
+                    color: textColor,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(
+                    color: accentColor.withValues(alpha: 0.6),
+                    width: 1.5,
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: TextButton(
+                  onPressed: _onProceed,
+                  child: Text(
+                    isIt ? 'Opzioni avanzate' : 'Advanced options',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: textColor.withValues(alpha: 0.45),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
             ],
           ),
         ),

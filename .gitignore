@@ -54,3 +54,38 @@ unity/
 
 # Unity export artifacts (large binary packages)
 assets/*.unitypackage
+
+# Android Gradle build outputs
+/android/build/
+
+# Temporary test screenshots, renders and inspection scripts
+/test_screenshots/
+/*.png
+!/icon_new.png
+!/sfondo_new.png
+/*.jpeg
+/*.jpg
+/scratch/*.png
+/scratch/*.py
+!/scratch/check_images.py
+!/scratch/check_ocr.py
+!/scratch/classify_by_color.py
+!/scratch/classify_images.py
+!/scratch/generate_user_pdf.py
+!/scratch/ocr_images.py
+/scratch/*.js
+/scratch/*.html
+/scratch_segments.json
+/capture*.js
+/capture*.py
+/test_*.js
+/test_*.py
+/test_*.html
+/make_*.js
+/gen_mask.js
+/generate_clouds.js
+/extract_textures.js
+/check_b64.js
+/render_test.js
+/take_screenshot.py
+/verify_final_experience.js

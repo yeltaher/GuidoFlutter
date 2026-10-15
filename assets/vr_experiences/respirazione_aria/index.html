@@ -1,0 +1,2944 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Guido VR - Respirazione Aria (Coerenza Cardiaca 432 Hz)</title>
+  
+  <style>
+    :root {
+      --primary-gold: #FFD700;
+      --accent-gold: #FFAA00;
+      --soft-gold: #FFE699;
+      --panel-bg: rgba(12, 26, 42, 0.68);
+      --panel-border: rgba(255, 215, 0, 0.28);
+      --text-light: #F4F8FA;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0c233c;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text-light);
+    }
+
+    #webgl-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: none;
+    }
+
+    /* VR Cardboard Split Overlay */
+    #vr-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    #vr-overlay.active {
+      display: block;
+    }
+
+    .vr-divider {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.22);
+      transform: translateX(-50%);
+      box-shadow: none !important;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+
+    /* Floating HUD UI */
+    #ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    #ui-layer.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .header-bar {
+      display: none !important;
+    }
+
+    .brand-title {
+      display: none !important;
+    }
+
+    .top-controls {
+      display: none !important;
+    }
+
+    /* Minimal Floating Ethereal Guidance Text */
+    .pacing-center {
+      position: absolute;
+      top: env(safe-area-inset-top, 24px);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      z-index: 12;
+      width: auto;
+      max-width: 90%;
+    }
+
+    .pacing-ring-svg {
+      display: none !important;
+    }
+
+    .pacing-ring-bg {
+      display: none !important;
+    }
+
+    .pacing-ring-progress {
+      display: none !important;
+    }
+
+    .pacing-phase-text {
+      position: static;
+      transform: none;
+      font-size: 18px;
+      font-weight: 300;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 0 18px rgba(255, 215, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.8);
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    .pacing-phase-sub {
+      font-size: 11px;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.85);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
+    }
+
+    /* Bottom Control Bar */
+    .bottom-bar {
+      display: none !important;
+    }
+
+    .status-card {
+      width: 100%;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 22px;
+      padding: 12px 18px;
+      backdrop-filter: blur(16px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    .cycle-counter {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cycle-label {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    .cycle-value {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--primary-gold);
+      letter-spacing: 0.3px;
+    }
+
+    .session-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-main {
+      padding: 10px 22px;
+      border-radius: 24px;
+      border: none;
+      background: linear-gradient(135deg, #FFD700 0%, #FF9900 100%);
+      color: #0b1a29;
+      font-size: 13.5px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(255, 170, 0, 0.45);
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(255, 170, 0, 0.6);
+    }
+
+    .btn-main:active {
+      transform: scale(0.97);
+    }
+
+    .btn-vr-cardboard {
+      padding: 10px 18px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.10);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-vr-cardboard:hover {
+      background: rgba(255, 215, 0, 0.22);
+      border-color: var(--primary-gold);
+      color: var(--primary-gold);
+    }
+
+    /* Guidance Banner */
+    .guidance-banner {
+      background: rgba(14, 38, 62, 0.55);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      padding: 7px 16px;
+      border-radius: 16px;
+      font-size: 12px;
+      color: #E6F3FB;
+      backdrop-filter: blur(12px);
+      text-align: center;
+      animation: pulseGlow 3.5s infinite ease-in-out;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.88; }
+      50% { opacity: 1; border-color: rgba(255, 215, 0, 0.65); }
+    }
+
+    /* Audio gate bypassed in mobile app */
+    #audio-gate {
+      display: none !important;
+    }
+
+    /* Orientation prompt disabled: orientation forced by OS */
+    #rotate-hint {
+      display: none !important;
+    }
+
+    /* 2D Session Completion Modal (Japandi Aesthetics) */
+    .completion-modal-backdrop {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2147483647 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(7, 12, 20, 0.94) !important;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .completion-modal-backdrop.visible {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .completion-modal-card {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(145deg, rgba(16, 26, 42, 0.94), rgba(9, 15, 26, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 24px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(255, 215, 0, 0.08);
+      transform: scale(0.92) translateY(12px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .completion-modal-backdrop.visible .completion-modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .completion-modal-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px auto;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.22) 0%, rgba(255, 215, 0, 0.03) 70%);
+      border: 1px solid rgba(255, 215, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffd700;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+    }
+
+    .completion-modal-title {
+      font-family: inherit;
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 10px 0;
+      letter-spacing: 0.3px;
+    }
+
+    .completion-modal-desc {
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.76);
+      margin: 0 0 26px 0;
+    }
+
+    .completion-modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .btn-completion {
+      flex: 1;
+      height: 48px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      border: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-completion-exit {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.65);
+      color: #fca5a5;
+    }
+
+    .btn-completion-exit:hover, .btn-completion-exit:active {
+      background: rgba(239, 68, 68, 0.32);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-completion-repeat {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.32), rgba(5, 150, 105, 0.55));
+      border: 1px solid rgba(52, 211, 153, 0.85);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-completion-repeat:hover, .btn-completion-repeat:active {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.48), rgba(5, 150, 105, 0.72));
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+  </style>
+
+  <!-- Three.js CDN with Local Fallback -->
+  <script src="three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- WebGL Three.js Viewport -->
+  <div id="webgl-container"></div>
+
+  <!-- Dual-Eye VR Cardboard Overlay -->
+  <div id="vr-overlay">
+    <div class="vr-divider"></div>
+  </div>
+
+  <!-- Interactive HUD UI -->
+  <div id="ui-layer">
+    <!-- Top Header Bar -->
+    <div class="header-bar">
+      <div class="brand-title">
+        <div class="brand-logo"></div>
+        <span class="brand-text">Guido VR</span>
+        <span class="brand-badge">Aria • 432 Hz</span>
+      </div>
+
+      <div class="top-controls">
+        <button class="btn-icon" id="btn-audio-toggle" title="Disattiva/Attiva Audio" aria-label="Audio">
+          <svg id="icon-sound-on" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          <svg id="icon-sound-off" viewBox="0 0 24 24" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27l4.73 4.73H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+        </button>
+        <button class="btn-icon" id="btn-recenter" title="Riposiziona Visuale (Tasto R)" aria-label="Recenter">
+          <svg viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" title="Schermo Intero (Tasto F)" aria-label="Fullscreen">
+          <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Pacing Center HUD (Minimal Luxury Ring) -->
+    <div class="pacing-center" id="hud-ring-container">
+      <svg class="pacing-ring-svg" viewBox="0 0 154 154">
+        <circle class="pacing-ring-bg" cx="77" cy="77" r="65"></circle>
+        <circle class="pacing-ring-progress" id="hud-ring-progress" cx="77" cy="77" r="65"></circle>
+      </svg>
+      <div class="pacing-phase-text" id="hud-phase-label">
+        INSPIRA
+        <div class="pacing-phase-sub" id="hud-timer-sub">4.0s</div>
+      </div>
+    </div>
+
+    <!-- Bottom Control & Status Bar -->
+    <div class="bottom-bar">
+      <div class="guidance-banner" id="guidance-text">
+        Segui il respiro della mongolfiera: espandi l'aria pura a 432 Hz.
+      </div>
+
+      <div class="status-card">
+        <div class="cycle-counter">
+          <span class="cycle-label">Coerenza Cardiaca</span>
+          <span class="cycle-value" id="hud-cycle-counter">Ciclo 1 di 5</span>
+        </div>
+
+        <div class="session-actions">
+          <button class="btn-vr-cardboard" id="btn-vr-toggle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.9 6.2c-.4-.4-.9-.6-1.5-.6H4.6c-.6 0-1.1.2-1.5.6-.4.4-.6.9-.6 1.5v8.6c0 .6.2 1.1.6 1.5.4.4.9.6 1.5.6h4.3l2.2-2.5c.4-.5 1.3-.5 1.8 0l2.2 2.5h4.3c.6 0 1.1-.2 1.5-.6.4-.4.6-.9.6-1.5V7.7c.1-.6-.1-1.1-.5-1.5zM7.5 14c-1.4 0-2.5-1.1-2.5-2.5S6.1 9 7.5 9s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5zm9 0c-1.4 0-2.5-1.1-2.5-2.5S15.1 9 16.5 9s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5z"/></svg>
+            Visore VR
+          </button>
+
+          <button class="btn-main" id="btn-play-pause">
+            <svg id="icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="icon-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <span id="label-play-pause">Avvia</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Gate / Gesture Unlock with translucent glassmorphic backdrop -->
+  <div id="audio-gate">
+    <div class="gate-card">
+      <div class="gate-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+      </div>
+      <div class="gate-title">Respirazione Aria</div>
+      <div class="gate-desc">
+        Esperienza immersiva a 360° guidata dalla mongolfiera dorata, correnti d'aria vive e campane tibetane a <strong>432 Hz</strong>.
+      </div>
+      <div class="gate-specs">
+        <span class="gate-tag">4s Inspiro</span>
+        <span class="gate-tag">6s Espiro</span>
+        <span class="gate-tag">5 Cicli</span>
+      </div>
+      <button class="gate-btn" id="gate-start-btn">Inizia Esperienza</button>
+    </div>
+  </div>
+
+  <!-- Mobile Landscape Warning for VR -->
+  <div id="rotate-hint">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--primary-gold)"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 5.39 19.11.83 13.5.13v1.54c2.61.34 4.96 1.7 6.48 3.85h-3.5v2h6v-6h-2v2.52zM2.05 13c-.34-2.61.34-5.26 1.95-7.39V8h2V2h-6v2h2.52C-.63 6.64-.17 11.23.05 13h2zm5.43 8.48c-3.27-1.55-5.61-4.72-5.97-8.48H0c.51 5.61 4.84 10.17 10.45 10.87v-1.54c-2.61-.34-4.96-1.7-6.48-3.85h3.5v-2h-6v6h2v-2.52zm14.47-4.48c.34 2.61-.34 5.26-1.95 7.39V22h-2v6h6v-2h-2.52c3.12-2.64 3.58-7.23 3.36-9h-2.89z"/></svg>
+    <h3 style="margin-top:16px; font-size:18px;">Ruota lo smartphone in orizzontale</h3>
+    <p style="margin-top:8px; font-size:13px; color:rgba(255,255,255,0.7);">Per utilizzare il visore VR Cardboard a doppio occhio stereoscopico.</p>
+  </div>
+
+  <!-- 2D Session Completion Modal (Normal / Smartphone Mode) -->
+  <div id="session-completion-modal" class="completion-modal-backdrop" style="display: none;">
+    <div class="completion-modal-card">
+      <div class="completion-modal-icon">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <h2 class="completion-modal-title">Sessione Completata</h2>
+      <p class="completion-modal-desc">Porta questa energia di leggerezza, presenza e respiro limpido nella tua giornata.</p>
+      <div class="completion-modal-actions">
+        <button id="btn-completion-exit" class="btn-completion btn-completion-exit" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+          <span>ESCI</span>
+        </button>
+        <button id="btn-completion-repeat" class="btn-completion btn-completion-repeat" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.95 20 14.54 20 13c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 8.74C4.46 10.05 4 11.46 4 13c0 4.42 3.58 8 8 8v4l5-5-5-5v4c-3.31 0-6-2.69-6-6z"/></svg>
+          <span>RIPETI</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN SCRIPT -->
+  <script>
+  (function() {
+    'use strict';
+
+    /* ======================================================================
+       1. BIO-PACING CONSTANTS & HARMONIC EASING
+       ====================================================================== */
+    const PACING_CONFIG = {
+      TOTAL_CYCLES: 5,
+      INHALE_DURATION: 4000,   // 4s: Balloon moves -11.0m -> -9.0m, Scale 1.0x -> 1.18x
+      EXHALE_DURATION: 6000,   // 6s: Balloon moves -9.0m -> -11.0m, Scale 1.18x -> 1.0x
+      OUTRO_DURATION: 4000,    // 4s: Peaceful outro
+      BALLOON_BASE_X: 0.0,
+      BALLOON_BASE_Y: 0.3,     // Calibrated resting vertical coordinate
+      BALLOON_BASE_Z: -11.0,   // Resting distance: Z = -11.0m (wide majestic sky view)
+      BALLOON_PEAK_Z: -9.0,    // Inhale peak distance: Z = -9.0m (optimal breathing expansion)
+      MIN_SCALE: 1.0,          // Natural rest scale: 1.0x
+      MAX_SCALE: 1.18          // Inhale peak scale: 1.18x (minimal, elegant expansion)
+    };
+
+    const PHASE = {
+      STANDBY: 'STANDBY',
+      INHALE: 'INHALE',
+      EXHALE: 'EXHALE',
+      OUTRO: 'OUTRO',
+      COMPLETED: 'COMPLETED'
+    };
+
+    const state = {
+      currentPhase: PHASE.STANDBY,
+      currentCycle: 1,
+      phaseStartTime: 0,
+      phaseElapsed: 0,
+      pauseStartTime: 0,
+      isRunning: false,
+      isCompleted: false,
+      isVRMode: false,
+      isAudioMuted: false,
+      balloonScale: PACING_CONFIG.MIN_SCALE,
+      balloonZ: PACING_CONFIG.BALLOON_BASE_Z,
+      balloonY: PACING_CONFIG.BALLOON_BASE_Y,
+      balloonX: PACING_CONFIG.BALLOON_BASE_X,
+      windSpeedFactor: 1.0,    // Dynamically speeds up during Inhale, relaxes during Exhale
+      lastTimestamp: 0
+    };
+
+    /* ======================================================================
+       2. FLUTTER INAPPWEBVIEW BRIDGE
+       ====================================================================== */
+    function notifyFlutter(eventName, data) {
+      try {
+        if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+          window.flutter_inappwebview.callHandler(eventName, data);
+        } else if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'GUIDO_VR', event: eventName, data: data }, '*');
+        }
+      } catch (err) {
+        console.warn('Flutter Bridge post error:', err);
+      }
+    }
+
+    // Expose global controller API for Flutter / tests
+    window.GuidoVR = {
+      start: function() { dismissGateAndStart(); },
+      pause: function() { pauseSession(); },
+      toggle: function() { togglePlayPause(); },
+      reset: function() { resetSession(); },
+      setVRMode: function(enable) { setVR(enable); },
+      setMuted: function(mute) { setAudioMuted(mute); },
+      recenter: function() { recenterView(); },
+      setDeviceOrientation: function(alpha, beta, gamma) {
+        deviceOrientationEnabled = true;
+        orientationAlpha = Number(alpha) || 0;
+        orientationBeta = Number(beta) || 0;
+        orientationGamma = Number(gamma) || 0;
+      },
+      showCompletionPopup: function() { onExperienceEnded(); },
+      hideCompletionPopup: function() { hideVRCompletionPopup(); hide2DCompletionPopup(); },
+      getState: function() { return { ...state }; },
+      dispose: function() { disposeExperience(); }
+    };
+
+    /* ======================================================================
+       3. HIGH-PRECISION WEB AUDIO API 432 Hz ENGINE
+       ====================================================================== */
+    let audioCtx = null;
+    let masterGain = null;
+    let padGain = null;
+    let windGain = null;
+    let isAudioInitialized = false;
+
+    // Binaural Pad Nodes
+    let padOscLeft = null;
+    let padOscRight = null;
+    let padOscSub = null;
+    let padOscFifth = null;
+    let padFilter = null;
+
+    // Wind Generator Nodes
+    let windSource = null;
+    let windFilter = null;
+    let windLfo = null;
+
+    function initAudioEngine() {
+      if (isAudioInitialized) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+          console.warn('Web Audio API not supported.');
+          return;
+        }
+        audioCtx = new AudioContextClass();
+
+        // Master Gain
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+        masterGain.connect(audioCtx.destination);
+
+        // ----------------------------------------------------
+        // A) 432 Hz Binaural Pad (432 Hz Left + 436 Hz Right = 4 Hz Theta Beat)
+        // ----------------------------------------------------
+        padGain = audioCtx.createGain();
+        padGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+
+        // Lowpass filter with warm acoustic rolloff
+        padFilter = audioCtx.createBiquadFilter();
+        padFilter.type = 'lowpass';
+        padFilter.frequency.setValueAtTime(680, audioCtx.currentTime);
+        padFilter.Q.setValueAtTime(1.5, audioCtx.currentTime);
+
+        const merger = audioCtx.createChannelMerger(2);
+
+        // Left ear: 432.0 Hz
+        padOscLeft = audioCtx.createOscillator();
+        padOscLeft.type = 'sine';
+        padOscLeft.frequency.setValueAtTime(432.0, audioCtx.currentTime);
+        const gainLeft = audioCtx.createGain();
+        gainLeft.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        padOscLeft.connect(gainLeft);
+        gainLeft.connect(merger, 0, 0);
+
+        // Right ear: 436.0 Hz (Delta/Theta 4 Hz Brainwave Entrainment)
+        padOscRight = audioCtx.createOscillator();
+        padOscRight.type = 'sine';
+        padOscRight.frequency.setValueAtTime(436.0, audioCtx.currentTime);
+        const gainRight = audioCtx.createGain();
+        gainRight.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        padOscRight.connect(gainRight);
+        gainRight.connect(merger, 0, 1);
+
+        // Sub-harmonic: 216.0 Hz
+        padOscSub = audioCtx.createOscillator();
+        padOscSub.type = 'triangle';
+        padOscSub.frequency.setValueAtTime(216.0, audioCtx.currentTime);
+        const gainSub = audioCtx.createGain();
+        gainSub.gain.setValueAtTime(0.10, audioCtx.currentTime);
+        padOscSub.connect(gainSub);
+        gainSub.connect(merger, 0, 0);
+        gainSub.connect(merger, 0, 1);
+
+        // Pure 5th Harmonic: 648.0 Hz
+        padOscFifth = audioCtx.createOscillator();
+        padOscFifth.type = 'sine';
+        padOscFifth.frequency.setValueAtTime(648.0, audioCtx.currentTime);
+        const gainFifth = audioCtx.createGain();
+        gainFifth.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        padOscFifth.connect(gainFifth);
+        gainFifth.connect(merger, 0, 0);
+        gainFifth.connect(merger, 0, 1);
+
+        merger.connect(padFilter);
+        padFilter.connect(padGain);
+        padGain.connect(masterGain);
+
+        padOscLeft.start();
+        padOscRight.start();
+        padOscSub.start();
+        padOscFifth.start();
+
+        // ----------------------------------------------------
+        // B) High Altitude Gentle Wind Noise Generator
+        // ----------------------------------------------------
+        const bufferSize = audioCtx.sampleRate * 3;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + white * 0.0555179;
+          b1 = 0.99332 * b1 + white * 0.0750759;
+          b2 = 0.96900 * b2 + white * 0.1538520;
+          b3 = 0.86650 * b3 + white * 0.3104856;
+          b4 = 0.55000 * b4 + white * 0.5329522;
+          b5 = -0.7616 * b5 - white * 0.0168980;
+          output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.035;
+          b6 = white * 0.115926;
+        }
+
+        windSource = audioCtx.createBufferSource();
+        windSource.buffer = noiseBuffer;
+        windSource.loop = true;
+
+        windFilter = audioCtx.createBiquadFilter();
+        windFilter.type = 'bandpass';
+        windFilter.frequency.setValueAtTime(320, audioCtx.currentTime);
+        windFilter.Q.setValueAtTime(1.1, audioCtx.currentTime);
+
+        windGain = audioCtx.createGain();
+        windGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+
+        windSource.connect(windFilter);
+        windFilter.connect(windGain);
+        windGain.connect(masterGain);
+        windSource.start();
+
+        windLfo = audioCtx.createOscillator();
+        windLfo.frequency.setValueAtTime(0.12, audioCtx.currentTime);
+        const windLfoGain = audioCtx.createGain();
+        windLfoGain.gain.setValueAtTime(140, audioCtx.currentTime);
+        windLfo.connect(windLfoGain);
+        windLfoGain.connect(windFilter.frequency);
+        windLfo.start();
+
+        isAudioInitialized = true;
+      } catch (e) {
+        console.error('Audio initialization error:', e);
+      }
+    }
+
+    function unlockAudioContext() {
+      if (!audioCtx) {
+        initAudioEngine();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function setMasterAudioGain(targetVolume, rampSec = 1.0) {
+      if (!audioCtx || !masterGain) return;
+      const now = audioCtx.currentTime;
+      masterGain.gain.cancelScheduledValues(now);
+      masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+      masterGain.gain.linearRampToValueAtTime(targetVolume, now + rampSec);
+    }
+
+    function setPadAudioGain(targetVolume, rampSec = 1.5) {
+      if (!audioCtx || !padGain) return;
+      const now = audioCtx.currentTime;
+      padGain.gain.cancelScheduledValues(now);
+      padGain.gain.setValueAtTime(padGain.gain.value, now);
+      padGain.gain.linearRampToValueAtTime(targetVolume, now + rampSec);
+    }
+
+    function setWindAudioGain(targetVolume, rampSec = 1.5) {
+      if (!audioCtx || !windGain) return;
+      const now = audioCtx.currentTime;
+      windGain.gain.cancelScheduledValues(now);
+      windGain.gain.setValueAtTime(windGain.gain.value, now);
+      windGain.gain.linearRampToValueAtTime(targetVolume, now + rampSec);
+    }
+
+    // ----------------------------------------------------
+    // Tibetan Singing Bowl / Chime Acoustic Synthesis
+    // Inhale: 432 Hz bowl chime | Exhale: 864 Hz crystalline chime
+    // ----------------------------------------------------
+    function playTibetanBowl(fundamental, duration = 4.0) {
+      if (!audioCtx || state.isAudioMuted) return;
+      try {
+        const now = audioCtx.currentTime;
+        const chimeMaster = audioCtx.createGain();
+        chimeMaster.gain.setValueAtTime(0.40, now);
+        chimeMaster.connect(masterGain);
+
+        const harmonics = [
+          { mult: 1.00, gain: 0.60, decay: duration * 1.0 },
+          { mult: 2.76, gain: 0.28, decay: duration * 0.7 },
+          { mult: 5.40, gain: 0.14, decay: duration * 0.45 },
+          { mult: 8.93, gain: 0.05, decay: duration * 0.25 },
+          { mult: 0.50, gain: 0.35, decay: duration * 0.9 }
+        ];
+
+        harmonics.forEach(h => {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(fundamental * h.mult, now);
+
+          const pitchBend = (Math.random() - 0.5) * 1.2;
+          osc.frequency.linearRampToValueAtTime(fundamental * h.mult + pitchBend, now + h.decay);
+
+          g.gain.setValueAtTime(0.0001, now);
+          g.gain.linearRampToValueAtTime(h.gain, now + 0.008);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + h.decay);
+
+          osc.connect(g);
+          g.connect(chimeMaster);
+          osc.start(now);
+          osc.stop(now + h.decay + 0.1);
+        });
+
+        setTimeout(() => {
+          try { chimeMaster.disconnect(); } catch (e) {}
+        }, (duration + 0.5) * 1000);
+      } catch (err) {
+        console.warn('Error playing bowl chime:', err);
+      }
+    }
+
+    function setAudioMuted(mute) {
+      state.isAudioMuted = mute;
+      if (masterGain && audioCtx) {
+        setMasterAudioGain(mute ? 0 : 0.85, 0.3);
+      }
+      const iconOn = document.getElementById('icon-sound-on');
+      const iconOff = document.getElementById('icon-sound-off');
+      if (iconOn && iconOff) {
+        iconOn.style.display = mute ? 'none' : 'block';
+        iconOff.style.display = mute ? 'block' : 'none';
+      }
+    }
+
+    /* ======================================================================
+       4. PROCEDURAL HIGH-RESOLUTION TEXTURE GENERATORS
+       ====================================================================== */
+
+    // A) Soft Gaussian Circular Radial Dust Particle Texture (Zero square pixels)
+    function createSoftParticleTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+
+      const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+      grad.addColorStop(0.18, 'rgba(255, 245, 205, 0.85)');
+      grad.addColorStop(0.42, 'rgba(255, 225, 140, 0.35)');
+      grad.addColorStop(0.70, 'rgba(255, 200, 90, 0.08)');
+      grad.addColorStop(1.0, 'rgba(255, 180, 50, 0.0)');
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 128, 128);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.generateMipmaps = true;
+      return texture;
+    }
+
+    // B) Multi-Cluster Procedural Soft Cloud Puff Texture
+    function createSoftCloudTexture(style = 0) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      const numPuffs = (style === 0) ? 32 : (style === 1 ? 36 : 28);
+      const cx = 256;
+      const cy = 256;
+
+      for (let i = 0; i < numPuffs; i++) {
+        let px, py, pr, pAlpha;
+        if (style === 0) {
+          const angle = Math.random() * Math.PI * 2;
+          const dist = Math.pow(Math.random(), 0.75) * 130;
+          px = cx + Math.cos(angle) * dist + (Math.random() - 0.5) * 35;
+          py = cy + Math.sin(angle) * (dist * 0.7) + (Math.random() - 0.5) * 30;
+          pr = 70 + Math.random() * 85;
+          pAlpha = 0.055 + Math.random() * 0.075;
+        } else if (style === 1) {
+          px = cx + (Math.random() - 0.5) * 340;
+          py = cy + (Math.random() - 0.5) * 110;
+          pr = 65 + Math.random() * 95;
+          pAlpha = 0.04 + Math.random() * 0.06;
+        } else {
+          const dist = (Math.random() - 0.5) * 300;
+          px = cx + dist;
+          py = cy + dist * 0.15 + (Math.random() - 0.5) * 70;
+          pr = 55 + Math.random() * 80;
+          pAlpha = 0.045 + Math.random() * 0.06;
+        }
+
+        const grad = ctx.createRadialGradient(px, py, pr * 0.05, px, py, pr);
+        grad.addColorStop(0.0, `rgba(255, 255, 255, ${pAlpha * 1.6})`);
+        grad.addColorStop(0.35, `rgba(255, 252, 246, ${pAlpha * 1.1})`);
+        grad.addColorStop(0.7, `rgba(255, 248, 240, ${pAlpha * 0.4})`);
+        grad.addColorStop(1.0, 'rgba(255, 248, 240, 0.0)');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(px, py, pr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.generateMipmaps = true;
+      return texture;
+    }
+
+    // C) Hot Air Balloon Fabric 24-Gore Diffuse & Bump Textures (2048x1024)
+    function createBalloonFabricTextures() {
+      const width = 2048;
+      const height = 1024;
+
+      const diffCanvas = document.createElement('canvas');
+      diffCanvas.width = width;
+      diffCanvas.height = height;
+      const dCtx = diffCanvas.getContext('2d');
+
+      const bumpCanvas = document.createElement('canvas');
+      bumpCanvas.width = width;
+      bumpCanvas.height = height;
+      const bCtx = bumpCanvas.getContext('2d');
+
+      const numGores = 24;
+      const goreWidth = width / numGores;
+
+      // Palette: Elegant warm golden hues and royal cream silk
+      const gorePalettes = [
+        '#E5A93C', // Warm Saffron Gold
+        '#FFF6E5', // Royal Silk Cream
+        '#F29636', // Solar Tangerine Silk
+        '#FAC953', // Sunlight Warm Gold
+        '#FAF2E4', // Pearl Silk Ivory
+        '#E28225'  // Rich Honey Amber
+      ];
+
+      for (let g = 0; g < numGores; g++) {
+        const xStart = g * goreWidth;
+        const color = gorePalettes[g % gorePalettes.length];
+
+        // Gore diffuse base
+        dCtx.fillStyle = color;
+        dCtx.fillRect(xStart, 0, goreWidth + 1, height);
+
+        // Gore curvature 3D shading (pillowed silk cushion effect)
+        const goreGrad = dCtx.createLinearGradient(xStart, 0, xStart + goreWidth, 0);
+        goreGrad.addColorStop(0.0, 'rgba(0, 0, 0, 0.22)');
+        goreGrad.addColorStop(0.1, 'rgba(0, 0, 0, 0.05)');
+        goreGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.12)');
+        goreGrad.addColorStop(0.9, 'rgba(0, 0, 0, 0.05)');
+        goreGrad.addColorStop(1.0, 'rgba(0, 0, 0, 0.22)');
+        dCtx.fillStyle = goreGrad;
+        dCtx.fillRect(xStart, 0, goreWidth + 1, height);
+
+        // Seam stitch line
+        dCtx.strokeStyle = 'rgba(70, 42, 10, 0.65)';
+        dCtx.lineWidth = 2.0;
+        dCtx.beginPath();
+        dCtx.moveTo(xStart, 0);
+        dCtx.lineTo(xStart, height);
+        dCtx.stroke();
+
+        dCtx.strokeStyle = 'rgba(255, 240, 200, 0.4)';
+        dCtx.lineWidth = 1.0;
+        dCtx.beginPath();
+        dCtx.moveTo(xStart + 2, 0);
+        dCtx.lineTo(xStart + 2, height);
+        dCtx.stroke();
+
+        // Bump Map: Puffed gore cushion + deep seam groove
+        const bGrad = bCtx.createLinearGradient(xStart, 0, xStart + goreWidth, 0);
+        bGrad.addColorStop(0.0, '#444444');
+        bGrad.addColorStop(0.12, '#888888');
+        bGrad.addColorStop(0.5, '#DDDDDD');
+        bGrad.addColorStop(0.88, '#888888');
+        bGrad.addColorStop(1.0, '#444444');
+        bCtx.fillStyle = bGrad;
+        bCtx.fillRect(xStart, 0, goreWidth + 1, height);
+      }
+
+      // Ripstop nylon micro-grid weave on bump map
+      bCtx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+      for (let y = 0; y < height; y += 8) {
+        bCtx.fillRect(0, y, width, 2);
+      }
+      for (let x = 0; x < width; x += 8) {
+        bCtx.fillRect(x, 0, 2, height);
+      }
+
+      // Equator decorative bands on Diffuse
+      dCtx.fillStyle = 'rgba(255, 215, 0, 0.85)';
+      dCtx.fillRect(0, 360, width, 14);
+      dCtx.fillStyle = 'rgba(255, 255, 255, 0.90)';
+      dCtx.fillRect(0, 380, width, 8);
+      dCtx.fillStyle = 'rgba(255, 215, 0, 0.85)';
+      dCtx.fillRect(0, 394, width, 14);
+
+      dCtx.fillStyle = 'rgba(255, 215, 0, 0.80)';
+      dCtx.fillRect(0, 720, width, 16);
+      dCtx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      dCtx.fillRect(0, 742, width, 8);
+      dCtx.fillStyle = 'rgba(255, 215, 0, 0.80)';
+      dCtx.fillRect(0, 756, width, 16);
+
+      bCtx.fillStyle = '#FFFFFF';
+      bCtx.fillRect(0, 360, width, 48);
+      bCtx.fillRect(0, 720, width, 52);
+
+      const diffTex = new THREE.CanvasTexture(diffCanvas);
+      diffTex.wrapS = THREE.RepeatWrapping;
+      diffTex.wrapT = THREE.ClampToEdgeWrapping;
+      diffTex.generateMipmaps = true;
+
+      const bumpTex = new THREE.CanvasTexture(bumpCanvas);
+      bumpTex.wrapS = THREE.RepeatWrapping;
+      bumpTex.wrapT = THREE.ClampToEdgeWrapping;
+      bumpTex.generateMipmaps = true;
+
+      return { diffuse: diffTex, bump: bumpTex };
+    }
+
+    // Direct access aliases guaranteed not to produce JS errors
+    window.createBalloonTexture = function() {
+      return createBalloonFabricTextures();
+    };
+
+    // D) Realistic Wicker Basket Woven Canvas Texture
+    function createRealisticWickerTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#C89456';
+      ctx.fillRect(0, 0, 512, 512);
+
+      const step = 16;
+      for (let y = 0; y < 512; y += step) {
+        for (let x = 0; x < 512; x += step) {
+          const isHorizontal = ((x / step + y / step) % 2 === 0);
+          if (isHorizontal) {
+            const grad = ctx.createLinearGradient(x, y, x, y + step);
+            grad.addColorStop(0.0, '#865528');
+            grad.addColorStop(0.4, '#DEAB6F');
+            grad.addColorStop(0.8, '#DEAB6F');
+            grad.addColorStop(1.0, '#75471F');
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, step, step);
+          } else {
+            const grad = ctx.createLinearGradient(x, y, x + step, y);
+            grad.addColorStop(0.0, '#865528');
+            grad.addColorStop(0.4, '#E5B77E');
+            grad.addColorStop(0.8, '#E5B77E');
+            grad.addColorStop(1.0, '#75471F');
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, step, step);
+          }
+        }
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(4, 3);
+      texture.generateMipmaps = true;
+      return texture;
+    }
+
+    window.createWickerTexture = function() {
+      return createRealisticWickerTexture();
+    };
+
+    /* ======================================================================
+       5. THREE.JS 3D ENVIRONMENT & SCENE CREATION
+       ====================================================================== */
+    let scene, camera, renderer, stereoCamera, animFrameId = null;
+    let balloonGroup, basketGroup, burnerLight;
+    let cloudsGroup, skyDomeMesh;
+    let textSpriteMesh;
+    let dustParticles = null;
+    let basketRibbons = [];
+    let airStreamlinesGroup = null;
+    const airStreamlines = [];
+    let sunDirection = new THREE.Vector3(14.0, 22.0, 18.0).normalize();
+
+    const canvasWidth = () => window.innerWidth;
+    const canvasHeight = () => window.innerHeight;
+
+    function initThreeScene() {
+      const container = document.getElementById('webgl-container');
+
+      // 1. Scene
+      scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0xE8D5C4, 0.0050);
+
+      // 2. Camera: Fixed at (0, 0, 0), FOV = 60°, Near = 0.1, Far = 2000
+      camera = new THREE.PerspectiveCamera(60, canvasWidth() / canvasHeight(), 0.1, 2000);
+      camera.position.set(0, 0, 0);
+
+      // Stereo Camera for VR Cardboard
+      stereoCamera = new THREE.StereoCamera();
+      stereoCamera.aspect = 0.5;
+      stereoCamera.eyeSep = 0.064;
+
+      // 3. Renderer with ACES Filmic Tone Mapping & High Precision
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(canvasWidth(), canvasHeight());
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      // 4. Calibrated Lighting
+      createLighting();
+
+      // 5. Rayleigh & Mie Atmospheric Skydome
+      createAtmosphericSkyDome();
+
+      // 6. Photorealistic Hot Air Balloon Assembly (Base: X=0, Y=0.3, Z=-11.0m)
+      createBalloonAssembly();
+
+      // 7. 3D Aerodynamic Air Streamlines & Breeze Vortices
+      createAirStreamlines();
+
+      // 8. Fluffy Procedural Volumetric Clouds
+      createProceduralClouds();
+
+      // 9. Soft Ethereal Atmospheric Dust / Dandelion Particles
+      createAtmosphericDust();
+
+      // 10. Floating 3D Calligraphic Text Billboard
+      createCalligraphicTextBillboard();
+
+      // 11. Handle window resizing
+      window.addEventListener('resize', onWindowResize, false);
+
+      // 12. 3D Stereoscopic Gaze Reticle
+      initVRReticle();
+    }
+
+    let vrReticleGroup = null;
+    let vrReticleRing = null;
+
+    function initVRReticle() {
+      vrReticleGroup = new THREE.Group();
+      vrReticleGroup.name = 'VR_Gaze_Reticle';
+
+      // 1. Punto focale centrale dorato
+      const dotGeo = new THREE.CircleGeometry(0.012, 32);
+      const dotMat = new THREE.MeshBasicMaterial({
+        color: 0xffd700,
+        transparent: true,
+        opacity: 0.9,
+        depthTest: false,
+        depthWrite: false
+      });
+      const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+      dotMesh.renderOrder = 9999;
+      vrReticleGroup.add(dotMesh);
+
+      // 2. Anello esterno di puntamento
+      const ringGeo = new THREE.RingGeometry(0.024, 0.034, 32);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.7,
+        depthTest: false,
+        depthWrite: false
+      });
+      vrReticleRing = new THREE.Mesh(ringGeo, ringMat);
+      vrReticleRing.renderOrder = 9999;
+      vrReticleGroup.add(vrReticleRing);
+
+      // 3. Posiziona a 2.5 metri di fronte alla camera
+      vrReticleGroup.position.set(0, 0, -2.5);
+      vrReticleGroup.visible = false; // Visibile solo in modalità VR
+
+      // 4. Aggiungi come figlio diretto di camera
+      camera.add(vrReticleGroup);
+      scene.add(camera);
+    }
+
+    // ----------------------------------------------------
+    // Gaze Interaction & Dwell Timer System (2.0s Dwell)
+    // ----------------------------------------------------
+    const gazeRaycaster = new THREE.Raycaster();
+    const gazeIntersectTargets = [];
+    let gazeHoverTarget = null;
+    let gazeDwellTimer = 0.0;
+    const DWELL_DURATION_SEC = 2.0;
+    const _gazeForwardDir = new THREE.Vector3();
+
+    function updateGazeInteraction(deltaSec) {
+      if (!state.isVRMode || !vrReticleGroup || !completionPopupGroup || !completionPopupGroup.visible || gazeIntersectTargets.length === 0) return;
+
+      camera.getWorldDirection(_gazeForwardDir);
+      gazeRaycaster.set(camera.position, _gazeForwardDir);
+      const hits = gazeRaycaster.intersectObjects(gazeIntersectTargets, true);
+
+      if (hits.length > 0) {
+        let hitObj = hits[0].object;
+        while (hitObj && (!hitObj.userData || !hitObj.userData.onDwellSelect) && hitObj.parent) {
+          if (hitObj.parent === completionPopupGroup) break;
+          hitObj = hitObj.parent;
+        }
+
+        if (hitObj && hitObj.userData && typeof hitObj.userData.onDwellSelect === 'function') {
+          if (gazeHoverTarget === hitObj) {
+            gazeDwellTimer += deltaSec;
+            const progress = Math.min(1.0, gazeDwellTimer / DWELL_DURATION_SEC);
+
+            if (vrReticleRing) {
+              const s = 1.0 + progress * 0.75;
+              vrReticleRing.scale.set(s, s, 1.0);
+              vrReticleRing.material.opacity = 0.5 + progress * 0.5;
+            }
+
+            if (gazeDwellTimer >= DWELL_DURATION_SEC) {
+              gazeDwellTimer = 0.0;
+              if (vrReticleRing) {
+                vrReticleRing.scale.set(1.0, 1.0, 1.0);
+                vrReticleRing.material.opacity = 0.7;
+              }
+              hitObj.userData.onDwellSelect();
+            }
+          } else {
+            gazeHoverTarget = hitObj;
+            gazeDwellTimer = 0.0;
+          }
+          return;
+        }
+      }
+
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    // ----------------------------------------------------
+    // 3D Stereoscopic Completion Popup (Hands-Free Gaze)
+    // ----------------------------------------------------
+    let completionPopupGroup = null;
+
+    function createVRCompletionPopup() {
+      if (completionPopupGroup) return completionPopupGroup;
+
+      completionPopupGroup = new THREE.Group();
+      completionPopupGroup.name = 'VR_Completion_Popup';
+
+      // 1. Sfondo glassmorphic Japandi
+      const bgGeo = new THREE.PlaneGeometry(2.4, 1.4);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: 0x070c14,
+        transparent: true,
+        opacity: 0.88,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9998;
+      completionPopupGroup.add(bgMesh);
+
+      // 2. Texture con Titolo "Esperienza Completata"
+      const titleSprite = createPopupTextSprite('Esperienza Completata', 'bold 30px sans-serif', '#FFD700', 2.0, 0.4);
+      titleSprite.position.set(0, 0.38, 0.02);
+      completionPopupGroup.add(titleSprite);
+
+      const subSprite = createPopupTextSprite('Fissa un pulsante per 2s per selezionarlo', '20px sans-serif', 'rgba(255,255,255,0.75)', 2.2, 0.3);
+      subSprite.position.set(0, 0.12, 0.02);
+      completionPopupGroup.add(subSprite);
+
+      // 3. Pulsante 3D "ESCI" (Sinistra)
+      const exitBtn = create3DButton('ESCI', -0.55, -0.28, 0xef4444, () => {
+        notifyFlutter('onExitRequested', {});
+      });
+      completionPopupGroup.add(exitBtn);
+      gazeIntersectTargets.push(exitBtn);
+
+      // 4. Pulsante 3D "RIPETI" (Destra)
+      const repeatBtn = create3DButton('RIPETI', 0.55, -0.28, 0x10b981, () => {
+        hideVRCompletionPopup();
+        hide2DCompletionPopup();
+        state.isCompleted = false;
+        resetSession();
+        startSession();
+      });
+      completionPopupGroup.add(repeatBtn);
+      gazeIntersectTargets.push(repeatBtn);
+
+      completionPopupGroup.position.set(0, 0, -2.0);
+      completionPopupGroup.visible = false;
+
+      camera.add(completionPopupGroup);
+      return completionPopupGroup;
+    }
+
+    function createPopupTextSprite(text, font, color, w, h) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 512, 128);
+      ctx.font = font || 'bold 28px sans-serif';
+      ctx.fillStyle = color || '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 256, 64);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const mat = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false
+      });
+      mat.renderOrder = 9999;
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+      mesh.renderOrder = 9999;
+      return mesh;
+    }
+
+    function create3DButton(label, x, y, colorHex, onSelect) {
+      const group = new THREE.Group();
+      group.position.set(x, y, 0.02);
+
+      const bgGeo = new THREE.PlaneGeometry(0.85, 0.35);
+      const bgMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.85,
+        depthTest: false,
+        depthWrite: false
+      });
+      const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+      bgMesh.renderOrder = 9999;
+      bgMesh.userData = { onDwellSelect: onSelect };
+      group.add(bgMesh);
+
+      const textSprite = createPopupTextSprite(label, 'bold 32px sans-serif', '#FFFFFF', 0.8, 0.3);
+      textSprite.position.set(0, 0, 0.02);
+      textSprite.userData = { onDwellSelect: onSelect };
+      group.add(textSprite);
+
+      group.userData = { onDwellSelect: onSelect };
+      return group;
+    }
+
+    function showVRCompletionPopup() {
+      if (!completionPopupGroup) createVRCompletionPopup();
+      completionPopupGroup.visible = true;
+    }
+
+    function hideVRCompletionPopup() {
+      if (completionPopupGroup) completionPopupGroup.visible = false;
+      gazeHoverTarget = null;
+      gazeDwellTimer = 0.0;
+      if (vrReticleRing) {
+        vrReticleRing.scale.set(1.0, 1.0, 1.0);
+        vrReticleRing.material.opacity = 0.7;
+      }
+    }
+
+    function show2DCompletionPopup() {
+      const modal = document.getElementById('session-completion-modal');
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('opacity', '1', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
+        modal.classList.add('visible');
+      }
+    }
+
+    function hide2DCompletionPopup() {
+      const modal = document.getElementById('session-completion-modal');
+      if (modal) {
+        modal.classList.remove('visible');
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+        setTimeout(() => {
+          if (!modal.classList.contains('visible')) {
+            modal.style.display = 'none';
+          }
+        }, 360);
+      }
+    }
+
+    function onExperienceEnded() {
+      if (state.isCompleted) return;
+      if (typeof outroSafetyTimer !== 'undefined' && outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = true;
+      state.isRunning = false;
+      state.currentPhase = PHASE.COMPLETED;
+
+      try {
+        setPadAudioGain(0.01, 1.5);
+      } catch(e) {
+        console.warn('Audio fade err:', e);
+      }
+
+      try {
+        if (typeof textSpriteMesh !== 'undefined' && textSpriteMesh && textSpriteMesh.material) {
+          textSpriteMesh.material.opacity = 0;
+        }
+      } catch(e) {}
+
+      try {
+        updateUIElements();
+      } catch(e) {}
+
+      try {
+        notifyFlutter('onSessionComplete', {
+          cyclesCompleted: PACING_CONFIG.TOTAL_CYCLES,
+          totalTimeMs: 5 * (PACING_CONFIG.INHALE_DURATION + PACING_CONFIG.EXHALE_DURATION) + PACING_CONFIG.OUTRO_DURATION
+        });
+      } catch(e) {
+        console.warn('Flutter notify error:', e);
+      }
+
+      if (state.isVRMode) {
+        showVRCompletionPopup();
+      } else {
+        show2DCompletionPopup();
+      }
+    }
+
+    // ----------------------------------------------------
+    // Lighting calibrated for ACES Filmic Tone Mapping
+    // ----------------------------------------------------
+    function createLighting() {
+      const hemiLight = new THREE.HemisphereLight(0x4AA4D8, 0xF5E0C7, 0.95);
+      hemiLight.position.set(0, 50, 0);
+      scene.add(hemiLight);
+
+      const sunLight = new THREE.DirectionalLight(0xFFF4D8, 1.55);
+      sunLight.position.copy(sunDirection.clone().multiplyScalar(40));
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 1024;
+      sunLight.shadow.mapSize.height = 1024;
+      sunLight.shadow.bias = -0.0004;
+      scene.add(sunLight);
+
+      const rimLight = new THREE.DirectionalLight(0xFFA040, 0.75);
+      rimLight.position.set(-sunDirection.x, -sunDirection.y * 0.4, -sunDirection.z);
+      scene.add(rimLight);
+    }
+
+    // ----------------------------------------------------
+    // Continuous Atmospheric Rayleigh & Mie Scattering SkyDome
+    // ----------------------------------------------------
+    function createAtmosphericSkyDome() {
+      const vertexShader = `
+        varying vec3 vWorldPosition;
+        void main() {
+          vec4 worldPos = modelMatrix * vec4(position, 1.0);
+          vWorldPosition = worldPos.xyz;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `;
+
+      const fragmentShader = `
+        varying vec3 vWorldPosition;
+        uniform vec3 uSunDirection;
+
+        void main() {
+          vec3 rayDir = normalize(vWorldPosition);
+          float h = rayDir.y;
+
+          vec3 zenithColor   = vec3(0.065, 0.32, 0.62);  // Cobalt sapphire (#10529E)
+          vec3 midSkyColor   = vec3(0.28, 0.64, 0.86);   // Luminous cyan azure (#47A3DB)
+          vec3 horizonColor  = vec3(0.96, 0.88, 0.79);   // Sunrise warm haze (#F5E0C9)
+          vec3 mistSeaTop    = vec3(0.95, 0.90, 0.85);   // Cloud tops
+          vec3 mistSeaBottom = vec3(0.74, 0.77, 0.83);   // Distant mist shadow
+
+          vec3 skyColor;
+          if (h >= 0.0) {
+            float tMid = clamp(h * 2.2, 0.0, 1.0);
+            vec3 lowerSky = mix(horizonColor, midSkyColor, pow(tMid, 0.75));
+            float tZenith = clamp((h - 0.22) * 1.5, 0.0, 1.0);
+            skyColor = mix(lowerSky, zenithColor, pow(tZenith, 1.25));
+          } else {
+            float tDown = clamp(-h * 2.6, 0.0, 1.0);
+            skyColor = mix(horizonColor, mix(mistSeaTop, mistSeaBottom, tDown), pow(tDown, 0.85));
+          }
+
+          float cosTheta = dot(rayDir, uSunDirection);
+          float sunCore = smoothstep(0.9993, 0.9998, cosTheta);
+          vec3 sunCoreColor = vec3(1.4, 1.35, 1.15) * 4.2;
+
+          float sunCorona = pow(max(0.0, cosTheta), 70.0) * 1.55;
+          vec3 sunCoronaColor = vec3(1.0, 0.88, 0.62);
+
+          float sunBloom = pow(max(0.0, cosTheta), 7.5) * 0.42;
+          vec3 sunBloomColor = vec3(1.0, 0.82, 0.55);
+
+          vec3 finalColor = skyColor + sunBloom * sunBloomColor + sunCorona * sunCoronaColor + sunCore * sunCoreColor;
+          gl_FragColor = vec4(finalColor, 1.0);
+        }
+      `;
+
+      const skyGeo = new THREE.SphereGeometry(450, 48, 36);
+      const skyMat = new THREE.ShaderMaterial({
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        uniforms: {
+          uSunDirection: { value: sunDirection }
+        },
+        side: THREE.BackSide,
+        depthWrite: false
+      });
+
+      skyDomeMesh = new THREE.Mesh(skyGeo, skyMat);
+      scene.add(skyDomeMesh);
+    }
+
+    // ----------------------------------------------------
+    // High-Definition Photorealistic Hot Air Balloon Assembly
+    // Base position: X = 0, Y = 0.3, Z = -11.0m
+    // Robust PBR MeshStandardMaterial (eliminates WebGL NaN issues)
+    // ----------------------------------------------------
+    function createBalloonAssembly() {
+      balloonGroup = new THREE.Group();
+      balloonGroup.position.set(
+        PACING_CONFIG.BALLOON_BASE_X,
+        PACING_CONFIG.BALLOON_BASE_Y,
+        PACING_CONFIG.BALLOON_BASE_Z
+      );
+
+      // A) Continuous C2 Aerodynamic Montgolfier Envelope Profile (128 sample points)
+      // Top: hemispherical dome r = sqrt(R^2 - y^2) with horizontal tangent at apex
+      // Continuous C2 smoothstep transition to aerodynamic Montgolfier teardrop
+      // Smooth throat collar transition (r = 0.35 at y = -2.15) with vertical tangent
+      const points = [];
+      const numPts = 128;
+      const yApex = 2.37;
+      const yCollar = -2.15;
+      const rCollar = 0.35;
+      const rMax = 1.95;
+      const yEquator = 0.42;
+      const R_dome = yApex - yEquator; // 1.95m
+
+      const numTeardrop = 72;
+      const numDome = numPts - numTeardrop; // 56 points
+
+      // 1. Lower Teardrop Body (from collar y=-2.15 up to equator y=0.42)
+      for (let i = 0; i < numTeardrop; i++) {
+        const tau = i / (numTeardrop - 1); // 0.0 at collar to 1.0 at equator
+        const y = yCollar + tau * (yEquator - yCollar);
+        // Quintic smoothstep S-curve (zero 1st & 2nd derivatives at both endpoints)
+        const s = tau * tau * tau * (tau * (tau * 6.0 - 15.0) + 10.0);
+        const r = rCollar + (rMax - rCollar) * s;
+        points.push(new THREE.Vector2(Math.max(r, 0.005), y));
+      }
+
+      // 2. Hemispherical Upper Dome (from equator phi=pi/2 down to apex phi=0)
+      for (let i = 1; i <= numDome; i++) {
+        const t = i / numDome; // 0+ to 1.0
+        const phi = (Math.PI / 2) * (1.0 - t); // angle from horizontal equator to vertical apex
+        const r = Math.max(0.005, R_dome * Math.sin(phi));
+        const y = yEquator + R_dome * Math.cos(phi);
+        points.push(new THREE.Vector2(r, y));
+      }
+
+      // LatheGeometry with 128 radial subdivisions
+      const balloonGeo = new THREE.LatheGeometry(points, 128);
+      balloonGeo.computeVertexNormals();
+
+      // Diffuse & bump canvas textures
+      const fabricTextures = createBalloonFabricTextures();
+
+      // PBR Textile Material
+      const balloonMat = new THREE.MeshStandardMaterial({
+        map: fabricTextures.diffuse,
+        bumpMap: fabricTextures.bump,
+        bumpScale: 0.035,
+        roughness: 0.60,
+        metalness: 0.04,
+        side: THREE.FrontSide
+      });
+
+      const balloonMesh = new THREE.Mesh(balloonGeo, balloonMat);
+      balloonMesh.castShadow = true;
+      balloonMesh.receiveShadow = true;
+      balloonGroup.add(balloonMesh);
+
+      // B) Throat Skirt Collar Trim (matched to r = 0.35 at y = -2.15)
+      const throatRimGeo = new THREE.TorusGeometry(0.35, 0.028, 16, 64);
+      throatRimGeo.rotateX(Math.PI / 2);
+      throatRimGeo.translate(0, -2.15, 0);
+      const throatRimMat = new THREE.MeshStandardMaterial({
+        color: 0xCC8E2E,
+        roughness: 0.5,
+        metalness: 0.1
+      });
+      const throatRimMesh = new THREE.Mesh(throatRimGeo, throatRimMat);
+      balloonGroup.add(throatRimMesh);
+
+      // C) Burner Assembly (Dual Brass Burners & Warm Glowing Pilot Flame)
+      const burnerGroup = new THREE.Group();
+      burnerGroup.position.set(0, -2.40, 0);
+
+      const frameGeo = new THREE.TorusGeometry(0.24, 0.016, 12, 32);
+      frameGeo.rotateX(Math.PI / 2);
+      const brassMat = new THREE.MeshStandardMaterial({
+        color: 0xD4AF37,
+        metalness: 0.85,
+        roughness: 0.25
+      });
+      const frameMesh = new THREE.Mesh(frameGeo, brassMat);
+      burnerGroup.add(frameMesh);
+
+      const nozzleGeo = new THREE.CylinderGeometry(0.065, 0.055, 0.12, 16);
+      const nozzleLeft = new THREE.Mesh(nozzleGeo, brassMat);
+      nozzleLeft.position.set(-0.09, 0.04, 0);
+      burnerGroup.add(nozzleLeft);
+
+      const nozzleRight = new THREE.Mesh(nozzleGeo, brassMat);
+      nozzleRight.position.set(0.09, 0.04, 0);
+      burnerGroup.add(nozzleRight);
+
+      const flameGeo = new THREE.SphereGeometry(0.06, 12, 12);
+      const flameMat = new THREE.MeshBasicMaterial({
+        color: 0xFFAA22,
+        transparent: true,
+        opacity: 0.85
+      });
+      const flameMesh = new THREE.Mesh(flameGeo, flameMat);
+      flameMesh.position.set(0, 0.09, 0);
+      burnerGroup.add(flameMesh);
+
+      burnerLight = new THREE.PointLight(0xFFAA33, 1.2, 6.0);
+      burnerLight.position.set(0, 0.08, 0);
+      burnerGroup.add(burnerLight);
+
+      balloonGroup.add(burnerGroup);
+
+      // D) Photorealistic Wicker Basket Assembly
+      basketGroup = new THREE.Group();
+      basketGroup.position.set(0, -3.10, 0);
+
+      const wickerTexture = createRealisticWickerTexture();
+      const basketGeo = new THREE.CylinderGeometry(0.42, 0.34, 0.52, 36);
+      const basketMat = new THREE.MeshStandardMaterial({
+        color: 0xD6A268,
+        map: wickerTexture,
+        bumpMap: wickerTexture,
+        bumpScale: 0.06,
+        roughness: 0.82
+      });
+      const basketMesh = new THREE.Mesh(basketGeo, basketMat);
+      basketMesh.castShadow = true;
+      basketGroup.add(basketMesh);
+
+      const bolsterGeo = new THREE.TorusGeometry(0.42, 0.042, 16, 36);
+      bolsterGeo.rotateX(Math.PI / 2);
+      bolsterGeo.translate(0, 0.26, 0);
+      const leatherMat = new THREE.MeshStandardMaterial({
+        color: 0x382212,
+        roughness: 0.45,
+        metalness: 0.05
+      });
+      const bolsterMesh = new THREE.Mesh(bolsterGeo, leatherMat);
+      basketGroup.add(bolsterMesh);
+
+      const buckleGeo = new THREE.TorusGeometry(0.04, 0.01, 8, 16);
+      buckleGeo.rotateY(Math.PI / 2);
+      for (let i = 0; i < 4; i++) {
+        const ang = (i * Math.PI / 2) + Math.PI / 4;
+        const buckle = new THREE.Mesh(buckleGeo, brassMat);
+        buckle.position.set(Math.cos(ang) * 0.40, 0.24, Math.sin(ang) * 0.40);
+        basketGroup.add(buckle);
+      }
+
+      // E) Burner Struts & Rigging Suspension Cables
+      const cableMat = new THREE.MeshStandardMaterial({
+        color: 0xE8DFD0,
+        roughness: 0.4,
+        metalness: 0.2
+      });
+
+      const strutOffsets = [
+        { x: 0.28, z: 0.28 },
+        { x: -0.28, z: 0.28 },
+        { x: 0.28, z: -0.28 },
+        { x: -0.28, z: -0.28 }
+      ];
+
+      strutOffsets.forEach(pt => {
+        const pBasket = new THREE.Vector3(pt.x, -3.10 + 0.26, pt.z);
+        const pBurner = new THREE.Vector3(pt.x * 0.45, -2.40, pt.z * 0.45);
+        const strutDir = new THREE.Vector3().subVectors(pBurner, pBasket);
+        const strutLen = strutDir.length();
+
+        const strutGeo = new THREE.CylinderGeometry(0.012, 0.012, strutLen, 8);
+        strutGeo.translate(0, strutLen / 2, 0);
+        const strutMesh = new THREE.Mesh(strutGeo, brassMat);
+        strutMesh.position.copy(pBasket);
+        strutMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), strutDir.clone().normalize());
+        balloonGroup.add(strutMesh);
+
+        const pThroat = new THREE.Vector3(pt.x * 0.88, -2.15, pt.z * 0.88);
+        const cableDir = new THREE.Vector3().subVectors(pThroat, pBurner);
+        const cableLen = cableDir.length();
+
+        const cableGeo = new THREE.CylinderGeometry(0.007, 0.007, cableLen, 8);
+        cableGeo.translate(0, cableLen / 2, 0);
+        const cableMesh = new THREE.Mesh(cableGeo, cableMat);
+        cableMesh.position.copy(pBurner);
+        cableMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), cableDir.clone().normalize());
+        balloonGroup.add(cableMesh);
+      });
+
+      balloonGroup.add(basketGroup);
+
+      // F) 4 Delicate Dancing Silk Ribbons under the Basket Corners
+      createBasketRibbons();
+
+      // Add fully assembled balloon to the scene
+      scene.add(balloonGroup);
+    }
+
+    // ----------------------------------------------------
+    // 4 Delicate Satin Silk Ribbons fluttering under basket
+    // ----------------------------------------------------
+    function createBasketRibbons() {
+      basketRibbons = [];
+      const ribbonCount = 4;
+      const ribbonLength = 2.5;
+      const ribbonWidth = 0.08;
+      const ribbonSegments = 28;
+
+      const ribbonOffsets = [
+        { x: -0.26, z: 0.26, phase: 0.0 },
+        { x: 0.26, z: 0.26, phase: 1.3 },
+        { x: -0.26, z: -0.26, phase: 2.6 },
+        { x: 0.26, z: -0.26, phase: 3.9 }
+      ];
+
+      const ribbonColors = [0xF8D878, 0xF5C442, 0xFBE59B, 0xEFC035];
+
+      for (let i = 0; i < ribbonCount; i++) {
+        const geo = new THREE.PlaneGeometry(ribbonWidth, ribbonLength, 2, ribbonSegments);
+        geo.translate(0, -ribbonLength / 2, 0);
+
+        const mat = new THREE.MeshStandardMaterial({
+          color: ribbonColors[i],
+          roughness: 0.42,
+          metalness: 0.08,
+          side: THREE.DoubleSide
+        });
+
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(ribbonOffsets[i].x, -0.26, ribbonOffsets[i].z);
+        mesh.userData = {
+          phase: ribbonOffsets[i].phase,
+          posAttr: geo.attributes.position
+        };
+
+        basketGroup.add(mesh);
+        basketRibbons.push(mesh);
+      }
+    }
+
+    function animateRibbons(timeSec) {
+      const windMul = state.windSpeedFactor;
+      for (let r = 0; r < basketRibbons.length; r++) {
+        const rib = basketRibbons[r];
+        const pos = rib.userData.posAttr;
+        const phase = rib.userData.phase;
+        const count = pos.count;
+
+        for (let i = 0; i < count; i++) {
+          const y = pos.getY(i);
+          const prog = Math.abs(y) / 2.5;
+          const waveX = Math.sin(timeSec * 3.6 * windMul + y * 3.8 + phase) * (0.18 * prog * prog);
+          const waveZ = Math.cos(timeSec * 2.8 * windMul + y * 3.2 + phase) * (0.14 * prog);
+          pos.setX(i, waveX);
+          pos.setZ(i, waveZ);
+        }
+        pos.needsUpdate = true;
+      }
+    }
+
+    // ----------------------------------------------------
+    // 3D Aerodynamic Air Streamlines & Breeze Vortices
+    // 10 procedural Catmull-Rom spline curves with GPU shaders
+    // ----------------------------------------------------
+    function createAirStreamlines() {
+      airStreamlinesGroup = new THREE.Group();
+      const CatmullRom = THREE.CatmullRomCurve3 || THREE.CatmullRomCurve3D;
+
+      // 10 Ethereal Soft Streamlines surrounding the balloon at Z ~ -10.0m to -11.5m
+      // Delicate radii (0.013 - 0.016m) and transparent soft gas opacity (0.20 - 0.24)
+      const curveDefinitions = [
+        // 1. Updraft Left Flank (sweeps up envelope left belly)
+        {
+          pts: [
+            new THREE.Vector3(-1.2, -3.8, -10.8),
+            new THREE.Vector3(-2.2, -1.8, -10.5),
+            new THREE.Vector3(-2.8,  0.6, -10.1),
+            new THREE.Vector3(-2.1,  2.8, -11.1),
+            new THREE.Vector3(-1.0,  4.4, -12.2)
+          ],
+          speed: 0.55, freq: 2.2, radius: 0.015, alpha: 0.22
+        },
+        // 2. Updraft Right Flank (sweeps up envelope right belly)
+        {
+          pts: [
+            new THREE.Vector3( 1.2, -3.8, -10.9),
+            new THREE.Vector3( 2.2, -1.7, -10.6),
+            new THREE.Vector3( 2.8,  0.5, -10.2),
+            new THREE.Vector3( 2.1,  2.7, -11.2),
+            new THREE.Vector3( 1.0,  4.4, -12.3)
+          ],
+          speed: 0.52, freq: 2.2, radius: 0.015, alpha: 0.22
+        },
+        // 3. Forefront Rising Breeze (curves gently in front of envelope/throat)
+        {
+          pts: [
+            new THREE.Vector3(-0.6, -3.0, -9.4),
+            new THREE.Vector3( 0.4, -1.0, -9.0),
+            new THREE.Vector3( 0.9,  0.8, -8.9),
+            new THREE.Vector3(-0.3,  2.9, -9.7),
+            new THREE.Vector3( 0.4,  4.3, -10.7)
+          ],
+          speed: 0.60, freq: 1.8, radius: 0.016, alpha: 0.24
+        },
+        // 4. Rear Leeward Updraft (rises along back)
+        {
+          pts: [
+            new THREE.Vector3( 0.4, -3.6, -11.8),
+            new THREE.Vector3(-1.2, -1.4, -12.0),
+            new THREE.Vector3(-0.5,  1.4, -12.1),
+            new THREE.Vector3( 1.0,  3.2, -12.3),
+            new THREE.Vector3( 1.4,  4.7, -13.0)
+          ],
+          speed: 0.48, freq: 2.0, radius: 0.014, alpha: 0.20
+        },
+        // 5. High-Altitude Cross-Breeze Left-to-Right
+        {
+          pts: [
+            new THREE.Vector3(-6.5,  1.8,  -9.8),
+            new THREE.Vector3(-3.2,  1.3, -10.2),
+            new THREE.Vector3( 0.0,  2.1, -10.6),
+            new THREE.Vector3( 3.2,  1.5, -11.2),
+            new THREE.Vector3( 6.5,  1.9, -11.8)
+          ],
+          speed: 0.42, freq: 1.6, radius: 0.016, alpha: 0.20
+        },
+        // 6. High-Altitude Cross-Breeze Right-to-Left (lower altitude)
+        {
+          pts: [
+            new THREE.Vector3( 6.2, -0.6, -10.2),
+            new THREE.Vector3( 3.0, -0.2, -10.4),
+            new THREE.Vector3(-0.7,  0.6, -10.8),
+            new THREE.Vector3(-3.8,  0.3, -11.3),
+            new THREE.Vector3(-6.5,  1.0, -11.9)
+          ],
+          speed: 0.45, freq: 1.7, radius: 0.015, alpha: 0.21
+        },
+        // 7. Left Vortex Spiral (subtle curling eddy)
+        {
+          pts: [
+            new THREE.Vector3(-3.0, -0.9, -11.0),
+            new THREE.Vector3(-2.1,  0.4, -10.4),
+            new THREE.Vector3(-2.9,  1.6, -11.3),
+            new THREE.Vector3(-1.9,  2.6, -11.8),
+            new THREE.Vector3(-2.5,  3.7, -12.6)
+          ],
+          speed: 0.58, freq: 2.5, radius: 0.013, alpha: 0.20
+        },
+        // 8. Right Vortex Spiral (gentle curling eddy)
+        {
+          pts: [
+            new THREE.Vector3( 2.9, -0.8, -10.9),
+            new THREE.Vector3( 2.0,  0.5, -10.5),
+            new THREE.Vector3( 2.8,  1.7, -11.2),
+            new THREE.Vector3( 1.8,  2.7, -11.9),
+            new THREE.Vector3( 2.3,  3.8, -12.7)
+          ],
+          speed: 0.56, freq: 2.5, radius: 0.013, alpha: 0.20
+        },
+        // 9. Central Rising Thermal 1
+        {
+          pts: [
+            new THREE.Vector3(-0.5, -4.4, -11.1),
+            new THREE.Vector3(-0.3, -2.1, -10.7),
+            new THREE.Vector3(-1.4,  0.9, -10.3),
+            new THREE.Vector3(-0.7,  3.1, -11.3),
+            new THREE.Vector3( 0.3,  4.9, -12.2)
+          ],
+          speed: 0.50, freq: 2.1, radius: 0.014, alpha: 0.22
+        },
+        // 10. Central Rising Thermal 2
+        {
+          pts: [
+            new THREE.Vector3( 0.6, -4.4, -11.0),
+            new THREE.Vector3( 0.3, -2.0, -10.6),
+            new THREE.Vector3( 1.4,  1.0, -10.2),
+            new THREE.Vector3( 0.7,  3.2, -11.2),
+            new THREE.Vector3(-0.2,  5.0, -12.2)
+          ],
+          speed: 0.54, freq: 2.1, radius: 0.014, alpha: 0.22
+        }
+      ];
+
+      const vertShader = `
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+        uniform float uTime;
+        void main() {
+          vUv = uv;
+          vNormal = normalize(normalMatrix * normal);
+          vec3 pos = position;
+          pos.x += sin(uTime * 1.3 + position.y * 1.1) * 0.022;
+          pos.z += cos(uTime * 1.0 + position.y * 0.9) * 0.018;
+          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+          vViewPosition = -mvPosition.xyz;
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `;
+
+      // Soft Gas Flow True Wind Shader:
+      // Gaussian alpha falloff on lateral borders and smoothstep taper at tips
+      const fragShader = `
+        uniform float uTime;
+        uniform float uSpeed;
+        uniform float uPulseFreq;
+        uniform float uAlpha;
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+
+        void main() {
+          // Dynamic ethereal wind ripple along the streamline
+          float flowU = vUv.x * uPulseFreq - uTime * uSpeed;
+          float frac = fract(flowU);
+          float pulse = smoothstep(0.0, 0.35, frac) * smoothstep(1.0, 0.55, frac);
+          float waveFlow = 0.70 + 0.30 * pulse;
+
+          // Mathematical soft gas flow equation:
+          // Smooth fade at endpoints (vUv.x) + Gaussian power falloff across width (vUv.y)
+          float edgeAlpha = smoothstep(0.0, 0.4, vUv.x) * smoothstep(1.0, 0.6, vUv.x);
+          float crossAlpha = pow(max(0.0, 1.0 - 2.0 * abs(vUv.y - 0.5)), 2.8);
+          float alpha = edgeAlpha * crossAlpha * waveFlow * uAlpha;
+
+          // Pearlescent airy color gradient: celeste aria (#E8F7FF) to warm sunlight breeze (#FFFDF0)
+          vec3 colCeleste = vec3(0.910, 0.969, 1.000);   // #E8F7FF
+          vec3 colWarmAir = vec3(1.000, 0.992, 0.941);   // #FFFDF0
+          vec3 baseColor = mix(colCeleste, colWarmAir, vUv.x);
+
+          // Subtle view-angle fresnel shimmer for depth
+          vec3 normal = normalize(vNormal);
+          vec3 viewDir = normalize(vViewPosition);
+          float rim = pow(1.0 - abs(dot(normal, viewDir)), 2.2);
+          vec3 finalColor = baseColor + vec3(0.08, 0.08, 0.06) * rim;
+
+          gl_FragColor = vec4(finalColor, clamp(alpha, 0.0, 1.0));
+        }
+      `;
+
+      curveDefinitions.forEach(def => {
+        const curve = new CatmullRom(def.pts, false, 'catmullrom', 0.5);
+        const tubeGeo = new THREE.TubeGeometry(curve, 84, def.radius, 12, false);
+
+        const tubeMat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 0.0 },
+            uSpeed: { value: def.speed },
+            uPulseFreq: { value: def.freq },
+            uAlpha: { value: def.alpha }
+          },
+          vertexShader: vertShader,
+          fragmentShader: fragShader,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          side: THREE.DoubleSide
+        });
+
+        const mesh = new THREE.Mesh(tubeGeo, tubeMat);
+        mesh.userData = {
+          baseSpeed: def.speed
+        };
+
+        airStreamlinesGroup.add(mesh);
+        airStreamlines.push(mesh);
+      });
+
+      scene.add(airStreamlinesGroup);
+    }
+
+    function animateAirStreamlines(deltaSec) {
+      const windMul = state.windSpeedFactor;
+      for (let i = 0; i < airStreamlines.length; i++) {
+        const stream = airStreamlines[i];
+        stream.material.uniforms.uTime.value += deltaSec * windMul * stream.userData.baseSpeed;
+      }
+    }
+
+    // ----------------------------------------------------
+    // Fluffy Procedural Soft Volumetric Cloud Formations
+    // ----------------------------------------------------
+    const cloudsList = [];
+
+    function createProceduralClouds() {
+      cloudsGroup = new THREE.Group();
+
+      const cloudTexCumulus = createSoftCloudTexture(0);
+      const cloudTexStratus = createSoftCloudTexture(1);
+      const cloudTexCirrus  = createSoftCloudTexture(2);
+      const textures = [cloudTexCumulus, cloudTexStratus, cloudTexCirrus];
+
+      // Tier 1: Distant Horizon Sea-of-Clouds
+      const numSeaClouds = 18;
+      for (let i = 0; i < numSeaClouds; i++) {
+        const angle = (i / numSeaClouds) * Math.PI * 2 + Math.random() * 0.3;
+        const dist = 55 + Math.random() * 35;
+        const altitude = -10 + Math.random() * 4;
+
+        const mat = new THREE.SpriteMaterial({
+          map: textures[i % 2],
+          color: 0xFFF5E8,
+          transparent: true,
+          opacity: 0.52,
+          depthWrite: false,
+          blending: THREE.NormalBlending
+        });
+
+        const sprite = new THREE.Sprite(mat);
+        const sc = 28 + Math.random() * 22;
+        sprite.scale.set(sc * 1.6, sc * 0.75, 1.0);
+        sprite.position.set(Math.cos(angle) * dist, altitude, Math.sin(angle) * dist);
+
+        sprite.userData = {
+          speed: 0.03 + Math.random() * 0.04,
+          radius: dist,
+          angle: angle
+        };
+
+        cloudsGroup.add(sprite);
+        cloudsList.push(sprite);
+      }
+
+      // Tier 2: Mid-distance Fluffy Cumulus Clusters
+      const numCumulus = 16;
+      for (let c = 0; c < numCumulus; c++) {
+        const cloudCluster = new THREE.Group();
+        const baseAngle = (c / numCumulus) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+        const dist = 32 + Math.random() * 26;
+        const altitude = -1.5 + Math.random() * 18;
+
+        const puffsInCluster = 4 + Math.floor(Math.random() * 3);
+        for (let p = 0; p < puffsInCluster; p++) {
+          const mat = new THREE.SpriteMaterial({
+            map: textures[p % textures.length],
+            color: 0xFFFAF2,
+            transparent: true,
+            opacity: 0.42 + Math.random() * 0.16,
+            depthWrite: false,
+            blending: THREE.NormalBlending
+          });
+
+          const puff = new THREE.Sprite(mat);
+          const px = (p - puffsInCluster / 2) * 3.8 + (Math.random() - 0.5) * 2.0;
+          const py = (Math.random() - 0.5) * 1.8;
+          const pz = (Math.random() - 0.5) * 2.5;
+          const sc = 9 + Math.random() * 8;
+
+          puff.position.set(px, py, pz);
+          puff.scale.set(sc * 1.35, sc * 0.85, 1.0);
+          cloudCluster.add(puff);
+        }
+
+        cloudCluster.position.set(Math.cos(baseAngle) * dist, altitude, Math.sin(baseAngle) * dist);
+        cloudCluster.userData = {
+          speed: 0.04 + Math.random() * 0.05,
+          radius: dist,
+          angle: baseAngle
+        };
+
+        cloudsGroup.add(cloudCluster);
+        cloudsList.push(cloudCluster);
+      }
+
+      scene.add(cloudsGroup);
+    }
+
+    function animateClouds(deltaSec) {
+      cloudsList.forEach(cloud => {
+        cloud.userData.angle += (cloud.userData.speed * deltaSec * 0.04);
+        cloud.position.x = Math.cos(cloud.userData.angle) * cloud.userData.radius;
+        cloud.position.z = Math.sin(cloud.userData.angle) * cloud.userData.radius;
+      });
+    }
+
+    // ----------------------------------------------------
+    // Atmospheric Ultra-Soft Circular Dust / Dandelion Particles
+    // (Gaussian Radial Map - Zero Square Pixels)
+    // ----------------------------------------------------
+    function createAtmosphericDust() {
+      const particleCount = 140;
+      const geom = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount * 3);
+      const velocities = [];
+
+      for (let i = 0; i < particleCount; i++) {
+        positions[i * 3 + 0] = (Math.random() - 0.5) * 16.0;
+        positions[i * 3 + 1] = -5.0 + Math.random() * 12.0;
+        positions[i * 3 + 2] = -6.0 - Math.random() * 9.5;
+
+        velocities.push({
+          vy: 0.003 + Math.random() * 0.005,
+          vx: (Math.random() - 0.5) * 0.003,
+          vz: (Math.random() - 0.5) * 0.002,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const particleTexture = createSoftParticleTexture();
+
+      const mat = new THREE.PointsMaterial({
+        map: particleTexture,
+        color: 0xFFE8A0,
+        size: 0.28,
+        transparent: true,
+        opacity: 0.35,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+
+      dustParticles = new THREE.Points(geom, mat);
+      dustParticles.userData = { velocities };
+      scene.add(dustParticles);
+    }
+
+    function animateDust(timeSec) {
+      if (!dustParticles) return;
+      const pos = dustParticles.geometry.attributes.position;
+      const vels = dustParticles.userData.velocities;
+      const windMul = state.windSpeedFactor;
+
+      for (let i = 0; i < vels.length; i++) {
+        let y = pos.getY(i) + vels[i].vy * windMul;
+        const swirl = Math.sin(timeSec * 0.6 + vels[i].phase);
+        let x = pos.getX(i) + (vels[i].vx + swirl * 0.0018) * windMul;
+        let z = pos.getZ(i) + vels[i].vz * windMul;
+
+        if (y > 7.0) y = -5.0;
+        if (x > 8.0) x = -8.0;
+        if (x < -8.0) x = 8.0;
+        if (z < -16.0) z = -6.0;
+        if (z > -6.0) z = -16.0;
+
+        pos.setY(i, y);
+        pos.setX(i, x);
+        pos.setZ(i, z);
+      }
+      pos.needsUpdate = true;
+    }
+
+    // ----------------------------------------------------
+    // 3D Calligraphic Text Billboard (Floating "Inspira" / "Espira")
+    // Positioned right above the crown of the balloon
+    // ----------------------------------------------------
+    let textCanvas, textCtx, textTexture;
+
+    function createCalligraphicTextBillboard() {
+      textCanvas = document.createElement('canvas');
+      textCanvas.width = 1024;
+      textCanvas.height = 384;
+      textCtx = textCanvas.getContext('2d');
+
+      textTexture = new THREE.CanvasTexture(textCanvas);
+      textTexture.minFilter = THREE.LinearFilter;
+
+      const spriteMat = new THREE.SpriteMaterial({
+        map: textTexture,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: false
+      });
+
+      textSpriteMesh = new THREE.Sprite(spriteMat);
+      textSpriteMesh.scale.set(5.2, 1.95, 1.0);
+      textSpriteMesh.position.set(0, 4.0, -10.5);
+      scene.add(textSpriteMesh);
+
+      renderBillboardText("Pronto?", "Respira con la mongolfiera", 1.0);
+    }
+
+    let lastRenderedWord = null;
+    let lastRenderedSub = null;
+    let lastRenderedAlpha = -1;
+
+    function renderBillboardText(mainWord, subText, alpha = 1.0) {
+      if (!textCtx) return;
+
+      if (lastRenderedWord === mainWord && lastRenderedSub === subText && Math.abs(lastRenderedAlpha - alpha) < 0.02) {
+        return;
+      }
+      lastRenderedWord = mainWord;
+      lastRenderedSub = subText;
+      lastRenderedAlpha = alpha;
+
+      textCtx.clearRect(0, 0, 1024, 384);
+
+      if (alpha <= 0.01) {
+        textTexture.needsUpdate = true;
+        if (textSpriteMesh) textSpriteMesh.material.opacity = 0.0;
+        return;
+      }
+
+      textCtx.save();
+      textCtx.textAlign = 'center';
+      textCtx.textBaseline = 'middle';
+
+      textCtx.shadowColor = 'rgba(255, 215, 0, 0.7)';
+      textCtx.shadowBlur = 28;
+
+      textCtx.font = '600 78px "Playfair Display", "Georgia", "Baskerville", serif';
+      textCtx.fillStyle = '#FFFFFF';
+      textCtx.fillText(mainWord, 512, 160);
+
+      textCtx.shadowBlur = 10;
+      textCtx.font = '500 32px -apple-system, sans-serif';
+      textCtx.fillStyle = '#FFD700';
+      textCtx.fillText(subText, 512, 230);
+
+      textCtx.restore();
+
+      textTexture.needsUpdate = true;
+      if (textSpriteMesh) textSpriteMesh.material.opacity = alpha;
+    }
+
+    /* ======================================================================
+       6. CAMERA & LOOK CONTROLS (PC MOUSE 360° + MOBILE ORIENTATION)
+       ====================================================================== */
+    let isMouseDown = false;
+    let prevMouseX = 0;
+    let prevMouseY = 0;
+    let cameraYaw = 0;
+    let cameraPitch = 0;
+    let targetYaw = 0;
+    let targetPitch = 0;
+
+    let deviceOrientationEnabled = true;
+    let orientationAlpha = 0;
+    let orientationBeta = 0;
+    let orientationGamma = 0;
+    let screenOrientationAngle = 0;
+    let vrAlphaOffset = 0;
+
+    const _zee = new THREE.Vector3(0, 0, 1);
+    const _euler = new THREE.Euler();
+    const _q0 = new THREE.Quaternion();
+    const _q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)); // -PI/2 X
+
+    function getScreenOrientationAngle() {
+      if (screen.orientation && typeof screen.orientation.angle === 'number') {
+        return screen.orientation.angle;
+      }
+      if (typeof window.orientation === 'number') {
+        return window.orientation;
+      }
+      if (window.innerWidth > window.innerHeight) {
+        return 90;
+      }
+      return 0;
+    }
+
+    function initControls() {
+      enableDeviceOrientationListener();
+      window.addEventListener('orientationchange', () => {}, false);
+
+      // PC Mouse Drag Look-Around (Smooth 360°)
+      window.addEventListener('mousedown', (e) => {
+        if (e.target.closest('#ui-layer') || e.target.closest('#audio-gate') || e.target.closest('#vr-overlay')) {
+          if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+        }
+        isMouseDown = true;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+      });
+
+      window.addEventListener('mouseup', () => { isMouseDown = false; });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isMouseDown) return;
+        const dx = e.clientX - prevMouseX;
+        const dy = e.clientY - prevMouseY;
+        prevMouseX = e.clientX;
+        prevMouseY = e.clientY;
+
+        targetYaw -= dx * 0.0032;
+        targetPitch -= dy * 0.0028;
+        targetPitch = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, targetPitch));
+      });
+
+      // Mouse Wheel Zoom
+      window.addEventListener('wheel', (e) => {
+        camera.fov = Math.max(38, Math.min(85, camera.fov + e.deltaY * 0.035));
+        camera.updateProjectionMatrix();
+      }, { passive: true });
+
+      // Mobile Touch Drag Look-Around
+      let touchStartX = 0;
+      let touchStartY = 0;
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+        unlockAudioContext();
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (state.isVRMode && deviceOrientationEnabled) return;
+        if (e.touches.length === 1) {
+          const dx = e.touches[0].clientX - touchStartX;
+          const dy = e.touches[0].clientY - touchStartY;
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+
+          targetYaw -= dx * 0.004;
+          targetPitch -= dy * 0.0035;
+          targetPitch = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, targetPitch));
+        }
+      }, { passive: true });
+
+      // Keyboard Shortcuts
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          dismissGateAndStart();
+        } else if (e.key === 'r' || e.key === 'R') {
+          recenterView();
+        } else if (e.key === 'v' || e.key === 'V') {
+          toggleVR();
+        } else if (e.key === 'f' || e.key === 'F') {
+          toggleFullscreen();
+        } else if (e.key === 'm' || e.key === 'M') {
+          setAudioMuted(!state.isAudioMuted);
+        }
+      });
+    }
+
+    // Mobile Gyroscope / DeviceOrientationEvent
+    function enableDeviceOrientationListener() {
+      window.addEventListener('deviceorientation', (e) => {
+        if (e && e.alpha !== null && e.alpha !== undefined) {
+          deviceOrientationEnabled = true;
+          orientationAlpha = e.alpha;
+          orientationBeta = e.beta;
+          orientationGamma = e.gamma;
+        }
+      }, true);
+    }
+
+    function requestDeviceOrientation() {
+      enableDeviceOrientationListener();
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              enableDeviceOrientationListener();
+            }
+          })
+          .catch(err => console.warn('DeviceOrientation permission error:', err));
+      }
+    }
+
+    function updateCameraRotation(deltaSec) {
+      if (deviceOrientationEnabled && state.isVRMode) {
+        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset);
+        const betaRad = THREE.MathUtils.degToRad(orientationBeta);
+        const gammaRad = THREE.MathUtils.degToRad(orientationGamma);
+        const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
+
+        // 1. Converti gli angoli W3C nel frame della telecamera Three.js
+        _euler.set(betaRad, alphaRad, -gammaRad, 'YXZ');
+        camera.quaternion.setFromEuler(_euler);
+
+        // 2. Ruota per allineare l'asse del dispositivo con il frustum della camera
+        camera.quaternion.multiply(_q1);
+
+        // 3. Compensa la rotazione landscape dello schermo
+        _q0.setFromAxisAngle(_zee, -orientRad);
+        camera.quaternion.multiply(_q0);
+      } else {
+        cameraYaw += (targetYaw - cameraYaw) * 0.12;
+        cameraPitch += (targetPitch - cameraPitch) * 0.12;
+        camera.rotation.set(cameraPitch, cameraYaw, 0, 'YXZ');
+      }
+    }
+
+    function recenterView() {
+      targetYaw = 0;
+      targetPitch = 0;
+      cameraYaw = 0;
+      cameraPitch = 0;
+      camera.rotation.set(0, 0, 0);
+      if (orientationAlpha !== 0) {
+        vrAlphaOffset = -orientationAlpha;
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    /* ======================================================================
+       7. EXACT BIO-PACING STATE MACHINE & HARMONIC EASING
+       ====================================================================== */
+    function dismissGateAndStart() {
+      unlockAudioContext();
+      const gate = document.getElementById('audio-gate');
+      if (gate && gate.style.display !== 'none') {
+        gate.classList.add('fade-out');
+        setTimeout(() => gate.style.display = 'none', 500);
+      }
+      if (!state.isRunning) {
+        startSession();
+      }
+    }
+
+    let outroSafetyTimer = null;
+
+    function startSession() {
+      unlockAudioContext();
+      hide2DCompletionPopup();
+      hideVRCompletionPopup();
+      if (outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = false;
+      state.isRunning = true;
+      state.currentPhase = PHASE.INHALE;
+      state.currentCycle = 1;
+      state.phaseStartTime = performance.now();
+      state.balloonScale = PACING_CONFIG.MIN_SCALE;
+      state.balloonZ = PACING_CONFIG.BALLOON_BASE_Z;
+      state.balloonY = PACING_CONFIG.BALLOON_BASE_Y;
+      state.balloonX = PACING_CONFIG.BALLOON_BASE_X;
+
+      setPadAudioGain(0.85, 2.0);
+      setWindAudioGain(0.06, 2.0);
+      playTibetanBowl(432, 4.0);
+
+      updateUIElements();
+      notifyFlutter('onSessionStart', { cycle: 1, totalCycles: PACING_CONFIG.TOTAL_CYCLES });
+      notifyFlutter('onPhaseChange', { phase: 'inhale', cycle: 1, duration: PACING_CONFIG.INHALE_DURATION });
+    }
+
+    function pauseSession() {
+      state.isRunning = false;
+      state.pauseStartTime = performance.now();
+      setPadAudioGain(0.2, 1.0);
+      updateUIElements();
+      notifyFlutter('onSessionPause', { phase: state.currentPhase, cycle: state.currentCycle });
+    }
+
+    function togglePlayPause() {
+      if (state.isRunning) {
+        pauseSession();
+      } else {
+        if (state.currentPhase === PHASE.STANDBY || state.currentPhase === PHASE.COMPLETED) {
+          startSession();
+        } else {
+          unlockAudioContext();
+          if (state.pauseStartTime > 0) {
+            const pausedDuration = performance.now() - state.pauseStartTime;
+            state.phaseStartTime += pausedDuration;
+            state.pauseStartTime = 0;
+          }
+          state.isRunning = true;
+          setPadAudioGain(0.85, 1.5);
+          updateUIElements();
+          notifyFlutter('onSessionResume', { phase: state.currentPhase, cycle: state.currentCycle });
+        }
+      }
+    }
+
+    function resetSession() {
+      hide2DCompletionPopup();
+      hideVRCompletionPopup();
+      if (outroSafetyTimer) {
+        clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = null;
+      }
+      state.isCompleted = false;
+      state.isRunning = false;
+      state.pauseStartTime = 0;
+      state.currentPhase = PHASE.STANDBY;
+      state.currentCycle = 1;
+      state.balloonScale = PACING_CONFIG.MIN_SCALE;
+      state.balloonZ = PACING_CONFIG.BALLOON_BASE_Z;
+      state.windSpeedFactor = 1.0;
+      renderBillboardText("Pronto?", "Avvia la sessione", 1.0);
+      setPadAudioGain(0.01, 1.0);
+      updateUIElements();
+      notifyFlutter('onSessionReset', {});
+    }
+
+    function updateBioPacing(now) {
+      if (!state.isRunning) return;
+
+      const currentTime = (typeof now === 'number' && now > 0) ? now : performance.now();
+      const elapsed = currentTime - state.phaseStartTime;
+
+      switch (state.currentPhase) {
+        // INHALE (4.000 ms: Z -11.0m -> -9.0m, Scale 1.0x -> 1.18x)
+        case PHASE.INHALE: {
+          const t = Math.min(elapsed / PACING_CONFIG.INHALE_DURATION, 1.0);
+          // Pure cosine ease-in-out curve
+          const easeSine = (1 - Math.cos(Math.PI * t)) / 2;
+          state.balloonZ = PACING_CONFIG.BALLOON_BASE_Z + (PACING_CONFIG.BALLOON_PEAK_Z - PACING_CONFIG.BALLOON_BASE_Z) * easeSine;
+          state.balloonScale = PACING_CONFIG.MIN_SCALE + (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
+          state.windSpeedFactor = 1.0 + 0.45 * easeSine; // Breeze accelerates with intake
+
+          const remainingSec = Math.max(0, (PACING_CONFIG.INHALE_DURATION - elapsed) / 1000).toFixed(1);
+          renderBillboardText("Inspira", "Aria pura nei polmoni", 1.0);
+          updateRingHUD(t, "INSPIRA", `${remainingSec}s`);
+
+          if (elapsed >= PACING_CONFIG.INHALE_DURATION) {
+            transitionToPhase(PHASE.EXHALE, currentTime);
+          }
+          break;
+        }
+
+        // EXHALE (6.000 ms: Z -9.0m -> -11.0m, Scale 1.18x -> 1.0x)
+        case PHASE.EXHALE: {
+          const t = Math.min(elapsed / PACING_CONFIG.EXHALE_DURATION, 1.0);
+          // Pure cosine ease-in-out curve returning to base
+          const easeSine = (1 + Math.cos(Math.PI * t)) / 2;
+          state.balloonZ = PACING_CONFIG.BALLOON_BASE_Z + (PACING_CONFIG.BALLOON_PEAK_Z - PACING_CONFIG.BALLOON_BASE_Z) * easeSine;
+          state.balloonScale = PACING_CONFIG.MIN_SCALE + (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
+          state.windSpeedFactor = 1.0 + 0.45 * easeSine; // Breeze relaxes back to serene calm
+
+          const remainingSec = Math.max(0, (PACING_CONFIG.EXHALE_DURATION - elapsed) / 1000).toFixed(1);
+          renderBillboardText("Espira", "Rilascia ogni tensione", 1.0);
+          updateRingHUD(t, "ESPIRA", `${remainingSec}s`);
+
+          if (elapsed >= PACING_CONFIG.EXHALE_DURATION) {
+            if (state.currentCycle < PACING_CONFIG.TOTAL_CYCLES) {
+              state.currentCycle++;
+              transitionToPhase(PHASE.INHALE, currentTime);
+            } else {
+              transitionToPhase(PHASE.OUTRO, currentTime);
+            }
+          }
+          break;
+        }
+
+        // OUTRO & PEACEFUL RESOLUTION
+        case PHASE.OUTRO: {
+          const t = Math.min(elapsed / PACING_CONFIG.OUTRO_DURATION, 1.0);
+          state.balloonScale = PACING_CONFIG.MIN_SCALE;
+          state.balloonZ = PACING_CONFIG.BALLOON_BASE_Z;
+          state.windSpeedFactor = 1.0;
+          renderBillboardText("Pace e Quiete", "Ottima coerenza cardiaca", 1.0 - t * 0.4);
+          updateRingHUD(1.0, "COMPLETO", "Serenità");
+
+          if (elapsed >= PACING_CONFIG.OUTRO_DURATION) {
+            onExperienceEnded();
+          }
+          break;
+        }
+      }
+    }
+
+    function transitionToPhase(newPhase, now) {
+      state.currentPhase = newPhase;
+      state.phaseStartTime = (typeof now === 'number' && now > 0) ? now : performance.now();
+
+      if (newPhase === PHASE.INHALE) {
+        playTibetanBowl(432, 4.0);
+        notifyFlutter('onPhaseChange', { phase: 'inhale', cycle: state.currentCycle, duration: PACING_CONFIG.INHALE_DURATION });
+      } else if (newPhase === PHASE.EXHALE) {
+        playTibetanBowl(864, 5.5);
+        notifyFlutter('onPhaseChange', { phase: 'exhale', cycle: state.currentCycle, duration: PACING_CONFIG.EXHALE_DURATION });
+      } else if (newPhase === PHASE.OUTRO) {
+        playTibetanBowl(432, 6.0);
+        notifyFlutter('onPhaseChange', { phase: 'outro', duration: PACING_CONFIG.OUTRO_DURATION });
+        // Deterministic fallback safety timer: guaranteed trigger even if clock / rAF stalls
+        if (outroSafetyTimer) clearTimeout(outroSafetyTimer);
+        outroSafetyTimer = setTimeout(() => {
+          if (!state.isCompleted) {
+            console.log('[GuidoVR] Outro safety timer triggered session completion');
+            onExperienceEnded();
+          }
+        }, PACING_CONFIG.OUTRO_DURATION + 250);
+      }
+
+      updateUIElements();
+    }
+
+    /* ======================================================================
+       8. UI INTERACTION & HUD UPDATES
+       ====================================================================== */
+    function updateUIElements() {
+      const playBtn = document.getElementById('btn-play-pause');
+      const iconPlay = document.getElementById('icon-play');
+      const iconPause = document.getElementById('icon-pause');
+      const labelPlay = document.getElementById('label-play-pause');
+      const cycleCounter = document.getElementById('hud-cycle-counter');
+
+      if (state.isRunning) {
+        iconPlay.style.display = 'none';
+        iconPause.style.display = 'block';
+        labelPlay.innerText = 'Pausa';
+      } else {
+        iconPlay.style.display = 'block';
+        iconPause.style.display = 'none';
+        labelPlay.innerText = (state.currentPhase === PHASE.COMPLETED) ? 'Ricomincia' : 'Avvia';
+      }
+
+      if (cycleCounter) {
+        cycleCounter.innerText = `Ciclo ${state.currentCycle} di ${PACING_CONFIG.TOTAL_CYCLES}`;
+      }
+    }
+
+    function updateRingHUD(progressZeroToOne, labelText, subText) {
+      const ring = document.getElementById('hud-ring-progress');
+      const lbl = document.getElementById('hud-phase-label');
+      const sub = document.getElementById('hud-timer-sub');
+      if (ring) {
+        const offset = 408.4 - (progressZeroToOne * 408.4);
+        ring.style.strokeDashoffset = offset;
+      }
+      if (lbl) {
+        lbl.childNodes[0].nodeValue = labelText + ' ';
+      }
+      if (sub) {
+        sub.innerText = subText;
+      }
+    }
+
+    function toggleVR() {
+      setVR(!state.isVRMode);
+    }
+
+    function setVR(enable) {
+      state.isVRMode = enable;
+      if (vrReticleGroup) {
+        vrReticleGroup.visible = enable;
+      }
+      const overlay = document.getElementById('vr-overlay');
+      const uiLayer = document.getElementById('ui-layer');
+      const btnVR = document.getElementById('btn-vr-toggle');
+
+      if (enable) {
+        camera.fov = 72;
+        document.body.classList.add('vr-active');
+        overlay.classList.add('active');
+        uiLayer.classList.add('hidden');
+        btnVR.style.background = 'rgba(255, 215, 0, 0.4)';
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        requestDeviceOrientation();
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+        if (state.isCompleted) {
+          hide2DCompletionPopup();
+          showVRCompletionPopup();
+        }
+      } else {
+        camera.fov = 60;
+        document.body.classList.remove('vr-active');
+        overlay.classList.remove('active');
+        uiLayer.classList.remove('hidden');
+        btnVR.style.background = '';
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        hideVRCompletionPopup();
+        if (state.isCompleted) {
+          show2DCompletionPopup();
+        }
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock().catch(() => {});
+        }
+      }
+
+      camera.updateProjectionMatrix();
+      onWindowResize();
+      notifyFlutter('onVRModeChanged', { isVR: state.isVRMode });
+    }
+
+    function onWindowResize() {
+      const w = canvasWidth();
+      const h = canvasHeight();
+      camera.aspect = w / h;
+      camera.fov = state.isVRMode ? 72 : 60;
+      camera.updateProjectionMatrix();
+
+      stereoCamera.aspect = 0.5;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      renderer.setSize(w, h);
+    }
+
+    /* ======================================================================
+       9. MAIN ANIMATION & RENDERING LOOP (60/120 FPS STABLE)
+       ====================================================================== */
+    function animate(timestamp) {
+      animFrameId = requestAnimationFrame(animate);
+
+      if (!state.lastTimestamp) state.lastTimestamp = timestamp;
+      const deltaMs = Math.min(timestamp - state.lastTimestamp, 64);
+      const deltaSec = deltaMs / 1000;
+      state.lastTimestamp = timestamp;
+
+      // Update Bio-pacing Machine
+      updateBioPacing(timestamp);
+
+      // Camera Euler / Gyro Look update
+      updateCameraRotation(deltaSec);
+
+      // Update Hands-free Gaze Interaction
+      updateGazeInteraction(deltaSec);
+
+      // Harmonic 0.3 Hz Floating Bobbing & Swaying for the Balloon
+      const bobFreq = 0.30;
+      const bobTime = timestamp * 0.001 * bobFreq * Math.PI * 2;
+      const bobY = PACING_CONFIG.BALLOON_BASE_Y + Math.sin(bobTime) * 0.16;
+      const swayZ = Math.sin(bobTime * 0.75) * 0.028;
+      const swayX = Math.cos(bobTime * 0.60) * 0.018;
+
+      if (balloonGroup) {
+        balloonGroup.position.x = PACING_CONFIG.BALLOON_BASE_X;
+        balloonGroup.position.y = bobY;
+        balloonGroup.position.z = state.balloonZ;
+        balloonGroup.rotation.z = swayZ;
+        balloonGroup.rotation.x = swayX;
+        balloonGroup.scale.set(state.balloonScale, state.balloonScale, state.balloonScale);
+
+        if (textSpriteMesh) {
+          textSpriteMesh.position.set(
+            PACING_CONFIG.BALLOON_BASE_X,
+            bobY + 2.37 * state.balloonScale + 1.25,
+            state.balloonZ + 0.5
+          );
+        }
+      }
+
+      // Damped Pendulum Sway on the Basket
+      if (basketGroup) {
+        basketGroup.rotation.z = Math.sin(bobTime * 0.75 - 0.4) * 0.045;
+        basketGroup.rotation.x = Math.cos(bobTime * 0.60 - 0.4) * 0.030;
+      }
+
+      // Burner subtle flame flicker
+      if (burnerLight) {
+        burnerLight.intensity = 1.0 + Math.sin(timestamp * 0.008) * 0.25;
+      }
+
+      // 4 Flowing Basket Ribbons Fluttering
+      animateRibbons(timestamp * 0.001);
+
+      // Aerodynamic 3D Wind Flow Streamlines
+      animateAirStreamlines(deltaSec);
+
+      // Procedural Clouds Drift
+      animateClouds(deltaSec);
+
+      // Ethereal Sparkling Dust following Wind Currents
+      animateDust(timestamp * 0.001);
+
+      // ----------------------------------------------------
+      // Stereoscopic Dual-Eye VR vs Standard Monoscopic Render
+      // ----------------------------------------------------
+      const width = canvasWidth();
+      const height = canvasHeight();
+
+      if (state.isVRMode) {
+        renderer.setScissorTest(true);
+        stereoCamera.update(camera);
+
+        // Left Eye
+        renderer.setScissor(0, 0, width / 2, height);
+        renderer.setViewport(0, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraL);
+
+        // Right Eye
+        renderer.setScissor(width / 2, 0, width / 2, height);
+        renderer.setViewport(width / 2, 0, width / 2, height);
+        renderer.render(scene, stereoCamera.cameraR);
+
+        renderer.setScissorTest(false);
+      } else {
+        renderer.setViewport(0, 0, width, height);
+        renderer.render(scene, camera);
+      }
+    }
+
+    function disposeExperience() {
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+      }
+      state.isRunning = false;
+
+      if (audioCtx) {
+        try { audioCtx.close(); } catch (e) {}
+        audioCtx = null;
+      }
+
+      if (scene) {
+        scene.traverse((obj) => {
+          if (obj.geometry) {
+            try { obj.geometry.dispose(); } catch (e) {}
+          }
+          if (obj.material) {
+            if (Array.isArray(obj.material)) {
+              obj.material.forEach(m => {
+                if (m.map) m.map.dispose();
+                m.dispose();
+              });
+            } else {
+              if (obj.material.map) obj.material.map.dispose();
+              obj.material.dispose();
+            }
+          }
+        });
+      }
+
+      if (renderer) {
+        try {
+          renderer.dispose();
+          if (renderer.domElement && renderer.domElement.parentNode) {
+            renderer.domElement.parentNode.removeChild(renderer.domElement);
+          }
+        } catch (e) {}
+      }
+    }
+
+    /* ======================================================================
+       10. INITIALIZATION & DOM BINDINGS
+       ====================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeScene();
+      initControls();
+
+      document.getElementById('gate-start-btn')?.addEventListener('click', dismissGateAndStart);
+
+      document.getElementById('btn-play-pause')?.addEventListener('click', () => {
+        const gate = document.getElementById('audio-gate');
+        if (gate && gate.style.display !== 'none') {
+          dismissGateAndStart();
+        } else {
+          togglePlayPause();
+        }
+      });
+
+      document.getElementById('btn-vr-toggle')?.addEventListener('click', toggleVR);
+      document.getElementById('btn-recenter')?.addEventListener('click', recenterView);
+      document.getElementById('btn-fullscreen')?.addEventListener('click', toggleFullscreen);
+
+      document.getElementById('btn-audio-toggle')?.addEventListener('click', () => {
+        setAudioMuted(!state.isAudioMuted);
+      });
+
+      // Immediate cardboard screen-tap activation for completion buttons
+      window.addEventListener('click', () => {
+        if (state.isVRMode && completionPopupGroup && completionPopupGroup.visible) {
+          if (gazeHoverTarget && gazeHoverTarget.userData && typeof gazeHoverTarget.userData.onDwellSelect === 'function') {
+            gazeDwellTimer = 0.0;
+            gazeHoverTarget.userData.onDwellSelect();
+          }
+        }
+      });
+
+      // 2D Session Completion Modal Actions
+      document.getElementById('btn-completion-exit')?.addEventListener('click', () => {
+        notifyFlutter('onExitRequested', {});
+      });
+
+      document.getElementById('btn-completion-repeat')?.addEventListener('click', () => {
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+        state.isCompleted = false;
+        resetSession();
+        startSession();
+      });
+
+      // Auto-start immediately in app / autostart
+      const urlParams = new URLSearchParams(window.location.search);
+      const gate = document.getElementById('audio-gate');
+      if (gate) {
+        gate.style.setProperty('display', 'none', 'important');
+      }
+      if (urlParams.get('vr') === 'true') {
+        setVR(true);
+      }
+      dismissGateAndStart();
+
+      window.focus();
+      if (document.body) document.body.focus();
+
+      animFrameId = requestAnimationFrame(animate);
+      notifyFlutter('onVRReady', { status: 'ready', experience: 'respirazione_aria' });
+    });
+
+  })();
+  </script>
+</body>
+</html>

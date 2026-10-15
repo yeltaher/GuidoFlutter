@@ -259,7 +259,7 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                               'assets/audio/real/Meditazioni/Acqua/Meditazione-del-Pomeriggio.m4a',
                           ambientPath:
                               'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione POMERIGGIO.m4a',
-                          sceneName: UnityScenes.waterMeditation,
+                          sceneName: UnityScenes.waterMeditationAfternoon,
                           durationSeconds: 900.0,
                         );
                       },
@@ -293,7 +293,7 @@ class _MeditateTabState extends ConsumerState<MeditateTab> {
                               'assets/audio/real/Meditazioni/Acqua/Meditazione-della-Sera.m4a',
                           ambientPath:
                               'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione SERA.m4a',
-                          sceneName: UnityScenes.waterMeditation,
+                          sceneName: UnityScenes.waterMeditationEvening,
                           durationSeconds: 1500.0,
                         );
                       },

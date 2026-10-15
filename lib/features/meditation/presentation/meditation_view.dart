@@ -57,6 +57,10 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
     WakelockPlus.enable();
 
     final settings = ref.read(settingsProvider);
+    final isIt = settings.language == 0;
+    _typedText = isIt ? _itaIntro : _engIntro;
+    _isTypewriterComplete = true;
+
     if (settings.isVrMode) {
       _vrRandomSeed = DateTime.now().millisecondsSinceEpoch;
       // Crea il controller — VrHostScreen si occupa di landscape + fullscreen
@@ -89,32 +93,17 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
       } catch (e) {
         debugPrint('[MeditationView] Errore inizializzazione audio: $e');
       }
-      if (mounted) {
-        _startTypewriter();
-      }
     });
   }
 
   void _startTypewriter() {
     final isIt = ref.read(settingsProvider).language == 0;
-    final textToType = isIt ? _itaIntro : _engIntro;
-    int index = 0;
-
-    _typewriterTimer = Timer.periodic(const Duration(milliseconds: 50), (
-      timer,
-    ) {
-      if (mounted) {
-        if (index < textToType.length) {
-          setState(() {
-            _typedText += textToType[index];
-            index++;
-          });
-        } else {
-          timer.cancel();
-          setState(() => _isTypewriterComplete = true);
-        }
-      }
-    });
+    if (mounted) {
+      setState(() {
+        _typedText = isIt ? _itaIntro : _engIntro;
+        _isTypewriterComplete = true;
+      });
+    }
   }
 
   void _togglePlay() {
