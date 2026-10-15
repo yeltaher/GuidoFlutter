@@ -626,7 +626,8 @@
       scene.add(cameraRig);
 
       const aspect = window.innerWidth / window.innerHeight;
-      camera = new THREE.PerspectiveCamera(75.0, aspect, 0.05, 3000.0);
+      camera = new THREE.PerspectiveCamera(55.0, aspect, 0.20, 2000.0);
+      camera.focus = 2.8;
       camera.position.set(0, 0, 0);
       cameraRig.add(camera);
 
@@ -1277,7 +1278,11 @@
             gl_FragColor = vec4(finalColor, 0.94);
           }
         `,
-        transparent: true
+        transparent: true,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -1.0,
+        polygonOffsetUnits: -2.0
       });
 
       waterMesh = new THREE.Mesh(waterGeo, waterMaterial);
@@ -2278,24 +2283,25 @@
         },
         vertexShader: `
           varying vec3 vWorldPosition;
-          varying vec3 vViewPosition;
+          varying vec3 vNormal;
           void main() {
             vec4 wp = modelMatrix * vec4(position, 1.0);
             vWorldPosition = wp.xyz;
-            vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-            vViewPosition = mvPos.xyz;
-            gl_Position = projectionMatrix * mvPos;
+            vNormal = normalize(mat3(modelMatrix) * normal);
+            gl_Position = projectionMatrix * viewMatrix * wp;
           }
         `,
         fragmentShader: `
           uniform float uTime;
           uniform float uOpacity;
           varying vec3 vWorldPosition;
-          varying vec3 vViewPosition;
+          varying vec3 vNormal;
 
           void main() {
-            float viewRadius = length(vViewPosition.xy) / max(0.1, -vViewPosition.z);
-            float rim = smoothstep(0.20, 0.85, viewRadius);
+            vec3 V = normalize(cameraPosition - vWorldPosition);
+            vec3 N = normalize(vNormal);
+            float rim = 1.0 - clamp(abs(dot(V, N)), 0.0, 1.0);
+            rim = smoothstep(0.20, 0.85, rim);
 
             vec3 emerald = vec3(0.06, 0.88, 0.55);
             vec3 gold = vec3(0.98, 0.82, 0.22);
@@ -2434,7 +2440,7 @@
 
     /* --- VR GAZE RETICLE --- */
     function initVRReticle() {
-      const reticleGeo = new THREE.RingGeometry(0.016, 0.024, 32);
+      const reticleGeo = new THREE.RingGeometry(0.019, 0.029, 32);
       const reticleMat = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
@@ -2443,10 +2449,10 @@
         depthWrite: false
       });
       vrReticleMesh = new THREE.Mesh(reticleGeo, reticleMat);
-      vrReticleMesh.position.set(0, 0, -2.0); // 2.0 meters focal depth
+      vrReticleMesh.position.set(0, 0, -2.4); // 2.4 meters matching completion popup focal depth
 
       // Radial Dwell Progress Ring
-      const progressGeo = new THREE.RingGeometry(0.026, 0.034, 32, 1, 0, 0);
+      const progressGeo = new THREE.RingGeometry(0.031, 0.041, 32, 1, 0, 0);
       const progressMat = new THREE.MeshBasicMaterial({
         color: 0x10b981,
         transparent: true,
@@ -2455,7 +2461,7 @@
         depthWrite: false
       });
       vrReticleProgressMesh = new THREE.Mesh(progressGeo, progressMat);
-      vrReticleProgressMesh.position.set(0, 0, -1.99);
+      vrReticleProgressMesh.position.set(0, 0, -2.39);
       vrReticleProgressMesh.visible = false;
 
       camera.add(vrReticleMesh);
@@ -2470,7 +2476,7 @@
       }
       vrReticleProgressMesh.visible = true;
       vrReticleProgressMesh.geometry.dispose();
-      vrReticleProgressMesh.geometry = new THREE.RingGeometry(0.026, 0.034, 32, 1, 0, progressFraction * Math.PI * 2.0);
+      vrReticleProgressMesh.geometry = new THREE.RingGeometry(0.031, 0.041, 32, 1, 0, progressFraction * Math.PI * 2.0);
     }
 
     /* --- 11. IN-VR 3D COMPLETION POPUP (Cardboard Safe Gaze-Dwell Interaction) --- */
@@ -2680,47 +2686,10 @@
         const nFadeOut = Math.min(1.0, (248.0 - timeSec) / 4.0);
         const nAlpha = nFadeIn * nFadeOut;
 
-        // Advance skeletal flight animation via AnimationMixer
+        // Advance skeletal flight animation via AnimationMixer cleanly
         if (dragonMixer) {
           const dt = (typeof deltaSec === 'number' && deltaSec > 0 && deltaSec < 0.2) ? deltaSec : 0.016;
           dragonMixer.update(dt * 1.15);
-        }
-
-        // Procedural natural tucked flight posture (aerodynamic folded legs along belly and tail)
-        if (dragonBones && dragonModel) {
-          // Forelegs: tucked neatly under chest/sternum
-          const lArm = dragonBones['L_UpperArm'];
-          const rArm = dragonBones['R_UpperArm'];
-          const lFore = dragonBones['L_Forearm'];
-          const rFore = dragonBones['R_Forearm'];
-          const lHand = dragonBones['L_Hand'];
-          const rHand = dragonBones['R_Hand'];
-          
-          if (lArm) { lArm.rotateZ(0.65); lArm.rotateX(0.25); }
-          if (rArm) { rArm.rotateZ(0.65); rArm.rotateX(-0.25); }
-          if (lFore) { lFore.rotateZ(-0.95); }
-          if (rFore) { rFore.rotateZ(-0.95); }
-          if (lHand) { lHand.rotateZ(0.40); }
-          if (rHand) { rHand.rotateZ(0.40); }
-
-          // Hindlegs: folded aerodynamically along flanks and tail
-          const lThigh = dragonBones['L_Thigh'];
-          const rThigh = dragonBones['R_Thigh'];
-          const lCalf = dragonBones['L_Calf'];
-          const rCalf = dragonBones['R_Calf'];
-          const lHorse = dragonBones['L_HorseLink'];
-          const rHorse = dragonBones['R_HorseLink'];
-          const lFoot = dragonBones['L_Foot'];
-          const rFoot = dragonBones['R_Foot'];
-
-          if (lThigh) { lThigh.rotateZ(-1.15); lThigh.rotateX(-0.15); }
-          if (rThigh) { rThigh.rotateZ(-1.15); rThigh.rotateX(0.15); }
-          if (lCalf) { lCalf.rotateZ(0.70); }
-          if (rCalf) { rCalf.rotateZ(0.70); }
-          if (lHorse) { lHorse.rotateZ(-0.45); }
-          if (rHorse) { rHorse.rotateZ(-0.45); }
-          if (lFoot) { lFoot.rotateZ(0.35); }
-          if (rFoot) { rFoot.rotateZ(0.35); }
         }
 
         // Njord Flight Path with smooth banking into curves (+Z forward, zero GC allocations)
@@ -3363,10 +3332,14 @@
       const w = window.innerWidth;
       const h = window.innerHeight;
       camera.aspect = w / h;
+      camera.focus = 2.8;
+      camera.near = 0.20;
+      camera.far = 2000.0;
       camera.updateProjectionMatrix();
 
       if (stereoCamera) {
         stereoCamera.aspect = 0.5;
+        stereoCamera.eyeSep = 0.064;
       }
       const dpr = Math.min(window.devicePixelRatio || 1, state.isVRMode ? 1.25 : 1.30);
       renderer.setPixelRatio(dpr);
@@ -3413,18 +3386,29 @@
       const height = window.innerHeight;
 
       if (state.isVRMode) {
-        renderer.setScissorTest(true);
+        // Ensure camera rig hierarchy and camera world matrices are fully synchronized
         cameraRig.updateMatrixWorld(true);
+        camera.updateMatrixWorld(true);
         stereoCamera.update(camera);
 
+        const halfW = Math.floor(width / 2);
+        const rightW = width - halfW;
+
+        renderer.setScissorTest(true);
+
+        // Pre-clear full frame to prevent inter-eye ghosting or previous frame residue
+        renderer.setViewport(0, 0, width, height);
+        renderer.setScissor(0, 0, width, height);
+        renderer.clear();
+
         // Left Eye Viewport
-        renderer.setScissor(0, 0, width / 2, height);
-        renderer.setViewport(0, 0, width / 2, height);
+        renderer.setScissor(0, 0, halfW, height);
+        renderer.setViewport(0, 0, halfW, height);
         renderer.render(scene, stereoCamera.cameraL);
 
         // Right Eye Viewport
-        renderer.setScissor(width / 2, 0, width / 2, height);
-        renderer.setViewport(width / 2, 0, width / 2, height);
+        renderer.setScissor(halfW, 0, rightW, height);
+        renderer.setViewport(halfW, 0, rightW, height);
         renderer.render(scene, stereoCamera.cameraR);
 
         renderer.setScissorTest(false);
@@ -3486,10 +3470,19 @@
     // Public window.GuidoVR API
     window.GuidoVR = {
       play: function() { playExperience(); },
+      start: function() { playExperience(); },
       startSession: function() { playExperience(); },
       pause: function() { pauseExperience(); },
+      pauseSession: function() { pauseExperience(); },
+      toggle: function() { togglePlay(); },
       togglePlay: function() { togglePlay(); },
-      toggleVR: function(enable) { setVRMode(enable); },
+      setVRMode: function(enable) { setVRMode(enable); },
+      enableVR: function() { setVRMode(true); },
+      disableVR: function() { setVRMode(false); },
+      toggleVR: function(enable) {
+        if (typeof enable === 'boolean') setVRMode(enable);
+        else setVRMode(!state.isVRMode);
+      },
       seek: function(timeSec) { seekExperience(timeSec); },
       setVolume: function(voiceVol, musicVol) {
         state.voiceVolume = voiceVol;
