@@ -20,16 +20,25 @@ import UIKit
 
         let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
+        // Previene il blocco automatico dello schermo su iOS durante le sessioni di meditazione e respirazione
+        application.isIdleTimerDisabled = true
+        UIApplication.shared.isIdleTimerDisabled = true
+
         if let controller = window?.rootViewController as? FlutterViewController {
-            // Orientation channel
+            // Orientation & Keep-Screen-On channel
             let orientationChannel = FlutterMethodChannel(
                 name: "com.codepulse.guido/orientation",
                 binaryMessenger: controller.binaryMessenger
             )
             orientationChannel.setMethodCallHandler { call, channelResult in
                 if call.method == "forceLandscape" {
+                    UIApplication.shared.isIdleTimerDisabled = true
                     channelResult(nil)
                 } else if call.method == "forcePortrait" {
+                    UIApplication.shared.isIdleTimerDisabled = true
+                    channelResult(nil)
+                } else if call.method == "keepScreenOn" {
+                    UIApplication.shared.isIdleTimerDisabled = true
                     channelResult(nil)
                 } else {
                     channelResult(FlutterMethodNotImplemented)
@@ -38,6 +47,13 @@ import UIKit
         }
 
         return result
+    }
+
+    override func applicationDidBecomeActive(_ application: UIApplication) {
+        super.applicationDidBecomeActive(application)
+        // Riafferma il blocco dello standby al ritorno in primo piano su iOS
+        application.isIdleTimerDisabled = true
+        UIApplication.shared.isIdleTimerDisabled = true
     }
 
     // MARK: - Memory Pressure Handling

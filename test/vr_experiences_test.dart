@@ -14,6 +14,7 @@ import 'package:guido/core/database/app_initializer_provider.dart';
 import 'package:guido/features/meditation/presentation/session_launch_helper.dart';
 import 'package:guido/features/meditation/presentation/explanation_screen.dart';
 import 'package:guido/features/vr_experiences/presentation/vr_experience_screen.dart';
+import 'package:guido/features/onboarding/presentation/wolf_onboarding_view.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -1694,5 +1695,88 @@ void main() {
       expect(content.contains('window.flutter_inappwebview.callHandler(eventName, data)'), isTrue);
       expect(content.contains('window.GuidoFlutterBridge.postMessage'), isTrue);
     });
+
+    testWidgets(
+        'VrExperienceScreen renders identical uniform HUD buttons across all meditations and breathings in both Standard and VR modes',
+        (tester) async {
+      tester.view.physicalSize = const Size(2400, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      for (final expType in VrExperienceType.values) {
+        final container = ProviderContainer(
+          overrides: [
+            sharedPrefsInstanceProvider.overrideWith((ref) => prefs),
+            sharedPrefsProvider.overrideWithValue(prefs),
+          ],
+        );
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              home: VrExperienceScreen(
+                experienceId: expType.id,
+                isVrMode: false,
+                autoStart: true,
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        // Verify all 5 uniform HUD buttons exist for every single meditation & breathing
+        expect(find.byTooltip('Esci'), findsOneWidget, reason: '${expType.id} must show Esci button');
+        expect(find.byTooltip('Pausa'), findsOneWidget, reason: '${expType.id} must show Pausa button');
+        expect(find.byTooltip('Muto'), findsOneWidget, reason: '${expType.id} must show Muto button');
+        expect(find.byTooltip('Ricalibra Centro'), findsOneWidget, reason: '${expType.id} must show Ricalibra Centro button');
+        expect(find.byTooltip('Modalità VR'), findsOneWidget, reason: '${expType.id} must show Modalità VR button');
+
+        container.dispose();
+      }
+    });
+
+    test('Native Keep-Screen-On (Android FLAG_KEEP_SCREEN_ON & iOS isIdleTimerDisabled) and t=0s Gyroscope are configured', () {
+      final mainActivity = File('android/app/src/main/kotlin/com/codepulse/guido/guido/MainActivity.kt').readAsStringSync();
+      expect(mainActivity.contains('WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON'), isTrue);
+      expect(mainActivity.contains('keepScreenOn'), isTrue);
+
+      final appDelegate = File('ios/Runner/AppDelegate.swift').readAsStringSync();
+      expect(appDelegate.contains('isIdleTimerDisabled = true'), isTrue);
+      expect(appDelegate.contains('applicationDidBecomeActive'), isTrue);
+
+      final vrScreen = File('lib/features/vr_experiences/presentation/vr_experience_screen.dart').readAsStringSync();
+      expect(vrScreen.contains('_guidoApplyNativeOrientation'), isTrue);
+      expect(vrScreen.contains('_guidoGyroHooked'), isTrue);
+      expect(vrScreen.contains('#mobile-controls-bar, #minimal-controls'), isTrue);
+      expect(vrScreen.contains("navigator.wakeLock.request('screen')"), isTrue);
+    });
+
+    testWidgets('WolfCartoonWidget renders Nordic/Arctic Wolf across all 5 WolfPose states without error', (tester) async {
+      for (final pose in WolfPose.values) {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: WolfCartoonWidget(
+                  pose: pose,
+                  accentColor: const Color(0xFF06B6D4),
+                  isDark: true,
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+        expect(find.byType(WolfCartoonWidget), findsOneWidget);
+      }
+    });
   });
 }
+

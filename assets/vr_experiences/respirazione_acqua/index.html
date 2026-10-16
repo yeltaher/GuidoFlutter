@@ -622,6 +622,19 @@
         orientationAlpha = Number(alpha) || 0;
         orientationBeta = Number(beta) || 0;
         orientationGamma = Number(gamma) || 0;
+        updateCameraRotation();
+      },
+      setLookAngle: function(p, y) {
+        deviceOrientationEnabled = false;
+        cameraPitch = targetPitch = Number(p) || 0;
+        cameraYaw = targetYaw = Number(y) || 0;
+        if (camera) camera.rotation.set(cameraPitch, cameraYaw, 0, 'YXZ');
+      },
+      setCameraLook: function(p, y) {
+        deviceOrientationEnabled = false;
+        cameraPitch = targetPitch = Number(p) || 0;
+        cameraYaw = targetYaw = Number(y) || 0;
+        if (camera) camera.rotation.set(cameraPitch, cameraYaw, 0, 'YXZ');
       },
       showCompletionPopup: function() { onExperienceEnded(); },
       hideCompletionPopup: function() { hideVRCompletionPopup(); hide2DCompletionPopup(); },
@@ -2195,7 +2208,7 @@
     }
 
     function initControls() {
-      enableDeviceOrientation();
+      requestDeviceOrientation();
       window.addEventListener('orientationchange', () => {}, false);
 
       // PC Mouse Look
@@ -2236,6 +2249,8 @@
           touchStartY = e.touches[0].clientY;
         }
         unlockAudioContext();
+        requestDeviceOrientation();
+        requestScreenWakeLock();
       }, { passive: true });
 
       window.addEventListener('touchmove', (e) => {
@@ -2271,7 +2286,7 @@
 
     function enableDeviceOrientation() {
       window.addEventListener('deviceorientation', (e) => {
-        if (e && e.alpha !== null && e.alpha !== undefined) {
+        if (e && e.alpha !== null && e.alpha !== undefined && e.beta !== null && e.gamma !== null && (Math.abs(e.alpha) > 0.01 || Math.abs(e.beta) > 0.01 || Math.abs(e.gamma) > 0.01)) {
           deviceOrientationEnabled = true;
           orientationAlpha = e.alpha;
           orientationBeta = e.beta;
@@ -2299,8 +2314,11 @@
       const camRollSwell = Math.cos(timeSec * camSwellOmega * 0.85) * 0.006;
       const camHeaveY = Math.sin(timeSec * camSwellOmega) * 0.032; // +/- 3.2cm vertical buoyancy
 
-      if (deviceOrientationEnabled && state.isVRMode) {
-        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset);
+      cameraYaw += (targetYaw - cameraYaw) * 0.12;
+      cameraPitch += (targetPitch - cameraPitch) * 0.12;
+
+      if (deviceOrientationEnabled) {
+        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset) + cameraYaw;
         const betaRad = THREE.MathUtils.degToRad(orientationBeta);
         const gammaRad = THREE.MathUtils.degToRad(orientationGamma);
         const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
@@ -2317,8 +2335,6 @@
         camera.quaternion.multiply(_q0);
         camera.position.set(0, camHeaveY, 0);
       } else {
-        cameraYaw += (targetYaw - cameraYaw) * 0.12;
-        cameraPitch += (targetPitch - cameraPitch) * 0.12;
         camera.rotation.set(cameraPitch + camPitchSwell, cameraYaw, camRollSwell, 'YXZ');
         camera.position.set(0, camHeaveY, 0);
       }
@@ -2329,9 +2345,8 @@
       cameraYaw = 0; cameraPitch = 0;
       camera.rotation.set(0, 0, 0);
       camera.position.set(0, 0, 0);
-      if (orientationAlpha !== 0) {
-        vrAlphaOffset = -orientationAlpha;
-      }
+      vrAlphaOffset = -orientationAlpha;
+      updateCameraRotation();
     }
 
     function toggleFullscreen() {
@@ -3114,10 +3129,32 @@
       }
     }
 
+    /* --- Web Wake Lock API (Keep Screen Awake) --- */
+    let wakeLockSentinel = null;
+    async function requestScreenWakeLock() {
+      try {
+        if ('wakeLock' in navigator && navigator.wakeLock && typeof navigator.wakeLock.request === 'function') {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+        }
+      } catch (e) {}
+    }
+    function releaseScreenWakeLock() {
+      if (wakeLockSentinel) {
+        try { wakeLockSentinel.release(); } catch (e) {}
+        wakeLockSentinel = null;
+      }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        requestScreenWakeLock();
+      }
+    });
+
     /* ======================================================================
        10. RESOURCE TEARDOWN & LIFECYCLE MANAGEMENT
        ====================================================================== */
     function disposeExperience() {
+      releaseScreenWakeLock();
       if (animFrameId) {
         cancelAnimationFrame(animFrameId);
         animFrameId = null;
@@ -3167,6 +3204,7 @@
       initThreeScene();
       initControls();
       initUIReferences();
+      requestScreenWakeLock();
 
       document.getElementById('gate-start-btn')?.addEventListener('click', dismissGateAndStart);
 

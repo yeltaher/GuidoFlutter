@@ -3329,7 +3329,7 @@
        5. CONTROLS, TOUCH, GYRO & VR CARDBOARD SETUP
        ====================================================================== */
     function initControls() {
-      enableDeviceOrientation();
+      requestDeviceOrientationPermission();
       // Mouse Drag Orbit
       window.addEventListener('mousedown', (e) => {
         if (e.target.closest('#ui-layer') || e.target.closest('#audio-gate')) return;
@@ -3410,11 +3410,12 @@
       yaw = 0;
       pitch = 0;
       vrAlphaOffset = -orientationAlpha;
+      updateCameraRotation();
     }
 
     function enableDeviceOrientation() {
       window.addEventListener('deviceorientation', (e) => {
-        if (e && e.alpha !== null && e.alpha !== undefined && e.beta !== null && e.gamma !== null && (Math.abs(e.beta) > 0.05 || Math.abs(e.gamma) > 0.05)) {
+        if (e && e.alpha !== null && e.alpha !== undefined && e.beta !== null && e.gamma !== null && (Math.abs(e.alpha) > 0.01 || Math.abs(e.beta) > 0.01 || Math.abs(e.gamma) > 0.01)) {
           deviceOrientationEnabled = true;
           orientationAlpha = e.alpha;
           orientationBeta = e.beta;
@@ -3448,8 +3449,12 @@
     }
 
     function updateCameraRotation() {
-      if (deviceOrientationEnabled && state.isVRMode) {
-        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset);
+      const rotDamp = 1.0 - Math.exp(-14.0 * (state.lastDeltaSec || 0.016));
+      yaw += (targetYaw - yaw) * rotDamp;
+      pitch += (targetPitch - pitch) * rotDamp;
+
+      if (deviceOrientationEnabled) {
+        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset) + yaw;
         const betaRad = THREE.MathUtils.degToRad(orientationBeta);
         const gammaRad = THREE.MathUtils.degToRad(orientationGamma);
         const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
@@ -3465,9 +3470,6 @@
         _q0.setFromAxisAngle(_zee, -orientRad);
         camera.quaternion.multiply(_q0);
       } else {
-        const rotDamp = 1.0 - Math.exp(-14.0 * (state.lastDeltaSec || 0.016));
-        yaw += (targetYaw - yaw) * rotDamp;
-        pitch += (targetPitch - pitch) * rotDamp;
         camera.rotation.set(pitch, yaw, 0, 'YXZ');
       }
     }
@@ -3817,6 +3819,19 @@
         orientationAlpha = Number(alpha) || 0;
         orientationBeta = Number(beta) || 0;
         orientationGamma = Number(gamma) || 0;
+        updateCameraRotation();
+      },
+      setLookAngle: function(p, y) {
+        deviceOrientationEnabled = false;
+        pitch = targetPitch = Number(p) || 0;
+        yaw = targetYaw = Number(y) || 0;
+        if (camera) camera.rotation.set(pitch, yaw, 0, 'YXZ');
+      },
+      setCameraLook: function(p, y) {
+        deviceOrientationEnabled = false;
+        pitch = targetPitch = Number(p) || 0;
+        yaw = targetYaw = Number(y) || 0;
+        if (camera) camera.rotation.set(pitch, yaw, 0, 'YXZ');
       },
       setMuted: function(mute) { 
         state.isMuted = mute; 
@@ -3833,10 +3848,46 @@
       dispose: function() { disposeExperience(); }
     };
 
+    /* --- Web Wake Lock API (Keep Screen Awake) --- */
+    let wakeLockSentinel = null;
+    async function requestScreenWakeLock() {
+      try {
+        if ('wakeLock' in navigator && navigator.wakeLock && typeof navigator.wakeLock.request === 'function') {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+        }
+      } catch (e) {}
+    }
+    function releaseScreenWakeLock() {
+      if (wakeLockSentinel) {
+        try { wakeLockSentinel.release(); } catch (e) {}
+        wakeLockSentinel = null;
+      }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        requestScreenWakeLock();
+      }
+    });
+
+    /* --- iOS Audio & Orientation Unlock On First User Gesture --- */
+    function unlockAudioOnGesture() {
+      unlockAudio();
+      requestDeviceOrientationPermission();
+      requestScreenWakeLock();
+      window.removeEventListener('touchstart', unlockAudioOnGesture);
+      window.removeEventListener('touchend', unlockAudioOnGesture);
+      window.removeEventListener('pointerdown', unlockAudioOnGesture);
+      window.removeEventListener('click', unlockAudioOnGesture);
+    }
+    window.addEventListener('touchstart', unlockAudioOnGesture, { passive: true });
+    window.addEventListener('pointerdown', unlockAudioOnGesture, { passive: true });
+    window.addEventListener('click', unlockAudioOnGesture, { passive: true });
+
     /* ======================================================================
        9. RESOURCE TEARDOWN & LIFECYCLE MANAGEMENT (disposeExperience)
        ====================================================================== */
     function disposeExperience() {
+      releaseScreenWakeLock();
       if (animFrameId) {
         cancelAnimationFrame(animFrameId);
         animFrameId = null;
@@ -3905,6 +3956,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       initThreeScene();
       syncVolumes();
+      requestScreenWakeLock();
       animate(0);
 
       const urlParams = new URLSearchParams(window.location.search);
@@ -3912,7 +3964,7 @@
         audioGate.classList.add('fade-out');
         audioGate.style.setProperty('display', 'none', 'important');
       }
-      if (urlParams.get('vr') === 'true') {
+      if (urlParams.get('vr') === 'true' || urlParams.get('vr') === '1') {
         setVRMode(true);
       }
       if (urlParams.has('seek')) {

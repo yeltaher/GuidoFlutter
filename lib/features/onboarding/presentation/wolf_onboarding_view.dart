@@ -515,335 +515,546 @@ class _WolfCartoonPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.42;
+    final center = Offset(size.width / 2, size.height / 2 + size.height * 0.04);
+    final radius = size.width * 0.40;
 
-    // Palette Japandi per Guido
-    final furDark = isDark ? const Color(0xFF4A4E5A) : const Color(0xFF6B7280);
-    final furMid = isDark ? const Color(0xFF636A7A) : const Color(0xFF94A3B8);
-    final furLight = isDark ? const Color(0xFF9CA3AF) : const Color(0xFFE2E8F0);
-    final innerEarColor = const Color(0xFFFDA4AF);
-    final scarfColor = accentColor;
-    final noseColor = const Color(0xFF1E293B);
+    // Palette Lupo Nordico / Artico (ispirata al logo ufficiale di Guido)
+    final furCapDark =
+        isDark ? const Color(0xFF2B3340) : const Color(0xFF334155);
+    final furSlateDark =
+        isDark ? const Color(0xFF3E4859) : const Color(0xFF475569);
+    final furSilverMid =
+        isDark ? const Color(0xFF64748B) : const Color(0xFF64748B);
+    final furSilverLight =
+        isDark ? const Color(0xFF94A3B8) : const Color(0xFFCBD5E1);
+    final furSnow =
+        isDark ? const Color(0xFFE2E8F0) : const Color(0xFFF8FAFC);
+    final furInnerEar =
+        isDark ? const Color(0xFFCBD5E1) : const Color(0xFFF1F5F9);
+    final noseColor = const Color(0xFF0F172A);
+    final amberLight = const Color(0xFFFDE047);
+    final amberMid = const Color(0xFFF59E0B);
+    final amberDeep = const Color(0xFFB45309);
 
-    // 1. Orecchie morbide da lupetto
-    final leftEarPath = Path()
-      ..moveTo(center.dx - radius * 0.7, center.dy - radius * 0.2)
-      ..lineTo(center.dx - radius * 0.85, center.dy - radius * 0.95)
-      ..quadraticBezierTo(
-        center.dx - radius * 0.65,
-        center.dy - radius * 0.85,
-        center.dx - radius * 0.25,
-        center.dy - radius * 0.6,
+    // -------------------------------------------------------------------------
+    // 1. CODA FOLTA DA LUPO ARTICO (dietro a sinistra con punta bianca/argento)
+    // -------------------------------------------------------------------------
+    final tailPath = Path()
+      ..moveTo(center.dx - radius * 0.45, center.dy + radius * 0.95)
+      ..cubicTo(
+        center.dx - radius * 0.95,
+        center.dy + radius * 0.92,
+        center.dx - radius * 1.24,
+        center.dy + radius * 0.48,
+        center.dx - radius * 1.12,
+        center.dy + radius * 0.05,
+      )
+      ..lineTo(center.dx - radius * 1.00, center.dy + radius * 0.16)
+      ..lineTo(center.dx - radius * 0.96, center.dy + radius * 0.02)
+      ..cubicTo(
+        center.dx - radius * 0.80,
+        center.dy + radius * 0.32,
+        center.dx - radius * 0.72,
+        center.dy + radius * 0.65,
+        center.dx - radius * 0.35,
+        center.dy + radius * 0.88,
       )
       ..close();
 
-    final rightEarPath = Path()
-      ..moveTo(center.dx + radius * 0.7, center.dy - radius * 0.2)
-      ..lineTo(center.dx + radius * 0.85, center.dy - radius * 0.95)
-      ..quadraticBezierTo(
-        center.dx + radius * 0.65,
-        center.dy - radius * 0.85,
-        center.dx + radius * 0.25,
-        center.dy - radius * 0.6,
-      )
-      ..close();
-
-    final earPaint = Paint()
+    final tailPaint = Paint()
       ..shader = LinearGradient(
-        colors: [furDark, furMid],
-        begin: Alignment.bottomCenter,
-        end: Alignment.topCenter,
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
+        begin: Alignment.bottomRight,
+        end: Alignment.topLeft,
+        colors: [furCapDark, furSilverMid, furSnow],
+        stops: const [0.0, 0.62, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: radius * 1.2));
+    canvas.drawPath(tailPath, tailPaint);
 
-    canvas.drawPath(leftEarPath, earPaint);
-    canvas.drawPath(rightEarPath, earPaint);
-
-    // Interno orecchie (rosa tenue)
-    final innerLeftEar = Path()
-      ..moveTo(center.dx - radius * 0.62, center.dy - radius * 0.25)
-      ..lineTo(center.dx - radius * 0.78, center.dy - radius * 0.85)
-      ..lineTo(center.dx - radius * 0.32, center.dy - radius * 0.55)
-      ..close();
-
-    final innerRightEar = Path()
-      ..moveTo(center.dx + radius * 0.62, center.dy - radius * 0.25)
-      ..lineTo(center.dx + radius * 0.78, center.dy - radius * 0.85)
-      ..lineTo(center.dx + radius * 0.32, center.dy - radius * 0.55)
-      ..close();
-
-    final innerEarPaint = Paint()
-      ..color = innerEarColor.withValues(alpha: 0.75);
-    canvas.drawPath(innerLeftEar, innerEarPaint);
-    canvas.drawPath(innerRightEar, innerEarPaint);
-
-    // 2. Testa morbida circolare con sfumatura 3D
-    final headPaint = Paint()
-      ..shader = RadialGradient(
-        center: const Alignment(-0.2, -0.3),
-        colors: [furLight, furMid, furDark],
-        stops: const [0.0, 0.65, 1.0],
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
-
-    canvas.drawCircle(center, radius, headPaint);
-
-    // Guance soffici laterali (ciuffetti di pelo da cartoon)
-    final cheekLeftFluff = Path()
-      ..moveTo(center.dx - radius * 0.88, center.dy)
-      ..lineTo(center.dx - radius * 1.08, center.dy + radius * 0.15)
-      ..lineTo(center.dx - radius * 0.82, center.dy + radius * 0.28)
-      ..close();
-    final cheekRightFluff = Path()
-      ..moveTo(center.dx + radius * 0.88, center.dy)
-      ..lineTo(center.dx + radius * 1.08, center.dy + radius * 0.15)
-      ..lineTo(center.dx + radius * 0.82, center.dy + radius * 0.28)
-      ..close();
-    canvas.drawPath(cheekLeftFluff, headPaint);
-    canvas.drawPath(cheekRightFluff, headPaint);
-
-    // 3. Mascherina / Musetto bianco caldo
-    final muzzleCenter = Offset(center.dx, center.dy + radius * 0.28);
-    final muzzlePaint = Paint()
-      ..color = isDark ? const Color(0xFFF1F5F9) : const Color(0xFFFFFFFF);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(
-          center: muzzleCenter,
-          width: radius * 1.15,
-          height: radius * 0.75,
-        ),
-        Radius.circular(radius * 0.4),
-      ),
-      muzzlePaint,
-    );
-
-    // Nasino triangolare arrotondato nero lucido
-    final nosePath = Path()
-      ..moveTo(muzzleCenter.dx - 12, muzzleCenter.dy - 12)
-      ..lineTo(muzzleCenter.dx + 12, muzzleCenter.dy - 12)
-      ..quadraticBezierTo(
-        muzzleCenter.dx,
-        muzzleCenter.dy + 4,
-        muzzleCenter.dx - 12,
-        muzzleCenter.dy - 12,
-      );
-    final nosePaint = Paint()..color = noseColor;
-    canvas.drawPath(nosePath, nosePaint);
-
-    // Punto luce sul nasino
-    canvas.drawCircle(
-      Offset(muzzleCenter.dx - 3, muzzleCenter.dy - 9),
-      2.5,
-      Paint()..color = Colors.white.withValues(alpha: 0.85),
-    );
-
-    // Sorriso sereno
-    final smilePaint = Paint()
-      ..color = noseColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.4
-      ..strokeCap = StrokeCap.round;
-
-    final mouthPath = Path()
-      ..moveTo(muzzleCenter.dx - 10, muzzleCenter.dy + 8)
-      ..quadraticBezierTo(
-        muzzleCenter.dx,
-        muzzleCenter.dy + 16,
-        muzzleCenter.dx + 10,
-        muzzleCenter.dy + 8,
-      );
-    canvas.drawPath(mouthPath, smilePaint);
-
-    // Rossore carino sulle guance (Blush)
-    final blushPaint = Paint()
-      ..color = const Color(0xFFF43F5E).withValues(alpha: 0.25);
-    canvas.drawCircle(
-      Offset(center.dx - radius * 0.58, center.dy + radius * 0.18),
-      10,
-      blushPaint,
-    );
-    canvas.drawCircle(
-      Offset(center.dx + radius * 0.58, center.dy + radius * 0.18),
-      10,
-      blushPaint,
-    );
-
-    // 4. Occhi in base alla posa
-    if (pose == WolfPose.breathing) {
-      // Occhi chiusi in meditazione serena (due archi felici)
-      final eyeArcPaint = Paint()
-        ..color = noseColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3.2
-        ..strokeCap = StrokeCap.round;
-
-      final leftEyePath = Path()
-        ..moveTo(center.dx - radius * 0.42, center.dy - radius * 0.08)
-        ..quadraticBezierTo(
-          center.dx - radius * 0.30,
-          center.dy - radius * 0.22,
-          center.dx - radius * 0.18,
-          center.dy - radius * 0.08,
-        );
-      final rightEyePath = Path()
-        ..moveTo(center.dx + radius * 0.18, center.dy - radius * 0.08)
-        ..quadraticBezierTo(
-          center.dx + radius * 0.30,
-          center.dy - radius * 0.22,
-          center.dx + radius * 0.42,
-          center.dy - radius * 0.08,
-        );
-      canvas.drawPath(leftEyePath, eyeArcPaint);
-      canvas.drawPath(rightEyePath, eyeArcPaint);
-    } else {
-      // Occhi aperti cartoon vivaci con riflesso
-      final eyeCenterLeft =
-          Offset(center.dx - radius * 0.30, center.dy - radius * 0.1);
-      final eyeCenterRight =
-          Offset(center.dx + radius * 0.30, center.dy - radius * 0.1);
-
-      final eyePaint = Paint()..color = noseColor;
-      canvas.drawCircle(eyeCenterLeft, 8.5, eyePaint);
-      canvas.drawCircle(eyeCenterRight, 8.5, eyePaint);
-
-      // Riflessi di luce kawaii negli occhi
-      final glintPaint = Paint()..color = Colors.white;
-      canvas.drawCircle(
-        Offset(eyeCenterLeft.dx - 2.5, eyeCenterLeft.dy - 2.5),
-        3.0,
-        glintPaint,
-      );
-      canvas.drawCircle(
-        Offset(eyeCenterLeft.dx + 2.5, eyeCenterLeft.dy + 2.5),
-        1.5,
-        glintPaint,
-      );
-
-      canvas.drawCircle(
-        Offset(eyeCenterRight.dx - 2.5, eyeCenterRight.dy - 2.5),
-        3.0,
-        glintPaint,
-      );
-      canvas.drawCircle(
-        Offset(eyeCenterRight.dx + 2.5, eyeCenterRight.dy + 2.5),
-        1.5,
-        glintPaint,
-      );
-    }
-
-    // 5. Bandana / Sciarpa Zen al collo
-    final scarfPaint = Paint()..color = scarfColor;
-    final scarfPath = Path()
-      ..moveTo(center.dx - radius * 0.75, center.dy + radius * 0.85)
+    // -------------------------------------------------------------------------
+    // 2. SPALLE E COLLO DA LUPO + SCIARPA ZEN + PETTO FOLTO BIANCO A CIOCCHE
+    // -------------------------------------------------------------------------
+    final torsoPath = Path()
+      ..moveTo(center.dx - radius * 0.56, center.dy + radius * 0.62)
+      ..lineTo(center.dx - radius * 0.74, center.dy + radius * 1.15)
       ..quadraticBezierTo(
         center.dx,
+        center.dy + radius * 1.28,
+        center.dx + radius * 0.74,
         center.dy + radius * 1.15,
-        center.dx + radius * 0.75,
-        center.dy + radius * 0.85,
       )
-      ..lineTo(center.dx + radius * 0.65, center.dy + radius * 1.18)
+      ..lineTo(center.dx + radius * 0.56, center.dy + radius * 0.62)
+      ..close();
+
+    final torsoPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [furSlateDark, furCapDark],
+      ).createShader(Rect.fromCircle(center: center, radius: radius * 1.2));
+    canvas.drawPath(torsoPath, torsoPaint);
+
+    // Sciarpa Zen al collo
+    final scarfPaint = Paint()..color = accentColor;
+    final scarfPath = Path()
+      ..moveTo(center.dx - radius * 0.66, center.dy + radius * 0.74)
       ..quadraticBezierTo(
         center.dx,
-        center.dy + radius * 1.35,
-        center.dx - radius * 0.65,
-        center.dy + radius * 1.18,
+        center.dy + radius * 0.98,
+        center.dx + radius * 0.66,
+        center.dy + radius * 0.74,
+      )
+      ..lineTo(center.dx + radius * 0.60, center.dy + radius * 1.04)
+      ..quadraticBezierTo(
+        center.dx,
+        center.dy + radius * 1.20,
+        center.dx - radius * 0.60,
+        center.dy + radius * 1.04,
       )
       ..close();
     canvas.drawPath(scarfPath, scarfPaint);
 
-    // 6. Accessori specifici per posa
+    // Ciuffo pettorale folto bianco/argento a punte (tipico del lupo)
+    final chestTuftPath = Path()
+      ..moveTo(center.dx - radius * 0.34, center.dy + radius * 0.66)
+      ..lineTo(center.dx - radius * 0.24, center.dy + radius * 0.96)
+      ..lineTo(center.dx - radius * 0.12, center.dy + radius * 0.84)
+      ..lineTo(center.dx, center.dy + radius * 1.06)
+      ..lineTo(center.dx + radius * 0.12, center.dy + radius * 0.84)
+      ..lineTo(center.dx + radius * 0.24, center.dy + radius * 0.96)
+      ..lineTo(center.dx + radius * 0.34, center.dy + radius * 0.66)
+      ..close();
+    canvas.drawPath(chestTuftPath, Paint()..color = furSnow);
+
+    // -------------------------------------------------------------------------
+    // 3. ORECCHIE ALTE, APPUNTITE E TRIANGOLARI DA LUPO
+    // -------------------------------------------------------------------------
+    final leftEarOuter = Path()
+      ..moveTo(center.dx - radius * 0.66, center.dy - radius * 0.34)
+      ..lineTo(center.dx - radius * 0.82, center.dy - radius * 1.18)
+      ..lineTo(center.dx - radius * 0.20, center.dy - radius * 0.66)
+      ..close();
+
+    final rightEarOuter = Path()
+      ..moveTo(center.dx + radius * 0.66, center.dy - radius * 0.34)
+      ..lineTo(center.dx + radius * 0.82, center.dy - radius * 1.18)
+      ..lineTo(center.dx + radius * 0.20, center.dy - radius * 0.66)
+      ..close();
+
+    final earOuterPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [furCapDark, furSlateDark],
+      ).createShader(Rect.fromCircle(center: center, radius: radius * 1.2));
+
+    canvas.drawPath(leftEarOuter, earOuterPaint);
+    canvas.drawPath(rightEarOuter, earOuterPaint);
+
+    // Peluria interna chiara delle orecchie (argento/crema con ciocche)
+    final leftEarInner = Path()
+      ..moveTo(center.dx - radius * 0.58, center.dy - radius * 0.42)
+      ..lineTo(center.dx - radius * 0.73, center.dy - radius * 1.04)
+      ..lineTo(center.dx - radius * 0.30, center.dy - radius * 0.64)
+      ..close();
+
+    final rightEarInner = Path()
+      ..moveTo(center.dx + radius * 0.58, center.dy - radius * 0.42)
+      ..lineTo(center.dx + radius * 0.73, center.dy - radius * 1.04)
+      ..lineTo(center.dx + radius * 0.30, center.dy - radius * 0.64)
+      ..close();
+
+    canvas.drawPath(leftEarInner, Paint()..color = furInnerEar);
+    canvas.drawPath(rightEarInner, Paint()..color = furInnerEar);
+
+    // -------------------------------------------------------------------------
+    // 4. CRANIO SCOLPITO E FOLTA CRINIERA LATERALE A CIOCCHE APPUNTITE (CHEEK RUFF)
+    // -------------------------------------------------------------------------
+    final wolfHeadPath = Path()
+      // Sommità cranica tra le orecchie
+      ..moveTo(center.dx - radius * 0.28, center.dy - radius * 0.72)
+      ..quadraticBezierTo(
+        center.dx,
+        center.dy - radius * 0.80,
+        center.dx + radius * 0.28,
+        center.dy - radius * 0.72,
+      )
+      // Lato destro superiore verso lo zigomo
+      ..lineTo(center.dx + radius * 0.68, center.dy - radius * 0.42)
+      ..lineTo(center.dx + radius * 0.82, center.dy - radius * 0.14)
+      // Criniera laterale destra: 3 ciocche appuntite da lupo
+      ..lineTo(center.dx + radius * 1.12, center.dy - radius * 0.02)
+      ..lineTo(center.dx + radius * 0.90, center.dy + radius * 0.08)
+      ..lineTo(center.dx + radius * 1.18, center.dy + radius * 0.22)
+      ..lineTo(center.dx + radius * 0.90, center.dy + radius * 0.30)
+      ..lineTo(center.dx + radius * 1.04, center.dy + radius * 0.44)
+      // Mascella inferiore che converge verso il muso affusolato
+      ..lineTo(center.dx + radius * 0.46, center.dy + radius * 0.62)
+      ..quadraticBezierTo(
+        center.dx,
+        center.dy + radius * 0.78,
+        center.dx - radius * 0.46,
+        center.dy + radius * 0.62,
+      )
+      // Criniera laterale sinistra: 3 ciocche appuntite simmetriche
+      ..lineTo(center.dx - radius * 1.04, center.dy + radius * 0.44)
+      ..lineTo(center.dx - radius * 0.90, center.dy + radius * 0.30)
+      ..lineTo(center.dx - radius * 1.18, center.dy + radius * 0.22)
+      ..lineTo(center.dx - radius * 0.90, center.dy + radius * 0.08)
+      ..lineTo(center.dx - radius * 1.12, center.dy - radius * 0.02)
+      ..lineTo(center.dx - radius * 0.82, center.dy - radius * 0.14)
+      ..lineTo(center.dx - radius * 0.68, center.dy - radius * 0.42)
+      ..close();
+
+    final headBasePaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [furCapDark, furSlateDark, furSilverMid],
+        stops: const [0.0, 0.55, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: radius * 1.15));
+
+    canvas.drawPath(wolfHeadPath, headBasePaint);
+
+    // -------------------------------------------------------------------------
+    // 5. MASCHERA FACCIALE BIANCO ARTICO E CALOTTA FRONTALE A "V" DA LUPO
+    // -------------------------------------------------------------------------
+    // Maschera chiara che avvolge guance inferiori, lati del muso e arcate sopraccigliari
+    final lightMaskPath = Path()
+      // Punta centrale tra le sopracciglia (sotto la V scura)
+      ..moveTo(center.dx, center.dy + radius * 0.06)
+      // Arcata sopraccigliare sinistra
+      ..cubicTo(
+        center.dx - radius * 0.14,
+        center.dy - radius * 0.24,
+        center.dx - radius * 0.48,
+        center.dy - radius * 0.28,
+        center.dx - radius * 0.68,
+        center.dy - radius * 0.04,
+      )
+      // Ciocche chiare sulle guance sinistre
+      ..lineTo(center.dx - radius * 0.96, center.dy + radius * 0.18)
+      ..lineTo(center.dx - radius * 0.78, center.dy + radius * 0.26)
+      ..lineTo(center.dx - radius * 0.88, center.dy + radius * 0.39)
+      ..lineTo(center.dx - radius * 0.42, center.dy + radius * 0.58)
+      // Mento e mandibola inferiore
+      ..quadraticBezierTo(
+        center.dx,
+        center.dy + radius * 0.76,
+        center.dx + radius * 0.42,
+        center.dy + radius * 0.58,
+      )
+      // Ciocche chiare sulle guance destre
+      ..lineTo(center.dx + radius * 0.88, center.dy + radius * 0.39)
+      ..lineTo(center.dx + radius * 0.78, center.dy + radius * 0.26)
+      ..lineTo(center.dx + radius * 0.96, center.dy + radius * 0.18)
+      ..lineTo(center.dx + radius * 0.68, center.dy - radius * 0.04)
+      // Arcata sopraccigliare destra che torna alla V centrale
+      ..cubicTo(
+        center.dx + radius * 0.48,
+        center.dy - radius * 0.28,
+        center.dx + radius * 0.14,
+        center.dy - radius * 0.24,
+        center.dx,
+        center.dy + radius * 0.06,
+      )
+      ..close();
+
+    final maskPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [furSnow, furInnerEar],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+    canvas.drawPath(lightMaskPath, maskPaint);
+
+    // Calotta frontale scura a "V" (Widow's peak) che scende sul ponte nasale
+    final foreheadVPath = Path()
+      ..moveTo(center.dx - radius * 0.36, center.dy - radius * 0.68)
+      ..quadraticBezierTo(
+        center.dx,
+        center.dy - radius * 0.76,
+        center.dx + radius * 0.36,
+        center.dy - radius * 0.68,
+      )
+      ..lineTo(center.dx + radius * 0.22, center.dy - radius * 0.26)
+      ..lineTo(center.dx, center.dy + radius * 0.12)
+      ..lineTo(center.dx - radius * 0.22, center.dy - radius * 0.26)
+      ..close();
+
+    canvas.drawPath(
+      foreheadVPath,
+      Paint()..color = furCapDark.withValues(alpha: 0.92),
+    );
+
+    // -------------------------------------------------------------------------
+    // 6. MUSO ALLUNGATO E AFFUSOLATO DA LUPO + PONTE NASALE DRITTO + TARTUFO
+    // -------------------------------------------------------------------------
+    final snoutWedgePath = Path()
+      ..moveTo(center.dx - radius * 0.18, center.dy - radius * 0.08)
+      ..lineTo(center.dx - radius * 0.32, center.dy + radius * 0.34)
+      ..quadraticBezierTo(
+        center.dx,
+        center.dy + radius * 0.66,
+        center.dx + radius * 0.32,
+        center.dy + radius * 0.34,
+      )
+      ..lineTo(center.dx + radius * 0.18, center.dy - radius * 0.08)
+      ..close();
+
+    canvas.drawPath(
+      snoutWedgePath,
+      Paint()..color = Colors.white.withValues(alpha: isDark ? 0.92 : 0.98),
+    );
+
+    // Ponte nasale dorsale dritto e scolpito (canna nasale grigio-argento)
+    final nasalBridgePath = Path()
+      ..moveTo(center.dx - radius * 0.11, center.dy - radius * 0.14)
+      ..lineTo(center.dx + radius * 0.11, center.dy - radius * 0.14)
+      ..lineTo(center.dx + radius * 0.15, center.dy + radius * 0.28)
+      ..lineTo(center.dx - radius * 0.15, center.dy + radius * 0.28)
+      ..close();
+
+    final nasalBridgePaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [furSlateDark, furSilverLight],
+      ).createShader(
+        Rect.fromLTWH(
+          center.dx - radius * 0.16,
+          center.dy - radius * 0.14,
+          radius * 0.32,
+          radius * 0.44,
+        ),
+      );
+    canvas.drawPath(nasalBridgePath, nasalBridgePaint);
+
+    // Tartufo nero triangolare/poligonale da lupo
+    final noseCenter = Offset(center.dx, center.dy + radius * 0.31);
+    final nosePath = Path()
+      ..moveTo(noseCenter.dx - radius * 0.17, noseCenter.dy - radius * 0.06)
+      ..quadraticBezierTo(
+        noseCenter.dx,
+        noseCenter.dy - radius * 0.11,
+        noseCenter.dx + radius * 0.17,
+        noseCenter.dy - radius * 0.06,
+      )
+      ..lineTo(noseCenter.dx + radius * 0.13, noseCenter.dy + radius * 0.04)
+      ..lineTo(noseCenter.dx, noseCenter.dy + radius * 0.13)
+      ..lineTo(noseCenter.dx - radius * 0.13, noseCenter.dy + radius * 0.04)
+      ..close();
+
+    canvas.drawPath(nosePath, Paint()..color = noseColor);
+
+    // Riflesso nitido sul tartufo
+    final noseHighlight = Path()
+      ..moveTo(noseCenter.dx - radius * 0.10, noseCenter.dy - radius * 0.05)
+      ..lineTo(noseCenter.dx + radius * 0.06, noseCenter.dy - radius * 0.05)
+      ..lineTo(noseCenter.dx - radius * 0.02, noseCenter.dy - radius * 0.01)
+      ..close();
+    canvas.drawPath(
+      noseHighlight,
+      Paint()..color = Colors.white.withValues(alpha: 0.45),
+    );
+
+    // Rima labiale fiera e composta da lupo (senza blush rosa)
+    final muzzleLinePaint = Paint()
+      ..color = noseColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.3
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final mouthPath = Path()
+      ..moveTo(noseCenter.dx, noseCenter.dy + radius * 0.12)
+      ..lineTo(noseCenter.dx, noseCenter.dy + radius * 0.21)
+      ..moveTo(noseCenter.dx - radius * 0.20, noseCenter.dy + radius * 0.25)
+      ..quadraticBezierTo(
+        noseCenter.dx - radius * 0.09,
+        noseCenter.dy + radius * 0.29,
+        noseCenter.dx,
+        noseCenter.dy + radius * 0.21,
+      )
+      ..quadraticBezierTo(
+        noseCenter.dx + radius * 0.09,
+        noseCenter.dy + radius * 0.29,
+        noseCenter.dx + radius * 0.20,
+        noseCenter.dy + radius * 0.25,
+      );
+    canvas.drawPath(mouthPath, muzzleLinePaint);
+
+    // -------------------------------------------------------------------------
+    // 7. OCCHI DA LUPO A MANDORLA OBLIQUI COLOR AMBRA / ORO INTENSO
+    // -------------------------------------------------------------------------
+    final leftEyeCenter =
+        Offset(center.dx - radius * 0.34, center.dy - radius * 0.07);
+    final rightEyeCenter =
+        Offset(center.dx + radius * 0.34, center.dy - radius * 0.07);
+
+    if (pose == WolfPose.breathing) {
+      // Occhi chiusi in concentrazione zen con taglio obliquo da lupo
+      final closedEyePaint = Paint()
+        ..color = noseColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.0
+        ..strokeCap = StrokeCap.round;
+
+      final leftClosed = Path()
+        ..moveTo(leftEyeCenter.dx - radius * 0.15, leftEyeCenter.dy - radius * 0.05)
+        ..quadraticBezierTo(
+          leftEyeCenter.dx,
+          leftEyeCenter.dy + radius * 0.05,
+          leftEyeCenter.dx + radius * 0.14,
+          leftEyeCenter.dy + radius * 0.02,
+        );
+      final rightClosed = Path()
+        ..moveTo(rightEyeCenter.dx - radius * 0.14, rightEyeCenter.dy + radius * 0.02)
+        ..quadraticBezierTo(
+          rightEyeCenter.dx,
+          rightEyeCenter.dy + radius * 0.05,
+          rightEyeCenter.dx + radius * 0.15,
+          rightEyeCenter.dy - radius * 0.05,
+        );
+      canvas.drawPath(leftClosed, closedEyePaint);
+      canvas.drawPath(rightClosed, closedEyePaint);
+    } else {
+      _drawWolfEye(
+        canvas: canvas,
+        eyeCenter: leftEyeCenter,
+        radius: radius,
+        isLeft: true,
+        outlineColor: noseColor,
+        amberLight: amberLight,
+        amberMid: amberMid,
+        amberDeep: amberDeep,
+      );
+      _drawWolfEye(
+        canvas: canvas,
+        eyeCenter: rightEyeCenter,
+        radius: radius,
+        isLeft: false,
+        outlineColor: noseColor,
+        amberLight: amberLight,
+        amberMid: amberMid,
+        amberDeep: amberDeep,
+      );
+    }
+
+    // Arcate sopraccigliari fiere bianco ghiaccio sopra gli occhi
+    final browPaint = Paint()
+      ..color = furSnow
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.2
+      ..strokeCap = StrokeCap.round;
+
+    final leftBrow = Path()
+      ..moveTo(leftEyeCenter.dx - radius * 0.16, leftEyeCenter.dy - radius * 0.13)
+      ..lineTo(leftEyeCenter.dx + radius * 0.13, leftEyeCenter.dy - radius * 0.06);
+    final rightBrow = Path()
+      ..moveTo(rightEyeCenter.dx - radius * 0.13, rightEyeCenter.dy - radius * 0.06)
+      ..lineTo(rightEyeCenter.dx + radius * 0.16, rightEyeCenter.dy - radius * 0.13);
+    canvas.drawPath(leftBrow, browPaint);
+    canvas.drawPath(rightBrow, browPaint);
+
+    // -------------------------------------------------------------------------
+    // 8. ACCESSORI SPECIFICI PER LE 5 POSE DELL'ONBOARDING
+    // -------------------------------------------------------------------------
     switch (pose) {
       case WolfPose.greeting:
-        // Zampina sollevata che saluta
-        final pawPaint = Paint()..color = furMid;
+        // Zampa anteriore da lupo sollevata in segno di benvenuto (con cuscinetti ardesia)
         final pawCenter =
-            Offset(center.dx + radius * 0.95, center.dy - radius * 0.05);
-        canvas.drawCircle(pawCenter, 14, pawPaint);
-        // Cuscinetti rosa
-        final padPaint = Paint()..color = innerEarColor;
-        canvas.drawCircle(pawCenter, 6, padPaint);
+            Offset(center.dx + radius * 0.94, center.dy - radius * 0.04);
+        canvas.drawCircle(pawCenter, 14, Paint()..color = furSnow);
         canvas.drawCircle(
-          Offset(pawCenter.dx - 5, pawCenter.dy - 7),
-          2.5,
+          pawCenter,
+          14,
+          Paint()
+            ..color = furSlateDark
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.0,
+        );
+        final padPaint = Paint()..color = furCapDark;
+        canvas.drawCircle(Offset(pawCenter.dx, pawCenter.dy + 2), 5.2, padPaint);
+        canvas.drawCircle(
+          Offset(pawCenter.dx - 5.5, pawCenter.dy - 5.5),
+          2.4,
           padPaint,
         );
         canvas.drawCircle(
-          Offset(pawCenter.dx, pawCenter.dy - 9),
-          2.5,
+          Offset(pawCenter.dx, pawCenter.dy - 7.5),
+          2.4,
           padPaint,
         );
         canvas.drawCircle(
-          Offset(pawCenter.dx + 5, pawCenter.dy - 7),
-          2.5,
+          Offset(pawCenter.dx + 5.5, pawCenter.dy - 5.5),
+          2.4,
           padPaint,
         );
         break;
 
       case WolfPose.vrHeadset:
-        // Visore VR elegante sollevato sulla fronte di Guido
+        // Visore VR elegante sollevato sulla fronte del lupo
         final headsetPaint = Paint()..color = const Color(0xFF1E293B);
         final vrRect = Rect.fromCenter(
-          center: Offset(center.dx, center.dy - radius * 0.42),
-          width: radius * 1.25,
-          height: radius * 0.46,
+          center: Offset(center.dx, center.dy - radius * 0.44),
+          width: radius * 1.22,
+          height: radius * 0.42,
         );
         canvas.drawRRect(
           RRect.fromRectAndRadius(vrRect, const Radius.circular(12)),
           headsetPaint,
         );
-        // Lenti e visiera luminosa ciano
         final visorPaint = Paint()..color = const Color(0xFF06B6D4);
         final visorRect = Rect.fromCenter(
-          center: Offset(center.dx, center.dy - radius * 0.42),
-          width: radius * 0.95,
-          height: radius * 0.26,
+          center: Offset(center.dx, center.dy - radius * 0.44),
+          width: radius * 0.94,
+          height: radius * 0.24,
         );
         canvas.drawRRect(
           RRect.fromRectAndRadius(visorRect, const Radius.circular(8)),
           visorPaint,
         );
-        // Cinturino VR laterale
         final strapPaint = Paint()
           ..color = const Color(0xFF334155)
-          ..strokeWidth = 5
+          ..strokeWidth = 4.5
           ..style = PaintingStyle.stroke;
         canvas.drawLine(
-          Offset(center.dx - radius * 0.62, center.dy - radius * 0.42),
-          Offset(center.dx - radius * 0.88, center.dy - radius * 0.32),
+          Offset(center.dx - radius * 0.61, center.dy - radius * 0.44),
+          Offset(center.dx - radius * 0.84, center.dy - radius * 0.34),
           strapPaint,
         );
         canvas.drawLine(
-          Offset(center.dx + radius * 0.62, center.dy - radius * 0.42),
-          Offset(center.dx + radius * 0.88, center.dy - radius * 0.32),
+          Offset(center.dx + radius * 0.61, center.dy - radius * 0.44),
+          Offset(center.dx + radius * 0.84, center.dy - radius * 0.34),
           strapPaint,
         );
         break;
 
       case WolfPose.breathing:
-        // Onde di respiro / soffio zen dorate/verdi
+        // Onde armoniche di respiro consapevole
         final wavePaint = Paint()
-          ..color = accentColor.withValues(alpha: 0.5)
+          ..color = accentColor.withValues(alpha: 0.55)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.5
           ..strokeCap = StrokeCap.round;
         for (int i = 0; i < 3; i++) {
           final wavePath = Path()
-            ..moveTo(center.dx - 20, center.dy + radius * 0.45 + (i * 9))
+            ..moveTo(center.dx - 22, center.dy + radius * 0.54 + (i * 8))
             ..quadraticBezierTo(
               center.dx,
-              center.dy + radius * 0.40 + (i * 9),
-              center.dx + 20,
-              center.dy + radius * 0.45 + (i * 9),
+              center.dy + radius * 0.48 + (i * 8),
+              center.dx + 22,
+              center.dy + radius * 0.54 + (i * 8),
             );
           canvas.drawPath(wavePath, wavePaint);
         }
         break;
 
       case WolfPose.journal:
-        // Taccuino del diario zen con cuoricino
+        // Taccuino del diario zen
         final bookPaint = Paint()..color = const Color(0xFFD97706);
         final bookRect = Rect.fromCenter(
-          center: Offset(center.dx + radius * 0.72, center.dy + radius * 0.45),
+          center: Offset(center.dx + radius * 0.76, center.dy + radius * 0.48),
           width: 32,
           height: 38,
         );
@@ -851,7 +1062,6 @@ class _WolfCartoonPainter extends CustomPainter {
           RRect.fromRectAndRadius(bookRect, const Radius.circular(6)),
           bookPaint,
         );
-        // Pagine bianche
         final pagePaint = Paint()..color = Colors.white;
         canvas.drawRect(
           Rect.fromLTWH(bookRect.left + 4, bookRect.top + 4, 10, 30),
@@ -864,13 +1074,108 @@ class _WolfCartoonPainter extends CustomPainter {
         break;
 
       case WolfPose.ready:
-        // Aureola / stelline zen dorate
+        // Stelline zen dorate attorno al lupo
         final starPaint = Paint()..color = AppColors.goldAccent;
-        _drawStar(canvas, Offset(center.dx - radius * 0.8, center.dy - radius * 0.7), 6, starPaint);
-        _drawStar(canvas, Offset(center.dx + radius * 0.8, center.dy - radius * 0.7), 7, starPaint);
-        _drawStar(canvas, Offset(center.dx + radius * 0.95, center.dy + radius * 0.1), 5, starPaint);
+        _drawStar(
+          canvas,
+          Offset(center.dx - radius * 0.88, center.dy - radius * 0.74),
+          6,
+          starPaint,
+        );
+        _drawStar(
+          canvas,
+          Offset(center.dx + radius * 0.88, center.dy - radius * 0.74),
+          7,
+          starPaint,
+        );
+        _drawStar(
+          canvas,
+          Offset(center.dx + radius * 1.02, center.dy + radius * 0.08),
+          5,
+          starPaint,
+        );
         break;
     }
+  }
+
+  /// Disegna un occhio da lupo a mandorla obliquo con iride ambra/oro e pupilla nitida
+  void _drawWolfEye({
+    required Canvas canvas,
+    required Offset eyeCenter,
+    required double radius,
+    required bool isLeft,
+    required Color outlineColor,
+    required Color amberLight,
+    required Color amberMid,
+    required Color amberDeep,
+  }) {
+    final double dir = isLeft ? 1.0 : -1.0;
+    final double w = radius * 0.17;
+    final double h = radius * 0.10;
+
+    // Forma a mandorla obliqua tipica del lupo (angolo esterno più alto, angolo interno più basso)
+    final almondPath = Path()
+      ..moveTo(eyeCenter.dx - dir * w, eyeCenter.dy - h * 0.45)
+      ..quadraticBezierTo(
+        eyeCenter.dx,
+        eyeCenter.dy - h * 1.15,
+        eyeCenter.dx + dir * w,
+        eyeCenter.dy + h * 0.35,
+      )
+      ..quadraticBezierTo(
+        eyeCenter.dx,
+        eyeCenter.dy + h * 1.10,
+        eyeCenter.dx - dir * w,
+        eyeCenter.dy - h * 0.45,
+      )
+      ..close();
+
+    // Contorno esterno scuro (eyeliner naturale da lupo)
+    canvas.drawPath(
+      almondPath,
+      Paint()
+        ..color = outlineColor
+        ..style = PaintingStyle.fill,
+    );
+
+    canvas.save();
+    canvas.clipPath(almondPath);
+
+    // Iride ambra / oro magnetico
+    final irisRadius = radius * 0.115;
+    final irisPaint = Paint()
+      ..shader = RadialGradient(
+        center: const Alignment(-0.2, -0.2),
+        colors: [amberLight, amberMid, amberDeep],
+        stops: const [0.0, 0.65, 1.0],
+      ).createShader(Rect.fromCircle(center: eyeCenter, radius: irisRadius));
+    canvas.drawCircle(eyeCenter, irisRadius, irisPaint);
+
+    // Pupilla scura nitida
+    canvas.drawCircle(
+      eyeCenter,
+      radius * 0.052,
+      Paint()..color = outlineColor,
+    );
+
+    // Riflesso cristallino di luce
+    canvas.drawCircle(
+      Offset(eyeCenter.dx - radius * 0.028, eyeCenter.dy - radius * 0.028),
+      radius * 0.024,
+      Paint()..color = Colors.white,
+    );
+
+    canvas.restore();
+
+    // Bordo superiore marcato per lo sguardo fiero
+    canvas.drawPath(
+      almondPath,
+      Paint()
+        ..color = outlineColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..strokeJoin = StrokeJoin.round,
+    );
   }
 
   void _drawStar(Canvas canvas, Offset center, double size, Paint paint) {

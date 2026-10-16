@@ -606,6 +606,9 @@
         orientationAlpha = Number(alpha) || 0;
         orientationBeta = Number(beta) || 0;
         orientationGamma = Number(gamma) || 0;
+        if (typeof updateCameraRotation === 'function' && camera) {
+          updateCameraRotation(0);
+        }
       },
       showCompletionPopup: function() { onExperienceEnded(); },
       hideCompletionPopup: function() { hideVRCompletionPopup(); hide2DCompletionPopup(); },
@@ -2304,7 +2307,7 @@
     }
 
     function initControls() {
-      enableDeviceOrientationListener();
+      requestDeviceOrientation();
       window.addEventListener('orientationchange', () => {}, false);
 
       // PC Mouse Drag Look-Around (Smooth 360°)
@@ -2394,19 +2397,23 @@
     function requestDeviceOrientation() {
       enableDeviceOrientationListener();
       if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then(permissionState => {
-            if (permissionState === 'granted') {
-              enableDeviceOrientationListener();
-            }
-          })
-          .catch(err => console.warn('DeviceOrientation permission error:', err));
+        try {
+          DeviceOrientationEvent.requestPermission()
+            .then(permissionState => {
+              if (permissionState === 'granted') {
+                enableDeviceOrientationListener();
+              }
+            })
+            .catch(() => {});
+        } catch (e) {}
       }
     }
 
     function updateCameraRotation(deltaSec) {
-      if (deviceOrientationEnabled && state.isVRMode) {
-        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset);
+      cameraYaw += (targetYaw - cameraYaw) * 0.12;
+      cameraPitch += (targetPitch - cameraPitch) * 0.12;
+      if (deviceOrientationEnabled) {
+        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset) + (state.isVRMode ? 0 : cameraYaw);
         const betaRad = THREE.MathUtils.degToRad(orientationBeta);
         const gammaRad = THREE.MathUtils.degToRad(orientationGamma);
         const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
@@ -2422,8 +2429,6 @@
         _q0.setFromAxisAngle(_zee, -orientRad);
         camera.quaternion.multiply(_q0);
       } else {
-        cameraYaw += (targetYaw - cameraYaw) * 0.12;
-        cameraPitch += (targetPitch - cameraPitch) * 0.12;
         camera.rotation.set(cameraPitch, cameraYaw, 0, 'YXZ');
       }
     }
@@ -2434,9 +2439,8 @@
       cameraYaw = 0;
       cameraPitch = 0;
       camera.rotation.set(0, 0, 0);
-      if (orientationAlpha !== 0) {
-        vrAlphaOffset = -orientationAlpha;
-      }
+      vrAlphaOffset = -orientationAlpha;
+      updateCameraRotation(0);
     }
 
     function toggleFullscreen() {
@@ -2830,7 +2834,27 @@
       }
     }
 
+    let wakeLockSentinel = null;
+    async function requestScreenWakeLock() {
+      try {
+        if ('wakeLock' in navigator && navigator.wakeLock && typeof navigator.wakeLock.request === 'function') {
+          if (!wakeLockSentinel || wakeLockSentinel.released) {
+            wakeLockSentinel = await navigator.wakeLock.request('screen');
+          }
+        }
+      } catch (e) {}
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && state.isRunning) {
+        requestScreenWakeLock();
+      }
+    });
+
     function disposeExperience() {
+      if (wakeLockSentinel) {
+        try { wakeLockSentinel.release(); } catch (e) {}
+        wakeLockSentinel = null;
+      }
       if (animFrameId) {
         cancelAnimationFrame(animFrameId);
         animFrameId = null;
@@ -2877,6 +2901,13 @@
     window.addEventListener('DOMContentLoaded', () => {
       initThreeScene();
       initControls();
+      requestScreenWakeLock();
+      const onFirstGesture = () => {
+        requestScreenWakeLock();
+        requestDeviceOrientation();
+      };
+      window.addEventListener('touchstart', onFirstGesture, { passive: true, once: true });
+      window.addEventListener('mousedown', onFirstGesture, { passive: true, once: true });
 
       document.getElementById('gate-start-btn')?.addEventListener('click', dismissGateAndStart);
 

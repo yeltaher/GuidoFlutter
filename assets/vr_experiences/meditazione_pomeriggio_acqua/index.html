@@ -108,11 +108,13 @@
       width: 100%;
       height: 60px;
       padding: 0 max(24px, env(safe-area-inset-right, 24px)) 0 max(24px, env(safe-area-inset-left, 24px));
-      display: flex;
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
       justify-content: space-between;
       align-items: center;
       background: linear-gradient(180deg, rgba(2, 11, 24, 0.88) 0%, rgba(2, 11, 24, 0) 100%);
-      pointer-events: auto;
       z-index: 30;
       transition: opacity 0.3s ease;
     }
@@ -254,7 +256,7 @@
       text-shadow: 0 0 16px rgba(56, 189, 248, 0.65), 0 2px 10px rgba(0, 0, 0, 0.95);
     }
 
-    /* Bottom Dock Bar */
+    /* Bottom Dock Bar (Hidden: controlled by Flutter native HUD) */
     .bottom-dock {
       position: absolute;
       bottom: 0;
@@ -262,10 +264,12 @@
       width: 100%;
       padding: 14px max(24px, env(safe-area-inset-right, 24px)) max(18px, env(safe-area-inset-bottom, 18px)) max(24px, env(safe-area-inset-left, 24px));
       background: linear-gradient(0deg, rgba(2, 11, 24, 0.94) 0%, rgba(2, 11, 24, 0.65) 75%, rgba(2, 11, 24, 0) 100%);
-      display: flex;
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
       flex-direction: column;
       gap: 10px;
-      pointer-events: auto;
       z-index: 30;
       transition: opacity 0.3s ease;
     }
@@ -460,16 +464,13 @@
     /* ======================================================================
        MOBILE & FLUTTER APP MINIMAL CONTROLS BAR
        ====================================================================== */
-    .mobile-controls-bar {
-      display: none;
-      position: absolute;
-      top: max(16px, env(safe-area-inset-top, 16px));
-      left: max(16px, env(safe-area-inset-left, 16px));
-      right: max(16px, env(safe-area-inset-right, 16px));
-      justify-content: space-between;
-      align-items: center;
-      pointer-events: none;
-      z-index: 40;
+    .mobile-controls-bar,
+    #mobile-controls-bar,
+    body.is-mobile-app .mobile-controls-bar {
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
     }
 
     /* When running in mobile/app environment, switch UI modes */
@@ -477,10 +478,6 @@
     body.is-mobile-app .bottom-dock {
       display: none !important;
       pointer-events: none !important;
-    }
-
-    body.is-mobile-app .mobile-controls-bar {
-      display: flex;
     }
 
     /* When in VR Cardboard Stereo Mode, hide 2D mobile buttons to avoid stereoscopic visual clash */
@@ -3093,7 +3090,7 @@
         targetCamZ = lerp(camZMid, 12.0, pSettle);
 
         // Subtle skyward glance framing the soaring dragon in PC preview
-        if (!state.userHasDraggedCamera && !state.isVRMode) {
+        if (!state.userHasDraggedCamera && !state.isVRMode && !deviceOrientationEnabled) {
           const pGlance = smoothstep(236.0, 248.0, timeSec) * (1.0 - smoothstep(266.0, 282.0, timeSec));
           targetPitch = lerp(0.08, 0.22, pGlance);
         }
@@ -3565,11 +3562,38 @@
     /* ======================================================================
        CAMERA ROTATION & HEAD TRACKING (Identical to Mattino/Sera Kinematics)
        ====================================================================== */
+    function enableDeviceOrientation() {
+      window.addEventListener('deviceorientation', (e) => {
+        if (e && e.alpha !== null && e.alpha !== undefined && e.beta !== null && e.gamma !== null && (Math.abs(e.alpha) > 0.01 || Math.abs(e.beta) > 0.01 || Math.abs(e.gamma) > 0.01)) {
+          deviceOrientationEnabled = true;
+          orientationAlpha = e.alpha;
+          orientationBeta = e.beta;
+          orientationGamma = e.gamma;
+        }
+      }, true);
+    }
+
+    function requestDeviceOrientationPermission() {
+      enableDeviceOrientation();
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(perm => {
+            if (perm === 'granted') enableDeviceOrientation();
+          })
+          .catch(() => {});
+      }
+    }
+
     function updateCameraRotation() {
       if (!camera) return;
 
-      if (deviceOrientationEnabled && state.isVRMode) {
-        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset);
+      // Damped smooth yaw & pitch look — zero bounce, zero snapback
+      const rotDamp = 1.0 - Math.exp(-14.0 * (state.lastDeltaSec || 0.016));
+      yaw += (targetYaw - yaw) * rotDamp;
+      pitch += (targetPitch - pitch) * rotDamp;
+
+      if (deviceOrientationEnabled) {
+        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset) + yaw;
         const betaRad = THREE.MathUtils.degToRad(orientationBeta);
         const gammaRad = THREE.MathUtils.degToRad(orientationGamma);
         const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
@@ -3580,10 +3604,6 @@
         _q0.setFromAxisAngle(_zee, -orientRad);
         camera.quaternion.multiply(_q0);
       } else {
-        // Damped smooth yaw & pitch look — zero bounce, zero snapback
-        const rotDamp = 1.0 - Math.exp(-14.0 * (state.lastDeltaSec || 0.016));
-        yaw += (targetYaw - yaw) * rotDamp;
-        pitch += (targetPitch - pitch) * rotDamp;
         camera.rotation.set(pitch, yaw, 0, 'YXZ');
       }
     }
@@ -3608,6 +3628,7 @@
       yaw = 0;
       pitch = 0.08;
       vrAlphaOffset = -orientationAlpha;
+      updateCameraRotation();
     }
 
     function setVRMode(enable) {
@@ -3630,11 +3651,7 @@
           billboardMesh.material.opacity = currentText ? 1.0 : 0.0;
           billboardMesh.visible = !!currentText;
         }
-        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-          DeviceOrientationEvent.requestPermission().then(resp => {
-            if (resp === 'granted') deviceOrientationEnabled = true;
-          }).catch(() => {});
-        }
+        requestDeviceOrientationPermission();
         if (screen.orientation && screen.orientation.lock) {
           screen.orientation.lock('landscape').catch(() => {});
         }
@@ -3663,6 +3680,7 @@
        ====================================================================== */
     function initControls() {
       cacheDOMElements();
+      requestDeviceOrientationPermission();
       const container = document.getElementById('webgl-container');
 
       // Mouse drag for desktop look
@@ -3720,16 +3738,6 @@
         camera.fov = Math.max(35, Math.min(85, camera.fov + e.deltaY * 0.05));
         camera.updateProjectionMatrix();
       }, { passive: true });
-
-      // W3C Device Orientation Fallback Listener
-      window.addEventListener('deviceorientation', (e) => {
-        if (e && e.alpha !== null && e.alpha !== undefined && e.beta !== null && e.gamma !== null && (Math.abs(e.beta) > 0.05 || Math.abs(e.gamma) > 0.05)) {
-          deviceOrientationEnabled = true;
-          orientationAlpha = e.alpha;
-          orientationBeta = e.beta;
-          orientationGamma = e.gamma;
-        }
-      }, true);
 
       // Desktop Keyboard Shortcuts
       window.addEventListener('keydown', (e) => {
@@ -4054,6 +4062,7 @@
         orientationAlpha = Number(alpha) || 0;
         orientationBeta = Number(beta) || 0;
         orientationGamma = Number(gamma) || 0;
+        updateCameraRotation();
       },
       showCompletionPopup: function() {
         if (state.isVRMode) showVRCompletionPopup();
@@ -4089,9 +4098,32 @@
     window.exitVR = function() { setVRMode(false); };
     window.recenterVR = function() { recenterView(); };
 
-    /* --- iOS Audio Unlock On First User Gesture --- */
+    /* --- Web Wake Lock API (Keep Screen Awake) --- */
+    let wakeLockSentinel = null;
+    async function requestScreenWakeLock() {
+      try {
+        if ('wakeLock' in navigator && navigator.wakeLock && typeof navigator.wakeLock.request === 'function') {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+        }
+      } catch (e) {}
+    }
+    function releaseScreenWakeLock() {
+      if (wakeLockSentinel) {
+        try { wakeLockSentinel.release(); } catch (e) {}
+        wakeLockSentinel = null;
+      }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && !state.isDisposed) {
+        requestScreenWakeLock();
+      }
+    });
+
+    /* --- iOS Audio & Orientation Unlock On First User Gesture --- */
     function unlockAudioOnGesture() {
       unlockAudio();
+      requestDeviceOrientationPermission();
+      requestScreenWakeLock();
       window.removeEventListener('touchstart', unlockAudioOnGesture);
       window.removeEventListener('touchend', unlockAudioOnGesture);
       window.removeEventListener('pointerdown', unlockAudioOnGesture);
@@ -4107,6 +4139,7 @@
     function disposeExperience() {
       if (state.isDisposed) return;
       state.isDisposed = true;
+      releaseScreenWakeLock();
 
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
@@ -4131,11 +4164,27 @@
       }
     }
 
-    // Launch Engine
+    // Launch Engine & Automatic Start
     window.addEventListener('DOMContentLoaded', () => {
       initEngine();
+      syncVolumes();
+      requestScreenWakeLock();
       animate(0);
-      notifyFlutter('onVRReady', { status: 'ready' });
+
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('vr') === 'true' || urlParams.get('vr') === '1') {
+        setVRMode(true);
+      }
+      if (urlParams.has('seek')) {
+        const targetSec = parseFloat(urlParams.get('seek'));
+        seekExperience(targetSec);
+      } else {
+        playExperience();
+      }
+      window.focus();
+      if (document.body) document.body.focus();
+
+      notifyFlutter('onVRReady', { status: 'ready', experience: 'meditazione_pomeriggio_acqua', duration: TOTAL_DURATION_SEC });
     });
   </script>
 </body>

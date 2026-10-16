@@ -106,16 +106,18 @@
       display: none !important;
     }
 
-    /* Essential Minimal Top Controls (Only Pause & Exit icons on mobile/VR) */
+    /* Essential Minimal Top Controls (Hidden: controlled by Flutter native HUD) */
     #minimal-controls {
       position: absolute;
       top: 14px;
       left: 16px;
       right: 16px;
-      display: flex;
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
       justify-content: space-between;
       align-items: center;
-      pointer-events: auto;
       z-index: 30;
       transition: opacity 0.3s ease;
     }
@@ -316,8 +318,9 @@
       background: linear-gradient(135deg, #34d399, #10b981);
     }
 
-    /* Start / Touch-To-Unlock Overlay for iOS WKWebView */
-    #start-overlay {
+    /* Start / Touch-To-Unlock Overlay bypassed in mobile app */
+    #start-overlay,
+    #start-overlay.hidden {
       position: absolute;
       top: 0;
       left: 0;
@@ -325,17 +328,10 @@
       height: 100%;
       background: rgba(1, 4, 10, 0.92);
       z-index: 100;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      transition: opacity 0.5s ease;
-    }
-
-    #start-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
     }
 
     .start-circle {
@@ -3175,14 +3171,30 @@
         if (vrOverlay) vrOverlay.classList.add('active');
         if (vrReticleMesh) vrReticleMesh.visible = true;
         if (hudSubtitles) hudSubtitles.classList.remove('visible');
+        requestDeviceOrientationPermission();
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+        if (state.isCompleted) {
+          hide2DCompletionPopup();
+          showVRCompletionPopup();
+        }
       } else {
         document.body.classList.remove('vr-active');
         if (vrOverlay) vrOverlay.classList.remove('active');
         if (vrReticleMesh) vrReticleMesh.visible = false;
         if (vrReticleProgressMesh) vrReticleProgressMesh.visible = false;
         if (billboardMesh) billboardMesh.visible = false;
+        hideVRCompletionPopup();
+        if (screen.orientation && screen.orientation.unlock) {
+          try { screen.orientation.unlock(); } catch (e) {}
+        }
+        if (state.isCompleted) {
+          show2DCompletionPopup();
+        }
       }
       onWindowResize();
+      notifyFlutter('onVRModeChanged', { isVR: state.isVRMode });
     }
 
     function updateGazeInteraction(deltaSec) {
@@ -3227,23 +3239,106 @@
       }
     }
 
-    // Touch / Mouse Look & Gyroscope Handlers
+    // Touch / Mouse Look & W3C Gyroscope Quaternion Handlers
     let isDragging = false;
     let prevMouseX = 0, prevMouseY = 0;
     let yawAngle = 0, pitchAngle = 0;
+    let targetYaw = 0, targetPitch = 0;
+    let deviceOrientationEnabled = false;
+    let orientationAlpha = 0, orientationBeta = 0, orientationGamma = 0;
+    let vrAlphaOffset = 0;
+    const _zee = new THREE.Vector3(0, 0, 1);
+    const _euler = new THREE.Euler();
+    const _q0 = new THREE.Quaternion();
+    const _q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)); // -PI/2 around X
+
+    function getScreenOrientationAngle() {
+      if (screen.orientation && typeof screen.orientation.angle === 'number') {
+        return screen.orientation.angle;
+      }
+      if (typeof window.orientation === 'number') {
+        return window.orientation;
+      }
+      if (window.innerWidth > window.innerHeight) {
+        return 90;
+      }
+      return 0;
+    }
+
+    function enableDeviceOrientation() {
+      window.addEventListener('deviceorientation', (e) => {
+        if (e && e.alpha !== null && e.alpha !== undefined && e.beta !== null && e.gamma !== null && (Math.abs(e.alpha) > 0.01 || Math.abs(e.beta) > 0.01 || Math.abs(e.gamma) > 0.01)) {
+          deviceOrientationEnabled = true;
+          orientationAlpha = e.alpha;
+          orientationBeta = e.beta;
+          orientationGamma = e.gamma;
+        }
+      }, true);
+    }
+
+    function requestDeviceOrientationPermission() {
+      enableDeviceOrientation();
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(res => {
+            if (res === 'granted') {
+              enableDeviceOrientation();
+            }
+          })
+          .catch(() => {});
+      }
+    }
+
+    function recenterView() {
+      targetYaw = 0;
+      targetPitch = 0;
+      yawAngle = 0;
+      pitchAngle = 0;
+      vrAlphaOffset = -orientationAlpha;
+      updateCameraRotation();
+    }
+
+    function updateCameraRotation() {
+      if (!camera) return;
+
+      const rotDamp = 1.0 - Math.exp(-14.0 * (state.lastDeltaSec || 0.016));
+      yawAngle += (targetYaw - yawAngle) * rotDamp;
+      pitchAngle += (targetPitch - pitchAngle) * rotDamp;
+
+      if (deviceOrientationEnabled) {
+        const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset) + yawAngle;
+        const betaRad = THREE.MathUtils.degToRad(orientationBeta);
+        const gammaRad = THREE.MathUtils.degToRad(orientationGamma);
+        const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
+
+        _euler.set(betaRad, alphaRad, -gammaRad, 'YXZ');
+        camera.quaternion.setFromEuler(_euler);
+        camera.quaternion.multiply(_q1);
+        _q0.setFromAxisAngle(_zee, -orientRad);
+        camera.quaternion.multiply(_q0);
+      } else {
+        camera.rotation.set(pitchAngle, yawAngle, 0, 'YXZ');
+      }
+    }
 
     function initControls() {
+      requestDeviceOrientationPermission();
+
       // Minimal Pause/Play Button
-      btnPauseToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        togglePlay();
-      });
+      if (btnPauseToggle) {
+        btnPauseToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          togglePlay();
+        });
+      }
 
       // Exit Button
-      btnExit.addEventListener('click', (e) => {
-        e.stopPropagation();
-        exitExperience();
-      });
+      if (btnExit) {
+        btnExit.addEventListener('click', (e) => {
+          e.stopPropagation();
+          exitExperience();
+        });
+      }
 
       // 2D Modal Buttons
       if (modalBtnRestart) {
@@ -3258,13 +3353,15 @@
         });
       }
 
-      // Tap-To-Start Overlay
-      startOverlay.addEventListener('click', () => {
-        startOverlay.classList.add('hidden');
-        unlockAudio();
-        requestDeviceOrientationPermission();
-        playExperience();
-      });
+      // Tap-To-Start Overlay (Fallback if ever clicked)
+      if (startOverlay) {
+        startOverlay.addEventListener('click', () => {
+          startOverlay.classList.add('hidden');
+          unlockAudio();
+          requestDeviceOrientationPermission();
+          playExperience();
+        });
+      }
 
       // Mouse Look for Desktop / Testing
       window.addEventListener('mousedown', (e) => {
@@ -3281,14 +3378,37 @@
         prevMouseX = e.clientX;
         prevMouseY = e.clientY;
 
-        yawAngle -= dx * 0.0035;
-        pitchAngle = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitchAngle - dy * 0.0035));
-        camera.rotation.set(pitchAngle, yawAngle, 0, 'YXZ');
+        targetYaw -= dx * 0.0035;
+        targetPitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, targetPitch - dy * 0.0035));
       });
 
       window.addEventListener('mouseup', () => { isDragging = false; });
 
-      // Keyboard space to play/pause, arrows to seek
+      // Touch Drag for Mobile 360° Preview
+      let touchStartX = 0, touchStartY = 0;
+      window.addEventListener('touchstart', (e) => {
+        if (e.target.closest('#ui-layer') || e.target.closest('#completion-modal-2d')) return;
+        if (e.touches.length === 1) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+        unlockAudio();
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (state.isVRMode && deviceOrientationEnabled) return;
+        if (e.touches.length === 1) {
+          const dx = e.touches[0].clientX - touchStartX;
+          const dy = e.touches[0].clientY - touchStartY;
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+
+          targetYaw -= dx * 0.004;
+          targetPitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, targetPitch - dy * 0.0035));
+        }
+      }, { passive: true });
+
+      // Keyboard space to play/pause, arrows to seek, R to recenter
       window.addEventListener('keydown', (e) => {
         if (e.code === 'Space') {
           e.preventDefault();
@@ -3299,33 +3419,10 @@
           seekExperience(state.currentTime - 10);
         } else if (e.key === 'v' || e.key === 'V') {
           setVRMode(!state.isVRMode);
+        } else if (e.key === 'r' || e.key === 'R') {
+          recenterView();
         }
       });
-    }
-
-    function requestDeviceOrientationPermission() {
-      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then(res => {
-            if (res === 'granted') {
-              window.addEventListener('deviceorientation', handleDeviceOrientation, false);
-            }
-          })
-          .catch(e => console.warn(e));
-      } else {
-        window.addEventListener('deviceorientation', handleDeviceOrientation, false);
-      }
-    }
-
-    function handleDeviceOrientation(e) {
-      if (!e.alpha && !e.beta && !e.gamma) return;
-      // Convert Euler angles (alpha, beta, gamma)
-      const alpha = THREE.MathUtils.degToRad(e.alpha || 0);
-      const beta = THREE.MathUtils.degToRad(e.beta || 0);
-      const gamma = THREE.MathUtils.degToRad(e.gamma || 0);
-
-      const euler = new THREE.Euler(beta, alpha, -gamma, 'YXZ');
-      camera.quaternion.setFromEuler(euler);
     }
 
     function onWindowResize() {
@@ -3377,6 +3474,9 @@
       if (starField && starField.material && starField.material.uniforms) {
         starField.material.uniforms.uTime.value += deltaSec;
       }
+
+      // Camera Rotation & Gyroscope Tracking
+      updateCameraRotation();
 
       // Gaze Interaction (VR Mode)
       updateGazeInteraction(deltaSec);
@@ -3437,7 +3537,43 @@
       }
     }
 
+    /* --- Web Wake Lock API (Keep Screen Awake) --- */
+    let wakeLockSentinel = null;
+    async function requestScreenWakeLock() {
+      try {
+        if ('wakeLock' in navigator && navigator.wakeLock && typeof navigator.wakeLock.request === 'function') {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+        }
+      } catch (e) {}
+    }
+    function releaseScreenWakeLock() {
+      if (wakeLockSentinel) {
+        try { wakeLockSentinel.release(); } catch (e) {}
+        wakeLockSentinel = null;
+      }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        requestScreenWakeLock();
+      }
+    });
+
+    /* --- iOS Audio & Orientation Unlock On First User Gesture --- */
+    function unlockAudioOnGesture() {
+      unlockAudio();
+      requestDeviceOrientationPermission();
+      requestScreenWakeLock();
+      window.removeEventListener('touchstart', unlockAudioOnGesture);
+      window.removeEventListener('touchend', unlockAudioOnGesture);
+      window.removeEventListener('pointerdown', unlockAudioOnGesture);
+      window.removeEventListener('click', unlockAudioOnGesture);
+    }
+    window.addEventListener('touchstart', unlockAudioOnGesture, { passive: true });
+    window.addEventListener('pointerdown', unlockAudioOnGesture, { passive: true });
+    window.addEventListener('click', unlockAudioOnGesture, { passive: true });
+
     function disposeExperience() {
+      releaseScreenWakeLock();
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
       state.isPlaying = false;
 
@@ -3476,6 +3612,14 @@
       pauseSession: function() { pauseExperience(); },
       toggle: function() { togglePlay(); },
       togglePlay: function() { togglePlay(); },
+      reset: function() {
+        state.isCompleted = false;
+        hide2DCompletionPopup();
+        hideVRCompletionPopup();
+        seekExperience(0);
+        pauseExperience();
+      },
+      recenter: function() { recenterView(); },
       setVRMode: function(enable) { setVRMode(enable); },
       enableVR: function() { setVRMode(true); },
       disableVR: function() { setVRMode(false); },
@@ -3484,23 +3628,44 @@
         else setVRMode(!state.isVRMode);
       },
       seek: function(timeSec) { seekExperience(timeSec); },
+      setMuted: function(mute) {
+        state.voiceVolume = mute ? 0 : 0.95;
+        state.musicVolume = mute ? 0 : 0.32;
+        syncVolumes();
+      },
       setVolume: function(voiceVol, musicVol) {
         state.voiceVolume = voiceVol;
         state.musicVolume = musicVol;
         syncVolumes();
       },
       setDeviceOrientation: function(alpha, beta, gamma) {
-        const a = THREE.MathUtils.degToRad(alpha || 0);
-        const b = THREE.MathUtils.degToRad(beta || 0);
-        const g = THREE.MathUtils.degToRad(gamma || 0);
-        const euler = new THREE.Euler(b, a, -g, 'YXZ');
-        camera.quaternion.setFromEuler(euler);
+        deviceOrientationEnabled = true;
+        orientationAlpha = Number(alpha) || 0;
+        orientationBeta = Number(beta) || 0;
+        orientationGamma = Number(gamma) || 0;
+        updateCameraRotation();
+      },
+      setLookAngle: function(pitchRad, yawRad) {
+        deviceOrientationEnabled = false;
+        pitchAngle = targetPitch = Number(pitchRad) || 0;
+        yawAngle = targetYaw = Number(yawRad) || 0;
+        if (camera) camera.rotation.set(pitchAngle, yawAngle, 0, 'YXZ');
       },
       setCameraLook: function(pitchRad, yawRad) {
-        pitchAngle = pitchRad;
-        yawAngle = yawRad;
-        camera.rotation.set(pitchRad, yawRad, 0, 'YXZ');
+        deviceOrientationEnabled = false;
+        pitchAngle = targetPitch = Number(pitchRad) || 0;
+        yawAngle = targetYaw = Number(yawRad) || 0;
+        if (camera) camera.rotation.set(pitchAngle, yawAngle, 0, 'YXZ');
       },
+      showCompletionPopup: function() {
+        if (state.isVRMode) showVRCompletionPopup();
+        else show2DCompletionPopup();
+      },
+      hideCompletionPopup: function() {
+        hideVRCompletionPopup();
+        hide2DCompletionPopup();
+      },
+      getState: function() { return { ...state }; },
       camera: camera,
       scene: scene,
       state: state,
@@ -3543,13 +3708,19 @@
 
     window.addEventListener('beforeunload', disposeExperience);
 
-    // Boot on DOM Ready
+    // Boot on DOM Ready & Automatic Start
     window.addEventListener('DOMContentLoaded', () => {
       initThreeScene();
       syncVolumes();
+      requestScreenWakeLock();
       animate(0);
 
-      // Check query params (?vr=true, ?desktop=true)
+      if (startOverlay) {
+        startOverlay.classList.add('hidden');
+        startOverlay.style.setProperty('display', 'none', 'important');
+      }
+
+      // Check query params (?vr=true, ?desktop=true, ?seek=)
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('vr') === 'true' || urlParams.get('vr') === '1') {
         setVRMode(true);
@@ -3557,6 +3728,16 @@
       if (urlParams.get('desktop') === 'true') {
         state.isDesktop = true;
       }
+      if (urlParams.has('seek')) {
+        const targetSec = parseFloat(urlParams.get('seek'));
+        seekExperience(targetSec);
+      } else {
+        playExperience();
+      }
+      window.focus();
+      if (document.body) document.body.focus();
+
+      notifyFlutter('onVRReady', { status: 'ready', experience: 'meditazione_generale_acqua', duration: TOTAL_DURATION_SEC });
     });
 
   })();

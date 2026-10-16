@@ -41,17 +41,23 @@ class VrExperienceScreen extends ConsumerStatefulWidget {
 }
 
 class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
+  static const MethodChannel _orientationChannel =
+      MethodChannel('com.codepulse.guido/orientation');
+
   InAppWebViewController? _webViewController;
   late final VrExperienceType _experienceType;
 
   bool _isServerReady = false;
   bool _isWebReady = false;
   bool _isVrMode = false;
+  bool _isPaused = false;
+  bool _isMuted = false;
   bool _isExiting = false;
   bool _brightnessOverridden = false;
   bool _isSessionCompleted = false;
   bool _hasRecordedCurrentCompletion = false;
   Timer? _serverPollTimer;
+  Timer? _wakelockKeepAliveTimer;
   StreamSubscription<OrientationEvent>? _rotationSubscription;
   int _lastSensorTimestampMs = 0;
 
@@ -69,8 +75,9 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
     _experienceType = VrExperienceType.fromId(widget.experienceId);
     _isVrMode = widget.isVrMode;
 
+    // Avvia immediatamente a t=0s il giroscopio nativo sia in modalità 360° standard sia in VR
+    _startNativeSensorStream();
     if (_isVrMode) {
-      _startNativeSensorStream();
       _applyVrBrightness();
     }
 
@@ -78,7 +85,7 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
   }
 
   /// Avvia lo stream di campionamento dal sensore nativo di rotazione a ~60 Hz
-  /// e inoltra gli angoli di Eulero alla scena Three.js WebXR.
+  /// e inoltra gli angoli di Eulero alla scena Three.js WebXR fin da t=0s.
   void _startNativeSensorStream() {
     _rotationSubscription?.cancel();
     if (!RotationSensor.isPlatformSupported) return;
@@ -87,7 +94,7 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
       RotationSensor.coordinateSystem = CoordinateSystem.device();
       RotationSensor.samplingPeriod = const Duration(milliseconds: 16);
       _rotationSubscription = RotationSensor.orientationStream.listen((data) {
-        if (!_isVrMode || _webViewController == null || _isExiting) return;
+        if (_webViewController == null || _isExiting) return;
 
         // Limita il throughput verso il bridge JavaScript a max ~60 FPS
         final now = DateTime.now().millisecondsSinceEpoch;
@@ -101,8 +108,11 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
         if (alpha.isNaN || beta.isNaN || gamma.isNaN) return;
 
         _webViewController?.evaluateJavascript(
-          source: 'if (window.GuidoVR && window.GuidoVR.setDeviceOrientation) '
-                  'window.GuidoVR.setDeviceOrientation($alpha, $beta, $gamma);',
+          source: 'if (window._guidoApplyNativeOrientation) { '
+                  '  window._guidoApplyNativeOrientation($alpha, $beta, $gamma); '
+                  '} else if (window.GuidoVR && window.GuidoVR.setDeviceOrientation) { '
+                  '  window.GuidoVR.setDeviceOrientation($alpha, $beta, $gamma); '
+                  '}',
         );
       });
     } catch (e) {
@@ -137,8 +147,18 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
     }
   }
 
+  /// Forza e mantiene attivo il Wakelock sia tramite plugin sia tramite canale nativo OS
+  Future<void> _enforceKeepScreenOn() async {
+    try {
+      await WakelockPlus.enable();
+    } catch (_) {}
+    try {
+      await _orientationChannel.invokeMethod('keepScreenOn', {'enable': true});
+    } catch (_) {}
+  }
+
   /// Configura l'ambiente nativo del dispositivo (orientamento landscape,
-  /// fullscreen immersivo, wakelock e profilo audio).
+  /// fullscreen immersivo, wakelock continuo e profilo audio).
   Future<void> _setupEnvironment() async {
     try {
       // 1. Forza orientamento orizzontale e fullscreen immersivo senza barre di sistema
@@ -152,8 +172,17 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
     }
 
     try {
-      // 2. Mantieni lo schermo acceso durante l'esperienza
-      await WakelockPlus.enable();
+      // 2. Mantieni lo schermo sempre acceso durante tutta l'esperienza (Wakelock + Flag nativo)
+      await _enforceKeepScreenOn();
+      _wakelockKeepAliveTimer?.cancel();
+      _wakelockKeepAliveTimer = Timer.periodic(
+        const Duration(seconds: 15),
+        (_) {
+          if (mounted && !_isExiting) {
+            _enforceKeepScreenOn();
+          }
+        },
+      );
     } catch (e) {
       debugPrint('[VrExperienceScreen] Errore Wakelock: $e');
     }
@@ -197,6 +226,8 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
   /// Esegue la pulizia e disallocazione di tutte le risorse native, audio e WebGL.
   Future<void> _cleanupNativeAndWebGlResources() async {
     _stopNativeSensorStream();
+    _wakelockKeepAliveTimer?.cancel();
+    _wakelockKeepAliveTimer = null;
     try {
       // 1. Invoca la routine di pulizia JavaScript interna alla pagina Three.js
       await _webViewController?.evaluateJavascript(
@@ -269,9 +300,74 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
   /// Invia il comando di ricalibrazione del centro / orizzonte al motore WebXR Three.js
   void _recenterVrView() {
     _webViewController?.evaluateJavascript(
-      source: 'if (window.GuidoVR && window.GuidoVR.recenter) window.GuidoVR.recenter();',
+      source: '''
+        if (window._guidoRecenterGyro) window._guidoRecenterGyro();
+        if (window.GuidoVR && window.GuidoVR.recenter) window.GuidoVR.recenter();
+      ''',
     );
     HapticFeedback.mediumImpact();
+  }
+
+  /// Mette in pausa o riprende l'esperienza in modo uniforme su tutte le meditazioni e respirazioni
+  void _togglePlayPause() {
+    final nextPaused = !_isPaused;
+    setState(() {
+      _isPaused = nextPaused;
+    });
+    HapticFeedback.lightImpact();
+    _webViewController?.evaluateJavascript(
+      source: '''
+        if (window.GuidoVR) {
+          if ($nextPaused) {
+            if (window.GuidoVR.pause) window.GuidoVR.pause();
+            else if (window.GuidoVR.toggle) window.GuidoVR.toggle();
+          } else {
+            if (window.GuidoVR.start) window.GuidoVR.start();
+            else if (window.GuidoVR.play) window.GuidoVR.play();
+            else if (window.GuidoVR.toggle) window.GuidoVR.toggle();
+          }
+        }
+      ''',
+    );
+  }
+
+  /// Attiva o disattiva il muto audio in modo uniforme su tutte le esperienze
+  void _toggleMute() {
+    final nextMuted = !_isMuted;
+    setState(() {
+      _isMuted = nextMuted;
+    });
+    HapticFeedback.lightImpact();
+    _webViewController?.evaluateJavascript(
+      source: '''
+        if (window.GuidoVR) {
+          if (window.GuidoVR.setMuted) {
+            window.GuidoVR.setMuted($nextMuted);
+          } else if (window.GuidoVR.setVolume) {
+            window.GuidoVR.setVolume(${nextMuted ? '0.0' : '0.92'}, ${nextMuted ? '0.0' : '0.38'});
+          }
+        }
+        document.querySelectorAll('audio').forEach(function(a) { a.muted = $nextMuted; });
+      ''',
+    );
+  }
+
+  /// Commuta tra modalità 360° Standard e modalità Visore VR Stereoscopica
+  void _toggleVrMode() {
+    final nextVr = !_isVrMode;
+    setState(() {
+      _isVrMode = nextVr;
+    });
+    HapticFeedback.mediumImpact();
+    _startNativeSensorStream();
+    if (nextVr) {
+      _applyVrBrightness();
+    } else {
+      _restoreBrightness();
+    }
+    _webViewController?.evaluateJavascript(
+      source: 'if (window.GuidoVR && window.GuidoVR.setVRMode) window.GuidoVR.setVRMode($nextVr);',
+    );
   }
 
   /// Mostra la finestra modale Japandi di conferma uscita
@@ -430,14 +526,18 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
       setState(() {
         _isSessionCompleted = false;
         _hasRecordedCurrentCompletion = false;
+        _isPaused = false;
       });
     }
     try {
       await _webViewController?.evaluateJavascript(
-        source: 'if (window.GuidoVR && window.GuidoVR.reset) { '
-                '  window.GuidoVR.reset(); '
-                '  if (window.GuidoVR.start) window.GuidoVR.start(); '
-                '}',
+        source: '''
+          if (window.GuidoVR) {
+            if (window.GuidoVR.reset) window.GuidoVR.reset();
+            else if (window.GuidoVR.seek) window.GuidoVR.seek(0);
+            if (window.GuidoVR.start) window.GuidoVR.start();
+          }
+        ''',
       );
     } catch (e) {
       debugPrint('[VrExperienceScreen] Errore riavvio sessione JS: $e');
@@ -480,12 +580,14 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
           });
         }
 
+        // Mantieni sempre attivo lo stream del giroscopio fin da t=0s
+        _startNativeSensorStream();
+
         // Se era stata richiesta la modalità VR sin dall'inizio, imposta VR SBS
         if (_isVrMode) {
           controller.evaluateJavascript(
             source: 'if (window.GuidoVR && window.GuidoVR.setVRMode) { window.GuidoVR.setVRMode(true); }',
           );
-          _startNativeSensorStream();
         }
 
         // Se autoStart abilitato, avvia la sessione
@@ -528,15 +630,14 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
           final dynamic first = args[0];
           final bool isVr = first is bool
               ? first
-              : (first is Map && first['isVr'] == true);
+              : (first is Map && (first['isVr'] == true || first['isVR'] == true));
           setState(() {
             _isVrMode = isVr;
           });
+          _startNativeSensorStream();
           if (isVr) {
-            _startNativeSensorStream();
             _applyVrBrightness();
           } else {
-            _stopNativeSensorStream();
             _restoreBrightness();
           }
         }
@@ -551,7 +652,7 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
       },
     );
 
-    // 5. Shim handler per meditazione_mattino_acqua (window.GuidoFlutterBridge.postMessage)
+    // 5. Shim handler per meditazione_mattino_acqua e meditazione_generale_acqua
     controller.addJavaScriptHandler(
       handlerName: 'GuidoFlutterBridge',
       callback: (args) {
@@ -559,12 +660,12 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
         if (args.isNotEmpty) {
           final dynamic raw = args[0];
           if (raw is Map) {
-            final event = raw['event']?.toString();
+            final event = raw['event']?.toString() ?? raw['action']?.toString();
             if (event == 'onVRReady') {
               if (mounted) setState(() => _isWebReady = true);
-            } else if (event == 'onSessionComplete') {
+            } else if (event == 'onSessionComplete' || event == 'completed' || event == 'onEnded') {
               _handleSessionComplete(raw['data']);
-            } else if (event == 'onExitRequested') {
+            } else if (event == 'onExitRequested' || event == 'onExit') {
               if (_isVrMode) {
                 _safeTeardownAndExit();
               } else {
@@ -592,6 +693,7 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
   @override
   void dispose() {
     _stopNativeSensorStream();
+    _wakelockKeepAliveTimer?.cancel();
     _serverPollTimer?.cancel();
     if (!_isExiting) {
       _isExiting = true;
@@ -654,7 +756,11 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                     clearSessionCache: true,
                   ),
                   initialUserScripts: UnmodifiableListView<UserScript>([
-                    // Iniezione preventiva dello shim di compatibilità per Meditazione Mattino e permessi sensori iOS
+                    // Iniezione preventiva:
+                    // 1) Bridge Flutter unificato
+                    // 2) Polyfill permessi giroscopio iOS/Android attivo a t=0s senza tap
+                    // 3) Rimozione pulsanti HTML difformi per garantire HUD Flutter 100% uniforme
+                    // 4) Motore giroscopico universale (360° + VR) attivo dal primo frame
                     UserScript(
                       source: '''
                       window.GuidoFlutterBridge = {
@@ -662,7 +768,7 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                           if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
                             try {
                               var parsed = typeof msg === 'string' ? JSON.parse(msg) : msg;
-                              window.flutter_inappwebview.callHandler(parsed.event || 'GuidoFlutterBridge', parsed.data || parsed);
+                              window.flutter_inappwebview.callHandler(parsed.event || parsed.action || 'GuidoFlutterBridge', parsed.data || parsed);
                             } catch(e) {
                               window.flutter_inappwebview.callHandler('GuidoFlutterBridge', msg);
                             }
@@ -681,6 +787,79 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                           return Promise.resolve('granted');
                         };
                       }
+
+                      // Iniezione CSS per nascondere qualsiasi pulsante HTML interno difforme
+                      // (mantenendo visibili solo i sottotitoli e l'HUD nativo Flutter uniforme)
+                      (function injectUniformHudCss() {
+                        var applyStyle = function() {
+                          if (document.getElementById('guido-uniform-hud-style')) return;
+                          var style = document.createElement('style');
+                          style.id = 'guido-uniform-hud-style';
+                          style.textContent = `
+                            .header-bar, .bottom-bar, .bottom-dock,
+                            #audio-gate, #start-overlay, #rotate-hint,
+                            #mobile-controls-bar, #minimal-controls,
+                            .vr-exit-btn, #btn-exit-vr {
+                              display: none !important;
+                              opacity: 0 !important;
+                              pointer-events: none !important;
+                              visibility: hidden !important;
+                            }
+                          `;
+                          (document.head || document.documentElement).appendChild(style);
+                        };
+                        if (document.head || document.documentElement) applyStyle();
+                        document.addEventListener('DOMContentLoaded', applyStyle);
+                      })();
+
+                      // Stato e motore giroscopico universale attivo a t=0s senza bisogno di toccare lo schermo
+                      window._guidoGyroHooked = true;
+                      window._guidoW3cGyroActive = false;
+                      window._guidoGyroState = {
+                        active: false,
+                        hasCalibratedBase: false,
+                        baseAlphaOffset: 0,
+                        alpha: 0,
+                        beta: 90,
+                        gamma: 0
+                      };
+
+                      window._guidoRecenterGyro = function() {
+                        if (window._guidoGyroState) {
+                          window._guidoGyroState.baseAlphaOffset = -window._guidoGyroState.alpha;
+                          window._guidoGyroState.hasCalibratedBase = true;
+                        }
+                      };
+
+                      window._guidoApplyNativeOrientation = function(alpha, beta, gamma, fromW3c) {
+                        var g = window._guidoGyroState;
+                        if (!fromW3c && window._guidoW3cGyroActive) {
+                          // Se la WebView emette già eventi W3C deviceorientation nativi, evita conflitti tra due sorgenti
+                          return;
+                        }
+                        g.alpha = Number(alpha) || 0;
+                        g.beta = Number(beta) || 0;
+                        g.gamma = Number(gamma) || 0;
+                        g.active = true;
+                        if (window.GuidoVR && typeof window.GuidoVR.setDeviceOrientation === 'function') {
+                          window.GuidoVR.setDeviceOrientation(g.alpha, g.beta, g.gamma);
+                          if (!g.hasCalibratedBase && (Math.abs(g.alpha) > 0.001 || Math.abs(g.beta) > 0.001 || Math.abs(g.gamma) > 0.001)) {
+                            g.baseAlphaOffset = -g.alpha;
+                            g.hasCalibratedBase = true;
+                            if (typeof window.GuidoVR.recenter === 'function') {
+                              window.GuidoVR.recenter();
+                            }
+                          }
+                        }
+                      };
+
+                      // Listener W3C deviceorientation immediato a t=0s (senza attendere click)
+                      window.addEventListener('deviceorientation', function(e) {
+                        if (e && e.alpha !== null && e.alpha !== undefined && (Math.abs(e.alpha) > 0.001 || Math.abs(e.beta) > 0.001 || Math.abs(e.gamma) > 0.001)) {
+                          window._guidoW3cGyroActive = true;
+                          window._guidoApplyNativeOrientation(e.alpha, e.beta, e.gamma, true);
+                        }
+                      }, true);
                       ''',
                       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
                     ),
@@ -694,33 +873,80 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                   onWebViewCreated: (controller) async {
                     _webViewController = controller;
                     _setupJavaScriptHandlers(controller);
+                    _startNativeSensorStream();
                     try {
                       await InAppWebViewController.clearAllCache();
                     } catch (_) {}
                   },
                   onLoadStop: (controller, url) {
+                    _enforceKeepScreenOn();
+                    _startNativeSensorStream();
                     controller.evaluateJavascript(source: '''
-                      window.focus();
-                      if (document.body) document.body.focus();
-                      if (screen.orientation && typeof screen.orientation.angle === 'undefined') {
-                        Object.defineProperty(screen.orientation, 'angle', { get: () => 90 });
-                      }
-                      if (!window.screen.orientation) {
-                        window.screen.orientation = { angle: (window.innerWidth > window.innerHeight ? 90 : 0) };
-                      }
-                      if (window.audioCtx && window.audioCtx.state === 'suspended') {
-                        window.audioCtx.resume();
-                      }
-                      window.focus();
-                      if (document.body) document.body.focus();
-                      if (window.GuidoVR) {
-                        if ($_isVrMode && window.GuidoVR.setVRMode) {
-                          window.GuidoVR.setVRMode(true);
+                      (function() {
+                        window.focus();
+                        if (document.body) document.body.focus();
+
+                        // Richiedi Web WakeLock API per impedire lo spegnimento dello schermo nella WebView
+                        if (navigator.wakeLock && typeof navigator.wakeLock.request === 'function') {
+                          navigator.wakeLock.request('screen').catch(function(){});
                         }
-                        if (window.GuidoVR.start) {
-                          window.GuidoVR.start();
+
+                        if (screen.orientation && typeof screen.orientation.angle === 'undefined') {
+                          Object.defineProperty(screen.orientation, 'angle', { get: function() { return 90; } });
                         }
-                      }
+                        if (!window.screen.orientation) {
+                          window.screen.orientation = { angle: (window.innerWidth > window.innerHeight ? 90 : 0) };
+                        }
+
+                        // Rimuovi immediatamente eventuali overlay di blocco (#start-overlay, #audio-gate)
+                        var startOv = document.getElementById('start-overlay');
+                        if (startOv) {
+                          startOv.classList.add('hidden');
+                          startOv.style.setProperty('display', 'none', 'important');
+                        }
+                        var audioGt = document.getElementById('audio-gate');
+                        if (audioGt) {
+                          audioGt.classList.add('fade-out');
+                          audioGt.style.setProperty('display', 'none', 'important');
+                        }
+
+                        // Sblocca il contesto Web Audio
+                        if (window.audioCtx && window.audioCtx.state === 'suspended') {
+                          window.audioCtx.resume();
+                        }
+
+                        // Se lo stato giroscopico ha già campioni validi a t=0s, sincronizza e centra subito la camera
+                        if (window._guidoGyroState && window._guidoGyroState.active && window.GuidoVR && typeof window.GuidoVR.setDeviceOrientation === 'function') {
+                          window.GuidoVR.setDeviceOrientation(
+                            window._guidoGyroState.alpha,
+                            window._guidoGyroState.beta,
+                            window._guidoGyroState.gamma
+                          );
+                          if (typeof window.GuidoVR.recenter === 'function') {
+                            window.GuidoVR.recenter();
+                          }
+                        }
+
+                        if (window.GuidoVR) {
+                          if (!window.GuidoVR.recenter) {
+                            window.GuidoVR.recenter = function() {
+                              if (window._guidoRecenterGyro) window._guidoRecenterGyro();
+                              if (window.GuidoVR.setCameraLook) window.GuidoVR.setCameraLook(0, 0);
+                            };
+                          }
+                          if ($_isVrMode && window.GuidoVR.setVRMode) {
+                            window.GuidoVR.setVRMode(true);
+                          }
+                          if (window.GuidoVR.start) {
+                            window.GuidoVR.start();
+                          }
+                        }
+
+                        // Notifica che l'esperienza è pronta (anche per meditazione_generale_acqua)
+                        if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+                          window.flutter_inappwebview.callHandler('onVRReady', { status: 'ready' });
+                        }
+                      })();
                     ''');
                     // Fallback di sicurezza: se la pagina non invia onVRReady dopo 1.5s dal carico
                     Future.delayed(const Duration(milliseconds: 1500), () {
@@ -734,7 +960,8 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                 ),
               ),
 
-            // 2. HUD Minimalista Japandi: Back Button Discreto nell'angolo in alto a sinistra
+            // 2. HUD Minimalista Japandi Uniforme per TUTTE le Meditazioni e Respirazioni:
+            // Angolo in alto a sinistra: Pulsante Esci
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.only(top: 14, left: 14),
@@ -749,23 +976,51 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
               ),
             ),
 
-            // In modalità VR: Pulsante discreto nell'angolo in alto a destra per window.GuidoVR.recenter()
-            if (_isVrMode)
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 14, right: 14),
-                  child: Align(
-                    alignment: Alignment.topRight,
-                    child: _buildHudIconButton(
-                      icon: Icons.explore_rounded,
-                      tooltip: 'Ricalibra Centro',
-                      activeColor: AppColors.goldAccent,
-                      isActive: true,
-                      onPressed: _recenterVrView,
-                    ),
+            // Angolo in alto a destra: Barra controlli uniforme (Pausa/Play, Audio, Ricalibra Centro, Modalità VR)
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 14, right: 14),
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildHudIconButton(
+                        icon: _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                        tooltip: _isPaused ? 'Riprendi' : 'Pausa',
+                        isActive: _isPaused,
+                        activeColor: AppColors.goldAccent,
+                        onPressed: _togglePlayPause,
+                      ),
+                      const SizedBox(width: 10),
+                      _buildHudIconButton(
+                        icon: _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                        tooltip: _isMuted ? 'Riattiva Audio' : 'Muto',
+                        isActive: _isMuted,
+                        activeColor: AppColors.goldAccent,
+                        onPressed: _toggleMute,
+                      ),
+                      const SizedBox(width: 10),
+                      _buildHudIconButton(
+                        icon: Icons.explore_rounded,
+                        tooltip: 'Ricalibra Centro',
+                        activeColor: AppColors.goldAccent,
+                        isActive: _isVrMode,
+                        onPressed: _recenterVrView,
+                      ),
+                      const SizedBox(width: 10),
+                      _buildHudIconButton(
+                        icon: Icons.view_in_ar_rounded,
+                        tooltip: 'Modalità VR',
+                        activeColor: AppColors.goldAccent,
+                        isActive: _isVrMode,
+                        onPressed: _toggleVrMode,
+                      ),
+                    ],
                   ),
                 ),
               ),
+            ),
 
             // 3. Loading Overlay Elegante con dissolvenza Japandi
             IgnorePointer(

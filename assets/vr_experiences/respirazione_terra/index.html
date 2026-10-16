@@ -620,6 +620,9 @@
         gyroAlpha = Number(alpha) || 0;
         gyroBeta = Number(beta) || 0;
         gyroGamma = Number(gamma) || 0;
+        if (typeof updateCameraRotation === 'function' && camera) {
+          updateCameraRotation(0);
+        }
       },
       showCompletionPopup: function() { onExperienceEnded(); },
       hideCompletionPopup: function() { hideVRCompletionPopup(); hide2DCompletionPopup(); },
@@ -2086,7 +2089,7 @@
     const MIN_FOV = 32;
     const MAX_FOV = 80;
 
-    let gyroAvailable = true;
+    let gyroAvailable = false;
     let gyroAlpha = 0, gyroBeta = 0, gyroGamma = 0;
     let initialYawOffset = 0;
     const _zee = new THREE.Vector3(0, 0, 1);
@@ -2216,16 +2219,16 @@
 
     function requestDeviceOrientation() {
       window.addEventListener('deviceorientation', handleOrientation, true);
-      gyroAvailable = true;
       if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then((res) => {
-            if (res === 'granted') {
-              window.addEventListener('deviceorientation', handleOrientation, true);
-              gyroAvailable = true;
-            }
-          })
-          .catch(console.warn);
+        try {
+          DeviceOrientationEvent.requestPermission()
+            .then((res) => {
+              if (res === 'granted') {
+                window.addEventListener('deviceorientation', handleOrientation, true);
+              }
+            })
+            .catch(() => {});
+        } catch (e) {}
       }
     }
 
@@ -2241,12 +2244,13 @@
     function recenterView() {
       camYaw = 0;
       camPitch = 0;
-      currentFov = 54;
-      camera.fov = 54;
+      currentFov = state.isVRMode ? 72 : 54;
+      camera.fov = currentFov;
       camera.updateProjectionMatrix();
       if (gyroAvailable) {
         initialYawOffset = gyroAlpha;
       }
+      updateCameraRotation(0);
     }
 
     function toggleFullscreen() {
@@ -2258,8 +2262,8 @@
     }
 
     function updateCameraRotation(timeSec) {
-      if (gyroAvailable && state.isVRMode) {
-        const alphaRad = THREE.MathUtils.degToRad(gyroAlpha - initialYawOffset);
+      if (gyroAvailable) {
+        const alphaRad = THREE.MathUtils.degToRad(gyroAlpha - initialYawOffset) + (state.isVRMode ? 0 : camYaw);
         const betaRad = THREE.MathUtils.degToRad(gyroBeta);
         const gammaRad = THREE.MathUtils.degToRad(gyroGamma);
         const orientRad = THREE.MathUtils.degToRad(getScreenOrientationAngle());
@@ -2782,7 +2786,27 @@
     /* ======================================================================
        11. LIFECYCLE & MEMORY TEARDOWN
        ====================================================================== */
+    let wakeLockSentinel = null;
+    async function requestScreenWakeLock() {
+      try {
+        if ('wakeLock' in navigator && navigator.wakeLock && typeof navigator.wakeLock.request === 'function') {
+          if (!wakeLockSentinel || wakeLockSentinel.released) {
+            wakeLockSentinel = await navigator.wakeLock.request('screen');
+          }
+        }
+      } catch (e) {}
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && state.isRunning) {
+        requestScreenWakeLock();
+      }
+    });
+
     function disposeExperience() {
+      if (wakeLockSentinel) {
+        try { wakeLockSentinel.release(); } catch (e) {}
+        wakeLockSentinel = null;
+      }
       if (animFrameId) {
         cancelAnimationFrame(animFrameId);
         animFrameId = null;
@@ -2834,6 +2858,13 @@
       initThreeScene();
       initControls();
       initUIReferences();
+      requestScreenWakeLock();
+      const onFirstGesture = () => {
+        requestScreenWakeLock();
+        requestDeviceOrientation();
+      };
+      window.addEventListener('touchstart', onFirstGesture, { passive: true, once: true });
+      window.addEventListener('mousedown', onFirstGesture, { passive: true, once: true });
 
       document.getElementById('gate-start-btn')?.addEventListener('click', dismissGateAndStart);
 
