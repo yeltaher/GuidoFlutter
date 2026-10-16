@@ -18,8 +18,6 @@
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		A10000022E00000100000001 /* UnityFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000012E00000100000001 /* UnityFramework.framework */; };
 		A10000042E00000100000001 /* UnityFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A10000012E00000100000001 /* UnityFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A10000052E00000100000001 /* UnityRuntime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000032E00000100000001 /* UnityRuntime.framework */; };
-		A10000062E00000100000001 /* UnityRuntime.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A10000032E00000100000001 /* UnityRuntime.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,7 +38,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				A10000042E00000100000001 /* UnityFramework.framework in Embed Frameworks */,
-				A10000062E00000100000001 /* UnityRuntime.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -66,7 +63,6 @@
 		7884E8692EC3CC1000C636F2 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A10000012E00000100000001 /* UnityFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = UnityFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A10000032E00000100000001 /* UnityRuntime.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UnityRuntime.framework; path = UnityLibrary/Frameworks/UnityRuntime.framework; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,7 +71,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000022E00000100000001 /* UnityFramework.framework in Frameworks */,
-				A10000052E00000100000001 /* UnityRuntime.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -124,7 +119,6 @@
 			isa = PBXGroup;
 			children = (
 				A10000012E00000100000001 /* UnityFramework.framework */,
-				A10000032E00000100000001 /* UnityRuntime.framework */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
 				97C146FD1CF9000F007C117D /* Assets.xcassets */,
 				97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */,

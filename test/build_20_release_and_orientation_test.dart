@@ -110,6 +110,14 @@ void main() {
       expect(content.contains(r'$(BUILT_PRODUCTS_DIR)'), isTrue);
       expect(content.contains(r'"$(PROJECT_DIR)/UnityLibrary"'), isFalse);
     });
+
+    test('ios/Runner.xcodeproj does not embed UnityRuntime.framework to avoid 0xe8008001 Sideloadly verification failure', () {
+      final pbxFile = File('ios/Runner.xcodeproj/project.pbxproj');
+      expect(pbxFile.existsSync(), isTrue);
+      final content = pbxFile.readAsStringSync();
+      expect(content.contains('UnityRuntime.framework in Embed Frameworks'), isFalse);
+      expect(content.contains('UnityRuntime.framework in Frameworks'), isFalse);
+    });
   });
 
   Future<void> holdCustomButton(WidgetTester tester, Finder finder) async {
