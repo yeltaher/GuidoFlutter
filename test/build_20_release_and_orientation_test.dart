@@ -80,27 +80,21 @@ void main() {
       expect(content.contains('pre_install'), isTrue);
     });
 
-    test('ios/Runner.xcworkspace contains UnityLibrary preceding Runner', () {
+    test('ios/Runner.xcworkspace does not include UnityLibrary', () {
       final workspaceFile = File('ios/Runner.xcworkspace/contents.xcworkspacedata');
       expect(workspaceFile.existsSync(), isTrue);
       final content = workspaceFile.readAsStringSync();
-      final unityIndex = content.indexOf('UnityLibrary/Unity-iPhone.xcodeproj');
-      final runnerIndex = content.indexOf('Runner.xcodeproj');
-      expect(unityIndex, isNonNegative);
-      expect(runnerIndex, isNonNegative);
-      expect(unityIndex < runnerIndex, isTrue);
+      expect(content.contains('UnityLibrary/Unity-iPhone.xcodeproj'), isFalse);
+      expect(content.contains('Runner.xcodeproj'), isTrue);
     });
 
-    test('ios/Runner.xcscheme has parallelizeBuildables = NO and UnityFramework before Runner', () {
+    test('ios/Runner.xcscheme has parallelizeBuildables = YES and no UnityFramework entry', () {
       final schemeFile = File('ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme');
       expect(schemeFile.existsSync(), isTrue);
       final content = schemeFile.readAsStringSync();
-      expect(content.contains('parallelizeBuildables = "NO"'), isTrue);
-      final unityIndex = content.indexOf('BlueprintName = "UnityFramework"');
-      final runnerIndex = content.indexOf('BlueprintName = "Runner"');
-      expect(unityIndex, isNonNegative);
-      expect(runnerIndex, isNonNegative);
-      expect(unityIndex < runnerIndex, isTrue);
+      expect(content.contains('parallelizeBuildables = "YES"'), isTrue);
+      expect(content.contains('BlueprintName = "UnityFramework"'), isFalse);
+      expect(content.contains('BlueprintName = "Runner"'), isTrue);
     });
 
     test('ios/Runner.xcodeproj FRAMEWORK_SEARCH_PATHS includes BUILT_PRODUCTS_DIR', () {
@@ -111,12 +105,15 @@ void main() {
       expect(content.contains(r'"$(PROJECT_DIR)/UnityLibrary"'), isFalse);
     });
 
-    test('ios/Runner.xcodeproj does not embed UnityRuntime.framework to avoid 0xe8008001 Sideloadly verification failure', () {
+    test('ios/Runner.xcodeproj does not embed or link UnityFramework or UnityRuntime', () {
       final pbxFile = File('ios/Runner.xcodeproj/project.pbxproj');
       expect(pbxFile.existsSync(), isTrue);
       final content = pbxFile.readAsStringSync();
       expect(content.contains('UnityRuntime.framework in Embed Frameworks'), isFalse);
       expect(content.contains('UnityRuntime.framework in Frameworks'), isFalse);
+      expect(content.contains('UnityFramework.framework in Embed Frameworks'), isFalse);
+      expect(content.contains('UnityFramework.framework in Frameworks'), isFalse);
+      expect(content.contains('UnityFramework.framework'), isFalse);
     });
   });
 

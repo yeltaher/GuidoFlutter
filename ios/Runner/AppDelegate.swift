@@ -1,5 +1,4 @@
 import Flutter
-import flutter_unity_widget_2
 import UIKit
 
 // MARK: - AppDelegate
@@ -13,9 +12,6 @@ import UIKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // Initialize Unity UaaL engine before plugin registration
-        InitUnityIntegrationWithOptions(argc: CommandLine.argc, argv: CommandLine.unsafeArgv, launchOptions)
-
         GeneratedPluginRegistrant.register(with: self)
 
         let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)

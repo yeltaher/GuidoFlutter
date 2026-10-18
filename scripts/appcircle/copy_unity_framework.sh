@@ -25,6 +25,17 @@ if [ -n "${AC_REPOSITORY_DIR:-}" ]; then
   cd "$AC_REPOSITORY_DIR"
 fi
 
+# ============================================================================
+# Step Pure Flutter Architecture Check
+# ============================================================================
+if [ -f "ios/Runner.xcodeproj/project.pbxproj" ] && ! grep -q "UnityFramework.framework" ios/Runner.xcodeproj/project.pbxproj 2>/dev/null; then
+  echo "=========================================="
+  echo "INFO: UnityFramework is decoupled from Runner.xcodeproj (Pure Flutter 3D / WebXR architecture)."
+  echo "Skipping UnityFramework copy step cleanly."
+  echo "=========================================="
+  exit 0
+fi
+
 # Define source and destination paths
 SOURCE_PATH="ios/UnityLibrary/DerivedData/Build/Products/Release-iphoneos/UnityFramework.framework"
 DEST_PATH="ios/UnityLibrary/Frameworks/UnityFramework.framework"

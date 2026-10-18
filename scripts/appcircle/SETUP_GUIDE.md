@@ -144,12 +144,16 @@ This will automatically increment the build number with each build.
 - Add **"Xcode Select"** from Workflow Marketplace
 - Set `AC_XCODE_VERSION` to `27.0`
 
-#### Step 4: Custom Script - Build UnityFramework
+#### Step 4: Custom Script - Build UnityFramework (Optional / Legacy)
+> [!NOTE]
+> On the Pure Flutter architecture, `UnityFramework` is completely decoupled from `Runner.xcodeproj`. The script automatically detects this and exits with code 0 (no-op). This step can safely be omitted or retained without breaking the pipeline.
 - Add **"Custom Script"** from Workflow Marketplace
 - Set **"Execute With"** to `Bash`
 - Paste the contents of `scripts/appcircle/build_unity_framework.sh`
 
-#### Step 5: Custom Script - Copy UnityFramework
+#### Step 5: Custom Script - Copy UnityFramework (Optional / Legacy)
+> [!NOTE]
+> Similar to Step 4, this script detects the decoupled configuration and exits with code 0. This step can safely be omitted or retained.
 - Add **"Custom Script"** from Workflow Marketplace
 - Set **"Execute With"** to `Bash`
 - Paste the contents of `scripts/appcircle/copy_unity_framework.sh`

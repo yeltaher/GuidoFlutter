@@ -45,7 +45,16 @@ git lfs install --local
 echo "Pulling all Git LFS binary assets..."
 git lfs pull
 
-# Fail-fast size verification on critical Unity binary asset
+# Fail-fast size verification on critical Unity binary asset (only if UnityFramework is linked)
+if [ -f "ios/Runner.xcodeproj/project.pbxproj" ] && ! grep -q "UnityFramework.framework" ios/Runner.xcodeproj/project.pbxproj 2>/dev/null; then
+  echo "=========================================="
+  echo "INFO: UnityFramework is decoupled from Runner.xcodeproj (Pure Flutter 3D / WebXR architecture)."
+  echo "Skipping strict Unity asset verification (sharedassets8)."
+  echo "Git LFS pull completed successfully."
+  echo "=========================================="
+  exit 0
+fi
+
 TARGET_FILE="ios/UnityLibrary/Data/sharedassets8.assets.resS"
 MIN_EXPECTED_BYTES=104857600  # 100 MB in bytes
 LFS_POINTER_THRESHOLD=1024     # Pointer files are ~130 bytes

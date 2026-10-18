@@ -3,9 +3,21 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_unity_widget_2/flutter_unity_widget_2.dart';
 import '../database/repositories/user_repository.dart';
 import 'unity_bridge_dto.dart';
+
+/// Minimal message-sink abstraction (legacy Unity bridge). The native Unity
+/// plugin has been removed: all 8 experiences run on WebXR/Three.js.
+abstract interface class UnityMessageSink {
+  void postMessage(String gameObject, String methodName, String message);
+}
+
+/// Minimal scene load notification model (legacy Unity bridge).
+class SceneLoaded {
+  final String? name;
+  final int? buildIndex;
+  const SceneLoaded({this.name, this.buildIndex});
+}
 
 /// State representation for an active or preparing Unity UaaL session.
 class UnitySessionState {
@@ -93,7 +105,7 @@ class UnitySessionState {
 ///   isSceneLoaded, stops heartbeat/watchdog, and clears isWaitingForUnity.
 class UnitySessionController extends Notifier<UnitySessionState>
     with WidgetsBindingObserver {
-  UnityWidgetController? _unityWidgetController;
+  UnityMessageSink? _unityWidgetController;
   Timer? _heartbeatTimer;
   Timer? _watchdogTimer;
   Timer? _readyTimeoutTimer;
@@ -307,7 +319,7 @@ class UnitySessionController extends Notifier<UnitySessionState>
   // ---------------------------------------------------------------------------
 
   /// Called when UnityWidget is attached and controller is ready.
-  void onUnityCreated(UnityWidgetController controller) {
+  void onUnityCreated(UnityMessageSink controller) {
     _unityWidgetController = controller;
     state = state.copyWith(isUnityLoaded: true, isSceneLoaded: true);
     debugPrint('[UnitySessionController] Unity Widget Controller attached.');
@@ -802,7 +814,7 @@ class UnitySessionController extends Notifier<UnitySessionState>
   }
 
   /// Dispatches a message directly to Unity via the platform bridge.
-  void _dispatchDirectMessage(UnityWidgetController controller, String message) {
+  void _dispatchDirectMessage(UnityMessageSink controller, String message) {
     try {
       controller.postMessage(
         _unityBridgeGameObjectName,

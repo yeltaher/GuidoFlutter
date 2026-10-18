@@ -33,8 +33,6 @@ dependencies:
   animated_text_kit: ^4.3.0
   go_router: ^17.3.0
   flutter_inappwebview: ^6.1.5
-  flutter_unity_widget_2:
-    path: packages/flutter_unity_widget_2
   flutter_rotation_sensor: ^0.2.0
   screen_brightness: ^2.1.11
 

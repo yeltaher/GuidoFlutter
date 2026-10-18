@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_unity_widget_2/flutter_unity_widget_2.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -551,57 +548,7 @@ class _UnityExperienceScreenState
                           details.delta.dy,
                         );
                       },
-                child: UnityWidget(
-                  onUnityCreated: (controller) {
-                    try {
-                      _loadTimeoutTimer?.cancel();
-                      _loadTimeoutTimer = null;
-                      if (_showLoadTimeoutDialog) {
-                        setState(() {
-                          _showLoadTimeoutDialog = false;
-                        });
-                      }
-                      sessionNotifier.onUnityCreated(controller);
-                      sessionNotifier.onUnitySceneLoaded(null);
-                    } catch (e) {
-                      debugPrint('[UnityExperienceScreen] Errore in onUnityCreated: $e');
-                      _showRecoveryDialog(
-                        errorMessage: 'Errore inizializzazione 3D: $e',
-                      );
-                    }
-                  },
-                  onUnityMessage: (message) {
-                    try {
-                      sessionNotifier.onUnityMessage(message);
-                    } catch (e) {
-                      debugPrint('[UnityExperienceScreen] Errore in onUnityMessage: $e');
-                    }
-                  },
-                  onUnitySceneLoaded: (scene) {
-                    try {
-                      sessionNotifier.onUnitySceneLoaded(scene);
-                    } catch (e) {
-                      debugPrint('[UnityExperienceScreen] Errore in onUnitySceneLoaded: $e');
-                      _showRecoveryDialog(
-                        errorMessage: 'Errore caricamento scena 3D: $e',
-                      );
-                    }
-                  },
-                  onUnityUnloaded: () {
-                    try {
-                      sessionNotifier.onUnityUnloaded();
-                    } catch (e) {
-                      debugPrint('[UnityExperienceScreen] Errore in onUnityUnloaded: $e');
-                    }
-                  },
-                  fullscreen: true,
-                  useAndroidViewSurface: true,
-                  gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{
-                    Factory<OneSequenceGestureRecognizer>(
-                      EagerGestureRecognizer.new,
-                    ),
-                  },
-                ),
+                child: const ColoredBox(color: Colors.black),
               ),
             ),
 

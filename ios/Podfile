@@ -1,4 +1,4 @@
-# Set minimum platform version for Guido Companion App (Flutter + Unity UaaL)
+# Set minimum platform version for Guido Companion App (Flutter + WebXR)
 platform :ios, '15.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
@@ -42,12 +42,6 @@ pre_install do |installer|
   puts '[Podfile] Ensuring Git LFS binary assets are pulled...'
   system('git lfs pull')
 
-  res_file = File.expand_path('UnityLibrary/Data/sharedassets8.assets.resS', __dir__)
-  if !File.exist?(res_file) || File.size(res_file) < 1024
-    actual_size = File.exist?(res_file) ? File.size(res_file) : 0
-    raise "[Podfile] FATAL: sharedassets8.assets.resS is missing or an unresolved LFS pointer (#{actual_size} bytes). Run 'git lfs pull' before running pod install."
-  end
-  puts "[Podfile] Git LFS verification passed: sharedassets8.assets.resS is #{(File.size(res_file) / (1024.0 * 1024.0)).round(2)} MB."
 end
 
 post_install do |installer|
@@ -58,18 +52,11 @@ post_install do |installer|
       # Force iOS 15.0 deployment target across all pods
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
 
-      # Disable Bitcode (deprecated in Xcode 15+, unsupported by modern UnityFramework)
+      # Disable Bitcode (deprecated in Xcode 15+, legacy)
       config.build_settings['ENABLE_BITCODE'] = 'NO'
 
       # Force code signing on all CocoaPods targets to avoid AMFI codesigning rejection on physical device
       config.build_settings['CODE_SIGNING_ALLOWED'] = 'YES'
-
-      # Support UnityFramework search paths exclusively for flutter_unity_widget_2
-      if target.name.include?('flutter_unity_widget_2')
-        config.build_settings['FRAMEWORK_SEARCH_PATHS'] ||= ['$(inherited)']
-        config.build_settings['FRAMEWORK_SEARCH_PATHS'] << '"${PODS_ROOT}/../UnityLibrary"'
-        config.build_settings['FRAMEWORK_SEARCH_PATHS'] << '"${PODS_ROOT}/../UnityLibrary/Frameworks"'
-      end
     end
   end
 

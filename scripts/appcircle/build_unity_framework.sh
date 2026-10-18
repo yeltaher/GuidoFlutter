@@ -18,6 +18,17 @@ if [ -n "${AC_REPOSITORY_DIR:-}" ]; then
 fi
 
 # ============================================================================
+# Step 0A: Decoupled Pure Flutter Architecture Check
+# ============================================================================
+if [ -f "ios/Runner.xcodeproj/project.pbxproj" ] && ! grep -q "UnityFramework.framework" ios/Runner.xcodeproj/project.pbxproj 2>/dev/null; then
+  echo "=========================================="
+  echo "INFO: UnityFramework is decoupled from Runner.xcodeproj (Pure Flutter 3D / WebXR architecture)."
+  echo "Skipping UnityFramework build step cleanly."
+  echo "=========================================="
+  exit 0
+fi
+
+# ============================================================================
 # Step 0: Ensure Git LFS Binaries
 # ============================================================================
 echo "=========================================="
