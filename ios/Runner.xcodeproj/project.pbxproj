@@ -243,7 +243,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"$CI\" = \"true\" ] || [ \"$AC_APPCIRCLE\" = \"true\" ] || [ -n \"$APPCIRCLE\" ]; then\n  export FLUTTER_BUILD_MODE=release\nfi\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\nPODS_DIR=\"${PODS_ROOT:-$SRCROOT/Pods}\"\nif [ -f \"${PODS_DIR}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\" ]; then\n  echo \"[Thin Binary] Embedding CocoaPods dynamic frameworks...\"\n  /bin/sh \"${PODS_DIR}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\"\nelif [ -f \"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\" ]; then\n  echo \"[Thin Binary] Embedding CocoaPods dynamic frameworks via PODS_ROOT...\"\n  /bin/sh \"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\"\nfi\nif [ -f \"${PODS_DIR}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\" ]; then\n  echo \"[Thin Binary] Embedding CocoaPods resources...\"\n  /bin/sh \"${PODS_DIR}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\"\nelif [ -f \"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\" ]; then\n  echo \"[Thin Binary] Embedding CocoaPods resources via PODS_ROOT...\"\n  /bin/sh \"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\"\nfi\nRUNNER_BIN=\"$TARGET_BUILD_DIR/$WRAPPER_NAME/Runner\"\nif [ -f \"$RUNNER_BIN\" ] && command -v otool >/dev/null 2>&1; then\n  echo \"=== Verifying Mach-O dependencies with otool -L ===\"\n  otool -L \"$RUNNER_BIN\" || true\n  for dylib in $(otool -L \"$RUNNER_BIN\" | grep '@rpath' | awk '{print $1}'); do\n    fw_name=$(echo \"$dylib\" | grep -o '[^/]*\\.framework' || true)\n    if [ -n \"$fw_name\" ]; then\n      if [ ! -d \"$TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks/$fw_name\" ]; then\n        echo \"WARNING: Required framework $fw_name NOT found in Frameworks folder! Running self-healing search...\"\n        FOUND_FW=$(find \"${BUILT_PRODUCTS_DIR}\" \"${PODS_CONFIGURATION_BUILD_DIR}\" \"${PODS_ROOT}\" \"${SRCROOT}/Pods\" -name \"$fw_name\" -type d 2>/dev/null | head -n 1)\n        if [ -n \"$FOUND_FW\" ] && [ -d \"$FOUND_FW\" ]; then\n          mkdir -p \"$TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks\"\n          cp -R \"$FOUND_FW\" \"$TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks/\"\n          echo \"SUCCESS: Self-healed and copied $fw_name to $TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks\"\n        else\n          echo \"ERROR: Required framework $fw_name NOT found anywhere in build products or pods!\"\n        fi\n      else\n        echo \"VERIFIED: $fw_name is present\"\n      fi\n    fi\n  done\nfi\nif [ -n \"$AC_OUTPUT_DIR\" ] && [ -d \"$TARGET_BUILD_DIR/$WRAPPER_NAME\" ]; then\n  echo \"=== Embedded Frameworks in $TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks ===\"\n  ls -la \"$TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks\" 2>/dev/null || true\n  mkdir -p \"$AC_OUTPUT_DIR/Payload\"\n  cp -R \"$TARGET_BUILD_DIR/$WRAPPER_NAME\" \"$AC_OUTPUT_DIR/Payload/\"\n  (cd \"$AC_OUTPUT_DIR\" && zip -r -q \"Guido_iOS_Sideload.ipa\" Payload && rm -rf Payload)\n  cp -f \"$AC_OUTPUT_DIR/Guido_iOS_Sideload.ipa\" \"$AC_OUTPUT_DIR/Guido_Release_AOT.ipa\" 2>/dev/null || true\n  echo \"[Thin Binary] Created Guido_iOS_Sideload.ipa and Guido_Release_AOT.ipa with all embedded frameworks.\"\nfi\n";
+			shellScript = "if [ \"$CI\" = \"true\" ] || [ \"$AC_APPCIRCLE\" = \"true\" ] || [ -n \"$APPCIRCLE\" ]; then\n  export FLUTTER_BUILD_MODE=release\nfi\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\nPODS_DIR=\"${PODS_ROOT:-$SRCROOT/Pods}\"\nif [ -f \"${PODS_DIR}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\" ]; then\n  echo \"[Thin Binary] Embedding CocoaPods dynamic frameworks...\"\n  /bin/sh \"${PODS_DIR}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\"\nelif [ -f \"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\" ]; then\n  echo \"[Thin Binary] Embedding CocoaPods dynamic frameworks via PODS_ROOT...\"\n  /bin/sh \"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\"\nfi\nif [ -f \"${PODS_DIR}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\" ]; then\n  echo \"[Thin Binary] Embedding CocoaPods resources...\"\n  /bin/sh \"${PODS_DIR}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\"\nelif [ -f \"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\" ]; then\n  echo \"[Thin Binary] Embedding CocoaPods resources via PODS_ROOT...\"\n  /bin/sh \"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\"\nfi\nRUNNER_BIN=\"$TARGET_BUILD_DIR/$WRAPPER_NAME/Runner\"\nif [ -f \"$RUNNER_BIN\" ] && command -v otool >/dev/null 2>&1; then\n  echo \"=== Verifying Mach-O dependencies with otool -L ===\"\n  otool -L \"$RUNNER_BIN\" || true\n  for dylib in $(otool -L \"$RUNNER_BIN\" | grep '@rpath' | awk '{print $1}'); do\n    fw_name=$(echo \"$dylib\" | grep -o '[^/]*\\.framework' || true)\n    if [ -n \"$fw_name\" ]; then\n      if [ ! -d \"$TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks/$fw_name\" ]; then\n        echo \"WARNING: Required framework $fw_name NOT found in Frameworks folder! Running self-healing search...\"\n        FOUND_FW=$(find \"${BUILT_PRODUCTS_DIR}\" \"${PODS_CONFIGURATION_BUILD_DIR}\" \"${PODS_ROOT}\" \"${SRCROOT}/Pods\" -name \"$fw_name\" -type d 2>/dev/null | head -n 1)\n        if [ -n \"$FOUND_FW\" ] && [ -d \"$FOUND_FW\" ]; then\n          mkdir -p \"$TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks\"\n          cp -R \"$FOUND_FW\" \"$TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks/\"\n          echo \"SUCCESS: Self-healed and copied $fw_name to $TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks\"\n        else\n          echo \"ERROR: Required framework $fw_name NOT found anywhere in build products or pods!\"\n        fi\n      else\n        echo \"VERIFIED: $fw_name is present\"\n      fi\n    fi\n  done\nfi\necho \"[Thin Binary] Stripping any Xcode 16 debug dylibs and preview artifacts...\"\nrm -f \"$TARGET_BUILD_DIR/$WRAPPER_NAME\"/*.dylib \"$TARGET_BUILD_DIR/$WRAPPER_NAME\"/Runner.debug.dylib \"$TARGET_BUILD_DIR/$WRAPPER_NAME\"/__preview.dylib\nif [ -n \"$AC_OUTPUT_DIR\" ] && [ -d \"$TARGET_BUILD_DIR/$WRAPPER_NAME\" ]; then\n  echo \"=== Embedded Frameworks in $TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks ===\"\n  ls -la \"$TARGET_BUILD_DIR/$WRAPPER_NAME/Frameworks\" 2>/dev/null || true\n  mkdir -p \"$AC_OUTPUT_DIR/Payload\"\n  cp -R \"$TARGET_BUILD_DIR/$WRAPPER_NAME\" \"$AC_OUTPUT_DIR/Payload/\"\n  (cd \"$AC_OUTPUT_DIR\" && zip -r -q -y \"Guido_iOS_Sideload.ipa\" Payload && rm -rf Payload)\n  cp -f \"$AC_OUTPUT_DIR/Guido_iOS_Sideload.ipa\" \"$AC_OUTPUT_DIR/Guido_Release_AOT.ipa\" 2>/dev/null || true\n  echo \"[Thin Binary] Created Guido_iOS_Sideload.ipa and Guido_Release_AOT.ipa with all embedded frameworks.\"\nfi\n";
 		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -314,6 +314,7 @@
 		249021D3217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_DEBUG_DYLIB = NO;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -367,6 +368,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
+				ENABLE_DEBUG_DYLIB = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -392,6 +394,7 @@
 		331C8088294A63A400263BE5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_DEBUG_DYLIB = NO;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -410,6 +413,7 @@
 		331C8089294A63A400263BE5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_DEBUG_DYLIB = NO;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -426,6 +430,7 @@
 		331C808A294A63A400263BE5 /* Profile */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_DEBUG_DYLIB = NO;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -442,6 +447,7 @@
 		97C147031CF9000F007C117D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_DEBUG_DYLIB = NO;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = AppIcon;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -499,6 +505,7 @@
 		97C147041CF9000F007C117D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_DEBUG_DYLIB = NO;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = AppIcon;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -554,6 +561,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
+				ENABLE_DEBUG_DYLIB = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -581,6 +589,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
+				ENABLE_DEBUG_DYLIB = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";

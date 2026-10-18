@@ -109,6 +109,17 @@ void main() {
       expect(content.contains('Guido_Release_AOT.ipa'), isTrue);
       expect(content.contains('Self-healed: copied'), isTrue);
       expect(content.contains('PODS_CONFIGURATION_BUILD_DIR'), isTrue);
+      expect(content.contains('Runner.debug.dylib'), isTrue);
+    });
+
+    test('project.pbxproj and Podfile disable ENABLE_DEBUG_DYLIB and strip Xcode 16 debug dylibs', () {
+      final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
+      expect(pbx.contains('ENABLE_DEBUG_DYLIB = NO'), isTrue);
+      expect(pbx.contains('Runner.debug.dylib'), isTrue);
+      expect(pbx.contains('-y'), isTrue);
+
+      final podfile = File('ios/Podfile').readAsStringSync();
+      expect(podfile.contains("config.build_settings['ENABLE_DEBUG_DYLIB'] = 'NO'"), isTrue);
     });
   });
 }
