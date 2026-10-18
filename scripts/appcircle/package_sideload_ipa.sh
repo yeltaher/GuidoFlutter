@@ -89,9 +89,11 @@ mkdir -p "$PAYLOAD_DIR"
 echo "Copying Runner.app into Payload/..."
 cp -R "$APP_PATH" "$PAYLOAD_DIR/"
 
-echo "=== Stripping any Xcode 16 debug dylibs and preview artifacts ==="
+echo "=== Stripping any Xcode 16 debug dylibs, preview artifacts, and Flutter headers/modules ==="
 # Remove separated debug dylibs and XOJIT preview artifacts that break iOS AMFI code signing on non-jailbroken devices
 rm -f "$PAYLOAD_DIR/Runner.app"/*.dylib "$PAYLOAD_DIR/Runner.app"/Runner.debug.dylib "$PAYLOAD_DIR/Runner.app"/__preview.dylib
+# Remove Headers and Modules from Flutter.framework to prevent App Store/sideload signing failures
+rm -rf "$PAYLOAD_DIR/Runner.app/Frameworks/Flutter.framework/Headers" "$PAYLOAD_DIR/Runner.app/Frameworks/Flutter.framework/Modules"
 
 # Ensure output directory exists
 mkdir -p "$OUTPUT_DIR"

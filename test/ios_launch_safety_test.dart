@@ -100,7 +100,7 @@ void main() {
       expect(podfile.contains('user_target.build_phases.delete(thin_phase)'), isTrue);
     });
 
-    test('package_sideload_ipa.sh validates Mach-O dynamic framework integrity and implements self-healing', () {
+    test('package_sideload_ipa.sh validates Mach-O dynamic framework integrity, implements self-healing, and purges Headers/Modules', () {
       final script = File('scripts/appcircle/package_sideload_ipa.sh');
       expect(script.existsSync(), isTrue);
       final content = script.readAsStringSync();
@@ -110,12 +110,16 @@ void main() {
       expect(content.contains('Self-healed: copied'), isTrue);
       expect(content.contains('PODS_CONFIGURATION_BUILD_DIR'), isTrue);
       expect(content.contains('Runner.debug.dylib'), isTrue);
+      expect(content.contains('Flutter.framework/Headers'), isTrue);
+      expect(content.contains('Flutter.framework/Modules'), isTrue);
     });
 
-    test('project.pbxproj and Podfile disable ENABLE_DEBUG_DYLIB and strip Xcode 16 debug dylibs', () {
+    test('project.pbxproj and Podfile disable ENABLE_DEBUG_DYLIB and strip Xcode 16 debug dylibs and Flutter Headers/Modules', () {
       final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
       expect(pbx.contains('ENABLE_DEBUG_DYLIB = NO'), isTrue);
       expect(pbx.contains('Runner.debug.dylib'), isTrue);
+      expect(pbx.contains('Flutter.framework/Headers'), isTrue);
+      expect(pbx.contains('Flutter.framework/Modules'), isTrue);
       expect(pbx.contains('-y'), isTrue);
 
       final podfile = File('ios/Podfile').readAsStringSync();

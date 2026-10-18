@@ -3415,6 +3415,7 @@
 
     function enableDeviceOrientation() {
       window.addEventListener('deviceorientation', (e) => {
+        if (!state.isVRMode) return;
         if (e && e.alpha !== null && e.alpha !== undefined && e.beta !== null && e.gamma !== null && (Math.abs(e.alpha) > 0.01 || Math.abs(e.beta) > 0.01 || Math.abs(e.gamma) > 0.01)) {
           deviceOrientationEnabled = true;
           orientationAlpha = e.alpha;
@@ -3453,7 +3454,7 @@
       yaw += (targetYaw - yaw) * rotDamp;
       pitch += (targetPitch - pitch) * rotDamp;
 
-      if (deviceOrientationEnabled) {
+      if (deviceOrientationEnabled && state.isVRMode) {
         const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset) + yaw;
         const betaRad = THREE.MathUtils.degToRad(orientationBeta);
         const gammaRad = THREE.MathUtils.degToRad(orientationGamma);
@@ -3476,6 +3477,9 @@
 
     function setVRMode(enable) {
       state.isVRMode = enable;
+      if (!enable) {
+        deviceOrientationEnabled = false;
+      }
       if (vrReticleGroup) {
         vrReticleGroup.visible = enable;
       }
@@ -3815,6 +3819,7 @@
       hideCompletionPopup: function() { hideVRCompletionPopup(); hide2DCompletionPopup(); },
       recenter: function() { recenterView(); },
       setDeviceOrientation: function(alpha, beta, gamma) {
+        if (!state.isVRMode) return;
         deviceOrientationEnabled = true;
         orientationAlpha = Number(alpha) || 0;
         orientationBeta = Number(beta) || 0;

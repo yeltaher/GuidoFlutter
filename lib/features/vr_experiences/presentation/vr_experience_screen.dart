@@ -56,6 +56,7 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
   bool _brightnessOverridden = false;
   bool _isSessionCompleted = false;
   bool _hasRecordedCurrentCompletion = false;
+  bool _showVrHeadsetPrompt = false;
   Timer? _serverPollTimer;
   Timer? _wakelockKeepAliveTimer;
   StreamSubscription<OrientationEvent>? _rotationSubscription;
@@ -65,8 +66,30 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
   bool get isSessionCompletedForTesting => _isSessionCompleted;
 
   @visibleForTesting
+  bool get isVrHeadsetPromptVisibleForTesting => _showVrHeadsetPrompt;
+
+  @visibleForTesting
+  void simulateWebReadyForTesting() {
+    if (mounted) {
+      setState(() {
+        _isWebReady = true;
+      });
+    }
+  }
+
+  @visibleForTesting
   void simulateSessionCompleteForTesting([dynamic data]) {
     _handleSessionComplete(data);
+  }
+
+  @visibleForTesting
+  void confirmVrHeadsetPromptForTesting() {
+    _confirmVrHeadsetInsertion();
+  }
+
+  @visibleForTesting
+  void dismissVrHeadsetPromptForTesting() {
+    _dismissVrHeadsetPromptTo2D();
   }
 
   @override
@@ -75,26 +98,31 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
     _experienceType = VrExperienceType.fromId(widget.experienceId);
     _isVrMode = widget.isVrMode;
 
-    // Avvia immediatamente a t=0s il giroscopio nativo sia in modalità 360° standard sia in VR
-    _startNativeSensorStream();
     if (_isVrMode) {
+      // In modalità VR, mostra il popup di conferma inserimento visore prima di iniziare
+      _showVrHeadsetPrompt = true;
+      _isPaused = true;
       _applyVrBrightness();
+      // Il giroscopio viene attivato solo dopo la conferma dell'utente
+    } else {
+      _stopNativeSensorStream();
     }
 
     _setupEnvironment();
   }
 
   /// Avvia lo stream di campionamento dal sensore nativo di rotazione a ~60 Hz
-  /// e inoltra gli angoli di Eulero alla scena Three.js WebXR fin da t=0s.
+  /// e inoltra gli angoli di Eulero alla scena Three.js WebXR SOLO quando la modalità VR è attiva.
   void _startNativeSensorStream() {
     _rotationSubscription?.cancel();
+    if (!_isVrMode) return;
     if (!RotationSensor.isPlatformSupported) return;
 
     try {
       RotationSensor.coordinateSystem = CoordinateSystem.device();
       RotationSensor.samplingPeriod = const Duration(milliseconds: 16);
       _rotationSubscription = RotationSensor.orientationStream.listen((data) {
-        if (_webViewController == null || _isExiting) return;
+        if (_webViewController == null || _isExiting || !_isVrMode) return;
 
         // Limita il throughput verso il bridge JavaScript a max ~60 FPS
         final now = DateTime.now().millisecondsSinceEpoch;
@@ -352,22 +380,79 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
     );
   }
 
-  /// Commuta tra modalità 360° Standard e modalità Visore VR Stereoscopica
-  void _toggleVrMode() {
-    final nextVr = !_isVrMode;
+  /// L'utente ha confermato l'inserimento dello smartphone nel visore: avvia o riprende la modalità VR
+  void _confirmVrHeadsetInsertion() {
     setState(() {
-      _isVrMode = nextVr;
+      _showVrHeadsetPrompt = false;
+      _isVrMode = true;
+      _isPaused = false;
     });
     HapticFeedback.mediumImpact();
+    _applyVrBrightness();
     _startNativeSensorStream();
-    if (nextVr) {
-      _applyVrBrightness();
-    } else {
-      _restoreBrightness();
-    }
     _webViewController?.evaluateJavascript(
-      source: 'if (window.GuidoVR && window.GuidoVR.setVRMode) window.GuidoVR.setVRMode($nextVr);',
+      source: '''
+        if (window.GuidoVR) {
+          if (window.GuidoVR.setVRMode) window.GuidoVR.setVRMode(true);
+          else if (window.GuidoVR.toggleVR) window.GuidoVR.toggleVR(true);
+          if (window.GuidoVR.recenter) window.GuidoVR.recenter();
+          if (window.GuidoVR.resume) window.GuidoVR.resume();
+          else if (window.GuidoVR.play) window.GuidoVR.play();
+          else if (window.GuidoVR.start) window.GuidoVR.start();
+        }
+      ''',
     );
+    _recenterVrView();
+  }
+
+  /// L'utente sceglie di tornare/rimanere in 2D senza visore
+  void _dismissVrHeadsetPromptTo2D() {
+    setState(() {
+      _showVrHeadsetPrompt = false;
+      _isVrMode = false;
+      _isPaused = false;
+    });
+    HapticFeedback.lightImpact();
+    _stopNativeSensorStream();
+    _restoreBrightness();
+    _webViewController?.evaluateJavascript(
+      source: '''
+        if (window.GuidoVR) {
+          if (window.GuidoVR.setVRMode) window.GuidoVR.setVRMode(false);
+          else if (window.GuidoVR.toggleVR) window.GuidoVR.toggleVR(false);
+          if (window.GuidoVR.resume) window.GuidoVR.resume();
+          else if (window.GuidoVR.play) window.GuidoVR.play();
+          else if (window.GuidoVR.start) window.GuidoVR.start();
+        }
+      ''',
+    );
+  }
+
+  /// Commuta tra modalità 360° Standard e modalità Visore VR Stereoscopica
+  void _toggleVrMode() {
+    if (_isVrMode) {
+      // Disattiva modalità VR e torna in 2D
+      setState(() {
+        _isVrMode = false;
+        _showVrHeadsetPrompt = false;
+      });
+      HapticFeedback.mediumImpact();
+      _stopNativeSensorStream();
+      _restoreBrightness();
+      _webViewController?.evaluateJavascript(
+        source: 'if (window.GuidoVR && window.GuidoVR.setVRMode) window.GuidoVR.setVRMode(false);',
+      );
+    } else {
+      // Passa a VR: mostra il popup di conferma inserimento visore mettendo in pausa l'esperienza
+      HapticFeedback.mediumImpact();
+      setState(() {
+        _showVrHeadsetPrompt = true;
+        _isPaused = true;
+      });
+      _webViewController?.evaluateJavascript(
+        source: 'if (window.GuidoVR && window.GuidoVR.pause) window.GuidoVR.pause();',
+      );
+    }
   }
 
   /// Mostra la finestra modale Japandi di conferma uscita
@@ -514,6 +599,7 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
     if (mounted && !_isSessionCompleted) {
       setState(() {
         _isSessionCompleted = true;
+        _showVrHeadsetPrompt = false;
       });
       HapticFeedback.mediumImpact();
     }
@@ -580,20 +666,24 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
           });
         }
 
-        // Mantieni sempre attivo lo stream del giroscopio fin da t=0s
-        _startNativeSensorStream();
-
-        // Se era stata richiesta la modalità VR sin dall'inizio, imposta VR SBS
-        if (_isVrMode) {
+        // Il sensore nativo si avvia SOLO se in modalità VR e il visore è stato confermato
+        if (_isVrMode && !_showVrHeadsetPrompt) {
+          _startNativeSensorStream();
           controller.evaluateJavascript(
             source: 'if (window.GuidoVR && window.GuidoVR.setVRMode) { window.GuidoVR.setVRMode(true); }',
           );
+        } else {
+          _stopNativeSensorStream();
         }
 
-        // Se autoStart abilitato, avvia la sessione
-        if (widget.autoStart) {
+        // Se autoStart abilitato e non siamo in attesa del popup VR, avvia la sessione
+        if (widget.autoStart && (!_isVrMode || !_showVrHeadsetPrompt)) {
           controller.evaluateJavascript(
             source: 'if (window.GuidoVR && window.GuidoVR.start) { window.GuidoVR.start(); }',
+          );
+        } else if (_showVrHeadsetPrompt) {
+          controller.evaluateJavascript(
+            source: 'if (window.GuidoVR && window.GuidoVR.pause) { window.GuidoVR.pause(); }',
           );
         }
       },
@@ -634,10 +724,13 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
           setState(() {
             _isVrMode = isVr;
           });
-          _startNativeSensorStream();
           if (isVr) {
+            if (!_showVrHeadsetPrompt) {
+              _startNativeSensorStream();
+            }
             _applyVrBrightness();
           } else {
+            _stopNativeSensorStream();
             _restoreBrightness();
           }
         }
@@ -716,7 +809,9 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
-          if (_isSessionCompleted) {
+          if (_showVrHeadsetPrompt) {
+            _dismissVrHeadsetPromptTo2D();
+          } else if (_isSessionCompleted) {
             _handleExitSession();
           } else {
             _handleExitAttempt();
@@ -832,6 +927,8 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                       };
 
                       window._guidoApplyNativeOrientation = function(alpha, beta, gamma, fromW3c) {
+                        var isVR = (window.GuidoVR && window.GuidoVR.getState && window.GuidoVR.getState().isVRMode) || (window.GuidoVR && window.GuidoVR.isVRMode);
+                        if (!isVR) return; // ZERO rotazione da giroscopio in 2D!
                         var g = window._guidoGyroState;
                         if (!fromW3c && window._guidoW3cGyroActive) {
                           // Se la WebView emette già eventi W3C deviceorientation nativi, evita conflitti tra due sorgenti
@@ -853,8 +950,10 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                         }
                       };
 
-                      // Listener W3C deviceorientation immediato a t=0s (senza attendere click)
+                      // Listener W3C deviceorientation: SOLO in modalità VR!
                       window.addEventListener('deviceorientation', function(e) {
+                        var isVR = (window.GuidoVR && window.GuidoVR.getState && window.GuidoVR.getState().isVRMode) || (window.GuidoVR && window.GuidoVR.isVRMode);
+                        if (!isVR) return; // ZERO movimento da giroscopio in modalità 2D!
                         if (e && e.alpha !== null && e.alpha !== undefined && (Math.abs(e.alpha) > 0.001 || Math.abs(e.beta) > 0.001 || Math.abs(e.gamma) > 0.001)) {
                           window._guidoW3cGyroActive = true;
                           window._guidoApplyNativeOrientation(e.alpha, e.beta, e.gamma, true);
@@ -873,14 +972,22 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                   onWebViewCreated: (controller) async {
                     _webViewController = controller;
                     _setupJavaScriptHandlers(controller);
-                    _startNativeSensorStream();
+                    if (_isVrMode && !_showVrHeadsetPrompt) {
+                      _startNativeSensorStream();
+                    } else {
+                      _stopNativeSensorStream();
+                    }
                     try {
                       await InAppWebViewController.clearAllCache();
                     } catch (_) {}
                   },
                   onLoadStop: (controller, url) {
                     _enforceKeepScreenOn();
-                    _startNativeSensorStream();
+                    if (_isVrMode && !_showVrHeadsetPrompt) {
+                      _startNativeSensorStream();
+                    } else {
+                      _stopNativeSensorStream();
+                    }
                     controller.evaluateJavascript(source: '''
                       (function() {
                         window.focus();
@@ -915,8 +1022,9 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                           window.audioCtx.resume();
                         }
 
-                        // Se lo stato giroscopico ha già campioni validi a t=0s, sincronizza e centra subito la camera
-                        if (window._guidoGyroState && window._guidoGyroState.active && window.GuidoVR && typeof window.GuidoVR.setDeviceOrientation === 'function') {
+                        // Se siamo in modalità VR e lo stato giroscopico ha già campioni validi a t=0s, sincronizza e centra subito la camera
+                        var isVR = (window.GuidoVR && window.GuidoVR.getState && window.GuidoVR.getState().isVRMode) || (window.GuidoVR && window.GuidoVR.isVRMode);
+                        if (isVR && window._guidoGyroState && window._guidoGyroState.active && window.GuidoVR && typeof window.GuidoVR.setDeviceOrientation === 'function') {
                           window.GuidoVR.setDeviceOrientation(
                             window._guidoGyroState.alpha,
                             window._guidoGyroState.beta,
@@ -937,8 +1045,10 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                           if ($_isVrMode && window.GuidoVR.setVRMode) {
                             window.GuidoVR.setVRMode(true);
                           }
-                          if (window.GuidoVR.start) {
+                          if (!$_showVrHeadsetPrompt && window.GuidoVR.start) {
                             window.GuidoVR.start();
+                          } else if ($_showVrHeadsetPrompt && window.GuidoVR.pause) {
+                            window.GuidoVR.pause();
                           }
                         }
 
@@ -1010,6 +1120,7 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                       ),
                       const SizedBox(width: 10),
                       _buildHudIconButton(
+                        key: const Key('btn_hud_vr_mode'),
                         icon: Icons.view_in_ar_rounded,
                         tooltip: 'Modalità VR',
                         activeColor: AppColors.goldAccent,
@@ -1089,6 +1200,10 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
             // 5. VR Mode: Barra Touch di Fallback per Sessione Completata (se rimosso visore)
             if (_isSessionCompleted && _isVrMode)
               _buildVrCompletionFallbackBar(),
+
+            // 6. Popup Nativo Japandi di Conferma Inserimento Telefono nel Visore VR
+            if (_showVrHeadsetPrompt && !_isSessionCompleted)
+              _buildVrHeadsetPromptOverlay(),
           ],
         ),
       ),
@@ -1097,6 +1212,7 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
 
   /// Helper per costruire un pulsante HUD discreto e semi-trasparente
   Widget _buildHudIconButton({
+    Key? key,
     required IconData icon,
     required String tooltip,
     required VoidCallback onPressed,
@@ -1108,6 +1224,7 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
         : Colors.white.withValues(alpha: 0.85);
 
     return Material(
+      key: key,
       color: Colors.transparent,
       child: Tooltip(
         message: tooltip,
@@ -1373,6 +1490,162 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Costruisce il popup modale nativo Flutter in stile Japandi per la conferma dell'inserimento
+  /// dello smartphone all'interno del visore VR, prima dell'avvio stereoscopico.
+  Widget _buildVrHeadsetPromptOverlay() {
+    final settings = ref.watch(settingsProvider);
+    final isIt = settings.language == 0;
+    final isDark = settings.isDarkTheme;
+
+    return Positioned.fill(
+      key: const Key('vr_headset_prompt_overlay'),
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.82),
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Container(
+              key: const Key('vr_headset_prompt_dialog'),
+              constraints: const BoxConstraints(maxWidth: 440),
+              padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 22),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF14171E) : const Color(0xFFFBF8F3),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: AppColors.goldAccent.withValues(alpha: 0.45),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.goldAccent.withValues(alpha: 0.15),
+                    blurRadius: 32,
+                    spreadRadius: 1,
+                  ),
+                  const BoxShadow(
+                    color: Colors.black54,
+                    blurRadius: 24,
+                    offset: Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Icona visore VR Japandi con bagliore dorato
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.goldAccent.withValues(alpha: 0.12),
+                      border: Border.all(
+                        color: AppColors.goldAccent.withValues(alpha: 0.45),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.view_in_ar_rounded,
+                      size: 28,
+                      color: AppColors.goldAccent,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // Titolo principale conforme alla specifica
+                  Text(
+                    isIt
+                        ? 'Inserisci il telefono nel visore'
+                        : 'Insert phone into VR headset',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 21,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? AppColors.darkText : AppColors.lightText,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Messaggio di istruzioni conforme alla specifica
+                  Text(
+                    isIt
+                        ? 'Posiziona lo smartphone all\'interno del visore VR, regola le lenti e assicurati che sia ben saldo prima di iniziare l\'esperienza.'
+                        : 'Place your smartphone inside the VR headset, adjust the lenses, and make sure it is secure before starting the experience.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      height: 1.48,
+                      fontWeight: FontWeight.w400,
+                      color: isDark ? AppColors.darkTextSub : AppColors.lightTextSub,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  // Pulsanti d'azione: Torna in 2D e Sono pronto • Inizia VR
+                  Row(
+                    children: [
+                      // Pulsante secondario: Torna in 2D
+                      Expanded(
+                        child: OutlinedButton(
+                          key: const Key('btn_vr_prompt_back_2d'),
+                          onPressed: _dismissVrHeadsetPromptTo2D,
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                              color: isDark ? Colors.white24 : Colors.black26,
+                              width: 1.2,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            isIt ? 'Torna in 2D' : 'Back to 2D',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white70 : Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Pulsante primario: Sono pronto • Inizia VR
+                      Expanded(
+                        child: ElevatedButton(
+                          key: const Key('btn_vr_prompt_start_vr'),
+                          onPressed: _confirmVrHeadsetInsertion,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.goldAccent,
+                            foregroundColor: const Color(0xFF0F172A),
+                            elevation: 3,
+                            shadowColor: AppColors.goldAccent.withValues(alpha: 0.4),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            isIt ? 'Sono pronto • Inizia VR' : 'I\'m ready • Start VR',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

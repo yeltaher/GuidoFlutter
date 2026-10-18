@@ -602,6 +602,7 @@
       setMuted: function(mute) { setAudioMuted(mute); },
       recenter: function() { recenterView(); },
       setDeviceOrientation: function(alpha, beta, gamma) {
+        if (!state.isVRMode) return;
         deviceOrientationEnabled = true;
         orientationAlpha = Number(alpha) || 0;
         orientationBeta = Number(beta) || 0;
@@ -2385,6 +2386,7 @@
     // Mobile Gyroscope / DeviceOrientationEvent
     function enableDeviceOrientationListener() {
       window.addEventListener('deviceorientation', (e) => {
+        if (!state.isVRMode) return;
         if (e && e.alpha !== null && e.alpha !== undefined) {
           deviceOrientationEnabled = true;
           orientationAlpha = e.alpha;
@@ -2412,7 +2414,7 @@
     function updateCameraRotation(deltaSec) {
       cameraYaw += (targetYaw - cameraYaw) * 0.12;
       cameraPitch += (targetPitch - cameraPitch) * 0.12;
-      if (deviceOrientationEnabled) {
+      if (deviceOrientationEnabled && state.isVRMode) {
         const alphaRad = THREE.MathUtils.degToRad(orientationAlpha + vrAlphaOffset) + (state.isVRMode ? 0 : cameraYaw);
         const betaRad = THREE.MathUtils.degToRad(orientationBeta);
         const gammaRad = THREE.MathUtils.degToRad(orientationGamma);
@@ -2708,6 +2710,7 @@
           showVRCompletionPopup();
         }
       } else {
+        deviceOrientationEnabled = false;
         camera.fov = 60;
         document.body.classList.remove('vr-active');
         overlay.classList.remove('active');

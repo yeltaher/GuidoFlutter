@@ -1777,6 +1777,195 @@ void main() {
         expect(find.byType(WolfCartoonWidget), findsOneWidget);
       }
     });
+
+    test('All 8 WebXR templates suppress gyroscope camera rotation when isVRMode is false', () {
+      final templates = [
+        'meditazione_mattino_acqua',
+        'meditazione_pomeriggio_acqua',
+        'meditazione_sera_acqua',
+        'meditazione_generale_acqua',
+        'respirazione_acqua',
+        'respirazione_aria',
+        'respirazione_fuoco',
+        'respirazione_terra',
+      ];
+
+      for (final tmpl in templates) {
+        final filePath = 'assets/vr_experiences/$tmpl/index.html';
+        final content = File(filePath).readAsStringSync();
+
+        // 1. setDeviceOrientation deve verificare che state.isVRMode sia true
+        expect(
+          content.contains('setDeviceOrientation') &&
+              (content.contains('if (!state.isVRMode) return;') ||
+                  content.contains('if (!state.isVRMode) return;')),
+          isTrue,
+          reason: '$filePath must guard setDeviceOrientation with state.isVRMode check',
+        );
+
+        // 2. updateCameraRotation deve applicare la rotazione giroscopica solo se state.isVRMode è true
+        expect(
+          content.contains('updateCameraRotation') &&
+              (content.contains('state.isVRMode') || content.contains('&& state.isVRMode')),
+          isTrue,
+          reason: '$filePath must guard updateCameraRotation with state.isVRMode',
+        );
+      }
+    });
+
+    testWidgets('VrExperienceScreen displays Japandi VR headset insertion prompt when launched in VR mode', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPrefsInstanceProvider.overrideWith((ref) => prefs),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: VrExperienceScreen(
+              experienceId: 'respirazione_fuoco',
+              isVrMode: true,
+              autoStart: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // Il popup Japandi per l'inserimento del visore VR deve essere visibile
+      expect(find.byKey(const Key('vr_headset_prompt_overlay')), findsOneWidget);
+      expect(find.byKey(const Key('vr_headset_prompt_dialog')), findsOneWidget);
+      expect(find.byKey(const Key('btn_vr_prompt_back_2d')), findsOneWidget);
+      expect(find.byKey(const Key('btn_vr_prompt_start_vr')), findsOneWidget);
+      expect(find.text('Inserisci il telefono nel visore'), findsOneWidget);
+
+      final state = tester.state<VrExperienceScreenState>(find.byType(VrExperienceScreen));
+      expect(state.isVrHeadsetPromptVisibleForTesting, isTrue);
+    });
+
+    testWidgets('VrExperienceScreen dismissing VR headset prompt switches to 2D mode and hides dialog', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPrefsInstanceProvider.overrideWith((ref) => prefs),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: VrExperienceScreen(
+              experienceId: 'respirazione_acqua',
+              isVrMode: true,
+              autoStart: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const Key('vr_headset_prompt_overlay')), findsOneWidget);
+
+      // Tap su Torna in 2D
+      await tester.tap(find.byKey(const Key('btn_vr_prompt_back_2d')));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // Il dialog scompare e l'esperienza passa in modalità 2D
+      expect(find.byKey(const Key('vr_headset_prompt_overlay')), findsNothing);
+      final state = tester.state<VrExperienceScreenState>(find.byType(VrExperienceScreen));
+      expect(state.isVrHeadsetPromptVisibleForTesting, isFalse);
+    });
+
+    testWidgets('VrExperienceScreen confirming VR headset prompt keeps VR mode and dismisses dialog', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPrefsInstanceProvider.overrideWith((ref) => prefs),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: VrExperienceScreen(
+              experienceId: 'respirazione_terra',
+              isVrMode: true,
+              autoStart: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const Key('vr_headset_prompt_overlay')), findsOneWidget);
+
+      // Tap su "Sono pronto • Inizia VR"
+      await tester.tap(find.byKey(const Key('btn_vr_prompt_start_vr')));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // Il popup scompare e si resta in VR
+      expect(find.byKey(const Key('vr_headset_prompt_overlay')), findsNothing);
+      final state = tester.state<VrExperienceScreenState>(find.byType(VrExperienceScreen));
+      expect(state.isVrHeadsetPromptVisibleForTesting, isFalse);
+    });
+
+    testWidgets('VrExperienceScreen launching in 2D does NOT display VR headset prompt, pressing VR button displays prompt', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPrefsInstanceProvider.overrideWith((ref) => prefs),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: VrExperienceScreen(
+              experienceId: 'meditazione_mattino_acqua',
+              isVrMode: false,
+              autoStart: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // In modalità 2D all'avvio, nessun popup di inserimento visore
+      expect(find.byKey(const Key('vr_headset_prompt_overlay')), findsNothing);
+
+      // Simula il completamento del caricamento della WebView
+      final state = tester.state<VrExperienceScreenState>(find.byType(VrExperienceScreen));
+      state.simulateWebReadyForTesting();
+      await tester.pump(const Duration(milliseconds: 700));
+
+      // Tap sul pulsante VR nell'HUD
+      expect(find.byKey(const Key('btn_hud_vr_mode')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('btn_hud_vr_mode')));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // Ora il popup Japandi di conferma inserimento visore compare
+      expect(find.byKey(const Key('vr_headset_prompt_overlay')), findsOneWidget);
+      expect(find.byKey(const Key('btn_vr_prompt_start_vr')), findsOneWidget);
+      expect(state.isVrHeadsetPromptVisibleForTesting, isTrue);
+    });
   });
 }
 
