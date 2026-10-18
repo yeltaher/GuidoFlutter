@@ -115,6 +115,13 @@ void main() {
       expect(content.contains('UnityFramework.framework in Frameworks'), isFalse);
       expect(content.contains('UnityFramework.framework'), isFalse);
     });
+
+    test('ios/Runner/Runner-Bridging-Header.h does not reference UnityFramework', () {
+      final headerFile = File('ios/Runner/Runner-Bridging-Header.h');
+      expect(headerFile.existsSync(), isTrue);
+      final content = headerFile.readAsStringSync();
+      expect(content.contains('UnityFramework'), isFalse);
+    });
   });
 
   Future<void> holdCustomButton(WidgetTester tester, Finder finder) async {

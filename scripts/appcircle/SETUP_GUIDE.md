@@ -171,7 +171,23 @@ This will automatically increment the build number with each build.
   | `$AC_FLUTTER_BUILD_MODE` | `release` |
   | `$AC_FLUTTER_BUILD_EXTRA_ARGS` | `--no-codesign --build-number=$AC_BUILD_NUMBER` |
 
-#### Step 8: Xcodebuild for Devices (Archive & Export)
+#### Step 8: Create & Export IPA (Two Options)
+
+> [!TIP]
+> **Zero-Config Automatic Sideload IPA**: In Guido's `ios/Runner.xcodeproj/project.pbxproj`, the `Thin Binary` build phase automatically detects `$AC_OUTPUT_DIR` and packages `Guido_iOS_Sideload.ipa` & `Guido_Release_AOT.ipa` directly into `$AC_OUTPUT_DIR` as soon as `Flutter Build for iOS` finishes. This means Step 8 is optional if you only need the sideload IPA!
+
+##### Option A: Custom Script for Versioned Sideload IPA (`Guido_v0.1.0_b$AC_BUILD_NUMBER.ipa`)
+- Add **"Custom Script"** from Workflow Marketplace right after Flutter Build for iOS
+- Set **"Execute With"** to `Bash`
+- Script content:
+  ```bash
+  #!/bin/bash
+  set -euo pipefail
+  bash scripts/appcircle/package_sideload_ipa.sh
+  ```
+- This packages `build/ios/iphoneos/Runner.app` directly into `$AC_OUTPUT_DIR/Guido_v0.1.0_b$AC_BUILD_NUMBER.ipa` so that **Export Build Artifacts** uploads it with the dynamic build number.
+
+##### Option B: Xcodebuild for Devices (Archive & Export) (When Apple Developer Certificates are uploaded)
 - Add **"Xcodebuild for Devices (Archive & Export)"** from Workflow Marketplace
 - Configure:
   | Variable | Value |

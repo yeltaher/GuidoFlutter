@@ -41,5 +41,42 @@ void main() {
       expect(podfile.contains('UnityLibrary'), isFalse);
       expect(podfile.contains('flutter_unity_widget_2'), isFalse);
     });
+
+    test('Runner-Bridging-Header.h does not import UnityFramework', () {
+      final bridgingHeader = File('ios/Runner/Runner-Bridging-Header.h').readAsStringSync();
+      expect(bridgingHeader.contains('UnityFramework'), isFalse);
+      expect(bridgingHeader.contains('GeneratedPluginRegistrant.h'), isTrue);
+    });
+
+    test('Podfile enforces Release AOT engine mapping and cache synchronization for CI builds', () {
+      final podfile = File('ios/Podfile').readAsStringSync();
+      expect(podfile.contains("'Debug' => is_ci_build ? :release : :debug"), isTrue);
+      expect(podfile.contains('flutter precache --ios'), isTrue);
+      expect(podfile.contains('ios-release'), isTrue);
+      expect(podfile.contains('gsub(\'/artifacts/engine/ios/\', \'/artifacts/engine/ios-release/\')'), isTrue);
+    });
+
+    test('project.pbxproj exports FLUTTER_BUILD_MODE=release on CI in build and thin phases', () {
+      final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
+      expect(pbx.contains('export FLUTTER_BUILD_MODE=release'), isTrue);
+    });
+
+    test('project.pbxproj automatically packages Sideload IPA into AC_OUTPUT_DIR in Thin Binary phase', () {
+      final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
+      expect(pbx.contains('Guido_iOS_Sideload.ipa'), isTrue);
+      expect(pbx.contains('Guido_Release_AOT.ipa'), isTrue);
+      expect(pbx.contains('TARGET_BUILD_DIR'), isTrue);
+      expect(pbx.contains('WRAPPER_NAME'), isTrue);
+    });
+
+    test('package_sideload_ipa.sh exists and supports multi-directory Runner.app discovery', () {
+      final script = File('scripts/appcircle/package_sideload_ipa.sh');
+      expect(script.existsSync(), isTrue);
+      final content = script.readAsStringSync();
+      expect(content.contains('build/ios/iphoneos/Runner.app'), isTrue);
+      expect(content.contains('build/ios/Debug-iphoneos/Runner.app'), isTrue);
+      expect(content.contains('Payload'), isTrue);
+    });
   });
 }
+

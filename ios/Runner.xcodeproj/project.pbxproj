@@ -243,7 +243,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
+			shellScript = "if [ \"$CI\" = \"true\" ] || [ \"$AC_APPCIRCLE\" = \"true\" ] || [ -n \"$APPCIRCLE\" ]; then\n  export FLUTTER_BUILD_MODE=release\nfi\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\nif [ -n \"$AC_OUTPUT_DIR\" ] && [ -d \"$TARGET_BUILD_DIR/$WRAPPER_NAME\" ]; then\n  mkdir -p \"$AC_OUTPUT_DIR/Payload\"\n  cp -R \"$TARGET_BUILD_DIR/$WRAPPER_NAME\" \"$AC_OUTPUT_DIR/Payload/\"\n  (cd \"$AC_OUTPUT_DIR\" && zip -r -q \"Guido_iOS_Sideload.ipa\" Payload && rm -rf Payload)\n  cp -f \"$AC_OUTPUT_DIR/Guido_iOS_Sideload.ipa\" \"$AC_OUTPUT_DIR/Guido_Release_AOT.ipa\" 2>/dev/null || true\nfi\n";
 		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -258,7 +258,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+			shellScript = "if [ \"$CI\" = \"true\" ] || [ \"$AC_APPCIRCLE\" = \"true\" ] || [ -n \"$APPCIRCLE\" ]; then\n  export FLUTTER_BUILD_MODE=release\nfi\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

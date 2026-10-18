@@ -4,8 +4,12 @@ platform :ios, '15.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
+# On CI (Appcircle, etc.), map Debug to :release so CocoaPods links against the Release AOT Flutter engine,
+# preventing JIT crash on iOS 14+ devices without a debugger attached.
+is_ci_build = ENV['CI'] == 'true' || ENV['AC_APPCIRCLE'] == 'true' || !ENV['APPCIRCLE'].nil?
+
 project 'Runner', {
-  'Debug' => :debug,
+  'Debug' => is_ci_build ? :release : :debug,
   'Profile' => :release,
   'Release' => :release,
 }
@@ -42,6 +46,21 @@ pre_install do |installer|
   puts '[Podfile] Ensuring Git LFS binary assets are pulled...'
   system('git lfs pull')
 
+  if is_ci_build
+    puts '[Podfile] CI detected: Ensuring iOS Release engine artifacts are precached...'
+    system('flutter precache --ios')
+
+    # Bulletproof CI safeguard: synchronize Release AOT engine into engine/ios cache
+    # so any tool, script or compiler referencing engine/ios receives the 100% Release AOT framework.
+    engine_cache_dir = File.expand_path(File.join(flutter_root, 'bin', 'cache', 'artifacts', 'engine'))
+    ios_debug_framework = File.join(engine_cache_dir, 'ios', 'Flutter.xcframework')
+    ios_release_framework = File.join(engine_cache_dir, 'ios-release', 'Flutter.xcframework')
+
+    if Dir.exist?(ios_release_framework) && Dir.exist?(ios_debug_framework)
+      puts '[Podfile] CI detected: Synchronizing Release AOT Flutter engine into engine/ios cache...'
+      system("rm -rf '#{ios_debug_framework}' && cp -R '#{ios_release_framework}' '#{ios_debug_framework}'")
+    end
+  end
 end
 
 post_install do |installer|
@@ -57,6 +76,15 @@ post_install do |installer|
 
       # Force code signing on all CocoaPods targets to avoid AMFI codesigning rejection on physical device
       config.build_settings['CODE_SIGNING_ALLOWED'] = 'YES'
+
+      if is_ci_build
+        # Enforce Release engine search paths for all configurations on CI
+        ['FRAMEWORK_SEARCH_PATHS', 'FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]', 'FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]'].each do |key|
+          if config.build_settings[key]
+            config.build_settings[key] = config.build_settings[key].gsub('/artifacts/engine/ios/', '/artifacts/engine/ios-release/')
+          end
+        end
+      end
     end
   end
 
@@ -71,6 +99,14 @@ post_install do |installer|
       if target.respond_to?(:xcconfigs)
         target.xcconfigs.each do |config_name, config_file|
           config_file.attributes['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+
+          if is_ci_build
+            ['FRAMEWORK_SEARCH_PATHS', 'FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]', 'FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]'].each do |key|
+              if config_file.attributes[key]
+                config_file.attributes[key] = config_file.attributes[key].gsub('/artifacts/engine/ios/', '/artifacts/engine/ios-release/')
+              end
+            end
+          end
         end
       end
     end
