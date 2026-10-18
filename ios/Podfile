@@ -111,4 +111,24 @@ post_install do |installer|
       end
     end
   end
+
+  # Ensure Thin Binary runs AFTER [CP] Embed Pods Frameworks in Runner.xcodeproj
+  # This guarantees all dynamic Pod frameworks are copied into Runner.app before Thin Binary packages the IPA.
+  if installer.respond_to?(:aggregate_targets)
+    installer.aggregate_targets.each do |target|
+      if target.respond_to?(:user_targets)
+        target.user_targets.each do |user_target|
+          if user_target.name == 'Runner'
+            thin_phase = user_target.build_phases.find { |bp| bp.respond_to?(:name) && bp.name == 'Thin Binary' }
+            if thin_phase
+              user_target.build_phases.delete(thin_phase)
+              user_target.build_phases << thin_phase
+              puts "[Podfile] Reordered build phases: 'Thin Binary' placed at the end (after [CP] Embed Pods Frameworks)"
+              target.user_project.save if target.respond_to?(:user_project)
+            end
+          end
+        end
+      end
+    end
+  end
 end

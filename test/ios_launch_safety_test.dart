@@ -77,6 +77,39 @@ void main() {
       expect(content.contains('build/ios/Debug-iphoneos/Runner.app'), isTrue);
       expect(content.contains('Payload'), isTrue);
     });
+
+    test('pubspec.yaml does not contain vr_player and unused vr_player wrappers are removed', () {
+      final pubspec = File('pubspec.yaml').readAsStringSync();
+      expect(pubspec.contains('vr_player'), isFalse);
+      expect(File('lib/core/vr/vr_360_video_widget.dart').existsSync(), isFalse);
+    });
+
+    test('project.pbxproj executes Pods-Runner-frameworks.sh and equips otool -L self-healing framework loop', () {
+      final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
+      expect(pbx.contains('Pods-Runner-frameworks.sh'), isTrue);
+      expect(pbx.contains('Pods-Runner-resources.sh'), isTrue);
+      expect(pbx.contains('otool -L'), isTrue);
+      expect(pbx.contains('Self-healed and copied'), isTrue);
+      expect(pbx.contains('PODS_CONFIGURATION_BUILD_DIR'), isTrue);
+    });
+
+    test('Podfile reorders build phases so Thin Binary runs after [CP] Embed Pods Frameworks', () {
+      final podfile = File('ios/Podfile').readAsStringSync();
+      expect(podfile.contains('[CP] Embed Pods Frameworks'), isTrue);
+      expect(podfile.contains('Thin Binary'), isTrue);
+      expect(podfile.contains('user_target.build_phases.delete(thin_phase)'), isTrue);
+    });
+
+    test('package_sideload_ipa.sh validates Mach-O dynamic framework integrity and implements self-healing', () {
+      final script = File('scripts/appcircle/package_sideload_ipa.sh');
+      expect(script.existsSync(), isTrue);
+      final content = script.readAsStringSync();
+      expect(content.contains('otool -L'), isTrue);
+      expect(content.contains('Frameworks'), isTrue);
+      expect(content.contains('Guido_Release_AOT.ipa'), isTrue);
+      expect(content.contains('Self-healed: copied'), isTrue);
+      expect(content.contains('PODS_CONFIGURATION_BUILD_DIR'), isTrue);
+    });
   });
 }
 
