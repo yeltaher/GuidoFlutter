@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// Verifies that Runner.app is a pure Flutter + WebKit application,
 /// completely decoupled from UnityFramework, dyld load crashes,
 /// enforces Release AOT compilation, preserves cryptographic integrity of Flutter.framework,
-/// centralizes IPA packaging, and unifies plugins via CocoaPods.
+/// centralizes IPA packaging, and unifies plugins via CocoaPods static linkage.
 void main() {
   group('iOS launch safety', () {
     test('AppDelegate registers plugins and does not call UnityIntegration at boot', () {
@@ -58,6 +58,15 @@ void main() {
       final podfile = File('ios/Podfile').readAsStringSync();
       expect(podfile.contains('flutter precache --ios'), isTrue);
       expect(podfile.contains("rm -rf '#{ios_debug_framework}'"), isFalse);
+    });
+
+    test('Podfile configures static framework linkage for CocoaPods to prevent AMFI dynamic library validation crash', () {
+      final podfile = File('ios/Podfile').readAsStringSync();
+      expect(podfile.contains('use_frameworks! :linkage => :static'), isTrue);
+      expect(podfile.contains('use_modular_headers!'), isTrue);
+      expect(podfile.contains("config.build_settings['DEFINES_MODULE'] = 'YES'"), isTrue);
+      expect(podfile.contains("target.name.include?('isar')"), isTrue);
+      expect(podfile.contains("target.name.include?('flutter_inappwebview')"), isTrue);
     });
 
     test('project.pbxproj Thin Binary executes only xcode_backend.sh embed_and_thin (no IPA in build phase)', () {

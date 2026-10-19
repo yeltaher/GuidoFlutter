@@ -5,10 +5,15 @@ set -euo pipefail
 # Package Sideload-ready IPA for Guido App (Pure Flutter 3D / WebXR)
 # ============================================================================
 # This script centralizes packaging of the compiled Runner.app (built in Release AOT)
-# into a standard iOS IPA archive (.ipa). It verifies recursive transitive Mach-O
-# dependencies (@rpath) with otool -L, strips simulator slices with lipo, applies
-# proper inside-out ad-hoc codesigning with valid _CodeSignature/CodeResources,
-# and outputs the final IPA to $AC_OUTPUT_DIR.
+# into a standard iOS IPA archive (.ipa) under CocoaPods static linkage architecture.
+# With static linkage (use_frameworks! :linkage => :static), all CocoaPods plugins
+# are merged directly into the Runner executable, eliminating separate dynamic
+# frameworks and preventing AMFI library validation crashes on physical devices.
+# Frameworks/ contains only Flutter.framework, App.framework, and any native assets,
+# without requiring or copying the 18 CocoaPods plugins now statically linked into Runner.
+# It verifies recursive transitive Mach-O dependencies (@rpath) with otool -L,
+# strips simulator slices with lipo, applies proper inside-out ad-hoc codesigning
+# with valid _CodeSignature/CodeResources, and outputs the final IPA to $AC_OUTPUT_DIR.
 #
 # Suitable for sideloading with Sideloadly, AltStore, Apple Configurator,
 # or enterprise/ad-hoc distribution without requiring App Store signing.
@@ -56,8 +61,11 @@ cp -R "$APP_PATH" "$PAYLOAD_DIR/"
 APP_DIR="$PAYLOAD_DIR/Runner.app"
 
 # ============================================================================
-# Recursive Dynamic Framework and Mach-O Linkage Integrity Check
+# Static Linkage & Mach-O Dynamic Linkage Integrity Check
 # ============================================================================
+# Under CocoaPods static linkage (use_frameworks! :linkage => :static), plugin
+# binaries are fused directly into the Runner executable. Frameworks/ contains
+# only Flutter.framework, App.framework, and any native precompiled dynamic frameworks.
 echo "=== Frameworks inside $APP_DIR/Frameworks ==="
 mkdir -p "$APP_DIR/Frameworks"
 ls -la "$APP_DIR/Frameworks" 2>/dev/null || true
@@ -126,9 +134,11 @@ if command -v otool >/dev/null 2>&1; then
     fi
   done
 
-  # Verify critical dependencies: OrderedSet, isar, objective_c if referenced
+  # Under static linkage, only core dynamic frameworks (Flutter.framework, App.framework)
+  # or explicitly referenced dynamic libraries are loaded via @rpath.
+  # The 18 CocoaPods plugins are fused into Runner and do not appear as separate dynamic frameworks.
   MISSING_COUNT=0
-  for binary in "$APP_DIR/Runner" "$APP_DIR/Frameworks"/*/*.framework; do
+  for binary in "${BINARIES[@]}"; do
     if [ -f "$binary" ]; then
       for dylib in $(otool -L "$binary" 2>/dev/null | grep '@rpath' | awk '{print $1}'); do
         fw_name=$(echo "$dylib" | grep -o '[^/]*\.framework' || true)
@@ -245,7 +255,7 @@ cp -f "$IPA_DEST" "$OUTPUT_DIR/Guido_iOS_Sideload.ipa" 2>/dev/null || true
 rm -rf "$PAYLOAD_DIR"
 
 echo "=========================================="
-echo "IPA Created Successfully with all Pods Frameworks and Cryptographic Signatures Verified!"
+echo "IPA Created Successfully with Static Pods Linkage and Cryptographic Signatures Verified!"
 echo "Destination: $IPA_DEST"
 echo "Size: $(du -sh "$IPA_DEST" | cut -f1)"
 echo "=========================================="

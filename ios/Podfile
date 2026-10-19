@@ -32,7 +32,7 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
+  use_frameworks! :linkage => :static
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
@@ -68,6 +68,27 @@ post_install do |installer|
 
       # Force code signing on all CocoaPods targets to avoid AMFI codesigning rejection on physical device
       config.build_settings['CODE_SIGNING_ALLOWED'] = 'YES'
+
+      # Static linkage & modular headers compatibility
+      config.build_settings['DEFINES_MODULE'] = 'YES'
+
+      # Specific pod build settings for static linkage compatibility
+      if target.name.include?('isar')
+        # Preserve symbols for dynamic Dart FFI dlsym lookup in Release mode
+        config.build_settings['STRIP_STYLE'] = 'non-global'
+        config.build_settings['DEAD_CODE_STRIPPING'] = 'NO'
+      end
+
+      if target.name.include?('flutter_inappwebview')
+        # Ensure modular Swift headers and C++ interoperability
+        config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+        config.build_settings['SWIFT_VERSION'] = '5.0'
+      end
+
+      # Resource bundles should not have code signing enforced
+      if target.respond_to?(:product_type) && target.product_type == 'com.apple.product-type.bundle'
+        config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+      end
 
       if is_ci_build
         # Enforce Release engine search paths for all configurations on CI
