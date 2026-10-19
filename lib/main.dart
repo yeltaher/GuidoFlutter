@@ -108,42 +108,56 @@ void main() async {
     );
   };
 
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
-
   SharedPreferences? prefs;
-  try {
-    prefs = await SharedPreferences.getInstance();
-  } catch (e) {
-    debugPrint('[Main] Prefs init error: $e');
-  }
-
   Isar? isar;
-  try {
-    final dir = await getApplicationDocumentsDirectory();
-    isar = Isar.getInstance() ??
-        await Isar.open(
-          [
-            UserStatsModelSchema,
-            TimelineRecordModelSchema,
-          ],
-          directory: dir.path,
-          inspector: kDebugMode,
-        );
-  } catch (e) {
-    debugPrint('[Main] Isar init error: $e');
-    isar = Isar.getInstance();
-  }
 
-  // Pre-warming e auto-seeding atomico (id = 1)
-  if (isar != null && prefs != null) {
+  // Bootstrap protetto pre-runApp: gestione resiliente delle dipendenze asincrone
+  // per garantire che runApp() venga SEMPRE eseguito anche in caso di anomalie
+  // di persistenza, orientamento o file system.
+  try {
     try {
-      final userRepo = UserRepository(isar, prefs);
-      await userRepo.ensureSeeded();
-    } catch (e) {
-      debugPrint('[Main] Seeding error: $e');
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
+    } catch (e, st) {
+      debugPrint('[Main] Orientation setup error: $e\n$st');
     }
+
+    try {
+      prefs = await SharedPreferences.getInstance();
+    } catch (e, st) {
+      debugPrint('[Main] Prefs init error: $e\n$st');
+    }
+
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      isar = Isar.getInstance() ??
+          await Isar.open(
+            [
+              UserStatsModelSchema,
+              TimelineRecordModelSchema,
+            ],
+            directory: dir.path,
+            inspector: false,
+          );
+    } catch (e, st) {
+      debugPrint('[Main] Isar init error: $e\n$st');
+      try {
+        isar = Isar.getInstance();
+      } catch (_) {}
+    }
+
+    // Pre-warming e auto-seeding atomico (id = 1)
+    if (isar != null && prefs != null) {
+      try {
+        final userRepo = UserRepository(isar, prefs);
+        await userRepo.ensureSeeded();
+      } catch (e, st) {
+        debugPrint('[Main] Seeding error: $e\n$st');
+      }
+    }
+  } catch (criticalBootError, stackTrace) {
+    debugPrint('[Main] Errore critico durante il bootstrap pre-runApp: $criticalBootError\n$stackTrace');
   }
 
   runApp(

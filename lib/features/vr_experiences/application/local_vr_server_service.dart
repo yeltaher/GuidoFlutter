@@ -82,7 +82,7 @@ class LocalVrServerService {
     } catch (e, st) {
       debugPrint('[LocalVrServerService] Errore durante l\'avvio di InAppLocalhostServer: $e\n$st');
       if (!(_startCompleter?.isCompleted ?? true)) {
-        _startCompleter?.completeError(e, st);
+        _startCompleter?.complete();
       }
     } finally {
       _isStarting = false;

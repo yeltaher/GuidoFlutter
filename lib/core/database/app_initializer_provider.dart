@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'models/user_stats_model.dart';
-import '../../features/vr_experiences/application/local_vr_server_service.dart';
 
 /// Provider di stato per l'istanza di SharedPreferences
 final sharedPrefsInstanceProvider = StateProvider<SharedPreferences?>((ref) => null);
@@ -33,7 +32,7 @@ final appInitializerProvider = FutureProvider<void>((ref) async {
               TimelineRecordModelSchema,
             ],
             directory: dir.path,
-            inspector: kDebugMode,
+            inspector: false,
           );
       ref.read(isarInstanceProvider.notifier).state = isar;
     } catch (e, st) {
@@ -61,11 +60,7 @@ final appInitializerProvider = FutureProvider<void>((ref) async {
     debugPrint('[AppInitializer] Errore auto-seeding: $e');
   }
 
-  // Pre-warming non bloccante di InAppLocalhostServer per caricamento istantaneo
-  try {
-    ref.read(localVrServerServiceProvider).startServer();
-  } catch (e) {
-    debugPrint('[AppInitializer] Errore pre-warming LocalVrServerService: $e');
-  }
+  // Avvio di LocalVrServerService delegato on-demand all'ingresso nelle esperienze VR (VrExperienceScreen)
+  // per eliminare contese di porte socket e blocchi durante la splash screen o il boot iniziale.
 });
 

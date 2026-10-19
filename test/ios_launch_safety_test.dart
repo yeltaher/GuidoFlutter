@@ -4,11 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Regression guards for iOS launch safety:
 /// Verifies that Runner.app is a pure Flutter + WebKit application,
-/// completely decoupled from UnityFramework, dyld load crashes, and early static initializers.
+/// completely decoupled from UnityFramework, dyld load crashes,
+/// enforces Release AOT compilation, preserves cryptographic integrity of Flutter.framework,
+/// centralizes IPA packaging, and unifies plugins via CocoaPods.
 void main() {
   group('iOS launch safety', () {
-    test('AppDelegate does not start Unity or call InitUnityIntegrationWithOptions at boot', () {
+    test('AppDelegate registers plugins and does not call UnityIntegration at boot', () {
       final src = File('ios/Runner/AppDelegate.swift').readAsStringSync();
+      expect(src.contains('GeneratedPluginRegistrant.register(with: self)'), isTrue);
       expect(src.contains('runEmbedded'), isFalse);
       expect(src.contains('UnityFramework.getInstance'), isFalse);
       expect(src.contains('InitUnityIntegrationWithOptions'), isFalse);
@@ -30,10 +33,13 @@ void main() {
       expect(workspace.contains('Runner.xcodeproj'), isTrue);
     });
 
-    test('Runner.xcscheme builds only Runner without UnityFramework dependencies', () {
+    test('Runner.xcscheme configures Release LaunchAction and PreAction for Release AOT', () {
       final scheme = File('ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme').readAsStringSync();
       expect(scheme.contains('BlueprintName = "UnityFramework"'), isFalse);
       expect(scheme.contains('BlueprintName = "Runner"'), isTrue);
+      expect(scheme.contains('Enforce Flutter Release AOT'), isTrue);
+      expect(scheme.contains('export FLUTTER_BUILD_MODE=release'), isTrue);
+      expect(scheme.contains('buildConfiguration = "Release"'), isTrue);
     });
 
     test('Podfile does not contain Unity search paths or LFS assertion', () {
@@ -48,25 +54,25 @@ void main() {
       expect(bridgingHeader.contains('GeneratedPluginRegistrant.h'), isTrue);
     });
 
-    test('Podfile enforces Release AOT engine mapping and cache synchronization for CI builds', () {
+    test('Podfile precaches iOS engine on CI without overriding engine cache directory', () {
       final podfile = File('ios/Podfile').readAsStringSync();
-      expect(podfile.contains("'Debug' => is_ci_build ? :release : :debug"), isTrue);
       expect(podfile.contains('flutter precache --ios'), isTrue);
-      expect(podfile.contains('ios-release'), isTrue);
-      expect(podfile.contains('gsub(\'/artifacts/engine/ios/\', \'/artifacts/engine/ios-release/\')'), isTrue);
+      expect(podfile.contains("rm -rf '#{ios_debug_framework}'"), isFalse);
     });
 
-    test('project.pbxproj exports FLUTTER_BUILD_MODE=release on CI in build and thin phases', () {
+    test('project.pbxproj Thin Binary executes only xcode_backend.sh embed_and_thin (no IPA in build phase)', () {
       final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
-      expect(pbx.contains('export FLUTTER_BUILD_MODE=release'), isTrue);
+      expect(pbx.contains('embed_and_thin'), isTrue);
+      expect(pbx.contains('xcode_backend.sh'), isTrue);
+      // G4: Assenza di creazioni .ipa dentro le Build Phase interne di Xcode
+      expect(pbx.contains('Guido_iOS_Sideload.ipa'), isFalse);
+      expect(pbx.contains('Guido_Release_AOT.ipa'), isFalse);
+      expect(pbx.contains('Pods-Runner-frameworks.sh'), isFalse);
     });
 
-    test('project.pbxproj automatically packages Sideload IPA into AC_OUTPUT_DIR in Thin Binary phase', () {
+    test('project.pbxproj does not compile SceneDelegate.swift', () {
       final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
-      expect(pbx.contains('Guido_iOS_Sideload.ipa'), isTrue);
-      expect(pbx.contains('Guido_Release_AOT.ipa'), isTrue);
-      expect(pbx.contains('TARGET_BUILD_DIR'), isTrue);
-      expect(pbx.contains('WRAPPER_NAME'), isTrue);
+      expect(pbx.contains('SceneDelegate.swift'), isFalse);
     });
 
     test('package_sideload_ipa.sh exists and supports multi-directory Runner.app discovery', () {
@@ -78,53 +84,39 @@ void main() {
       expect(content.contains('Payload'), isTrue);
     });
 
-    test('pubspec.yaml does not contain vr_player and unused vr_player wrappers are removed', () {
+    test('pubspec.yaml disables Swift Package Manager for plugins and removes unused vr_player', () {
       final pubspec = File('pubspec.yaml').readAsStringSync();
+      expect(pubspec.contains('enable-swift-package-manager: false'), isTrue);
       expect(pubspec.contains('vr_player'), isFalse);
       expect(File('lib/core/vr/vr_360_video_widget.dart').existsSync(), isFalse);
     });
 
-    test('project.pbxproj executes Pods-Runner-frameworks.sh and equips otool -L self-healing framework loop', () {
-      final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
-      expect(pbx.contains('Pods-Runner-frameworks.sh'), isTrue);
-      expect(pbx.contains('Pods-Runner-resources.sh'), isTrue);
-      expect(pbx.contains('otool -L'), isTrue);
-      expect(pbx.contains('Self-healed and copied'), isTrue);
-      expect(pbx.contains('PODS_CONFIGURATION_BUILD_DIR'), isTrue);
+    test('package_sideload_ipa.sh validates recursive Mach-O dynamic dependencies and strips simulator slices with lipo', () {
+      final script = File('scripts/appcircle/package_sideload_ipa.sh').readAsStringSync();
+      expect(script.contains('otool -L'), isTrue);
+      expect(script.contains('Frameworks'), isTrue);
+      expect(script.contains('lipo -thin arm64'), isTrue);
+      expect(script.contains('Guido_Release_AOT.ipa'), isTrue);
+      expect(script.contains('Guido_iOS_Sideload.ipa'), isTrue);
     });
 
-    test('Podfile reorders build phases so Thin Binary runs after [CP] Embed Pods Frameworks', () {
-      final podfile = File('ios/Podfile').readAsStringSync();
-      expect(podfile.contains('[CP] Embed Pods Frameworks'), isTrue);
-      expect(podfile.contains('Thin Binary'), isTrue);
-      expect(podfile.contains('user_target.build_phases.delete(thin_phase)'), isTrue);
+    test('package_sideload_ipa.sh applies inside-out ad-hoc codesign and preserves Flutter Headers and Modules', () {
+      final script = File('scripts/appcircle/package_sideload_ipa.sh').readAsStringSync();
+      expect(script.contains('codesign --force --sign "-"'), isTrue);
+      expect(script.contains('Runner.debug.dylib'), isTrue);
+      // G3: Assenza totale di cancellazioni rm -rf dentro _CodeSignature o cartelle interne di Flutter.framework
+      expect(script.contains('rm -rf "\$PAYLOAD_DIR/Runner.app/Frameworks/Flutter.framework/Headers"'), isFalse);
+      expect(script.contains('rm -rf "\$PAYLOAD_DIR/Runner.app/Frameworks/Flutter.framework/Modules"'), isFalse);
+      expect(script.contains('Flutter.framework/Headers'), isFalse);
+      expect(script.contains('Flutter.framework/Modules'), isFalse);
     });
 
-    test('package_sideload_ipa.sh validates Mach-O dynamic framework integrity, implements self-healing, and purges Headers/Modules', () {
-      final script = File('scripts/appcircle/package_sideload_ipa.sh');
-      expect(script.existsSync(), isTrue);
-      final content = script.readAsStringSync();
-      expect(content.contains('otool -L'), isTrue);
-      expect(content.contains('Frameworks'), isTrue);
-      expect(content.contains('Guido_Release_AOT.ipa'), isTrue);
-      expect(content.contains('Self-healed: copied'), isTrue);
-      expect(content.contains('PODS_CONFIGURATION_BUILD_DIR'), isTrue);
-      expect(content.contains('Runner.debug.dylib'), isTrue);
-      expect(content.contains('Flutter.framework/Headers'), isTrue);
-      expect(content.contains('Flutter.framework/Modules'), isTrue);
-    });
-
-    test('project.pbxproj and Podfile disable ENABLE_DEBUG_DYLIB and strip Xcode 16 debug dylibs and Flutter Headers/Modules', () {
+    test('project.pbxproj and Podfile disable ENABLE_DEBUG_DYLIB', () {
       final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
       expect(pbx.contains('ENABLE_DEBUG_DYLIB = NO'), isTrue);
-      expect(pbx.contains('Runner.debug.dylib'), isTrue);
-      expect(pbx.contains('Flutter.framework/Headers'), isTrue);
-      expect(pbx.contains('Flutter.framework/Modules'), isTrue);
-      expect(pbx.contains('-y'), isTrue);
 
       final podfile = File('ios/Podfile').readAsStringSync();
       expect(podfile.contains("config.build_settings['ENABLE_DEBUG_DYLIB'] = 'NO'"), isTrue);
     });
   });
 }
-
