@@ -11,7 +11,8 @@ void main() {
   group('iOS launch safety', () {
     test('AppDelegate registers plugins and does not call UnityIntegration at boot', () {
       final src = File('ios/Runner/AppDelegate.swift').readAsStringSync();
-      expect(src.contains('GeneratedPluginRegistrant.register(with: self)'), isTrue);
+      expect(src.contains('GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)'), isTrue);
+      expect(src.contains('FlutterImplicitEngineDelegate'), isTrue);
       expect(src.contains('runEmbedded'), isFalse);
       expect(src.contains('UnityFramework.getInstance'), isFalse);
       expect(src.contains('InitUnityIntegrationWithOptions'), isFalse);
@@ -79,18 +80,41 @@ void main() {
       expect(pbx.contains('Pods-Runner-frameworks.sh'), isFalse);
     });
 
-    test('project.pbxproj does not compile SceneDelegate.swift', () {
+    test('project.pbxproj compiles SceneDelegate.swift in Sources', () {
       final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
-      expect(pbx.contains('SceneDelegate.swift'), isFalse);
+      expect(pbx.contains('SceneDelegate.swift in Sources'), isTrue);
+      expect(pbx.contains('SceneDelegate.swift'), isTrue);
     });
 
-    test('package_sideload_ipa.sh exists and supports multi-directory Runner.app discovery', () {
+    test('package_sideload_ipa.sh strictly searches Release AOT and Archive candidates excluding Debug and legacy paths in executable code', () {
       final script = File('scripts/appcircle/package_sideload_ipa.sh');
       expect(script.existsSync(), isTrue);
-      final content = script.readAsStringSync();
-      expect(content.contains('build/ios/iphoneos/Runner.app'), isTrue);
-      expect(content.contains('build/ios/Debug-iphoneos/Runner.app'), isTrue);
-      expect(content.contains('Payload'), isTrue);
+      final lines = script.readAsLinesSync();
+      final executableLines = lines
+          .map((line) => line.trim())
+          .where((line) => line.isNotEmpty && !line.startsWith('#'))
+          .toList();
+
+      expect(
+        executableLines.any((line) => line.contains('Debug-iphoneos')),
+        isFalse,
+      );
+      expect(
+        executableLines.any((line) => line.contains('build/ios/iphoneos/Runner.app')),
+        isFalse,
+      );
+      expect(
+        executableLines.any((line) => line.contains('Release-iphoneos/Runner.app')),
+        isTrue,
+      );
+      expect(
+        executableLines.any((line) => line.contains('Runner.xcarchive/Products/Applications/Runner.app')),
+        isTrue,
+      );
+      expect(
+        executableLines.any((line) => line.contains('Payload')),
+        isTrue,
+      );
     });
 
     test('pubspec.yaml disables Swift Package Manager for plugins and removes unused vr_player', () {

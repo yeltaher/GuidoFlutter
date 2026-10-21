@@ -1,2 +1,5 @@
-// SceneDelegate is deprecated and unused. Flutter lifecycle is managed by AppDelegate.
+import Flutter
+import UIKit
 
+class SceneDelegate: FlutterSceneDelegate {
+}

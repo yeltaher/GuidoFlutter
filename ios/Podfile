@@ -4,12 +4,8 @@ platform :ios, '15.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-# On CI (Appcircle, etc.), map Debug to :release so CocoaPods links against the Release AOT Flutter engine,
-# preventing JIT crash on iOS 14+ devices without a debugger attached.
-is_ci_build = ENV['CI'] == 'true' || ENV['AC_APPCIRCLE'] == 'true' || !ENV['APPCIRCLE'].nil?
-
 project 'Runner', {
-  'Debug' => is_ci_build ? :release : :debug,
+  'Debug' => :debug,
   'Profile' => :release,
   'Release' => :release,
 }
@@ -46,6 +42,7 @@ pre_install do |installer|
   puts '[Podfile] Ensuring Git LFS binary assets are pulled...'
   system('git lfs pull')
 
+  is_ci_build = ENV['CI'] == 'true' || ENV['AC_APPCIRCLE'] == 'true' || !ENV['APPCIRCLE'].nil?
   if is_ci_build
     puts '[Podfile] CI detected: Ensuring iOS Release engine artifacts are precached...'
     system('flutter precache --ios')
@@ -89,15 +86,6 @@ post_install do |installer|
       if target.respond_to?(:product_type) && target.product_type == 'com.apple.product-type.bundle'
         config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
       end
-
-      if is_ci_build
-        # Enforce Release engine search paths for all configurations on CI
-        ['FRAMEWORK_SEARCH_PATHS', 'FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]', 'FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]'].each do |key|
-          if config.build_settings[key]
-            config.build_settings[key] = config.build_settings[key].gsub('/artifacts/engine/ios/', '/artifacts/engine/ios-release/')
-          end
-        end
-      end
     end
   end
 
@@ -112,14 +100,6 @@ post_install do |installer|
       if target.respond_to?(:xcconfigs)
         target.xcconfigs.each do |config_name, config_file|
           config_file.attributes['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-
-          if is_ci_build
-            ['FRAMEWORK_SEARCH_PATHS', 'FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]', 'FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]'].each do |key|
-              if config_file.attributes[key]
-                config_file.attributes[key] = config_file.attributes[key].gsub('/artifacts/engine/ios/', '/artifacts/engine/ios-release/')
-              end
-            end
-          end
         end
       end
     end

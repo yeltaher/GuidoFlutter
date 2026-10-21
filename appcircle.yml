@@ -1,11 +1,11 @@
 # ============================================================================
-# Appcircle Workflow Configuration for Guido Flutter + Unity iOS
+# Appcircle Workflow Configuration for Guido Flutter (Pure Flutter 3D / WebXR iOS)
 # ============================================================================
 # NOTE: This file is a REFERENCE for configuring the workflow in Appcircle Dashboard.
 # Appcircle workflows are configured through the UI, not by uploading this file directly.
 # Use this file as a guide when setting up your workflow in the Appcircle Dashboard.
 #
-# Project: Guido — Flutter meditation/VR app with Unity UaaL integration
+# Project: Guido — Flutter meditation/VR app (Pure Flutter 3D & WebXR architecture)
 # Platform: iOS only
 # Runner: macOS with Xcode 27.0
 # ============================================================================
@@ -15,7 +15,7 @@
 # ============================================================================
 #
 # 1. Cache Pull
-#    - Restore cached dependencies
+#    - Restore cached dependencies (~/.pub-cache, ios/Pods)
 #
 # 2. Git Clone (automatic)
 #    - Appcircle automatically clones your repository
@@ -23,26 +23,20 @@
 # 3. Xcode Select
 #    - Select Xcode 27.0
 #
-# 4. Custom Script: Build UnityFramework
-#    - Build the UnityFramework target from Unity-iPhone.xcodeproj
+# 4. Flutter Install
+#    - Install Flutter SDK (version 3.47.7)
 #
-# 5. Custom Script: Copy UnityFramework
-#    - Copy the built framework to the correct location
+# 5. Flutter Build for iOS (Release AOT)
+#    - Compile deterministic Release AOT bundle: flutter build ios --release --no-codesign
 #
-# 6. Flutter Install
-#    - Install Flutter SDK (version 3.24.0 or as needed)
+# 6. Custom Script: Package Sideload IPA
+#    - Invoke scripts/appcircle/package_sideload_ipa.sh to package and sign candidate bundle
 #
-# 7. Flutter Build for iOS
-#    - Build the Flutter project for iOS
+# 7. Export Build Artifacts
+#    - Export the final IPA from $AC_OUTPUT_DIR for distribution/sideloading
 #
-# 8. Xcodebuild for Devices (Archive & Export)
-#    - Archive and export the final IPA
-#
-# 9. Export Build Artifacts
-#    - Export the IPA for download
-#
-# 10. Cache Push
-#     - Save dependencies for future builds
+# 8. Cache Push
+#    - Save dependencies for future builds (~/.pub-cache, ios/Pods)
 #
 # ============================================================================
 
@@ -57,7 +51,6 @@
 # - Configure cache paths:
 #   - ~/.pub-cache
 #   - ios/Pods
-#   - ios/UnityLibrary/DerivedData
 # - Cache duration: 7 days
 
 # STEP 2: Git Clone
@@ -70,144 +63,58 @@
 # - Add "Xcode Select" step from Workflow Marketplace
 # - Set AC_XCODE_VERSION to "27.0" (or the exact version available)
 
-# STEP 4: Custom Script - Build UnityFramework
-# ---------------------------------------------
-# In Appcircle Dashboard:
-# - Add "Custom Script" step from Workflow Marketplace
-# - Set "Execute With" to "Bash"
-# - Paste the following script:
-
-UNITY_BUILD_SCRIPT: |
-  #!/bin/bash
-  set -euo pipefail
-
-  echo "=========================================="
-  echo "Step 4: Building UnityFramework"
-  echo "=========================================="
-
-  # Navigate to repository root
-  cd "$AC_REPOSITORY_DIR"
-
-  # Check if Unity-iPhone.xcodeproj exists
-  if [ ! -d "ios/UnityLibrary/Unity-iPhone.xcodeproj" ]; then
-    echo "ERROR: Unity-iPhone.xcodeproj not found at ios/UnityLibrary/"
-    exit 1
-  fi
-
-  # Build UnityFramework
-  echo "Building UnityFramework..."
-  xcodebuild -project ios/UnityLibrary/Unity-iPhone.xcodeproj \
-    -target UnityFramework \
-    -sdk iphoneos \
-    -configuration Release \
-    -derivedDataPath ios/UnityLibrary/DerivedData \
-    CODE_SIGN_IDENTITY="-" \
-    CODE_SIGNING_REQUIRED=NO \
-    CODE_SIGNING_ALLOWED=NO \
-    2>&1 | tail -50
-
-  # Check if build succeeded
-  if [ ${PIPESTATUS[0]} -ne 0 ]; then
-    echo "ERROR: UnityFramework build failed"
-    exit 1
-  fi
-
-  echo "UnityFramework build completed successfully"
-
-# STEP 5: Custom Script - Copy UnityFramework
-# --------------------------------------------
-# In Appcircle Dashboard:
-# - Add "Custom Script" step from Workflow Marketplace
-# - Set "Execute With" to "Bash"
-# - Paste the following script:
-
-UNITY_COPY_SCRIPT: |
-  #!/bin/bash
-  set -euo pipefail
-
-  echo "=========================================="
-  echo "Step 5: Copying UnityFramework"
-  echo "=========================================="
-
-  # Navigate to repository root
-  cd "$AC_REPOSITORY_DIR"
-
-  # Define source and destination paths
-  SOURCE_PATH="ios/UnityLibrary/DerivedData/Build/Products/Release-iphoneos/UnityFramework.framework"
-  DEST_PATH="ios/UnityLibrary/Frameworks/UnityFramework.framework"
-
-  # Check if source exists
-  if [ ! -d "$SOURCE_PATH" ]; then
-    echo "ERROR: UnityFramework.framework not found at $SOURCE_PATH"
-    echo "Listing DerivedData contents:"
-    find ios/UnityLibrary/DerivedData -name "*.framework" -type d 2>/dev/null || echo "No frameworks found"
-    exit 1
-  fi
-
-  # Create destination directory if it doesn't exist
-  mkdir -p "$DEST_PATH"
-
-  # Copy the framework
-  echo "Copying UnityFramework.framework..."
-  rm -rf "$DEST_PATH"
-  cp -R "$SOURCE_PATH" "$DEST_PATH"
-
-  # Verify copy
-  if [ ! -d "$DEST_PATH" ]; then
-    echo "ERROR: Failed to copy UnityFramework.framework"
-    exit 1
-  fi
-
-  echo "UnityFramework.framework copied successfully to $DEST_PATH"
-  echo "Contents:"
-  ls -la "$DEST_PATH"
-
-# STEP 6: Flutter Install
+# STEP 4: Flutter Install
 # -----------------------
 # In Appcircle Dashboard:
 # - Add "Flutter Install" step from Workflow Marketplace
-# - Set AC_SELECTED_FLUTTER_VERSION to "3.24.0" (or your preferred version)
-# - If not specified, it will install the latest stable version
+# - Set AC_SELECTED_FLUTTER_VERSION to "3.47.7"
 
-# STEP 7: Flutter Build for iOS
-# -----------------------------
+# STEP 5: Flutter Build for iOS (Release AOT Deterministic Build)
+# -------------------------------------------------------------
 # In Appcircle Dashboard:
 # - Add "Flutter Build for iOS" step from Workflow Marketplace
+# - Build Command: flutter build ios --release --no-codesign
 # - Configure the following inputs:
 #   - AC_FLUTTER_PROJECT_PATH: "." (repository root)
 #   - AC_FLUTTER_BUILD_MODE: "release"
 #   - AC_FLUTTER_BUILD_EXTRA_ARGS: "--no-codesign --build-number=$AC_BUILD_NUMBER"
+#
+# NOTE: Release mode compiles Flutter Dart code to native AOT machine code (App.framework),
+# disabling JIT stubs and preventing AMFI codesign rejection on physical devices.
 
-# STEP 8: Xcodebuild for Devices (Archive & Export)
-# --------------------------------------------------
+# STEP 6: Custom Script - Package Sideload IPA
+# --------------------------------------------
 # In Appcircle Dashboard:
-# - Add "Xcodebuild for Devices (Archive & Export)" step from Workflow Marketplace
-# - Configure the following inputs:
-#   - AC_REPOSITORY_DIR: (auto-populated from Git Clone)
-#   - AC_OUTPUT_DIR_PATH: (auto-populated)
-#   - AC_SCHEME: "Runner"
-#   - AC_PROJECT_PATH: "ios/Runner.xcworkspace"
-#   - AC_CERTIFICATES: (configured in Signing Identities)
-#   - AC_BUNDLE_IDENTIFIERS: "com.yourcompany.guido"
-#   - AC_PROVISIONING_PROFILES: (configured in Signing Identities)
-#   - AC_CONFIGURATION_NAME: "Release"
-#   - AC_METHOD_FOR_EXPORT: "app-store" or "ad-hoc" depending on your needs
-#   - AC_CLEAN_BUILD: "true"
+# - Add "Custom Script" step from Workflow Marketplace right after Flutter Build for iOS
+# - Set "Execute With" to "Bash"
+# - Set Step Name to "Package Sideload IPA"
+# - Script Content:
+#
+#   #!/bin/bash
+#   set -euo pipefail
+#   bash scripts/appcircle/package_sideload_ipa.sh
+#
+# This script:
+# 1. Selects the Release candidate (build/ios/Release-iphoneos/Runner.app)
+# 2. Enforces strict AOT validation guards (rejecting Debug/JIT artifacts)
+# 3. Recursively resolves transitive @rpath framework and dylib dependencies
+# 4. Strips x86_64 simulator slices via lipo -thin arm64
+# 5. Executes inside-out ad-hoc codesigning with strict verification
+# 6. Packages and exports the IPA to $AC_OUTPUT_DIR (Guido_v0.1.0_b$AC_BUILD_NUMBER.ipa)
 
-# STEP 9: Export Build Artifacts
+# STEP 7: Export Build Artifacts
 # ------------------------------
 # In Appcircle Dashboard:
 # - Add "Export Build Artifacts" step from Workflow Marketplace
-# - This will export the IPA file for download
+# - Automatically exports all .ipa artifacts located in $AC_OUTPUT_DIR
 
-# STEP 10: Cache Push
+# STEP 8: Cache Push
 # -------------------
 # In Appcircle Dashboard:
 # - Add "Cache Push" step from Workflow Marketplace
 # - Configure cache paths:
 #   - ~/.pub-cache
 #   - ios/Pods
-#   - ios/UnityLibrary/DerivedData
 # - Cache duration: 7 days
 
 # ============================================================================
@@ -217,61 +124,23 @@ UNITY_COPY_SCRIPT: |
 # The following environment variables are available in Appcircle:
 #
 # Common:
-#   $AC_REPOSITORY_DIR     - Cloned repository path
-#   $AC_OUTPUT_DIR         - Output directory for artifacts
-#   $AC_BUILD_NUMBER       - Build number (auto-incremented)
-#   $AC_GIT_BRANCH         - Current Git branch
-#   $AC_GIT_COMMIT         - Current Git commit hash
+#   $AC_REPOSITORY_DIR        - Cloned repository path
+#   $AC_OUTPUT_DIR            - Output directory for artifacts
+#   $AC_BUILD_NUMBER          - Build number (auto-incremented)
+#   $AC_GIT_BRANCH            - Current Git branch
+#   $AC_GIT_COMMIT            - Current Git commit hash
 #
 # iOS Specific:
-#   $AC_SCHEME             - Xcode scheme
-#   $AC_PROJECT_PATH       - Xcode project/workspace path
-#   $AC_CERTIFICATES       - Signing certificates
+#   $AC_SCHEME                - Xcode scheme (Runner)
+#   $AC_PROJECT_PATH          - Xcode project/workspace path (ios/Runner.xcworkspace)
+#   $AC_CERTIFICATES          - Signing certificates
 #   $AC_PROVISIONING_PROFILES - Provisioning profiles
-#   $AC_BUNDLE_IDENTIFIERS - App bundle identifier
+#   $AC_BUNDLE_IDENTIFIERS    - App bundle identifier
 #
 # Flutter Specific:
-#   $AC_FLUTTER_PROJECT_PATH - Flutter project path
-#   $AC_FLUTTER_BUILD_MODE  - Build mode (debug/release)
-#
-# ============================================================================
-
-# ============================================================================
-# SIGNING CONFIGURATION
-# ============================================================================
-#
-# In Appcircle Dashboard:
-# 1. Go to Signing Identities > Apple Certificates
-#    - Upload your Distribution certificate (.p12 file)
-#    - Enter the certificate password
-#
-# 2. Go to Signing Identities > Apple Profiles
-#    - Upload your Provisioning Profile (.mobileprovision file)
-#    - Associate it with your Bundle ID
-#
-# 3. In your Build Profile > Configuration > Signing:
-#    - Select the Bundle ID
-#    - Select the Provisioning Profile
-#
-# Appcircle will handle the signing automatically during the build.
-#
-# ============================================================================
-
-# ============================================================================
-# VERSIONING CONFIGURATION
-# ============================================================================
-#
-# In Appcircle Dashboard:
-# 1. Go to your Build Profile > Configuration > Versioning
-# 2. Enable "Version Management"
-# 3. Configure:
-#    - Build Number Source: Environment Variable
-#    - Build Number: $AC_BUILD_NUMBER
-#    - Version Number Source: Xcode (reads from pubspec.yaml)
-#    - Version Number: (leave as is)
-#
-# This will automatically set the build number using $AC_BUILD_NUMBER
-# which auto-increments with each build.
+#   $AC_FLUTTER_PROJECT_PATH  - Flutter project path (.)
+#   $AC_FLUTTER_BUILD_MODE    - Build mode (release)
+#   $AC_FLUTTER_BUILD_EXTRA_ARGS - Extra arguments (--no-codesign --build-number=$AC_BUILD_NUMBER)
 #
 # ============================================================================
 
@@ -282,68 +151,8 @@ UNITY_COPY_SCRIPT: |
 # Paths to cache:
 #   - ~/.pub-cache (Flutter/Dart packages)
 #   - ios/Pods (CocoaPods dependencies)
-#   - ios/UnityLibrary/DerivedData (Unity build artifacts)
 #
 # Cache duration: 7 days
-#
-# ============================================================================
-
-# ============================================================================
-# POTENTIAL ISSUES AND SOLUTIONS
-# ============================================================================
-#
-# Issue 1: UnityFramework not found
-# Solution: Ensure the Unity build step completes successfully before Flutter build
-#
-# Issue 2: CocoaPods version mismatch
-# Solution: The Podfile.lock is not in the repo, so it will be generated during build
-#           If you encounter issues, add "pod install --repo-update" in a custom script
-#
-# Issue 3: Code signing errors
-# Solution: Ensure certificates and provisioning profiles are uploaded correctly
-#           in the Signing Identities section
-#
-# Issue 4: Flutter SDK not found
-# Solution: Ensure Flutter Install step is placed before Flutter Build step
-#
-# Issue 5: Xcode version mismatch
-# Solution: Use Xcode Select step to select the correct version (27.0)
-#
-# ============================================================================
-
-# ============================================================================
-# TESTING THE FIRST BUILD
-# ============================================================================
-#
-# 1. Connect your GitHub repository to Appcircle
-#    - Go to Build > Add New Profile
-#    - Select iOS as the platform
-#    - Select Flutter as the target platform
-#    - Connect your GitHub repository
-#
-# 2. Configure the build
-#    - Go to Configuration tab
-#    - Set the branch (e.g., main or develop)
-#    - Set the project path (ios/Runner.xcworkspace)
-#    - Set the scheme (Runner)
-#
-# 3. Configure signing
-#    - Upload your Apple certificate
-#    - Upload your provisioning profile
-#    - Select them in the Signing section
-#
-# 4. Set up the workflow
-#    - Go to Workflow tab
-#    - Add the steps in the order specified above
-#    - Configure each step as described
-#
-# 5. Trigger a build
-#    - Click "Start Build"
-#    - Monitor the build logs
-#
-# 6. Verify the output
-#    - Check that the IPA is generated
-#    - Download and test on a device
 #
 # ============================================================================
 
@@ -351,9 +160,9 @@ UNITY_COPY_SCRIPT: |
 # WORKFLOW VISUALIZATION
 # ============================================================================
 #
-# [Cache Pull] → [Git Clone] → [Xcode Select] → [Build UnityFramework] →
-# [Copy UnityFramework] → [Flutter Install] → [Flutter Build iOS] →
-# [Xcodebuild Archive & Export] → [Export Artifacts] → [Cache Push]
+# [Cache Pull] → [Git Clone] → [Xcode Select] → [Flutter Install] →
+# [Flutter Build iOS (Release)] → [Package Sideload IPA] →
+# [Export Build Artifacts] → [Cache Push]
 #
 # ============================================================================
 
@@ -365,47 +174,18 @@ UNITY_COPY_SCRIPT: |
 #    - Platform: iOS
 #    - Target Platform: Flutter
 #    - Repository: https://github.com/yeltaher/GuidoFlutter.git
-#    - Branch: main (or your preferred branch)
+#    - Branch: main (or feature branch)
 #
 # 2. Configuration:
 #    - Project or Workspace: ios/Runner.xcworkspace
 #    - Build Scheme: Runner
 #    - Xcode Version: 27.0
-#    - Flutter Version: 3.47.4 (matches pubspec.yaml)
+#    - Flutter Version: 3.47.7
 #
-# 3. Signing:
-#    - Bundle ID: com.yourcompany.guido (replace with your actual bundle ID)
-#    - Provisioning Profile: (select from uploaded profiles)
+# 3. Build Triggers:
+#    - Push to main or release tags (v*)
 #
-# 4. Versioning:
-#    - Enable Version Management
-#    - Build Number: $AC_BUILD_NUMBER
-#    - Version Number: Xcode (from project)
-#
-# 5. Workflow:
-#    - Follow the step-by-step configuration above
-#
-# ============================================================================
-
-# ============================================================================
-# NOTES
-# ============================================================================
-#
-# - This project uses Unity UaaL (Unity as a Library)
-# - The UnityFramework must be built before Flutter
-# - The framework must be copied to ios/UnityLibrary/Frameworks/
-# - The Podfile already includes FRAMEWORK_SEARCH_PATHS for Unity
-# - Podfile.lock is not in the repo and will be generated during build
-# - Use --no-codesign for Flutter build, let Xcode handle signing
-#
-# ============================================================================
-
-# ============================================================================
-# CONTACT
-# ============================================================================
-#
-# For issues or questions:
-# - Appcircle Support: https://appcircle.io/support
-# - Appcircle Slack: https://join.slack.com/t/appcircleio/signup
+# 4. Workflow:
+#    - Follow the 8 step configuration above
 #
 # ============================================================================

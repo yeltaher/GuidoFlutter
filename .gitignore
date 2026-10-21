@@ -26,6 +26,7 @@ migrate_working_dir/
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
+**/ios/Flutter/Generated.xcconfig
 .dart_tool/
 .flutter-plugins-dependencies
 .pub-cache/
@@ -48,6 +49,7 @@ ios/IPA Versions/
 
 # Unity source project (versioned in separate repo)
 /unity/
+/ios/UnityLibrary/
 Packages/flutter_unity_widget_2/example/unity/
 
 # Editor backup files
