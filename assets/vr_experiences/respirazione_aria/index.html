@@ -408,6 +408,10 @@
 </head>
 <body>
 
+  <!-- Audio Elements: Synchronized Voice + Ambient Music -->
+  <audio id="audio-voice" preload="auto"></audio>
+  <audio id="audio-music" src="audio/music_432hz.mp3" preload="auto" loop></audio>
+
   <!-- WebGL Three.js Viewport -->
   <div id="webgl-container"></div>
 
@@ -532,6 +536,22 @@
 
   <!-- MAIN SCRIPT -->
   <script>
+
+    /* Audio Elements & Voice Selection (0 = Luigi / Maschile, 1 = Michela / Femminile) */
+    const urlParams = new URLSearchParams(window.location.search);
+    const voiceParam = urlParams.get('voice') || 'f';
+
+    const audioVoice = document.getElementById('audio-voice');
+    const audioMusic = document.getElementById('audio-music');
+
+    if (audioVoice) {
+      audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_f.mp3';
+      audioVoice.volume = 0.95;
+    }
+    if (audioMusic) {
+      audioMusic.volume = 0.25; // Campane tibetane / musica a volume ridotto come sottofondo
+    }
+
   (function() {
     'use strict';
 
@@ -594,6 +614,8 @@
 
     // Expose global controller API for Flutter / tests
     window.GuidoVR = {
+      play: function() { if (!state.isRunning) { togglePlayPause(); } },
+      resume: function() { if (!state.isRunning) { togglePlayPause(); } },
       start: function() { dismissGateAndStart(); },
       pause: function() { pauseSession(); },
       toggle: function() { togglePlayPause(); },
@@ -806,7 +828,7 @@
       try {
         const now = audioCtx.currentTime;
         const chimeMaster = audioCtx.createGain();
-        chimeMaster.gain.setValueAtTime(0.40, now);
+        chimeMaster.gain.setValueAtTime(0.08, now);
         chimeMaster.connect(masterGain);
 
         const harmonics = [
@@ -845,6 +867,8 @@
     }
 
     function setAudioMuted(mute) {
+      if (audioVoice) audioVoice.muted = mute;
+      if (audioMusic) audioMusic.muted = mute;
       state.isAudioMuted = mute;
       if (masterGain && audioCtx) {
         setMasterAudioGain(mute ? 0 : 0.85, 0.3);
@@ -1419,6 +1443,8 @@
     }
 
     function onExperienceEnded() {
+      if (audioVoice) audioVoice.pause();
+      if (audioMusic) audioMusic.pause();
       if (state.isCompleted) return;
       if (typeof outroSafetyTimer !== 'undefined' && outroSafetyTimer) {
         clearTimeout(outroSafetyTimer);
@@ -2480,6 +2506,8 @@
       }
       state.isCompleted = false;
       state.isRunning = true;
+      if (audioVoice) { audioVoice.play().catch(function(e) { console.warn('audioVoice play:', e); }); }
+      if (audioMusic) { audioMusic.play().catch(function(e) { console.warn('audioMusic play:', e); }); }
       state.currentPhase = PHASE.INHALE;
       state.currentCycle = 1;
       state.phaseStartTime = performance.now();
@@ -2498,6 +2526,8 @@
     }
 
     function pauseSession() {
+      if (audioVoice) audioVoice.pause();
+      if (audioMusic) audioMusic.pause();
       state.isRunning = false;
       state.pauseStartTime = performance.now();
       setPadAudioGain(0.2, 1.0);
@@ -2519,6 +2549,8 @@
             state.pauseStartTime = 0;
           }
           state.isRunning = true;
+          if (audioVoice) { audioVoice.play().catch(function(e) { console.warn('audioVoice play:', e); }); }
+          if (audioMusic) { audioMusic.play().catch(function(e) { console.warn('audioMusic play:', e); }); }
           setPadAudioGain(0.85, 1.5);
           updateUIElements();
           notifyFlutter('onSessionResume', { phase: state.currentPhase, cycle: state.currentCycle });
@@ -2527,6 +2559,14 @@
     }
 
     function resetSession() {
+      if (audioVoice) {
+        audioVoice.pause();
+        audioVoice.currentTime = 0;
+      }
+      if (audioMusic) {
+        audioMusic.pause();
+        audioMusic.currentTime = 0;
+      }
       hide2DCompletionPopup();
       hideVRCompletionPopup();
       if (outroSafetyTimer) {

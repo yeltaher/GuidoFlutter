@@ -28,12 +28,14 @@ class VrExperienceScreen extends ConsumerStatefulWidget {
   final String experienceId;
   final bool isVrMode;
   final bool autoStart;
+  final int? voiceSex;
 
   const VrExperienceScreen({
     super.key,
     required this.experienceId,
     this.isVrMode = false,
     this.autoStart = true,
+    this.voiceSex,
   });
 
   @override
@@ -798,10 +800,13 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
   @override
   Widget build(BuildContext context) {
     final serverService = ref.watch(localVrServerServiceProvider);
+    final effectiveVoiceSex =
+        widget.voiceSex ?? ref.watch(settingsProvider).voiceSex;
     final targetUrl = serverService.getExperienceUrl(
       _experienceType,
       isVrMode: _isVrMode,
       autoStart: widget.autoStart,
+      voiceSex: effectiveVoiceSex,
       cacheBust: true,
     );
 

@@ -337,7 +337,7 @@
       isCompleted: false,
       isMuted: false,
       voiceVolume: 0.95,
-      musicVolume: 0.85,
+      musicVolume: 0.25,
       currentSceneIndex: 0,
       lastTimestamp: 0,
       lastDeltaSec: 0.016
@@ -392,6 +392,17 @@
     const btnModalRepeat = document.getElementById('btn-modal-repeat');
     const audioVoice = document.getElementById('audio-voice');
     const audioMusic = document.getElementById('audio-music');
+
+    /* Audio Elements & Voice Selection (0 = Luigi / Maschile, 1 = Michela / Femminile) */
+    const urlParams = new URLSearchParams(window.location.search);
+    const voiceParam = urlParams.get('voice');
+    if (audioVoice) {
+      audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_it.mp3';
+      audioVoice.volume = 0.95;
+    }
+    if (audioMusic) {
+      audioMusic.volume = 0.25; // Sottofondo a 432 Hz bilanciato
+    }
 
     /* ======================================================================
        WEB AUDIO API & 432 HZ CARRIER ENGINE
@@ -2687,7 +2698,10 @@
         }
       }
 
-      applyAudioSeek(audioVoice, Math.min(targetSec, VOICE_DURATION_SEC));
+      const voiceSeekLimit = (audioVoice && isFinite(audioVoice.duration) && audioVoice.duration > 0)
+        ? audioVoice.duration
+        : VOICE_DURATION_SEC;
+      applyAudioSeek(audioVoice, Math.min(targetSec, voiceSeekLimit));
       applyAudioSeek(audioMusic, targetSec);
 
       updateExperienceTimeline(targetSec, 0.016, true);
@@ -2941,7 +2955,10 @@
       ambientWaterTime += deltaSec;
 
       if (state.isPlaying) {
-        if (!audioVoice.paused && audioVoice.currentTime > 0 && audioVoice.currentTime <= VOICE_DURATION_SEC) {
+        const voiceDur = (audioVoice && isFinite(audioVoice.duration) && audioVoice.duration > 0)
+          ? audioVoice.duration
+          : VOICE_DURATION_SEC;
+        if (!audioVoice.paused && audioVoice.currentTime > 0 && audioVoice.currentTime <= voiceDur) {
           state.currentTime = audioVoice.currentTime;
         } else if (!audioMusic.paused && audioMusic.currentTime > 0) {
           state.currentTime = audioMusic.currentTime;

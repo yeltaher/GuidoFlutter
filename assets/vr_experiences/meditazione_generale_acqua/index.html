@@ -504,8 +504,8 @@
       isCompleted: false,
       isVRMode: false,
       currentTime: 0.0,
-      voiceVolume: 1.0,
-      musicVolume: 0.65,
+      voiceVolume: 0.95,
+      musicVolume: 0.25,
       isDesktop: false,
       lastTimestamp: 0,
       lastDeltaSec: 0.016
@@ -530,6 +530,20 @@
     const audioVoice = document.getElementById('audio-voice');
     const audioMusicA = document.getElementById('audio-music-a');
     const audioMusicB = document.getElementById('audio-music-b');
+
+    /* Audio Elements & Voice Selection (0 = Luigi / Maschile, 1 = Michela / Femminile) */
+    const urlParams = new URLSearchParams(window.location.search);
+    const voiceParam = urlParams.get('voice');
+    if (audioVoice) {
+      audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_it.mp3';
+      audioVoice.volume = 0.95;
+    }
+    if (audioMusicA) {
+      audioMusicA.volume = 0.25; // Sottofondo musicale a 432 Hz bilanciato
+    }
+    if (audioMusicB) {
+      audioMusicB.volume = 0.0;
+    }
 
     let audioContext = null;
     let voiceGainNode = null;
@@ -3083,7 +3097,10 @@
         }
       }
 
-      applySeek(audioVoice, Math.min(targetSec, VOICE_DURATION_SEC));
+      const voiceSeekLimit = (audioVoice && isFinite(audioVoice.duration) && audioVoice.duration > 0)
+        ? audioVoice.duration
+        : VOICE_DURATION_SEC;
+      applySeek(audioVoice, Math.min(targetSec, voiceSeekLimit));
       applySeek(audioMusicA, targetSec % MUSIC_CYCLE_SEC);
       updateExperienceTimeline(targetSec, 0.016);
     }

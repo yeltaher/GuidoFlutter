@@ -353,6 +353,36 @@ void main() {
       expect(urlCacheBusted.contains('v='), isTrue);
       expect(urlCacheBusted.contains('vr=true'), isTrue);
       expect(urlCacheBusted.contains('autostart=true'), isTrue);
+
+      final urlMale = service.getExperienceUrl(
+        VrExperienceType.respirazioneAria,
+        voiceSex: 0,
+      );
+      expect(urlMale.contains('voice=m'), isTrue);
+
+      final urlFemale = service.getExperienceUrl(
+        VrExperienceType.respirazioneAria,
+        voiceSex: 1,
+      );
+      expect(urlFemale.contains('voice=f'), isTrue);
+
+      // Verifiche per tutte le 4 meditazioni dell'acqua con voce Luigi (0) e Michela (1)
+      final meditationTypes = [
+        VrExperienceType.meditazioneMattinoAcqua,
+        VrExperienceType.meditazionePomeriggioAcqua,
+        VrExperienceType.meditazioneSeraAcqua,
+        VrExperienceType.meditazioneGeneraleAcqua,
+      ];
+
+      for (final medType in meditationTypes) {
+        final medMaleUrl = service.getExperienceUrl(medType, voiceSex: 0);
+        expect(medMaleUrl.contains('voice=m'), isTrue,
+            reason: '${medType.folderName} must include voice=m for Luigi');
+
+        final medFemaleUrl = service.getExperienceUrl(medType, voiceSex: 1);
+        expect(medFemaleUrl.contains('voice=f'), isTrue,
+            reason: '${medType.folderName} must include voice=f for Michela');
+      }
     });
   });
 
@@ -1965,6 +1995,50 @@ void main() {
       expect(find.byKey(const Key('vr_headset_prompt_overlay')), findsOneWidget);
       expect(find.byKey(const Key('btn_vr_prompt_start_vr')), findsOneWidget);
       expect(state.isVrHeadsetPromptVisibleForTesting, isTrue);
+    });
+
+    test('Water Meditations Dual-Voice and Audio Balance Quality Gate', () {
+      final meditations = [
+        'meditazione_mattino_acqua',
+        'meditazione_pomeriggio_acqua',
+        'meditazione_sera_acqua',
+        'meditazione_generale_acqua',
+      ];
+
+      for (final med in meditations) {
+        // 1. Verifica file voce maschile Luigi (voice_m.mp3)
+        final voiceM = File('assets/vr_experiences/$med/audio/voice_m.mp3');
+        expect(voiceM.existsSync(), isTrue, reason: '$med must contain audio/voice_m.mp3');
+        expect(voiceM.lengthSync(), greaterThan(1000000), reason: '$med voice_m.mp3 must be a valid audio file');
+
+        // 2. Verifica file voce femminile Michela (voice_it.mp3)
+        final voiceF = File('assets/vr_experiences/$med/audio/voice_it.mp3');
+        expect(voiceF.existsSync(), isTrue, reason: '$med must contain audio/voice_it.mp3');
+        expect(voiceF.lengthSync(), greaterThan(1000000), reason: '$med voice_it.mp3 must be a valid audio file');
+
+        // 3. Verifica template HTML per selezione voce e bilanciamento volumi
+        final htmlFile = File('assets/vr_experiences/$med/index.html');
+        expect(htmlFile.existsSync(), isTrue);
+        final html = htmlFile.readAsStringSync();
+
+        // Parametro query voice e switch a voice_m.mp3
+        expect(html.contains("urlParams.get('voice')") || html.contains('urlParams.get("voice")'), isTrue,
+            reason: '$med index.html must parse URL query voice parameter');
+        expect(html.contains('audio/voice_m.mp3'), isTrue,
+            reason: '$med index.html must support audio/voice_m.mp3');
+        expect(html.contains('audio/voice_it.mp3'), isTrue,
+            reason: '$med index.html must default to audio/voice_it.mp3');
+
+        // Volumi bilanciati: voce a 0.95, musica sottofondo a 0.25
+        expect(html.contains('0.95'), isTrue,
+            reason: '$med must balance voice volume to 0.95');
+        expect(html.contains('0.25'), isTrue,
+            reason: '$med must balance background music volume to 0.25');
+
+        // Giroscopio protetto solo per modalità VR
+        expect(html.contains('isVRMode'), isTrue,
+            reason: '$med must guard gyroscope controls with isVRMode');
+      }
     });
   });
 }

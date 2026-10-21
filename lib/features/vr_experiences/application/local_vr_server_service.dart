@@ -108,11 +108,15 @@ class LocalVrServerService {
     VrExperienceType type, {
     bool isVrMode = false,
     bool autoStart = true,
+    int? voiceSex,
     bool cacheBust = false,
   }) {
     final queryParams = <String>[];
     if (isVrMode) queryParams.add('vr=true');
     if (autoStart) queryParams.add('autostart=true');
+    if (voiceSex != null) {
+      queryParams.add('voice=${voiceSex == 0 ? 'm' : 'f'}');
+    }
     if (cacheBust) queryParams.add('v=${DateTime.now().millisecondsSinceEpoch}');
 
     final queryString =

@@ -229,11 +229,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   ? (rawAutoStart.toLowerCase() != 'false' &&
                       rawAutoStart != '0')
                   : true);
+          final rawVoiceSex = params['voiceSex'];
+          final int? voiceSex = rawVoiceSex is int
+              ? rawVoiceSex
+              : (rawVoiceSex is String ? int.tryParse(rawVoiceSex) : null);
 
           return VrExperienceScreen(
             experienceId: experienceId,
             isVrMode: isVrMode,
             autoStart: autoStart,
+            voiceSex: voiceSex,
           );
         },
       ),

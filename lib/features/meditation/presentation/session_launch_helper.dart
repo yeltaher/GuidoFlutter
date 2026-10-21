@@ -72,6 +72,7 @@ void launchUnityExperience({
       ) ??
       VrExperienceType.fromSessionId(sceneName) ??
       VrExperienceType.fromSessionId(title);
+  final settings = ref.read(settingsProvider);
   if (vrMatch != null) {
     context.push(
       '/vr-experience',
@@ -79,12 +80,11 @@ void launchUnityExperience({
         'experienceId': vrMatch.id,
         'isVrMode': isVrMode,
         'autoStart': true,
+        'voiceSex': settings.voiceSex,
       },
     );
     return;
   }
-
-  final settings = ref.read(settingsProvider);
   final bundle = AudioResolverService.resolveBundle(
     title: title,
     sceneName: sceneName,
@@ -150,6 +150,7 @@ class SessionLaunchDialog extends ConsumerWidget {
 
     router.pop();
 
+    final settings = ref.read(settingsProvider);
     if (vrMatch != null) {
       router.pushReplacement(
         '/vr-experience',
@@ -157,12 +158,11 @@ class SessionLaunchDialog extends ConsumerWidget {
           'experienceId': vrMatch.id,
           'isVrMode': false,
           'autoStart': true,
+          'voiceSex': settings.voiceSex,
         },
       );
       return;
     }
-
-    final settings = ref.read(settingsProvider);
     final bundle = AudioResolverService.resolveBundle(
       title: title,
       sceneName: sceneName,
@@ -208,6 +208,7 @@ class SessionLaunchDialog extends ConsumerWidget {
     router.pop();
 
     // Avvio rapido diretto nel visore VR: nessun passaggio intermedio bloccante
+    final settings = ref.read(settingsProvider);
     if (vrMatch != null) {
       router.pushReplacement(
         '/vr-experience',
@@ -215,12 +216,11 @@ class SessionLaunchDialog extends ConsumerWidget {
           'experienceId': vrMatch.id,
           'isVrMode': true,
           'autoStart': true,
+          'voiceSex': settings.voiceSex,
         },
       );
       return;
     }
-
-    final settings = ref.read(settingsProvider);
     final bundle = AudioResolverService.resolveBundle(
       title: title,
       sceneName: sceneName,
@@ -516,6 +516,7 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
         VrExperienceType.fromSessionId(widget.sceneName) ??
         VrExperienceType.fromSessionId(widget.title);
 
+    final settings = ref.read(settingsProvider);
     if (vrMatch != null) {
       context.pushReplacement(
         '/vr-experience',
@@ -523,12 +524,11 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
           'experienceId': vrMatch.id,
           'isVrMode': true,
           'autoStart': true,
+          'voiceSex': settings.voiceSex,
         },
       );
       return;
     }
-
-    final settings = ref.read(settingsProvider);
     final bundle = AudioResolverService.resolveBundle(
       title: widget.title,
       sceneName: widget.sceneName,

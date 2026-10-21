@@ -91,6 +91,8 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
         VrExperienceType.fromSessionId(widget.sceneName) ??
         VrExperienceType.fromSessionId(widget.title);
 
+    final settings = ref.read(settingsProvider);
+
     if (vrMatch != null) {
       context.pushReplacement(
         '/vr-experience',
@@ -98,12 +100,12 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
           'experienceId': vrMatch.id,
           'isVrMode': isVr,
           'autoStart': true,
+          'voiceSex': settings.voiceSex,
         },
       );
       return;
     }
 
-    final settings = ref.read(settingsProvider);
     final bundle = AudioResolverService.resolveBundle(
       title: widget.title,
       sceneName: widget.sceneName,

@@ -568,7 +568,7 @@
           </div>
           <div class="slider-container" title="Volume Musica 432 Hz">
             <span>432 Hz</span>
-            <input type="range" id="slider-music" min="0" max="1" step="0.01" value="0.85">
+            <input type="range" id="slider-music" min="0" max="1" step="0.01" value="0.25">
           </div>
         </div>
       </div>
@@ -643,7 +643,7 @@
       isPlaying: false,
       isMuted: false,
       voiceVolume: 0.95,
-      musicVolume: 0.85,
+      musicVolume: 0.25,
       currentSceneIndex: 0,
       isVRMode: false,
       isCompleted: false,
@@ -725,6 +725,17 @@
     const scenePills = document.querySelectorAll('.scene-btn');
     const audioVoice = document.getElementById('audio-voice');
     const audioMusic = document.getElementById('audio-music');
+
+    /* Audio Elements & Voice Selection (0 = Luigi / Maschile, 1 = Michela / Femminile) */
+    const urlParams = new URLSearchParams(window.location.search);
+    const voiceParam = urlParams.get('voice');
+    if (audioVoice) {
+      audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_it.mp3';
+      audioVoice.volume = 0.95;
+    }
+    if (audioMusic) {
+      audioMusic.volume = 0.25; // Sottofondo musicale a 432 Hz a volume bilanciato
+    }
     const sessionCompletionModal = document.getElementById('session-completion-modal');
     const btnCompletionExit = document.getElementById('btn-completion-exit');
     const btnCompletionRepeat = document.getElementById('btn-completion-repeat');
@@ -845,7 +856,10 @@
         }
       }
 
-      applyAudioSeek(audioVoice, Math.min(targetSec, VOICE_DURATION_SEC));
+      const voiceSeekLimit = (audioVoice && isFinite(audioVoice.duration) && audioVoice.duration > 0)
+        ? audioVoice.duration
+        : VOICE_DURATION_SEC;
+      applyAudioSeek(audioVoice, Math.min(targetSec, voiceSeekLimit));
       applyAudioSeek(audioMusic, targetSec);
 
       setTimeout(() => { isAudioSeeking = false; }, 600);
@@ -3729,8 +3743,12 @@
       }
 
       // Active voice track sync
+      const currentVoiceDuration = (audioVoice && isFinite(audioVoice.duration) && audioVoice.duration > 0)
+        ? audioVoice.duration
+        : VOICE_DURATION_SEC;
+
       if (state.isPlaying && !audioMusic.paused) {
-        if (timeSec < VOICE_DURATION_SEC) {
+        if (timeSec < currentVoiceDuration) {
           if (audioVoice.paused) {
             audioVoice.play().catch(() => {});
           }

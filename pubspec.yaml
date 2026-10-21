@@ -102,9 +102,13 @@ flutter:
     - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_4K_Mono.mp4"
     - "assets/Esperienze_Guido/Video/Respirazioni/Acqua/Respirazione_Acqua_VR360_SBS.mp4"
     - assets/vr_experiences/respirazione_aria/
+    - assets/vr_experiences/respirazione_aria/audio/
     - assets/vr_experiences/respirazione_acqua/
+    - assets/vr_experiences/respirazione_acqua/audio/
     - assets/vr_experiences/respirazione_fuoco/
+    - assets/vr_experiences/respirazione_fuoco/audio/
     - assets/vr_experiences/respirazione_terra/
+    - assets/vr_experiences/respirazione_terra/audio/
     - assets/vr_experiences/meditazione_mattino_acqua/
     - assets/vr_experiences/meditazione_mattino_acqua/audio/
     - assets/vr_experiences/meditazione_mattino_acqua/textures/
