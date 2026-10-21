@@ -114,7 +114,13 @@ class AudioResolverService {
 
     // Se forniti percorsi personalizzati espliciti non vuoti, usali come priorità
     if (customVoicePath != null && customVoicePath.trim().isNotEmpty) {
-      voicePath = customVoicePath.trim();
+      final customLower = customVoicePath.toLowerCase();
+      final isMaleFile = customLower.contains('luigi') || customLower.contains('voice_m');
+      // Se l'utente richiede Maschile (voiceSex == 0) e il percorso custom è una traccia femminile,
+      // non forzare la voce femminile sovrascrivendo la scelta utente
+      if (voiceSex == 1 || isMaleFile) {
+        voicePath = customVoicePath.trim();
+      }
     }
     if (customAmbientPath != null && customAmbientPath.trim().isNotEmpty) {
       ambientPath = customAmbientPath.trim();

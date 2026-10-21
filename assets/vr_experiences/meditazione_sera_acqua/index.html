@@ -317,7 +317,7 @@
   </div>
 
   <!-- Audio Elements -->
-  <audio id="audio-voice" src="audio/voice_it.mp3" preload="auto"></audio>
+  <audio id="audio-voice" preload="auto"></audio>
   <audio id="audio-music" src="audio/music_432hz.mp3" preload="auto"></audio>
 
   <script>
@@ -398,6 +398,7 @@
     const voiceParam = urlParams.get('voice');
     if (audioVoice) {
       audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_it.mp3';
+      audioVoice.load();
       audioVoice.volume = 0.95;
     }
     if (audioMusic) {

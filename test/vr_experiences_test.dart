@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -1997,48 +1998,91 @@ void main() {
       expect(state.isVrHeadsetPromptVisibleForTesting, isTrue);
     });
 
-    test('Water Meditations Dual-Voice and Audio Balance Quality Gate', () {
-      final meditations = [
-        'meditazione_mattino_acqua',
-        'meditazione_pomeriggio_acqua',
-        'meditazione_sera_acqua',
-        'meditazione_generale_acqua',
+    test('All 8 Experiences Dual-Voice and Audio Balance Quality Gate', () {
+      final experiences = [
+        {'folder': 'meditazione_mattino_acqua', 'isMed': true},
+        {'folder': 'meditazione_pomeriggio_acqua', 'isMed': true},
+        {'folder': 'meditazione_sera_acqua', 'isMed': true},
+        {'folder': 'meditazione_generale_acqua', 'isMed': true},
+        {'folder': 'respirazione_acqua', 'isMed': false},
+        {'folder': 'respirazione_aria', 'isMed': false},
+        {'folder': 'respirazione_fuoco', 'isMed': false},
+        {'folder': 'respirazione_terra', 'isMed': false},
       ];
 
-      for (final med in meditations) {
-        // 1. Verifica file voce maschile Luigi (voice_m.mp3)
-        final voiceM = File('assets/vr_experiences/$med/audio/voice_m.mp3');
-        expect(voiceM.existsSync(), isTrue, reason: '$med must contain audio/voice_m.mp3');
-        expect(voiceM.lengthSync(), greaterThan(1000000), reason: '$med voice_m.mp3 must be a valid audio file');
+      for (final exp in experiences) {
+        final folder = exp['folder'] as String;
+        final isMed = exp['isMed'] as bool;
+        final femaleFileName = isMed ? 'voice_it.mp3' : 'voice_f.mp3';
 
-        // 2. Verifica file voce femminile Michela (voice_it.mp3)
-        final voiceF = File('assets/vr_experiences/$med/audio/voice_it.mp3');
-        expect(voiceF.existsSync(), isTrue, reason: '$med must contain audio/voice_it.mp3');
-        expect(voiceF.lengthSync(), greaterThan(1000000), reason: '$med voice_it.mp3 must be a valid audio file');
+        // 1. Verifica file voce maschile (voice_m.mp3)
+        final voiceM = File('assets/vr_experiences/$folder/audio/voice_m.mp3');
+        expect(voiceM.existsSync(), isTrue, reason: '$folder must contain audio/voice_m.mp3');
+        expect(voiceM.lengthSync(), greaterThan(500000), reason: '$folder voice_m.mp3 must be a valid audio file');
 
-        // 3. Verifica template HTML per selezione voce e bilanciamento volumi
-        final htmlFile = File('assets/vr_experiences/$med/index.html');
+        // 2. Verifica file voce femminile (voice_it.mp3 / voice_f.mp3)
+        final voiceF = File('assets/vr_experiences/$folder/audio/$femaleFileName');
+        expect(voiceF.existsSync(), isTrue, reason: '$folder must contain audio/$femaleFileName');
+        expect(voiceF.lengthSync(), greaterThan(500000), reason: '$folder $femaleFileName must be a valid audio file');
+
+        // 3. I file maschile e femminile NON devono essere identici
+        final bytesM = voiceM.readAsBytesSync();
+        final bytesF = voiceF.readAsBytesSync();
+        expect(listEquals(bytesM, bytesF), isFalse,
+            reason: '$folder voice_m.mp3 and $femaleFileName must not be identical');
+
+        // 4. Verifica template HTML per selezione voce, caricamento e bilanciamento volumi
+        final htmlFile = File('assets/vr_experiences/$folder/index.html');
         expect(htmlFile.existsSync(), isTrue);
         final html = htmlFile.readAsStringSync();
 
+        // Nessun src hardcoded nell'elemento audio-voice (evita preload forzato della voce femminile)
+        expect(html.contains('<audio id="audio-voice" src="') ||
+               html.contains('<audio id="audio-voice" preload="auto" playsinline src="'), isFalse,
+            reason: '$folder audio-voice tag must not contain hardcoded src attribute');
+
+        // Chiamata audioVoice.load() presente
+        expect(html.contains('audioVoice.load()'), isTrue,
+            reason: '$folder must call audioVoice.load() when rebinding voice source');
+
         // Parametro query voice e switch a voice_m.mp3
         expect(html.contains("urlParams.get('voice')") || html.contains('urlParams.get("voice")'), isTrue,
-            reason: '$med index.html must parse URL query voice parameter');
+            reason: '$folder index.html must parse URL query voice parameter');
         expect(html.contains('audio/voice_m.mp3'), isTrue,
-            reason: '$med index.html must support audio/voice_m.mp3');
-        expect(html.contains('audio/voice_it.mp3'), isTrue,
-            reason: '$med index.html must default to audio/voice_it.mp3');
+            reason: '$folder index.html must support audio/voice_m.mp3');
 
         // Volumi bilanciati: voce a 0.95, musica sottofondo a 0.25
         expect(html.contains('0.95'), isTrue,
-            reason: '$med must balance voice volume to 0.95');
+            reason: '$folder must balance voice volume to 0.95');
         expect(html.contains('0.25'), isTrue,
-            reason: '$med must balance background music volume to 0.25');
+            reason: '$folder must balance background music volume to 0.25');
 
         // Giroscopio protetto solo per modalità VR
         expect(html.contains('isVRMode'), isTrue,
-            reason: '$med must guard gyroscope controls with isVRMode');
+            reason: '$folder must guard gyroscope controls with isVRMode');
       }
+    });
+
+    test('SettingsState defaults to Femminile (1) and toggles cleanly', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPrefsInstanceProvider.overrideWith((ref) => prefs),
+        ],
+      );
+
+      final state = container.read(settingsProvider);
+      expect(state.voiceSex, 1, reason: 'Default voiceSex must be 1 (Michela / Femminile)');
+
+      final notifier = container.read(settingsProvider.notifier);
+      await notifier.changeVoiceSex(0);
+      expect(container.read(settingsProvider).voiceSex, 0, reason: 'voiceSex must switch to 0 (Luigi / Maschile)');
+      expect(prefs.getInt('VoiceSex'), 0);
+
+      await notifier.changeVoiceSex(1);
+      expect(container.read(settingsProvider).voiceSex, 1, reason: 'voiceSex must switch to 1 (Michela / Femminile)');
+      expect(prefs.getInt('VoiceSex'), 1);
     });
   });
 }

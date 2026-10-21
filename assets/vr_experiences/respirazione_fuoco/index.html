@@ -541,6 +541,7 @@
 
     if (audioVoice) {
       audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_f.mp3';
+      audioVoice.load();
       audioVoice.volume = 0.95;
     }
     if (audioMusic) {

@@ -111,7 +111,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       effectsVolume: 3,
       voiceVolume: 3,
       isVoiceMuted: false,
-      voiceSex: 0,
+      voiceSex: 1,
       language: defaultLang,
       isUnlocked: false,
       isVrMode: false,
@@ -131,7 +131,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final effects = _prefs!.getInt("Effects") ?? 3;
     final voice = _prefs!.getInt("Voice") ?? 3;
     final muteVoice = _prefs!.getBool("MuteVoice") ?? false;
-    final sex = _prefs!.getInt("VoiceSex") ?? 0;
+    final sex = _prefs!.getInt("VoiceSex") ?? 1;
     final lang = _prefs!.getInt("Lang") ?? defaultLang;
     final unlocked = _prefs!.getBool("IsUnlocked") ?? false;
     final darkTheme = _prefs!.getBool("IsDarkTheme") ?? true;

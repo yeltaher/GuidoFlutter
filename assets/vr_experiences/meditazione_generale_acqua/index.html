@@ -448,7 +448,7 @@
   </div>
 
   <!-- Audio Elements: Official Michela Voice (456.78s) & 432 Hz Music Loop (240.0s) -->
-  <audio id="audio-voice" preload="auto" playsinline src="audio/voice_it.mp3"></audio>
+  <audio id="audio-voice" preload="auto" playsinline></audio>
   <audio id="audio-music-a" preload="auto" playsinline src="audio/music_432hz.mp3"></audio>
   <audio id="audio-music-b" preload="auto" playsinline src="audio/music_432hz.mp3"></audio>
 
@@ -536,6 +536,7 @@
     const voiceParam = urlParams.get('voice');
     if (audioVoice) {
       audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_it.mp3';
+      audioVoice.load();
       audioVoice.volume = 0.95;
     }
     if (audioMusicA) {
