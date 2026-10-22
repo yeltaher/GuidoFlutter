@@ -332,7 +332,7 @@ void main() {
       );
       expect(
         urlFlat,
-        'http://localhost:8085/vr_experiences/respirazione_aria/index.html?autostart=true',
+        'http://localhost:8085/vr_experiences/respirazione_aria/index.html?vr=0&autostart=true',
       );
 
       final urlVr = service.getExperienceUrl(
@@ -383,6 +383,55 @@ void main() {
         final medFemaleUrl = service.getExperienceUrl(medType, voiceSex: 1);
         expect(medFemaleUrl.contains('voice=f'), isTrue,
             reason: '${medType.folderName} must include voice=f for Michela');
+      }
+    });
+
+    test('LocalVrServerService forces vr=0 in 2D and vr=true in VR across all experiences', () {
+      final service = LocalVrServerService(port: 8085);
+      for (final type in VrExperienceType.values) {
+        final url2D = service.getExperienceUrl(type, isVrMode: false);
+        expect(url2D, contains('vr=0'), reason: '${type.name} in 2D must include vr=0');
+        expect(url2D, isNot(contains('vr=true')), reason: '${type.name} in 2D must not contain vr=true');
+
+        final urlVR = service.getExperienceUrl(type, isVrMode: true);
+        expect(urlVR, contains('vr=true'), reason: '${type.name} in VR must include vr=true');
+        expect(urlVR, isNot(contains('vr=0')), reason: '${type.name} in VR must not contain vr=0');
+      }
+    });
+
+    test('LocalVrServerService probeSocket returns false on closed port without throwing', () async {
+      final service = LocalVrServerService(port: 59999);
+      final isUp = await service.probeSocket(timeout: const Duration(milliseconds: 100));
+      expect(isUp, isFalse);
+    });
+
+    test('All 8 offline HTML experience templates strictly enforce monoscopic 2D scissor reset', () {
+      for (final type in VrExperienceType.values) {
+        final path = 'assets/vr_experiences/${type.folderName}/index.html';
+        final file = File(path);
+        expect(file.existsSync(), isTrue, reason: '$path must exist on disk');
+
+        final content = file.readAsStringSync();
+        expect(
+          content.contains('renderer.setScissorTest(false)'),
+          isTrue,
+          reason: '$path must reset scissorTest(false) in monoscopic mode',
+        );
+        expect(
+          content.contains('renderer.setViewport(0, 0'),
+          isTrue,
+          reason: '$path must reset viewport(0, 0, ...) in monoscopic mode',
+        );
+        expect(
+          content.contains('setVRMode(false)') || content.contains('setVR(false)'),
+          isTrue,
+          reason: '$path must support and handle setVRMode(false) or setVR(false)',
+        );
+        expect(
+          content.contains('setVRMode:'),
+          isTrue,
+          reason: '$path must expose setVRMode in window.GuidoVR',
+        );
       }
     });
   });

@@ -661,7 +661,14 @@
       pause: function() { pauseSession(); },
       toggle: function() { togglePlayPause(); },
       reset: function() { resetSession(); },
-      setVRMode: function(enable) { setVR(enable); },
+      setVRMode: function(enable) { setVR(!!enable); },
+      toggleVR: function(forced) {
+        if (typeof forced === 'boolean') {
+          setVR(forced);
+        } else {
+          toggleVR();
+        }
+      },
       setMuted: function(mute) { setAudioMuted(mute); },
       recenter: function() { recenterView(); },
       setDeviceOrientation: function(alpha, beta, gamma) {
@@ -1227,6 +1234,8 @@
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.0;
       renderer.setClearColor(0x052848, 1.0);
+      renderer.setScissorTest(false);
+      renderer.setViewport(0, 0, canvasWidth(), canvasHeight());
       container.appendChild(renderer.domElement);
 
       // Procedural 360° Oceanic Environment Map
@@ -3012,6 +3021,8 @@
           screen.orientation.unlock().catch(() => {});
         }
         if (textSpriteMesh) textSpriteMesh.material.opacity = 0;
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, canvasWidth(), canvasHeight());
       }
 
       camera.updateProjectionMatrix();
@@ -3038,6 +3049,10 @@
       stereoCamera.aspect = 0.5;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
       renderer.setSize(w, h);
+      if (!state.isVRMode) {
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, w, h);
+      }
     }
 
     /* ======================================================================
@@ -3180,6 +3195,7 @@
 
         renderer.setScissorTest(false);
       } else {
+        renderer.setScissorTest(false);
         renderer.setViewport(0, 0, width, height);
         renderer.render(scene, camera);
       }
@@ -3308,12 +3324,20 @@
 
       // Auto-start immediately in app / autostart
       const urlParams = new URLSearchParams(window.location.search);
+      const vrParam = urlParams.get('vr');
+      const isVrInit = (vrParam === 'true' || vrParam === '1' || vrParam === 'yes');
       const gate = document.getElementById('audio-gate');
       if (gate) {
         gate.style.setProperty('display', 'none', 'important');
       }
-      if (urlParams.get('vr') === 'true') {
+      if (isVrInit) {
         setVR(true);
+      } else {
+        setVR(false);
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, canvasWidth(), canvasHeight());
+        camera.aspect = canvasWidth() / canvasHeight();
+        camera.updateProjectionMatrix();
       }
       dismissGateAndStart();
       window.focus();

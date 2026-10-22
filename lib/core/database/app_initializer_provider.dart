@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import '../../features/vr_experiences/application/local_vr_server_service.dart';
 import 'models/user_stats_model.dart';
 
 /// Provider di stato per l'istanza di SharedPreferences
@@ -60,7 +61,16 @@ final appInitializerProvider = FutureProvider<void>((ref) async {
     debugPrint('[AppInitializer] Errore auto-seeding: $e');
   }
 
-  // Avvio di LocalVrServerService delegato on-demand all'ingresso nelle esperienze VR (VrExperienceScreen)
-  // per eliminare contese di porte socket e blocchi durante la splash screen o il boot iniziale.
+  // Pre-warming in background del server locale WebXR (offline Three.js).
+  // Eseguito in modalità asincrona non bloccante (senza await) per garantire che
+  // la splash screen e il boot iniziale rimangano istantanei, ma il socket su porta
+  // 8085 sia già bindato e pronto quando l'utente entra nella prima esperienza.
+  try {
+    ref.read(localVrServerServiceProvider).startServer().catchError((err) {
+      debugPrint('[AppInitializer] Notice: Pre-warming LocalVrServer differito: $err');
+    });
+  } catch (e) {
+    debugPrint('[AppInitializer] Warning pre-warming LocalVrServer: $e');
+  }
 });
 

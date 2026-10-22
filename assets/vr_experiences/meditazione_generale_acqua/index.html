@@ -660,6 +660,8 @@
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.10;
+      renderer.setScissorTest(false);
+      renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       container.appendChild(renderer.domElement);
 
       textureLoader = new THREE.TextureLoader();
@@ -3211,7 +3213,12 @@
         if (state.isCompleted) {
           show2DCompletionPopup();
         }
+        if (renderer) {
+          renderer.setScissorTest(false);
+          renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+        }
       }
+      if (camera) camera.updateProjectionMatrix();
       onWindowResize();
       notifyFlutter('onVRModeChanged', { isVR: state.isVRMode });
     }
@@ -3461,6 +3468,10 @@
       const dpr = Math.min(window.devicePixelRatio || 1, state.isVRMode ? 1.25 : 1.30);
       renderer.setPixelRatio(dpr);
       renderer.setSize(w, h);
+      if (!state.isVRMode) {
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, w, h);
+      }
     }
 
     /* ======================================================================
@@ -3640,7 +3651,7 @@
         pauseExperience();
       },
       recenter: function() { recenterView(); },
-      setVRMode: function(enable) { setVRMode(enable); },
+      setVRMode: function(enable) { setVRMode(!!enable); },
       enableVR: function() { setVRMode(true); },
       disableVR: function() { setVRMode(false); },
       toggleVR: function(enable) {
@@ -3743,8 +3754,16 @@
 
       // Check query params (?vr=true, ?desktop=true, ?seek=)
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('vr') === 'true' || urlParams.get('vr') === '1') {
+      const vrParam = urlParams.get('vr');
+      const isVrInit = (vrParam === 'true' || vrParam === '1' || vrParam === 'yes');
+      if (isVrInit) {
         setVRMode(true);
+      } else {
+        setVRMode(false);
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
       }
       if (urlParams.get('desktop') === 'true') {
         state.isDesktop = true;

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Socket;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,6 +48,18 @@ class LocalVrServerService {
     }
   }
 
+  /// Verifica direttamente se il socket TCP su 127.0.0.1:port accetta connessioni.
+  Future<bool> probeSocket({Duration timeout = const Duration(milliseconds: 250)}) async {
+    if (kIsWeb) return false;
+    try {
+      final socket = await Socket.connect('127.0.0.1', port, timeout: timeout);
+      socket.destroy();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Indica se il server locale è attualmente attivo ed in ascolto.
   bool get isRunning => !kIsWeb && (_localhostServer?.isRunning() ?? false);
 
@@ -63,7 +76,7 @@ class LocalVrServerService {
       return;
     }
 
-    if (server.isRunning()) {
+    if (server.isRunning() && await probeSocket()) {
       return;
     }
 
@@ -75,9 +88,27 @@ class LocalVrServerService {
     _startCompleter = Completer<void>();
 
     try {
-      debugPrint('[LocalVrServerService] Avvio InAppLocalhostServer su porta $port (root: $documentRoot)...');
-      await server.start();
-      debugPrint('[LocalVrServerService] InAppLocalhostServer avviato con successo su http://localhost:$port/');
+      if (!server.isRunning()) {
+        debugPrint('[LocalVrServerService] Avvio InAppLocalhostServer su porta $port (root: $documentRoot)...');
+        await server.start();
+      }
+
+      // Loop di verifica con polling sul socket locale (fino a 15 tentativi da 100ms)
+      bool socketReady = false;
+      for (int i = 0; i < 15; i++) {
+        if (server.isRunning() && await probeSocket()) {
+          socketReady = true;
+          break;
+        }
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
+      if (socketReady) {
+        debugPrint('[LocalVrServerService] InAppLocalhostServer verificato e pronto su http://localhost:$port/');
+      } else {
+        debugPrint('[LocalVrServerService] Attenzione: socket probe non ha confermato ascolto su $port entro il timeout');
+      }
+
       _startCompleter?.complete();
     } catch (e, st) {
       debugPrint('[LocalVrServerService] Errore durante l\'avvio di InAppLocalhostServer: $e\n$st');
@@ -87,6 +118,25 @@ class LocalVrServerService {
     } finally {
       _isStarting = false;
     }
+  }
+
+  /// Garantisce che il server HTTP locale sia avviato ed in grado di rispondere a richieste TCP.
+  Future<bool> ensureServerReady({Duration timeout = const Duration(seconds: 4)}) async {
+    if (kIsWeb) return false;
+    if (isRunning && await probeSocket()) return true;
+
+    if (!isRunning) {
+      await startServer();
+    }
+
+    final stopwatch = Stopwatch()..start();
+    while (stopwatch.elapsed < timeout) {
+      if (isRunning && await probeSocket()) {
+        return true;
+      }
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+    return isRunning;
   }
 
   /// Arresta il server HTTP locale e rilascia la porta occupata.
@@ -112,7 +162,11 @@ class LocalVrServerService {
     bool cacheBust = false,
   }) {
     final queryParams = <String>[];
-    if (isVrMode) queryParams.add('vr=true');
+    if (isVrMode) {
+      queryParams.add('vr=true');
+    } else {
+      queryParams.add('vr=0');
+    }
     if (autoStart) queryParams.add('autostart=true');
     if (voiceSex != null) {
       queryParams.add('voice=${voiceSex == 0 ? 'm' : 'f'}');

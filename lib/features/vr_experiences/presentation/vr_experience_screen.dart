@@ -61,8 +61,38 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
   bool _showVrHeadsetPrompt = false;
   Timer? _serverPollTimer;
   Timer? _wakelockKeepAliveTimer;
+  Timer? _loadingWatchdogTimer;
+  Timer? _loadingFallbackTimer;
+  Timer? _reloadRetryTimer;
+  int _loadRetryCount = 0;
   StreamSubscription<OrientationEvent>? _rotationSubscription;
   int _lastSensorTimestampMs = 0;
+
+  void _startLoadingWatchdog() {
+    _loadingWatchdogTimer?.cancel();
+    _loadingFallbackTimer?.cancel();
+
+    _loadingWatchdogTimer = Timer(const Duration(seconds: 5), () async {
+      if (mounted && !_isWebReady && !_isExiting) {
+        debugPrint('[VrExperienceScreen] Watchdog: Caricamento in sospeso dopo 5s. Verifica server locale e retry...');
+        final serverService = ref.read(localVrServerServiceProvider);
+        final ready = await serverService.ensureServerReady(timeout: const Duration(seconds: 2));
+        if (ready && mounted && !_isWebReady) {
+          debugPrint('[VrExperienceScreen] Watchdog: Server pronto, ricarico WebView...');
+          _webViewController?.reload();
+        }
+      }
+    });
+
+    _loadingFallbackTimer = Timer(const Duration(milliseconds: 7500), () {
+      if (mounted && !_isWebReady && !_isExiting) {
+        debugPrint('[VrExperienceScreen] Watchdog: Fallback 7.5s raggiunto. Sblocco interfaccia di caricamento.');
+        setState(() {
+          _isWebReady = true;
+        });
+      }
+    });
+  }
 
   @visibleForTesting
   bool get isSessionCompletedForTesting => _isSessionCompleted;
@@ -230,14 +260,16 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
       debugPrint('[VrExperienceScreen] Errore configurazione AudioSession: $e');
     }
 
-    // 5. Avvia InAppLocalhostServer se non ancora in esecuzione
+    // 5. Avvia InAppLocalhostServer se non ancora in esecuzione e garantisci disponibilità socket
     final serverService = ref.read(localVrServerServiceProvider);
     await serverService.startServer();
+    await serverService.ensureServerReady(timeout: const Duration(seconds: 4));
 
     if (mounted) {
       setState(() {
         _isServerReady = true;
       });
+      _startLoadingWatchdog();
     }
   }
 
@@ -662,6 +694,9 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
       handlerName: 'onVRReady',
       callback: (args) {
         debugPrint('[VrExperienceBridge] Evento onVRReady ricevuto: $args');
+        _loadingWatchdogTimer?.cancel();
+        _loadingFallbackTimer?.cancel();
+        _reloadRetryTimer?.cancel();
         if (mounted) {
           setState(() {
             _isWebReady = true;
@@ -676,6 +711,14 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
           );
         } else {
           _stopNativeSensorStream();
+          controller.evaluateJavascript(
+            source: '''
+              if (window.GuidoVR) {
+                if (window.GuidoVR.setVRMode) window.GuidoVR.setVRMode(false);
+                else if (window.GuidoVR.toggleVR) window.GuidoVR.toggleVR(false);
+              }
+            ''',
+          );
         }
 
         // Se autoStart abilitato e non siamo in attesa del popup VR, avvia la sessione
@@ -790,6 +833,9 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
     _stopNativeSensorStream();
     _wakelockKeepAliveTimer?.cancel();
     _serverPollTimer?.cancel();
+    _loadingWatchdogTimer?.cancel();
+    _loadingFallbackTimer?.cancel();
+    _reloadRetryTimer?.cancel();
     if (!_isExiting) {
       _isExiting = true;
       _cleanupNativeAndWebGlResources();
@@ -986,8 +1032,44 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                       await InAppWebViewController.clearAllCache();
                     } catch (_) {}
                   },
+                  onLoadStart: (controller, url) {
+                    debugPrint('[VrExperienceScreen] Avvio caricamento WebGL URL: $url');
+                  },
+                  onProgressChanged: (controller, progress) {
+                    if (progress >= 100 && mounted && !_isWebReady) {
+                      _loadingWatchdogTimer?.cancel();
+                      Future.delayed(const Duration(milliseconds: 800), () {
+                        if (mounted && !_isWebReady) {
+                          setState(() {
+                            _isWebReady = true;
+                          });
+                        }
+                      });
+                    }
+                  },
+                  onReceivedError: (controller, request, error) {
+                    debugPrint('[VrExperienceScreen] Errore connessione WebView: ${error.description} (${error.type})');
+                    if (!_isWebReady && !_isExiting && _loadRetryCount < 3) {
+                      _loadRetryCount++;
+                      _reloadRetryTimer?.cancel();
+                      _reloadRetryTimer = Timer(const Duration(milliseconds: 600), () async {
+                        if (mounted && !_isWebReady && !_isExiting) {
+                          final serverService = ref.read(localVrServerServiceProvider);
+                          await serverService.ensureServerReady(timeout: const Duration(seconds: 2));
+                          debugPrint('[VrExperienceScreen] Retry caricamento WebView #$_loadRetryCount...');
+                          controller.reload();
+                        }
+                      });
+                    }
+                  },
+                  onReceivedHttpError: (controller, request, errorResponse) {
+                    debugPrint('[VrExperienceScreen] Errore HTTP WebView: ${errorResponse.statusCode} ${errorResponse.reasonPhrase}');
+                  },
                   onLoadStop: (controller, url) {
                     _enforceKeepScreenOn();
+                    _loadingWatchdogTimer?.cancel();
+                    _loadingFallbackTimer?.cancel();
+                    _reloadRetryTimer?.cancel();
                     if (_isVrMode && !_showVrHeadsetPrompt) {
                       _startNativeSensorStream();
                     } else {
@@ -1049,6 +1131,12 @@ class VrExperienceScreenState extends ConsumerState<VrExperienceScreen> {
                           }
                           if ($_isVrMode && window.GuidoVR.setVRMode) {
                             window.GuidoVR.setVRMode(true);
+                          } else if (!$_isVrMode && window.GuidoVR) {
+                            if (window.GuidoVR.setVRMode) {
+                              window.GuidoVR.setVRMode(false);
+                            } else if (window.GuidoVR.toggleVR) {
+                              window.GuidoVR.toggleVR(false);
+                            }
                           }
                           if (!$_showVrHeadsetPrompt && window.GuidoVR.start) {
                             window.GuidoVR.start();

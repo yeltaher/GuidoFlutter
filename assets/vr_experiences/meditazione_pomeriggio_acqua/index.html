@@ -1272,6 +1272,8 @@
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.08;
+      renderer.setScissorTest(false);
+      renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       container.appendChild(renderer.domElement);
 
       /* --- 1. LIGHTING SETUP --- */
@@ -3681,10 +3683,16 @@
         if (vrReticleGroup) vrReticleGroup.visible = false;
         if (billboardMesh) billboardMesh.visible = false;
         hideVRCompletionPopup();
+        if (state.isCompleted) {
+          show2DCompletionPopup();
+        }
         if (screen.orientation && screen.orientation.unlock) {
           screen.orientation.unlock().catch(() => {});
         }
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       }
+      camera.updateProjectionMatrix();
       onWindowResize();
     }
 
@@ -3901,6 +3909,10 @@
       const maxDpr = state.isVRMode ? 1.25 : 1.3;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1.0, maxDpr));
       renderer.setSize(width, height);
+      if (!state.isVRMode) {
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, width, height);
+      }
     }
 
     /* ======================================================================
@@ -4070,10 +4082,16 @@
       },
       seek: function(sec) { seekExperience(sec); },
       recenter: function() { recenterView(); },
-      setVRMode: function(enable) { setVRMode(enable); },
+      setVRMode: function(enable) { setVRMode(!!enable); },
       enableVR: function() { setVRMode(true); },
       disableVR: function() { setVRMode(false); },
-      toggleVR: function() { toggleVR(); },
+      toggleVR: function(forced) {
+        if (typeof forced === 'boolean') {
+          setVRMode(forced);
+        } else {
+          toggleVR();
+        }
+      },
       setMuted: function(mute) {
         state.isMuted = !!mute;
         syncVolumes();
@@ -4194,8 +4212,16 @@
       animate(0);
 
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('vr') === 'true' || urlParams.get('vr') === '1') {
+      const vrParam = urlParams.get('vr');
+      const isVrInit = (vrParam === 'true' || vrParam === '1' || vrParam === 'yes');
+      if (isVrInit) {
         setVRMode(true);
+      } else {
+        setVRMode(false);
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
       }
       if (urlParams.has('seek')) {
         const targetSec = parseFloat(urlParams.get('seek'));

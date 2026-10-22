@@ -1143,6 +1143,8 @@
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.08;
+      renderer.setScissorTest(false);
+      renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       container.appendChild(renderer.domElement);
 
       textureLoader = new THREE.TextureLoader();
@@ -3532,6 +3534,8 @@
         if (state.isCompleted) {
           show2DCompletionPopup();
         }
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       }
       camera.updateProjectionMatrix();
       onWindowResize();
@@ -3571,6 +3575,10 @@
       stereoCamera.aspect = 0.5;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
       renderer.setSize(w, h);
+      if (!state.isVRMode) {
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, w, h);
+      }
     }
 
     /* ======================================================================
@@ -3796,6 +3804,7 @@
 
         renderer.setScissorTest(false);
       } else {
+        renderer.setScissorTest(false);
         renderer.setViewport(0, 0, width, height);
         renderer.render(scene, camera);
       }
@@ -3833,7 +3842,14 @@
       toggle: function() { togglePlay(); },
       reset: function() { resetSession(); },
       seek: function(sec) { seekExperience(sec); },
-      setVRMode: function(enable) { setVRMode(enable); },
+      setVRMode: function(enable) { setVRMode(!!enable); },
+      toggleVR: function(forced) {
+        if (typeof forced === 'boolean') {
+          setVRMode(forced);
+        } else {
+          toggleVR();
+        }
+      },
       showCompletionPopup: function() { onExperienceEnded(); },
       hideCompletionPopup: function() { hideVRCompletionPopup(); hide2DCompletionPopup(); },
       recenter: function() { recenterView(); },
@@ -3984,12 +4000,20 @@
       animate(0);
 
       const urlParams = new URLSearchParams(window.location.search);
+      const vrParam = urlParams.get('vr');
+      const isVrInit = (vrParam === 'true' || vrParam === '1' || vrParam === 'yes');
       if (audioGate) {
         audioGate.classList.add('fade-out');
         audioGate.style.setProperty('display', 'none', 'important');
       }
-      if (urlParams.get('vr') === 'true' || urlParams.get('vr') === '1') {
+      if (isVrInit) {
         setVRMode(true);
+      } else {
+        setVRMode(false);
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
       }
       if (urlParams.has('seek')) {
         const targetSec = parseFloat(urlParams.get('seek'));
