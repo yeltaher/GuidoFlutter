@@ -550,10 +550,10 @@
     if (audioVoice) {
       audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_f.mp3';
       audioVoice.load();
-      audioVoice.volume = 0.95;
+      audioVoice.volume = 1.0;
     }
     if (audioMusic) {
-      audioMusic.volume = 0.25; // Campane tibetane / musica a volume ridotto come sottofondo
+      audioMusic.volume = 0.10; // Sottofondo musicale a volume soffuso e rilassante
     }
 
   (function() {
@@ -564,11 +564,11 @@
        ====================================================================== */
     const PACING_CONFIG = {
       TOTAL_CYCLES: 3,               // 3 cicli completi conformi allo Storyboard
-      APPROACH_DURATION: 4000,       // 4.0s avvicinamento armonioso al pianeta Terra
-      INHALE_DURATION: 4000,         // 4.0s Inspiro (la Terra si gonfia ed irradia luce)
-      HOLD_DURATION: 6000,           // 6.0s Trattieni (la Terra rimane gonfia, scintille ed anelli PERIFIT)
-      EXHALE_DURATION: 8000,         // 8.0s Espiro (la Terra si sgonfia lentamente, scintille svaniscono)
-      OUTRO_DURATION: 7000,          // 7.0s integrazione e respiro spontaneo regolare
+      APPROACH_DURATION: 7000,
+      INHALE_DURATION: 6000,
+      HOLD_DURATION: 6000,
+      EXHALE_DURATION: 8000,
+      OUTRO_DURATION: 15000,
       
       // Coordinates
       EARTH_BASE_X: 0.0,
@@ -595,6 +595,45 @@
       OUTRO: 'OUTRO',
       COMPLETED: 'COMPLETED'
     };
+
+    const TIMELINE_TERRA_M = [
+      { step: STEPS.APPROACH, start: 0.0, end: 7.0, cycle: 1 },
+      // Cycle 1
+      { step: STEPS.INHALE, start: 7.0, end: 15.0, cycle: 1 },
+      { step: STEPS.HOLD, start: 15.0, end: 20.0, cycle: 1 },
+      { step: STEPS.EXHALE, start: 20.0, end: 27.0, cycle: 1 },
+      // Cycle 2
+      { step: STEPS.INHALE, start: 27.0, end: 33.0, cycle: 2 },
+      { step: STEPS.HOLD, start: 33.0, end: 40.0, cycle: 2 },
+      { step: STEPS.EXHALE, start: 40.0, end: 47.0, cycle: 2 },
+      // Cycle 3
+      { step: STEPS.INHALE, start: 47.0, end: 52.0, cycle: 3 },
+      { step: STEPS.HOLD, start: 52.0, end: 56.0, cycle: 3 },
+      { step: STEPS.EXHALE, start: 56.0, end: 63.0, cycle: 3 },
+      // Outro
+      { step: STEPS.OUTRO, start: 63.0, end: 75.6, cycle: 3 }
+    ];
+
+    const TIMELINE_TERRA_F = [
+      { step: STEPS.APPROACH, start: 0.0, end: 7.0, cycle: 1 },
+      // Cycle 1
+      { step: STEPS.INHALE, start: 7.0, end: 14.0, cycle: 1 },
+      { step: STEPS.HOLD, start: 14.0, end: 20.0, cycle: 1 },
+      { step: STEPS.EXHALE, start: 20.0, end: 26.0, cycle: 1 },
+      // Cycle 2
+      { step: STEPS.INHALE, start: 26.0, end: 33.0, cycle: 2 },
+      { step: STEPS.HOLD, start: 33.0, end: 40.0, cycle: 2 },
+      { step: STEPS.EXHALE, start: 40.0, end: 47.0, cycle: 2 },
+      // Cycle 3
+      { step: STEPS.INHALE, start: 47.0, end: 51.0, cycle: 3 },
+      { step: STEPS.HOLD, start: 51.0, end: 54.0, cycle: 3 },
+      { step: STEPS.EXHALE, start: 54.0, end: 63.0, cycle: 3 },
+      // Outro
+      { step: STEPS.OUTRO, start: 63.0, end: 77.4, cycle: 3 }
+    ];
+
+    const TIMELINE_TERRA = (voiceParam === 'm') ? TIMELINE_TERRA_M : TIMELINE_TERRA_F;
+    const TOTAL_DURATION_SEC = (voiceParam === 'm') ? 75.6 : 77.4;
 
     const state = {
       currentStep: STEPS.STANDBY,
@@ -681,7 +720,7 @@
         audioCtx = new AudioContextClass();
 
         masterGain = audioCtx.createGain();
-        masterGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+        masterGain.gain.setValueAtTime(0.20, audioCtx.currentTime);
         masterGain.connect(audioCtx.destination);
 
         // A) 432 Hz Harmonic Pad + 174 Hz Solfeggio Root (Binaural Theta Beat 3.8 Hz)
@@ -869,7 +908,7 @@
           osc.frequency.setValueAtTime(baseFreq * p.fRatio, now);
 
           gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(p.gainRatio * 0.45, now + 0.06);
+          gain.gain.linearRampToValueAtTime(p.gainRatio * 0.15, now + 0.06);
           gain.gain.exponentialRampToValueAtTime(0.0001, now + p.decay);
 
           osc.connect(gain);
@@ -2344,10 +2383,11 @@
       }
       state.isCompleted = false;
       state.isRunning = true;
+      state.virtualTime = 0;
       if (audioVoice) { audioVoice.play().catch(function(e) { console.warn('audioVoice play:', e); }); }
       if (audioMusic) { audioMusic.play().catch(function(e) { console.warn('audioMusic play:', e); }); }
       state.currentCycle = 1;
-      rampAudioLevels(0.7, 0.45, 2.0);
+      rampAudioLevels(0.04, 0.02, 2.0);
       transitionToStep(STEPS.APPROACH, performance.now());
       notifyFlutter('onSessionStart', { experience: 'respirazione_terra', cycle: 1 });
     }
@@ -2357,7 +2397,7 @@
       if (audioMusic) audioMusic.pause();
       state.isRunning = false;
       state.pauseStartTime = performance.now();
-      rampAudioLevels(0.15, 0.15, 0.8);
+      rampAudioLevels(0.01, 0.01, 0.8);
       updateUIElements();
       notifyFlutter('onSessionPause', { step: state.currentStep, cycle: state.currentCycle });
     }
@@ -2370,7 +2410,9 @@
       const pauseDuration = performance.now() - state.pauseStartTime;
       state.stepStartTime += pauseDuration;
       state.isRunning = true;
-      rampAudioLevels(0.7, 0.45, 1.0);
+      if (audioVoice) { audioVoice.play().catch(function(e) { console.warn('audioVoice play:', e); }); }
+      if (audioMusic) { audioMusic.play().catch(function(e) { console.warn('audioMusic play:', e); }); }
+      rampAudioLevels(0.04, 0.02, 1.0);
       updateUIElements();
       notifyFlutter('onSessionResume', { step: state.currentStep, cycle: state.currentCycle });
     }
@@ -2399,6 +2441,7 @@
         outroSafetyTimer = null;
       }
       state.isCompleted = false;
+      state.virtualTime = 0;
       state.currentStep = STEPS.STANDBY;
       state.currentCycle = 1;
       state.isRunning = false;
@@ -2469,11 +2512,35 @@
     function updateBioPacing(now) {
       if (!state.isRunning) return;
 
-      const currentTime = (typeof now === 'number' && now > 0) ? now : performance.now();
-      const elapsed = currentTime - state.stepStartTime;
-      const duration = state.stepDuration || 1000;
-      const t = Math.min(elapsed / duration, 1.0);
-      const remainingSec = Math.max(0, (duration - elapsed) / 1000).toFixed(1);
+      // Master Audio Synchronization
+      let timeSec = 0;
+      if (audioVoice && !audioVoice.paused && !isNaN(audioVoice.currentTime) && audioVoice.currentTime > 0) {
+        timeSec = audioVoice.currentTime;
+        state.virtualTime = timeSec;
+      } else {
+        if (state.virtualTime === undefined) state.virtualTime = 0;
+        state.virtualTime += 0.016;
+        timeSec = state.virtualTime;
+      }
+
+      let activeEntry = TIMELINE_TERRA.find(c => timeSec >= c.start && timeSec < c.end);
+      if (!activeEntry) {
+        if (timeSec >= TOTAL_DURATION_SEC) {
+          if (!state.isCompleted) transitionToStep(STEPS.COMPLETED, now);
+          return;
+        }
+        activeEntry = TIMELINE_TERRA[0];
+      }
+
+      if (state.currentStep !== activeEntry.step || state.currentCycle !== activeEntry.cycle) {
+        state.currentCycle = activeEntry.cycle;
+        transitionToStep(activeEntry.step, now);
+      }
+
+      const elapsed = timeSec - activeEntry.start;
+      const duration = activeEntry.end - activeEntry.start;
+      const t = Math.min(Math.max(elapsed / duration, 0.0), 1.0);
+      const remainingSec = Math.max(0, activeEntry.end - timeSec).toFixed(1);
 
       // Organic Sinusoidal Easing: easeSine = (1 - cos(pi * t)) / 2
       const easeSine = (1.0 - Math.cos(Math.PI * t)) * 0.5;
@@ -2485,12 +2552,9 @@
           state.atmosphereGlow = PACING_CONFIG.MIN_ATMOSPHERE * (0.85 + 0.15 * t);
           updateHUD(t, "ACCOGLIENZA", `${remainingSec}s`, "Svuota tutta l'aria dai polmoni");
           renderVRBillboardText("PIANETA TERRA", "LASCIA USCIRE L'ARIA", 1.0);
-          if (elapsed >= duration) {
-            transitionToStep(STEPS.INHALE, now);
-          }
           break;
 
-        // FASE 1: INSPIRA (4.0s) - La Terra si espande ed irradia energia
+        // FASE 1: INSPIRA - La Terra si espande ed irradia energia
         case STEPS.INHALE:
           state.camPosZ = PACING_CONFIG.CAM_TARGET_POS_Z;
           state.earthScale = PACING_CONFIG.MIN_SCALE + (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
@@ -2507,19 +2571,15 @@
             updateHUD(t, "INSPIRA", `${remainingSec}s`, "Inspira profondamente");
             renderVRBillboardText("INSPIRA", "ESPANDI IL RESPIRO", 1.0);
           }
-
-          if (elapsed >= duration) {
-            transitionToStep(STEPS.HOLD, now);
-          }
           break;
 
-        // FASE 2: TRATTIENI (6.0s) - La Terra rimane gonfia, scintille ed anelli PERIFIT
+        // FASE 2: TRATTIENI - La Terra rimane gonfia, scintille ed anelli PERIFIT
         case STEPS.HOLD:
           state.earthScale = PACING_CONFIG.MAX_SCALE;
           state.atmosphereGlow = PACING_CONFIG.MAX_ATMOSPHERE;
 
-          // Transizione di fase sofficissima: fade-in fluido con curva smoothstep in 1.2s
-          const holdFadeProgress = Math.min(1.0, elapsed / 1200.0);
+          // Transizione sofficissima: fade-in fluido con curva smoothstep in 1.2s
+          const holdFadeProgress = Math.min(1.0, elapsed / 1.2);
           const holdFadeIn = holdFadeProgress * holdFadeProgress * (3.0 - 2.0 * holdFadeProgress);
           state.orbitalSparksIntensity = holdFadeIn;
 
@@ -2530,18 +2590,14 @@
             updateHUD(t, "TRATTIENI", `${remainingSec}s`, "Trattieni il respiro • Scintille di luce");
             renderVRBillboardText("TRATTIENI", "TRATTIENI IL RESPIRO", 1.0);
           }
-
-          if (elapsed >= duration) {
-            transitionToStep(STEPS.EXHALE, now);
-          }
           break;
 
-        // FASE 3: ESPIRA (8.0s) - La Terra si sgonfia dolcemente, scintille svaniscono
+        // FASE 3: ESPIRA - La Terra si sgonfia dolcemente, scintille svaniscono
         case STEPS.EXHALE:
           state.earthScale = PACING_CONFIG.MAX_SCALE - (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
           state.atmosphereGlow = PACING_CONFIG.MAX_ATMOSPHERE - (PACING_CONFIG.MAX_ATMOSPHERE - PACING_CONFIG.MIN_ATMOSPHERE) * easeSine;
 
-          // Dissolvenza progressiva, lenta e morbida fino all'estinzione completa senza scatti visivi
+          // Dissolvenza progressiva, lenta e morbida
           const exhaleFadeOut = Math.max(0.0, 1.0 - t);
           state.orbitalSparksIntensity = exhaleFadeOut * exhaleFadeOut * (3.0 - 2.0 * exhaleFadeOut);
 
@@ -2555,18 +2611,9 @@
             updateHUD(t, "ESPIRA", `${remainingSec}s`, "Lascia uscire ogni tensione");
             renderVRBillboardText("ESPIRA", "RILASCIA OGNI TENSIONE", 1.0);
           }
-
-          if (elapsed >= duration) {
-            if (state.currentCycle < PACING_CONFIG.TOTAL_CYCLES) {
-              state.currentCycle++;
-              transitionToStep(STEPS.INHALE, now);
-            } else {
-              transitionToStep(STEPS.OUTRO, now);
-            }
-          }
           break;
 
-        // OUTRO & INTEGRAZIONE (7.0s)
+        // OUTRO & INTEGRAZIONE
         case STEPS.OUTRO:
           state.camPosZ = PACING_CONFIG.CAM_TARGET_POS_Z + (PACING_CONFIG.CAM_START_POS_Z - PACING_CONFIG.CAM_TARGET_POS_Z) * 0.45 * easeSine;
           state.earthScale = PACING_CONFIG.MIN_SCALE;
@@ -2574,9 +2621,6 @@
           state.orbitalSparksIntensity = 0.0;
           updateHUD(1.0, "RADICAMENTO", "Respiro Naturale", "Respiro calmo, regolare e profondo");
           renderVRBillboardText("RADICAMENTO", "PACE E ARMONIA", 1.0 - t * 0.25);
-          if (elapsed >= duration) {
-            transitionToStep(STEPS.COMPLETED, now);
-          }
           break;
       }
     }

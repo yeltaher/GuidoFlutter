@@ -642,8 +642,8 @@
       currentTime: 0,
       isPlaying: false,
       isMuted: false,
-      voiceVolume: 0.95,
-      musicVolume: 0.25,
+      voiceVolume: 1.0,
+      musicVolume: 0.10,
       currentSceneIndex: 0,
       isVRMode: false,
       isCompleted: false,
@@ -732,10 +732,10 @@
     if (audioVoice) {
       audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_it.mp3';
       audioVoice.load();
-      audioVoice.volume = 0.95;
+      audioVoice.volume = 1.0;
     }
     if (audioMusic) {
-      audioMusic.volume = 0.25; // Sottofondo musicale a 432 Hz a volume bilanciato
+      audioMusic.volume = 0.10; // Sottofondo musicale a 432 Hz a volume ridotto
     }
     const sessionCompletionModal = document.getElementById('session-completion-modal');
     const btnCompletionExit = document.getElementById('btn-completion-exit');

@@ -547,10 +547,10 @@
     if (audioVoice) {
       audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_f.mp3';
       audioVoice.load();
-      audioVoice.volume = 0.95;
+      audioVoice.volume = 1.0;
     }
     if (audioMusic) {
-      audioMusic.volume = 0.25; // Campane tibetane / musica a volume ridotto come sottofondo
+      audioMusic.volume = 0.10; // Sottofondo musicale a volume soffuso e rilassante
     }
 
   (function() {
@@ -561,9 +561,9 @@
        ====================================================================== */
     const PACING_CONFIG = {
       TOTAL_CYCLES: 5,
-      INHALE_DURATION: 4000,   // 4s: Balloon moves -11.0m -> -9.0m, Scale 1.0x -> 1.18x
-      EXHALE_DURATION: 6000,   // 6s: Balloon moves -9.0m -> -11.0m, Scale 1.18x -> 1.0x
-      OUTRO_DURATION: 4000,    // 4s: Peaceful outro
+      INHALE_DURATION: 4000,
+      EXHALE_DURATION: 6000,
+      OUTRO_DURATION: 18000,
       BALLOON_BASE_X: 0.0,
       BALLOON_BASE_Y: 0.3,     // Calibrated resting vertical coordinate
       BALLOON_BASE_Z: -11.0,   // Resting distance: Z = -11.0m (wide majestic sky view)
@@ -574,11 +574,63 @@
 
     const PHASE = {
       STANDBY: 'STANDBY',
+      INTRO: 'INTRO',
       INHALE: 'INHALE',
+      HOLD: 'HOLD',
       EXHALE: 'EXHALE',
+      PAUSE: 'PAUSE',
       OUTRO: 'OUTRO',
       COMPLETED: 'COMPLETED'
     };
+
+    const TIMELINE_ARIA_M = [
+      { phase: PHASE.INTRO, start: 0.0, end: 7.0, cycle: 1 },
+      // Cycle 1
+      { phase: PHASE.INHALE, start: 7.0, end: 17.0, cycle: 1 },
+      { phase: PHASE.HOLD, start: 17.0, end: 24.0, cycle: 1 },
+      { phase: PHASE.EXHALE, start: 24.0, end: 37.0, cycle: 1 },
+      // Cycle 2
+      { phase: PHASE.INHALE, start: 37.0, end: 47.0, cycle: 2 },
+      { phase: PHASE.EXHALE, start: 47.0, end: 61.0, cycle: 2 },
+      // Cycle 3
+      { phase: PHASE.PAUSE, start: 61.0, end: 68.0, cycle: 3 },
+      { phase: PHASE.INHALE, start: 68.0, end: 74.0, cycle: 3 },
+      { phase: PHASE.EXHALE, start: 74.0, end: 81.0, cycle: 3 },
+      // Cycle 4
+      { phase: PHASE.INHALE, start: 81.0, end: 89.0, cycle: 4 },
+      { phase: PHASE.EXHALE, start: 89.0, end: 98.0, cycle: 4 },
+      // Cycle 5
+      { phase: PHASE.INHALE, start: 98.0, end: 104.0, cycle: 5 },
+      { phase: PHASE.EXHALE, start: 104.0, end: 110.0, cycle: 5 },
+      // Outro
+      { phase: PHASE.OUTRO, start: 110.0, end: 129.3, cycle: 5 }
+    ];
+
+    const TIMELINE_ARIA_F = [
+      { phase: PHASE.INTRO, start: 0.0, end: 5.0, cycle: 1 },
+      // Cycle 1
+      { phase: PHASE.INHALE, start: 5.0, end: 16.0, cycle: 1 },
+      { phase: PHASE.HOLD, start: 16.0, end: 23.0, cycle: 1 },
+      { phase: PHASE.EXHALE, start: 23.0, end: 39.0, cycle: 1 },
+      // Cycle 2
+      { phase: PHASE.INHALE, start: 39.0, end: 49.0, cycle: 2 },
+      { phase: PHASE.EXHALE, start: 49.0, end: 63.0, cycle: 2 },
+      // Cycle 3
+      { phase: PHASE.PAUSE, start: 63.0, end: 68.0, cycle: 3 },
+      { phase: PHASE.INHALE, start: 68.0, end: 73.0, cycle: 3 },
+      { phase: PHASE.EXHALE, start: 73.0, end: 79.0, cycle: 3 },
+      // Cycle 4
+      { phase: PHASE.INHALE, start: 79.0, end: 86.0, cycle: 4 },
+      { phase: PHASE.EXHALE, start: 86.0, end: 97.0, cycle: 4 },
+      // Cycle 5
+      { phase: PHASE.INHALE, start: 97.0, end: 102.0, cycle: 5 },
+      { phase: PHASE.EXHALE, start: 102.0, end: 112.0, cycle: 5 },
+      // Outro
+      { phase: PHASE.OUTRO, start: 112.0, end: 131.8, cycle: 5 }
+    ];
+
+    const TIMELINE_ARIA = (voiceParam === 'm') ? TIMELINE_ARIA_M : TIMELINE_ARIA_F;
+    const TOTAL_DURATION_SEC = (voiceParam === 'm') ? 129.3 : 131.8;
 
     const state = {
       currentPhase: PHASE.STANDBY,
@@ -673,7 +725,7 @@
 
         // Master Gain
         masterGain = audioCtx.createGain();
-        masterGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+        masterGain.gain.setValueAtTime(0.20, audioCtx.currentTime);
         masterGain.connect(audioCtx.destination);
 
         // ----------------------------------------------------
@@ -829,7 +881,7 @@
       try {
         const now = audioCtx.currentTime;
         const chimeMaster = audioCtx.createGain();
-        chimeMaster.gain.setValueAtTime(0.08, now);
+        chimeMaster.gain.setValueAtTime(0.03, now);
         chimeMaster.connect(masterGain);
 
         const harmonics = [
@@ -872,7 +924,7 @@
       if (audioMusic) audioMusic.muted = mute;
       state.isAudioMuted = mute;
       if (masterGain && audioCtx) {
-        setMasterAudioGain(mute ? 0 : 0.85, 0.3);
+        setMasterAudioGain(mute ? 0 : 0.20, 0.3);
       }
       const iconOn = document.getElementById('icon-sound-on');
       const iconOff = document.getElementById('icon-sound-off');
@@ -2507,9 +2559,10 @@
       }
       state.isCompleted = false;
       state.isRunning = true;
+      state.virtualTime = 0;
       if (audioVoice) { audioVoice.play().catch(function(e) { console.warn('audioVoice play:', e); }); }
       if (audioMusic) { audioMusic.play().catch(function(e) { console.warn('audioMusic play:', e); }); }
-      state.currentPhase = PHASE.INHALE;
+      state.currentPhase = PHASE.INTRO;
       state.currentCycle = 1;
       state.phaseStartTime = performance.now();
       state.balloonScale = PACING_CONFIG.MIN_SCALE;
@@ -2517,13 +2570,13 @@
       state.balloonY = PACING_CONFIG.BALLOON_BASE_Y;
       state.balloonX = PACING_CONFIG.BALLOON_BASE_X;
 
-      setPadAudioGain(0.85, 2.0);
-      setWindAudioGain(0.06, 2.0);
+      setPadAudioGain(0.04, 2.0);
+      setWindAudioGain(0.02, 2.0);
       playTibetanBowl(432, 4.0);
 
       updateUIElements();
       notifyFlutter('onSessionStart', { cycle: 1, totalCycles: PACING_CONFIG.TOTAL_CYCLES });
-      notifyFlutter('onPhaseChange', { phase: 'inhale', cycle: 1, duration: PACING_CONFIG.INHALE_DURATION });
+      notifyFlutter('onPhaseChange', { phase: 'intro', cycle: 1, duration: 7000 });
     }
 
     function pauseSession() {
@@ -2531,7 +2584,7 @@
       if (audioMusic) audioMusic.pause();
       state.isRunning = false;
       state.pauseStartTime = performance.now();
-      setPadAudioGain(0.2, 1.0);
+      setPadAudioGain(0.01, 1.0);
       updateUIElements();
       notifyFlutter('onSessionPause', { phase: state.currentPhase, cycle: state.currentCycle });
     }
@@ -2552,7 +2605,7 @@
           state.isRunning = true;
           if (audioVoice) { audioVoice.play().catch(function(e) { console.warn('audioVoice play:', e); }); }
           if (audioMusic) { audioMusic.play().catch(function(e) { console.warn('audioMusic play:', e); }); }
-          setPadAudioGain(0.85, 1.5);
+          setPadAudioGain(0.04, 1.5);
           updateUIElements();
           notifyFlutter('onSessionResume', { phase: state.currentPhase, cycle: state.currentCycle });
         }
@@ -2576,6 +2629,7 @@
       }
       state.isCompleted = false;
       state.isRunning = false;
+      state.virtualTime = 0;
       state.pauseStartTime = 0;
       state.currentPhase = PHASE.STANDBY;
       state.currentCycle = 1;
@@ -2591,65 +2645,90 @@
     function updateBioPacing(now) {
       if (!state.isRunning) return;
 
-      const currentTime = (typeof now === 'number' && now > 0) ? now : performance.now();
-      const elapsed = currentTime - state.phaseStartTime;
+      // Master Audio Synchronization
+      let timeSec = 0;
+      if (audioVoice && !audioVoice.paused && !isNaN(audioVoice.currentTime) && audioVoice.currentTime > 0) {
+        timeSec = audioVoice.currentTime;
+        state.virtualTime = timeSec;
+      } else {
+        if (state.virtualTime === undefined) state.virtualTime = 0;
+        state.virtualTime += 0.016;
+        timeSec = state.virtualTime;
+      }
+
+      let activeEntry = TIMELINE_ARIA.find(c => timeSec >= c.start && timeSec < c.end);
+      if (!activeEntry) {
+        if (timeSec >= TOTAL_DURATION_SEC) {
+          if (!state.isCompleted) onExperienceEnded();
+          return;
+        }
+        activeEntry = TIMELINE_ARIA[0];
+      }
+
+      if (state.currentPhase !== activeEntry.phase || state.currentCycle !== activeEntry.cycle) {
+        state.currentCycle = activeEntry.cycle;
+        transitionToPhase(activeEntry.phase, now);
+      }
+
+      const elapsed = timeSec - activeEntry.start;
+      const duration = activeEntry.end - activeEntry.start;
+      const t = Math.min(Math.max(elapsed / duration, 0.0), 1.0);
+      const remainingSec = Math.max(0, activeEntry.end - timeSec).toFixed(1);
 
       switch (state.currentPhase) {
-        // INHALE (4.000 ms: Z -11.0m -> -9.0m, Scale 1.0x -> 1.18x)
+        case PHASE.INTRO: {
+          state.balloonScale = PACING_CONFIG.MIN_SCALE;
+          state.balloonZ = PACING_CONFIG.BALLOON_BASE_Z;
+          state.windSpeedFactor = 1.0;
+          renderBillboardText("Preparati", "Mano sull'addome e sul petto", 1.0);
+          updateRingHUD(t, "PREPARATI", `${remainingSec}s`);
+          break;
+        }
+
         case PHASE.INHALE: {
-          const t = Math.min(elapsed / PACING_CONFIG.INHALE_DURATION, 1.0);
-          // Pure cosine ease-in-out curve
           const easeSine = (1 - Math.cos(Math.PI * t)) / 2;
           state.balloonZ = PACING_CONFIG.BALLOON_BASE_Z + (PACING_CONFIG.BALLOON_PEAK_Z - PACING_CONFIG.BALLOON_BASE_Z) * easeSine;
           state.balloonScale = PACING_CONFIG.MIN_SCALE + (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
-          state.windSpeedFactor = 1.0 + 0.45 * easeSine; // Breeze accelerates with intake
-
-          const remainingSec = Math.max(0, (PACING_CONFIG.INHALE_DURATION - elapsed) / 1000).toFixed(1);
+          state.windSpeedFactor = 1.0 + 0.45 * easeSine;
           renderBillboardText("Inspira", "Aria pura nei polmoni", 1.0);
           updateRingHUD(t, "INSPIRA", `${remainingSec}s`);
-
-          if (elapsed >= PACING_CONFIG.INHALE_DURATION) {
-            transitionToPhase(PHASE.EXHALE, currentTime);
-          }
           break;
         }
 
-        // EXHALE (6.000 ms: Z -9.0m -> -11.0m, Scale 1.18x -> 1.0x)
+        case PHASE.HOLD: {
+          state.balloonZ = PACING_CONFIG.BALLOON_PEAK_Z;
+          state.balloonScale = PACING_CONFIG.MAX_SCALE;
+          state.windSpeedFactor = 1.45;
+          renderBillboardText("Trattieni", "Mano sul petto ferma", 1.0);
+          updateRingHUD(t, "TRATTIENI", `${remainingSec}s`);
+          break;
+        }
+
         case PHASE.EXHALE: {
-          const t = Math.min(elapsed / PACING_CONFIG.EXHALE_DURATION, 1.0);
-          // Pure cosine ease-in-out curve returning to base
           const easeSine = (1 + Math.cos(Math.PI * t)) / 2;
           state.balloonZ = PACING_CONFIG.BALLOON_BASE_Z + (PACING_CONFIG.BALLOON_PEAK_Z - PACING_CONFIG.BALLOON_BASE_Z) * easeSine;
           state.balloonScale = PACING_CONFIG.MIN_SCALE + (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
-          state.windSpeedFactor = 1.0 + 0.45 * easeSine; // Breeze relaxes back to serene calm
-
-          const remainingSec = Math.max(0, (PACING_CONFIG.EXHALE_DURATION - elapsed) / 1000).toFixed(1);
+          state.windSpeedFactor = 1.0 + 0.45 * easeSine;
           renderBillboardText("Espira", "Rilascia ogni tensione", 1.0);
           updateRingHUD(t, "ESPIRA", `${remainingSec}s`);
-
-          if (elapsed >= PACING_CONFIG.EXHALE_DURATION) {
-            if (state.currentCycle < PACING_CONFIG.TOTAL_CYCLES) {
-              state.currentCycle++;
-              transitionToPhase(PHASE.INHALE, currentTime);
-            } else {
-              transitionToPhase(PHASE.OUTRO, currentTime);
-            }
-          }
           break;
         }
 
-        // OUTRO & PEACEFUL RESOLUTION
+        case PHASE.PAUSE: {
+          state.balloonScale = PACING_CONFIG.MIN_SCALE;
+          state.balloonZ = PACING_CONFIG.BALLOON_BASE_Z;
+          state.windSpeedFactor = 1.0;
+          renderBillboardText("Continua a respirare", "Respiro calmo e regolare", 1.0);
+          updateRingHUD(t, "PAUSA", `${remainingSec}s`);
+          break;
+        }
+
         case PHASE.OUTRO: {
-          const t = Math.min(elapsed / PACING_CONFIG.OUTRO_DURATION, 1.0);
           state.balloonScale = PACING_CONFIG.MIN_SCALE;
           state.balloonZ = PACING_CONFIG.BALLOON_BASE_Z;
           state.windSpeedFactor = 1.0;
           renderBillboardText("Pace e Quiete", "Ottima coerenza cardiaca", 1.0 - t * 0.4);
           updateRingHUD(1.0, "COMPLETO", "Serenità");
-
-          if (elapsed >= PACING_CONFIG.OUTRO_DURATION) {
-            onExperienceEnded();
-          }
           break;
         }
       }
@@ -2661,10 +2740,12 @@
 
       if (newPhase === PHASE.INHALE) {
         playTibetanBowl(432, 4.0);
-        notifyFlutter('onPhaseChange', { phase: 'inhale', cycle: state.currentCycle, duration: PACING_CONFIG.INHALE_DURATION });
+        notifyFlutter('onPhaseChange', { phase: 'inhale', cycle: state.currentCycle, duration: 6000 });
+      } else if (newPhase === PHASE.HOLD) {
+        notifyFlutter('onPhaseChange', { phase: 'hold', cycle: state.currentCycle, duration: 6000 });
       } else if (newPhase === PHASE.EXHALE) {
         playTibetanBowl(864, 5.5);
-        notifyFlutter('onPhaseChange', { phase: 'exhale', cycle: state.currentCycle, duration: PACING_CONFIG.EXHALE_DURATION });
+        notifyFlutter('onPhaseChange', { phase: 'exhale', cycle: state.currentCycle, duration: 8000 });
       } else if (newPhase === PHASE.OUTRO) {
         playTibetanBowl(432, 6.0);
         notifyFlutter('onPhaseChange', { phase: 'outro', duration: PACING_CONFIG.OUTRO_DURATION });

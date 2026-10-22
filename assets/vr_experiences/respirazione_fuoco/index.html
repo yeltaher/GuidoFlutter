@@ -542,10 +542,10 @@
     if (audioVoice) {
       audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_f.mp3';
       audioVoice.load();
-      audioVoice.volume = 0.95;
+      audioVoice.volume = 1.0;
     }
     if (audioMusic) {
-      audioMusic.volume = 0.25; // Campane tibetane / musica a volume ridotto come sottofondo
+      audioMusic.volume = 0.10; // Sottofondo musicale a volume soffuso e rilassante
     }
 
   (function() {
@@ -556,12 +556,12 @@
        ====================================================================== */
     const PACING_CONFIG = {
       TOTAL_CYCLES: 4,               // 4 cicli completi come da specifica
-      APPROACH_DURATION: 3800,       // 3.8s avvicinamento armonioso al focolare
-      INHALE_DURATION: 4000,         // 4.0s Inspiro (la fiamma sale ed arde maestosa)
-      HOLD_FULL_DURATION: 4000,      // 4.0s Apnea Piena (luce aurea e scintille dorate)
-      EXHALE_DURATION: 4000,         // 4.0s Espiro (la fiamma si placa e rilascia)
-      HOLD_EMPTY_DURATION: 4000,     // 4.0s Apnea Vuota (braci ardenti calde e calme)
-      OUTRO_DURATION: 6000,          // 6.0s integrazione e respiro spontaneo
+      APPROACH_DURATION: 7000,
+      INHALE_DURATION: 5000,
+      HOLD_FULL_DURATION: 5000,
+      EXHALE_DURATION: 6000,
+      HOLD_EMPTY_DURATION: 5000,
+      OUTRO_DURATION: 15000,
       
       // Campfire Hearth in world coordinates
       FIRE_BASE_X: 0.0,
@@ -590,6 +590,58 @@
       OUTRO: 'OUTRO',
       COMPLETED: 'COMPLETED'
     };
+
+    const TIMELINE_FUOCO_M = [
+      { step: STEPS.APPROACH, start: 0.0, end: 7.0, cycle: 1 },
+      // Cycle 1
+      { step: STEPS.INHALE, start: 7.0, end: 12.0, cycle: 1 },
+      { step: STEPS.HOLD_FULL, start: 12.0, end: 17.0, cycle: 1 },
+      { step: STEPS.EXHALE, start: 17.0, end: 25.0, cycle: 1 },
+      { step: STEPS.HOLD_EMPTY, start: 25.0, end: 30.0, cycle: 1 },
+      // Cycle 2
+      { step: STEPS.INHALE, start: 30.0, end: 35.0, cycle: 2 },
+      { step: STEPS.HOLD_FULL, start: 35.0, end: 39.0, cycle: 2 },
+      { step: STEPS.EXHALE, start: 39.0, end: 45.0, cycle: 2 },
+      { step: STEPS.HOLD_EMPTY, start: 45.0, end: 49.0, cycle: 2 },
+      // Cycle 3
+      { step: STEPS.INHALE, start: 49.0, end: 53.0, cycle: 3 },
+      { step: STEPS.HOLD_FULL, start: 53.0, end: 58.0, cycle: 3 },
+      { step: STEPS.EXHALE, start: 58.0, end: 64.0, cycle: 3 },
+      { step: STEPS.HOLD_EMPTY, start: 64.0, end: 68.0, cycle: 3 },
+      // Cycle 4
+      { step: STEPS.EXHALE, start: 68.0, end: 72.0, cycle: 4 },
+      // Outro
+      { step: STEPS.OUTRO, start: 72.0, end: 81.8, cycle: 4 }
+    ];
+
+    const TIMELINE_FUOCO_F = [
+      { step: STEPS.APPROACH, start: 0.0, end: 7.0, cycle: 1 },
+      // Cycle 1
+      { step: STEPS.INHALE, start: 7.0, end: 12.0, cycle: 1 },
+      { step: STEPS.HOLD_FULL, start: 12.0, end: 16.0, cycle: 1 },
+      { step: STEPS.EXHALE, start: 16.0, end: 20.0, cycle: 1 },
+      { step: STEPS.HOLD_EMPTY, start: 20.0, end: 23.0, cycle: 1 },
+      // Cycle 2
+      { step: STEPS.INHALE, start: 23.0, end: 27.0, cycle: 2 },
+      { step: STEPS.HOLD_FULL, start: 27.0, end: 30.0, cycle: 2 },
+      { step: STEPS.EXHALE, start: 30.0, end: 34.0, cycle: 2 },
+      { step: STEPS.HOLD_EMPTY, start: 34.0, end: 36.0, cycle: 2 },
+      // Cycle 3
+      { step: STEPS.INHALE, start: 36.0, end: 39.0, cycle: 3 },
+      { step: STEPS.HOLD_FULL, start: 39.0, end: 42.0, cycle: 3 },
+      { step: STEPS.EXHALE, start: 42.0, end: 45.0, cycle: 3 },
+      { step: STEPS.HOLD_EMPTY, start: 45.0, end: 47.0, cycle: 3 },
+      // Cycle 4
+      { step: STEPS.INHALE, start: 47.0, end: 50.0, cycle: 4 },
+      { step: STEPS.HOLD_FULL, start: 50.0, end: 53.0, cycle: 4 },
+      { step: STEPS.EXHALE, start: 53.0, end: 58.0, cycle: 4 },
+      { step: STEPS.HOLD_EMPTY, start: 58.0, end: 60.0, cycle: 4 },
+      // Outro
+      { step: STEPS.OUTRO, start: 60.0, end: 74.0, cycle: 4 }
+    ];
+
+    const TIMELINE_FUOCO = (voiceParam === 'm') ? TIMELINE_FUOCO_M : TIMELINE_FUOCO_F;
+    const TOTAL_DURATION_SEC = (voiceParam === 'm') ? 81.8 : 74.0;
 
     const state = {
       currentStep: STEPS.STANDBY,
@@ -683,7 +735,7 @@
         audioCtx = new AudioContextClass();
 
         masterGain = audioCtx.createGain();
-        masterGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+        masterGain.gain.setValueAtTime(0.20, audioCtx.currentTime);
         masterGain.connect(audioCtx.destination);
 
         // A) 432 Hz Binaural Pad (Theta Beat 4 Hz: 432 Hz Left vs 436 Hz Right)
@@ -907,7 +959,7 @@
           osc.frequency.setValueAtTime(baseFreq * p.fRatio, now);
 
           gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(p.gainRatio * 0.45, now + 0.06);
+          gain.gain.linearRampToValueAtTime(p.gainRatio * 0.15, now + 0.06);
           gain.gain.exponentialRampToValueAtTime(0.0001, now + p.decay);
 
           osc.connect(gain);
@@ -2793,10 +2845,11 @@
       }
       state.isCompleted = false;
       state.isRunning = true;
+      state.virtualTime = 0;
       if (audioVoice) { audioVoice.play().catch(function(e) { console.warn('audioVoice play:', e); }); }
       if (audioMusic) { audioMusic.play().catch(function(e) { console.warn('audioMusic play:', e); }); }
       state.currentCycle = 1;
-      rampAudioLevels(0.7, 0.45, 2.0);
+      rampAudioLevels(0.04, 0.03, 2.0);
       transitionToStep(STEPS.APPROACH, performance.now());
       notifyFlutter('onSessionStart', { experience: 'respirazione_fuoco', cycle: 1 });
     }
@@ -2806,7 +2859,7 @@
       if (audioMusic) audioMusic.pause();
       state.isRunning = false;
       state.pauseStartTime = performance.now();
-      rampAudioLevels(0.15, 0.15, 0.8);
+      rampAudioLevels(0.01, 0.01, 0.8);
       updateUIElements();
       notifyFlutter('onSessionPause', { step: state.currentStep, cycle: state.currentCycle });
     }
@@ -2819,7 +2872,9 @@
       const pauseDuration = performance.now() - state.pauseStartTime;
       state.stepStartTime += pauseDuration;
       state.isRunning = true;
-      rampAudioLevels(0.7, 0.45, 1.0);
+      if (audioVoice) { audioVoice.play().catch(function(e) { console.warn('audioVoice play:', e); }); }
+      if (audioMusic) { audioMusic.play().catch(function(e) { console.warn('audioMusic play:', e); }); }
+      rampAudioLevels(0.04, 0.03, 1.0);
       updateUIElements();
       notifyFlutter('onSessionResume', { step: state.currentStep, cycle: state.currentCycle });
     }
@@ -2848,6 +2903,7 @@
         outroSafetyTimer = null;
       }
       state.isCompleted = false;
+      state.virtualTime = 0;
       state.currentStep = STEPS.STANDBY;
       state.currentCycle = 1;
       state.isRunning = false;
@@ -2939,11 +2995,35 @@
     function updateBioPacing(now) {
       if (!state.isRunning) return;
 
-      const currentTime = (typeof now === 'number' && now > 0) ? now : performance.now();
-      const elapsed = currentTime - state.stepStartTime;
-      const duration = state.stepDuration || 1000;
-      const t = Math.min(elapsed / duration, 1.0);
-      const remainingSec = Math.max(0, (duration - elapsed) / 1000).toFixed(1);
+      // Master Audio Synchronization
+      let timeSec = 0;
+      if (audioVoice && !audioVoice.paused && !isNaN(audioVoice.currentTime) && audioVoice.currentTime > 0) {
+        timeSec = audioVoice.currentTime;
+        state.virtualTime = timeSec;
+      } else {
+        if (state.virtualTime === undefined) state.virtualTime = 0;
+        state.virtualTime += 0.016;
+        timeSec = state.virtualTime;
+      }
+
+      let activeEntry = TIMELINE_FUOCO.find(c => timeSec >= c.start && timeSec < c.end);
+      if (!activeEntry) {
+        if (timeSec >= TOTAL_DURATION_SEC) {
+          if (!state.isCompleted) transitionToStep(STEPS.COMPLETED, now);
+          return;
+        }
+        activeEntry = TIMELINE_FUOCO[0];
+      }
+
+      if (state.currentStep !== activeEntry.step || state.currentCycle !== activeEntry.cycle) {
+        state.currentCycle = activeEntry.cycle;
+        transitionToStep(activeEntry.step, now);
+      }
+
+      const elapsed = timeSec - activeEntry.start;
+      const duration = activeEntry.end - activeEntry.start;
+      const t = Math.min(Math.max(elapsed / duration, 0.0), 1.0);
+      const remainingSec = Math.max(0, activeEntry.end - timeSec).toFixed(1);
 
       // Sinusoidal organic easing: easeSine = (1 - cos(pi * t)) / 2
       const easeSine = (1.0 - Math.cos(Math.PI * t)) * 0.5;
@@ -2955,74 +3035,51 @@
           state.flameLightIntensity = PACING_CONFIG.MIN_LIGHT * t;
           updateHUD(t, "ACCOGLIENZA", `${remainingSec}s`, "Siediti accanto al fuoco sacro");
           renderVRBillboardText("FUOCO SACRO", "ACCOGLIENZA", 1.0);
-          if (elapsed >= duration) {
-            transitionToStep(STEPS.INHALE, now);
-          }
           break;
 
-        // FASE 1: INSPIRA (4.0s) - La fiamma sale ed arde viva
+        // FASE 1: INSPIRA - La fiamma sale ed arde viva
         case STEPS.INHALE:
           state.flameScale = PACING_CONFIG.MIN_SCALE + (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
           state.flameLightIntensity = PACING_CONFIG.MIN_LIGHT + (PACING_CONFIG.MAX_LIGHT - PACING_CONFIG.MIN_LIGHT) * easeSine;
           state.emberPulseWarmth = 0.0;
           updateHUD(t, "INSPIRA", `${remainingSec}s`, "Il fuoco si espande");
           renderVRBillboardText("INSPIRA", "ESPANDI IL RESPIRO", 1.0);
-          if (elapsed >= duration) {
-            transitionToStep(STEPS.HOLD_FULL, now);
-          }
           break;
 
-        // FASE 2: TRATTIENI A POLMONI PIENI (4.0s) - Scintille auree & luce piena
+        // FASE 2: TRATTIENI A POLMONI PIENI - Scintille auree & luce piena
         case STEPS.HOLD_FULL:
           state.flameScale = PACING_CONFIG.MAX_SCALE;
           state.flameLightIntensity = PACING_CONFIG.MAX_LIGHT;
           state.emberPulseWarmth = 0.0;
           updateHUD(t, "TRATTIENI", `${remainingSec}s`, "Polmoni Pieni • Luce pura");
           renderVRBillboardText("TRATTIENI", "POLMONI PIENI", 1.0);
-          if (elapsed >= duration) {
-            transitionToStep(STEPS.EXHALE, now);
-          }
           break;
 
-        // FASE 3: ESPIRA (4.0s) - La fiamma si placa dolcemente
+        // FASE 3: ESPIRA - La fiamma si placa dolcemente
         case STEPS.EXHALE:
           state.flameScale = PACING_CONFIG.MAX_SCALE - (PACING_CONFIG.MAX_SCALE - PACING_CONFIG.MIN_SCALE) * easeSine;
           state.flameLightIntensity = PACING_CONFIG.MAX_LIGHT - (PACING_CONFIG.MAX_LIGHT - PACING_CONFIG.MIN_LIGHT) * easeSine;
           state.emberPulseWarmth = 0.0;
           updateHUD(t, "ESPIRA", `${remainingSec}s`, "Lascia andare ogni tensione");
           renderVRBillboardText("ESPIRA", "SVUOTA I POLMONI", 1.0);
-          if (elapsed >= duration) {
-            transitionToStep(STEPS.HOLD_EMPTY, now);
-          }
           break;
 
-        // FASE 4: TRATTIENI A POLMONI VUOTI (4.0s) - Braci calde pulsanti
+        // FASE 4: TRATTIENI A POLMONI VUOTI - Braci calde pulsanti
         case STEPS.HOLD_EMPTY:
           state.flameScale = PACING_CONFIG.MIN_SCALE;
           state.flameLightIntensity = PACING_CONFIG.MIN_LIGHT;
           state.emberPulseWarmth = Math.sin(t * Math.PI) * 0.85;
           updateHUD(t, "TRATTIENI", `${remainingSec}s`, "Polmoni Vuoti • Calma profonda");
           renderVRBillboardText("TRATTIENI", "CALMA PROFONDA", 1.0);
-          if (elapsed >= duration) {
-            if (state.currentCycle < PACING_CONFIG.TOTAL_CYCLES) {
-              state.currentCycle++;
-              transitionToStep(STEPS.INHALE, now);
-            } else {
-              transitionToStep(STEPS.OUTRO, now);
-            }
-          }
           break;
 
-        // OUTRO & INTEGRAZIONE (6.0s)
+        // OUTRO & INTEGRAZIONE
         case STEPS.OUTRO:
           state.flameScale = PACING_CONFIG.MIN_SCALE;
           state.flameLightIntensity = PACING_CONFIG.MIN_LIGHT;
           state.emberPulseWarmth = 0.2;
           updateHUD(1.0, "PACE", "Respiro Libero", "Integrazione & Serenità");
           renderVRBillboardText("PACE", "EQUILIBRIO & SERENITÀ", 1.0 - t * 0.2);
-          if (elapsed >= duration) {
-            transitionToStep(STEPS.COMPLETED, now);
-          }
           break;
       }
     }

@@ -840,8 +840,8 @@
       isVRMode: false,
       isCompleted: false,
       isMuted: false,
-      voiceVolume: 0.95,
-      musicVolume: 0.25,
+      voiceVolume: 1.0,
+      musicVolume: 0.10,
       currentSceneIndex: 0,
       lastTimestamp: 0,
       lastDeltaSec: 0.016,
@@ -902,10 +902,10 @@
     if (audioVoice) {
       audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_it.mp3';
       audioVoice.load();
-      audioVoice.volume = 0.95;
+      audioVoice.volume = 1.0;
     }
     if (audioMusic) {
-      audioMusic.volume = 0.25; // Sottofondo musicale a 432 Hz bilanciato
+      audioMusic.volume = 0.10; // Sottofondo musicale a 432 Hz bilanciato
     }
     let audioCtx = null;
     let synthGain = null;

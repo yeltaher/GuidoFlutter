@@ -536,10 +536,10 @@
     if (audioVoice) {
       audioVoice.src = (voiceParam === 'm') ? 'audio/voice_m.mp3' : 'audio/voice_f.mp3';
       audioVoice.load();
-      audioVoice.volume = 0.95;
+      audioVoice.volume = 1.0;
     }
     if (audioMusic) {
-      audioMusic.volume = 0.25; // Campane tibetane / musica a volume ridotto come sottofondo
+      audioMusic.volume = 0.10; // Sottofondo musicale a volume soffuso e rilassante
     }
 
   (function() {
@@ -550,13 +550,14 @@
        ====================================================================== */
     const PACING_CONFIG = {
       TOTAL_CYCLES: 2,
-      DESCENT_DURATION: 3600,        // 3.6s initial graceful descent from ocean surface
-      SETUP_DURATION: 3800,          // 3.8s setup posture / Vishnu Mudra
-      INHALE_DURATION: 4500,         // 4.5s inhale
-      SWITCH_DURATION: 1500,         // 1.5s nostril switch with 432 Hz chime
-      EXHALE_DURATION: 4500,         // 4.5s exhale
-      PAUSE_DURATION: 8000,          // 8.0s inter-cycle calm integration pause
-      OUTRO_DURATION: 5000,          // 5.0s peaceful resolution
+      TOTAL_DURATION_SEC: 119.5,
+      DESCENT_DURATION: 4000,
+      SETUP_DURATION: 38000,
+      INHALE_DURATION: 5000,
+      SWITCH_DURATION: 1000,
+      EXHALE_DURATION: 6000,
+      PAUSE_DURATION: 21000,
+      OUTRO_DURATION: 13500,
       DROP_BASE_X: 0.0,
       DROP_BASE_Y: -0.65,            // Lowered to provide ample, majestic underwater headspace below water surface
       DROP_START_Y: 8.5,             // Starting altitude near ocean surface
@@ -589,6 +590,29 @@
       OUTRO: 'OUTRO',
       COMPLETED: 'COMPLETED'
     };
+
+    // Speech-synchronized timeline cues (119.5s total duration)
+    const TIMELINE = [
+      { step: STEPS.DESCENT, start: 0.0, end: 4.0 },
+      { step: STEPS.SETUP, start: 4.0, end: 42.0 },
+      // Cycle 1
+      { step: STEPS.C1_INHALE_SX, start: 42.0, end: 47.0 },
+      { step: STEPS.C1_SWITCH_1, start: 47.0, end: 48.0 },
+      { step: STEPS.C1_EXHALE_DX, start: 48.0, end: 54.0 },
+      { step: STEPS.C1_INHALE_DX, start: 54.0, end: 58.0 },
+      { step: STEPS.C1_SWITCH_2, start: 58.0, end: 59.0 },
+      { step: STEPS.C1_EXHALE_SX, start: 59.0, end: 64.0 },
+      { step: STEPS.C1_PAUSE, start: 64.0, end: 85.0 },
+      // Cycle 2
+      { step: STEPS.C2_INHALE_SX, start: 85.0, end: 90.0 },
+      { step: STEPS.C2_SWITCH_1, start: 90.0, end: 91.0 },
+      { step: STEPS.C2_EXHALE_DX, start: 91.0, end: 96.0 },
+      { step: STEPS.C2_INHALE_DX, start: 96.0, end: 100.0 },
+      { step: STEPS.C2_SWITCH_2, start: 100.0, end: 101.0 },
+      { step: STEPS.C2_EXHALE_SX, start: 101.0, end: 106.0 },
+      // Outro
+      { step: STEPS.OUTRO, start: 106.0, end: 119.5 }
+    ];
 
     const state = {
       currentStep: STEPS.STANDBY,
@@ -698,7 +722,7 @@
         audioCtx = new AudioContextClass();
 
         masterGain = audioCtx.createGain();
-        masterGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+        masterGain.gain.setValueAtTime(0.20, audioCtx.currentTime);
         masterGain.connect(audioCtx.destination);
 
         // A) 432 Hz Binaural Pad (Theta Beat 4 Hz: 432 Hz vs 436 Hz)
@@ -849,7 +873,7 @@
     }
 
     // Procedural Organic Underwater Bubble Chirp
-    function playBubbleChirp(baseFreq = 680, duration = 0.045, volume = 0.04) {
+    function playBubbleChirp(baseFreq = 680, duration = 0.045, volume = 0.02) {
       if (!audioCtx || state.isAudioMuted) return;
       try {
         const now = audioCtx.currentTime;
@@ -880,7 +904,7 @@
       try {
         const now = audioCtx.currentTime;
         const chimeMaster = audioCtx.createGain();
-        chimeMaster.gain.setValueAtTime(0.08, now);
+        chimeMaster.gain.setValueAtTime(0.03, now);
         chimeMaster.connect(masterGain);
 
         const harmonics = [
@@ -2415,8 +2439,8 @@
       state.isRunning = true;
       if (audioVoice) { audioVoice.play().catch(function(e) { console.warn('audioVoice play:', e); }); }
       if (audioMusic) { audioMusic.play().catch(function(e) { console.warn('audioMusic play:', e); }); }
-      setPadAudioGain(0.85, 2.0);
-      setOceanAudioGain(0.12, 2.0);
+      setPadAudioGain(0.04, 2.0);
+      setOceanAudioGain(0.03, 2.0);
 
       // Begin with graceful descent from ocean surface
       transitionToStep(STEPS.DESCENT, performance.now());
@@ -2428,8 +2452,8 @@
       if (audioMusic) audioMusic.pause();
       state.isRunning = false;
       state.pauseStartTime = performance.now();
-      setPadAudioGain(0.2, 1.0);
-      setOceanAudioGain(0.04, 1.0);
+      setPadAudioGain(0.01, 1.0);
+      setOceanAudioGain(0.01, 1.0);
       updateUIElements();
       notifyFlutter('onSessionPause', { step: state.currentStep, cycle: state.currentCycle });
     }
@@ -2450,8 +2474,8 @@
           state.isRunning = true;
           if (audioVoice) { audioVoice.play().catch(function(e) { console.warn('audioVoice play:', e); }); }
           if (audioMusic) { audioMusic.play().catch(function(e) { console.warn('audioMusic play:', e); }); }
-          setPadAudioGain(0.85, 1.5);
-          setOceanAudioGain(0.12, 1.5);
+          setPadAudioGain(0.04, 1.5);
+          setOceanAudioGain(0.03, 1.5);
           updateUIElements();
           notifyFlutter('onSessionResume', { step: state.currentStep, cycle: state.currentCycle });
         }
@@ -2720,11 +2744,34 @@
     function updateBioPacing(now) {
       if (!state.isRunning) return;
 
-      const currentTime = (typeof now === 'number' && now > 0) ? now : performance.now();
-      const elapsed = currentTime - state.stepStartTime;
-      const duration = state.stepDuration || 1000;
-      const t = Math.min(elapsed / duration, 1.0);
-      const remainingSec = Math.max(0, (duration - elapsed) / 1000).toFixed(1);
+      // Master Audio Synchronization
+      let timeSec = 0;
+      if (audioVoice && !audioVoice.paused && !isNaN(audioVoice.currentTime) && audioVoice.currentTime > 0) {
+        timeSec = audioVoice.currentTime;
+        state.virtualTime = timeSec;
+      } else {
+        if (state.virtualTime === undefined) state.virtualTime = 0;
+        state.virtualTime += 0.016;
+        timeSec = state.virtualTime;
+      }
+
+      let activeEntry = TIMELINE.find(c => timeSec >= c.start && timeSec < c.end);
+      if (!activeEntry) {
+        if (timeSec >= PACING_CONFIG.TOTAL_DURATION_SEC) {
+          if (!state.isCompleted) transitionToStep(STEPS.COMPLETED, now);
+          return;
+        }
+        activeEntry = TIMELINE[0];
+      }
+
+      if (state.currentStep !== activeEntry.step) {
+        transitionToStep(activeEntry.step, now);
+      }
+
+      const elapsed = timeSec - activeEntry.start;
+      const duration = activeEntry.end - activeEntry.start;
+      const t = Math.min(Math.max(elapsed / duration, 0.0), 1.0);
+      const remainingSec = Math.max(0, activeEntry.end - timeSec).toFixed(1);
 
       // Sinusoidal organic easing curve
       const easeSine = (1 - Math.cos(Math.PI * t)) / 2;
@@ -2755,11 +2802,6 @@
           state.pauseWarmth = 0.0;
           updateHUD(t, "ARRIVO", `${remainingSec}s`, "Discesa nell'Oceano");
           renderVRBillboardText("SANTUARIO", "DISCESA NELL'OCEANO", 1.0);
-
-          if (elapsed >= duration) {
-            state.dropY = PACING_CONFIG.DROP_BASE_Y;
-            transitionToStep(STEPS.SETUP, now);
-          }
           break;
 
         case STEPS.SETUP:
@@ -2768,7 +2810,6 @@
           state.pauseWarmth = 0.0;
           updateHUD(t, "PREPARATI", `${remainingSec}s`, "Mudra Vishnu");
           renderVRBillboardText("PREPARATI", "MUDRA VISHNU", 1.0);
-          if (elapsed >= duration) transitionToStep(STEPS.C1_INHALE_SX, now);
           break;
 
         // INHALE LEFT (4.5s)
@@ -2779,12 +2820,9 @@
           state.pauseWarmth = 0.0;
           updateHUD(t, "INSPIRA", `${remainingSec}s`, "Narice Sinistra");
           renderVRBillboardText("INSPIRA", "NARICE SINISTRA", 1.0);
-          if (elapsed >= duration) {
-            transitionToStep((state.currentStep === STEPS.C1_INHALE_SX) ? STEPS.C1_SWITCH_1 : STEPS.C2_SWITCH_1, now);
-          }
           break;
 
-        // SWITCH 1 (1.5s): Close SX, Open DX
+        // SWITCH 1: Close SX, Open DX
         case STEPS.C1_SWITCH_1:
         case STEPS.C2_SWITCH_1:
           state.dropY = PACING_CONFIG.DROP_BASE_Y;
@@ -2792,12 +2830,9 @@
           state.pauseWarmth = 0.0;
           updateHUD(t, "CAMBIO NARICE", `${remainingSec}s`, "Apri Narice Destra");
           renderVRBillboardText("CAMBIO", "APRI DESTRA", 1.0);
-          if (elapsed >= duration) {
-            transitionToStep((state.currentStep === STEPS.C1_SWITCH_1) ? STEPS.C1_EXHALE_DX : STEPS.C2_EXHALE_DX, now);
-          }
           break;
 
-        // EXHALE RIGHT (4.5s)
+        // EXHALE RIGHT
         case STEPS.C1_EXHALE_DX:
         case STEPS.C2_EXHALE_DX:
           state.dropY = PACING_CONFIG.DROP_BASE_Y;
@@ -2805,12 +2840,9 @@
           state.pauseWarmth = 0.0;
           updateHUD(t, "ESPIRA", `${remainingSec}s`, "Narice Destra");
           renderVRBillboardText("ESPIRA", "NARICE DESTRA", 1.0);
-          if (elapsed >= duration) {
-            transitionToStep((state.currentStep === STEPS.C1_EXHALE_DX) ? STEPS.C1_INHALE_DX : STEPS.C2_INHALE_DX, now);
-          }
           break;
 
-        // INHALE RIGHT (4.5s)
+        // INHALE RIGHT
         case STEPS.C1_INHALE_DX:
         case STEPS.C2_INHALE_DX:
           state.dropY = PACING_CONFIG.DROP_BASE_Y;
@@ -2818,12 +2850,9 @@
           state.pauseWarmth = 0.0;
           updateHUD(t, "INSPIRA", `${remainingSec}s`, "Narice Destra");
           renderVRBillboardText("INSPIRA", "NARICE DESTRA", 1.0);
-          if (elapsed >= duration) {
-            transitionToStep((state.currentStep === STEPS.C1_INHALE_DX) ? STEPS.C1_SWITCH_2 : STEPS.C2_SWITCH_2, now);
-          }
           break;
 
-        // SWITCH 2 (1.5s): Close DX, Open SX
+        // SWITCH 2: Close DX, Open SX
         case STEPS.C1_SWITCH_2:
         case STEPS.C2_SWITCH_2:
           state.dropY = PACING_CONFIG.DROP_BASE_Y;
@@ -2831,12 +2860,9 @@
           state.pauseWarmth = 0.0;
           updateHUD(t, "CAMBIO NARICE", `${remainingSec}s`, "Apri Narice Sinistra");
           renderVRBillboardText("CAMBIO", "APRI SINISTRA", 1.0);
-          if (elapsed >= duration) {
-            transitionToStep((state.currentStep === STEPS.C1_SWITCH_2) ? STEPS.C1_EXHALE_SX : STEPS.C2_EXHALE_SX, now);
-          }
           break;
 
-        // EXHALE LEFT (4.5s)
+        // EXHALE LEFT
         case STEPS.C1_EXHALE_SX:
         case STEPS.C2_EXHALE_SX:
           state.dropY = PACING_CONFIG.DROP_BASE_Y;
@@ -2844,13 +2870,9 @@
           state.pauseWarmth = 0.0;
           updateHUD(t, "ESPIRA", `${remainingSec}s`, "Narice Sinistra");
           renderVRBillboardText("ESPIRA", "NARICE SINISTRA", 1.0);
-          if (elapsed >= duration) {
-            transitionToStep((state.currentStep === STEPS.C1_EXHALE_SX) ? STEPS.C1_PAUSE : STEPS.C2_PAUSE, now);
-          }
           break;
 
-        // INTER-CYCLE INTEGRATIVE PAUSE (8.0s)
-        // Droplet breathes gently and reflects a delicate warm golden crystalline illumination
+        // INTER-CYCLE INTEGRATIVE PAUSE
         case STEPS.C1_PAUSE:
         case STEPS.C2_PAUSE:
           state.dropY = PACING_CONFIG.DROP_BASE_Y;
@@ -2860,25 +2882,15 @@
           state.pauseWarmth = Math.sin(t * Math.PI) * 1.0;
           updateHUD(t, "PAUSA", `${remainingSec}s`, "Respiro Libero • Integrazione");
           renderVRBillboardText("PAUSA", "RESPIRO LIBERO", 1.0);
-          if (elapsed >= duration) {
-            if (state.currentStep === STEPS.C1_PAUSE) {
-              transitionToStep(STEPS.C2_INHALE_SX, now);
-            } else {
-              transitionToStep(STEPS.OUTRO, now);
-            }
-          }
           break;
 
-        // OUTRO (5.0s)
+        // OUTRO
         case STEPS.OUTRO:
           state.dropY = PACING_CONFIG.DROP_BASE_Y;
           state.dropScale = PACING_CONFIG.MIN_SCALE;
           state.pauseWarmth = (1.0 - t) * 0.4;
           updateHUD(1.0, "PACE", "Serenità", "Equilibrio Interiore");
           renderVRBillboardText("PACE", "EQUILIBRIO INTERIORE", 1.0 - t * 0.2);
-          if (elapsed >= duration) {
-            transitionToStep(STEPS.COMPLETED, now);
-          }
           break;
       }
     }
