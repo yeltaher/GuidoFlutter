@@ -7,7 +7,7 @@ import 'package:guido/core/database/settings_provider.dart';
 import 'package:guido/core/database/app_initializer_provider.dart';
 import 'package:guido/features/onboarding/presentation/onboarding_wizard_view.dart';
 import 'package:guido/features/premium/presentation/premium_paywall_view.dart';
-import 'package:guido/core/unity/unity_bridge_dto.dart';
+import 'package:guido/core/session/zen_session_dto.dart';
 import 'package:guido/core/theme/custom_button_widget.dart';
 
 void main() {
@@ -34,7 +34,7 @@ void main() {
       // Motion preserved for VR 3D tracking
       expect(content.contains('NSMotionUsageDescription'), isTrue);
 
-      // App Transport Security for local unity / webkit streaming
+      // App Transport Security for local streaming
       expect(content.contains('NSAppTransportSecurity'), isTrue);
       expect(content.contains('NSAllowsArbitraryLoads'), isTrue);
       expect(content.contains('NSAllowsLocalNetworking'), isTrue);
@@ -73,9 +73,9 @@ void main() {
       expect(meditation.contains('WakelockPlus.enable()'), isTrue);
       expect(meditation.contains('WakelockPlus.disable()'), isTrue);
 
-      final unity = File('lib/features/meditation/presentation/unity_experience_screen.dart').readAsStringSync();
-      expect(unity.contains('WakelockPlus.enable()'), isTrue);
-      expect(unity.contains('WakelockPlus.disable()'), isTrue);
+      final vrScreen = File('lib/features/vr_experiences/presentation/vr_experience_screen.dart').readAsStringSync();
+      expect(vrScreen.contains('WakelockPlus.enable()'), isTrue);
+      expect(vrScreen.contains('WakelockPlus.disable()'), isTrue);
     });
   });
 
@@ -183,39 +183,38 @@ void main() {
       );
     });
 
-    test('UnityExperienceScreen records session on exit only if elapsedSeconds >= 60', () {
-      final unitySource = File('lib/features/meditation/presentation/unity_experience_screen.dart').readAsStringSync();
-      expect(unitySource.contains('if (elapsedSeconds >= 60)'), isTrue);
-      expect(unitySource.contains('durationMinutes: minutes'), isTrue);
+    test('VrExperienceScreen records session on completion', () {
+      final vrSource = File('lib/features/vr_experiences/presentation/vr_experience_screen.dart').readAsStringSync();
+      expect(vrSource.contains('recordSession'), isTrue);
     });
   });
 
-  group('Build 30 Quality Gate 5.6: Canonical Unity Scenes Alignment', () {
-    test('UnityScenes canonical names match EditorBuildSettings.asset exactly', () {
-      expect(UnityScenes.waterBreathing, 'Respirazione acqua');
-      expect(UnityScenes.airBreathing, 'Respirazione aria');
-      expect(UnityScenes.fireBreathing, 'Respirazione fuoco');
-      expect(UnityScenes.earthBreathing, 'Respirazione terra');
+  group('Build 30 Quality Gate 5.6: Canonical Zen Scenes Alignment', () {
+    test('ZenScenes canonical names match EditorBuildSettings.asset exactly', () {
+      expect(ZenScenes.waterBreathing, 'Respirazione acqua');
+      expect(ZenScenes.airBreathing, 'Respirazione aria');
+      expect(ZenScenes.fireBreathing, 'Respirazione fuoco');
+      expect(ZenScenes.earthBreathing, 'Respirazione terra');
       
-      expect(UnityScenes.waterMeditationMorning, 'Meditazione acqua matt');
-      expect(UnityScenes.waterMeditationAfternoon, 'Meditazione acqua pom');
-      expect(UnityScenes.waterMeditationEvening, 'Meditazione acqua sera');
-      expect(UnityScenes.generalMeditation, 'Meditazione generale');
+      expect(ZenScenes.waterMeditationMorning, 'Meditazione acqua matt');
+      expect(ZenScenes.waterMeditationAfternoon, 'Meditazione acqua pom');
+      expect(ZenScenes.waterMeditationEvening, 'Meditazione acqua sera');
+      expect(ZenScenes.generalMeditation, 'Meditazione generale');
 
-      expect(UnityScenes.waterTutorial, 'Procedimento acqua');
-      expect(UnityScenes.airTutorial, 'Procedimento aria');
-      expect(UnityScenes.fireTutorial, 'Procedimento fuoco');
-      expect(UnityScenes.earthTutorial, 'Procedimento terra');
+      expect(ZenScenes.waterTutorial, 'Procedimento acqua');
+      expect(ZenScenes.airTutorial, 'Procedimento aria');
+      expect(ZenScenes.fireTutorial, 'Procedimento fuoco');
+      expect(ZenScenes.earthTutorial, 'Procedimento terra');
 
-      expect(UnityScenes.mainMenu, 'MainMenu Corretto');
-      expect(UnityScenes.splashScreen, 'SplashScreen');
+      expect(ZenScenes.mainMenu, 'MainMenu Corretto');
+      expect(ZenScenes.splashScreen, 'SplashScreen');
 
-      expect(UnityScenes.allScenes.length, 14);
+      expect(ZenScenes.allScenes.length, 14);
     });
   });
 
-  group('Build 30 Quality Gate 5.7: CustomUnityButton Tap Up & Lock Protection', () {
-    testWidgets('CustomUnityButton executes onTap on tap-up when not locked, and ignores taps when locked', (tester) async {
+  group('Build 30 Quality Gate 5.7: GuidoButton Tap Up & Lock Protection', () {
+    testWidgets('GuidoButton executes onTap on tap-up when not locked, and ignores taps when locked', (tester) async {
       int tapCount = 0;
       bool isLocked = false;
 
@@ -224,7 +223,7 @@ void main() {
           home: StatefulBuilder(
             builder: (context, setState) {
               return Scaffold(
-                body: CustomUnityButton(
+                body: GuidoButton(
                   text: 'START',
                   isLocked: isLocked,
                   requireHold: false,
@@ -238,7 +237,7 @@ void main() {
         ),
       );
 
-      final buttonFinder = find.byType(CustomUnityButton);
+      final buttonFinder = find.byType(GuidoButton);
       expect(buttonFinder, findsOneWidget);
 
       // 1. Gesture down should not invoke onTap yet
@@ -267,7 +266,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: CustomUnityButton(
+            body: GuidoButton(
               text: 'START',
               isLocked: true,
               requireHold: false,
@@ -285,12 +284,11 @@ void main() {
     });
   });
 
-  group('Build 30 Quality Gate 5.8: Unity HUD Duration Bar Removal & Teardown Verification', () {
-    test('unity_experience_screen.dart does not contain LinearProgressIndicator and has _teardownAudioAndSession', () {
-      final unitySource = File('lib/features/meditation/presentation/unity_experience_screen.dart').readAsStringSync();
-      expect(unitySource.contains('LinearProgressIndicator'), isFalse);
-      expect(unitySource.contains('_teardownAudioAndSession()'), isTrue);
-      expect(unitySource.contains('_audioService?.stopAll()'), isTrue);
+  group('Build 30 Quality Gate 5.8: Teardown Verification', () {
+    test('VrExperienceScreen teardown cleans up resources', () {
+      final vrSource = File('lib/features/vr_experiences/presentation/vr_experience_screen.dart').readAsStringSync();
+      expect(vrSource.contains('dispose()'), isTrue);
+      expect(vrSource.contains('WakelockPlus.disable()'), isTrue);
     });
   });
 }

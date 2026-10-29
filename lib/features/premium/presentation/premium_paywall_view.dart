@@ -218,7 +218,7 @@ class _PremiumPaywallViewState extends ConsumerState<PremiumPaywallView> {
                         const SizedBox(height: 40),
 
                         // Pulsante di Checkout
-                        CustomUnityButton(
+                        GuidoButton(
                               text: loc?.premiumActivateNow ?? 'ATTIVA ORA (GRATIS)',
                               requireHold: false,
                               onTap: () async {

@@ -8,7 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
 import '../../../core/database/repositories/user_repository.dart';
 import '../../../core/services/daily_quotes_service.dart';
-import '../../../core/unity/unity_bridge_dto.dart';
+import '../../../core/session/zen_session_dto.dart';
 import '../../meditation/meditation_feature.dart';
 
 class HomeJapandiTab extends ConsumerStatefulWidget {
@@ -374,7 +374,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                       'assets/audio/real/Meditazioni/Acqua/Meditazione del Mattino_Procedimento.m4a',
                                   ambientPath:
                                       'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
-                                  sceneName: UnityScenes.waterMeditation,
+                                  sceneName: ZenScenes.waterMeditation,
                                   durationSeconds: 900.0,
                                 );
                               },
@@ -557,7 +557,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                 accentColor: AppColors.successAccent,
                                 textColor: textColor,
                                 subTextColor: subTextColor,
-                                sceneName: UnityScenes.waterMeditation,
+                                sceneName: ZenScenes.waterMeditation,
                                 durationSeconds: 900.0,
                                 isPremium: false,
                               ),
@@ -578,7 +578,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                 accentColor: const Color(0xFF38BDF8),
                                 textColor: textColor,
                                 subTextColor: subTextColor,
-                                sceneName: UnityScenes.waterMeditation,
+                                sceneName: ZenScenes.waterMeditation,
                                 durationSeconds: 900.0,
                                 isPremium: false,
                               ),
@@ -599,7 +599,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                 accentColor: AppColors.goldAccent,
                                 textColor: textColor,
                                 subTextColor: subTextColor,
-                                sceneName: UnityScenes.waterMeditationEvening,
+                                sceneName: ZenScenes.waterMeditationEvening,
                                 durationSeconds: 1500.0,
                                 isPremium: true,
                               ),
@@ -618,7 +618,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                 accentColor: const Color(0xFFF97316),
                                 textColor: textColor,
                                 subTextColor: subTextColor,
-                                sceneName: UnityScenes.fireMeditation,
+                                sceneName: ZenScenes.fireMeditation,
                                 durationSeconds: 900.0,
                                 isPremium: true,
                               ),
@@ -637,7 +637,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                 accentColor: const Color(0xFF06B6D4),
                                 textColor: textColor,
                                 subTextColor: subTextColor,
-                                sceneName: UnityScenes.airMeditation,
+                                sceneName: ZenScenes.airMeditation,
                                 durationSeconds: 900.0,
                                 isPremium: true,
                               ),
@@ -656,7 +656,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                 accentColor: const Color(0xFF84CC16),
                                 textColor: textColor,
                                 subTextColor: subTextColor,
-                                sceneName: UnityScenes.earthMeditation,
+                                sceneName: ZenScenes.earthMeditation,
                                 durationSeconds: 1200.0,
                                 isPremium: true,
                               ),
@@ -805,7 +805,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                       title: "Respirazione Acqua",
                                       breathingAudioPath:
                                           'assets/audio/real/Respirazioni/Acqua/Respirazione acqua.m4a',
-                                      sceneName: UnityScenes.waterBreathing,
+                                      sceneName: ZenScenes.waterBreathing,
                                       durationSeconds: 300.0,
                                       isPremium: false,
                                     );
@@ -838,7 +838,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                           'assets/audio/voci/it/meditazione_percorso_acqua_procedimento_it.m4a',
                                       ambientPath:
                                           'assets/audio/ambient/musica_eterea.m4a',
-                                      sceneName: UnityScenes.generalMeditation,
+                                      sceneName: ZenScenes.generalMeditation,
                                       durationSeconds: 600.0,
                                       isPremium: false,
                                     );
@@ -871,7 +871,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                           'assets/audio/real/Meditazioni/Acqua/Meditazione del Mattino_Procedimento.m4a',
                                       ambientPath:
                                           'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione MATTINO.m4a',
-                                      sceneName: UnityScenes.waterMeditation,
+                                      sceneName: ZenScenes.waterMeditation,
                                       durationSeconds: 900.0,
                                       isPremium: true,
                                     );
@@ -905,7 +905,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                       ambientPath:
                                           'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione POMERIGGIO.m4a',
                                       sceneName:
-                                          UnityScenes.waterMeditationAfternoon,
+                                          ZenScenes.waterMeditationAfternoon,
                                       durationSeconds: 900.0,
                                       isPremium: true,
                                     );
@@ -939,7 +939,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                       ambientPath:
                                           'assets/audio/real/Meditazioni/Acqua/Musica Percorso Acqua - Meditazione SERA.m4a',
                                       sceneName:
-                                          UnityScenes.waterMeditationEvening,
+                                          ZenScenes.waterMeditationEvening,
                                       durationSeconds: 1500.0,
                                       isPremium: true,
                                     );
@@ -993,7 +993,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                       context: context,
                                       ref: ref,
                                       title: "Respirazione Fuoco",
-                                      sceneName: UnityScenes.fireMeditation,
+                                      sceneName: ZenScenes.fireMeditation,
                                       durationSeconds: 300.0,
                                       isPremium: true,
                                     );
@@ -1022,7 +1022,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                       context: context,
                                       ref: ref,
                                       title: "Percorso Fuoco",
-                                      sceneName: UnityScenes.fireMeditation,
+                                      sceneName: ZenScenes.fireMeditation,
                                       durationSeconds: 900.0,
                                       isPremium: true,
                                     );
@@ -1076,7 +1076,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                       context: context,
                                       ref: ref,
                                       title: "Respirazione Terra",
-                                      sceneName: UnityScenes.earthMeditation,
+                                      sceneName: ZenScenes.earthMeditation,
                                       durationSeconds: 300.0,
                                       isPremium: true,
                                     );
@@ -1105,7 +1105,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                       context: context,
                                       ref: ref,
                                       title: "Percorso Terra",
-                                      sceneName: UnityScenes.earthMeditation,
+                                      sceneName: ZenScenes.earthMeditation,
                                       durationSeconds: 1200.0,
                                       isPremium: true,
                                     );
@@ -1159,7 +1159,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                       context: context,
                                       ref: ref,
                                       title: "Respirazione Aria",
-                                      sceneName: UnityScenes.airMeditation,
+                                      sceneName: ZenScenes.airMeditation,
                                       durationSeconds: 300.0,
                                       isPremium: true,
                                     );
@@ -1188,7 +1188,7 @@ class _HomeJapandiTabState extends ConsumerState<HomeJapandiTab> {
                                       context: context,
                                       ref: ref,
                                       title: "Percorso Aria",
-                                      sceneName: UnityScenes.airMeditation,
+                                      sceneName: ZenScenes.airMeditation,
                                       durationSeconds: 900.0,
                                       isPremium: true,
                                     );

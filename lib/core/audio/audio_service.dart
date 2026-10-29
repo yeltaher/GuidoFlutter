@@ -135,7 +135,7 @@ class GuidoAudioService {
     }
   }
 
-  /// Gestisce l'opzione Mute specifica per la voce guida (risolvendo il bug originario in Unity)
+  /// Gestisce l'opzione Mute specifica per la voce guida
   void setVoiceMute(bool isMuted) {
     _isVoiceMuted = isMuted;
     _voicePlayer.setVolume(_isVoiceMuted ? 0.0 : _voiceVolume);

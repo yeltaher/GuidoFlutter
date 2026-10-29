@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import '../unity/unity_bridge_dto.dart';
+import '../session/zen_session_dto.dart';
 
 /// Bundle contenente tutte le risorse audio e metadati per l'avvio della sessione
 class AudioExperienceBundle {
@@ -19,7 +19,7 @@ class AudioExperienceBundle {
 }
 
 /// Servizio enterprise per la risoluzione deterministica e resiliente delle tracce audio (Voce M/F e Ambient)
-/// accoppiate con precisione alle scene Unity UaaL canoniche.
+/// accoppiate con precisione alle scene zen canoniche.
 class AudioResolverService {
   // Tracce Michela (Femminile)
   static const String _michelaAcquaEsercizio =
@@ -96,7 +96,7 @@ class AudioResolverService {
     String? customAmbientPath,
     double? durationSeconds,
   }) {
-    final resolvedScene = UnityScenes.resolveSceneName(
+    final resolvedScene = ZenScenes.resolveSceneName(
       explicitSceneName: sceneName,
       title: title,
     );
@@ -132,7 +132,7 @@ class AudioResolverService {
         voicePath = _michelaMedGenerale;
         actorName = 'Michela';
         ambientPath = ambientPath.isEmpty ? _ambientEtereo : ambientPath;
-      } else if (t.contains('fuoco') || resolvedScene == UnityScenes.fireBreathing || resolvedScene == UnityScenes.fireMeditation) {
+      } else if (t.contains('fuoco') || resolvedScene == ZenScenes.fireBreathing || resolvedScene == ZenScenes.fireMeditation) {
         if (voiceSex == 0) {
           voicePath = isProcedimento ? _luigiFuocoProcedimento : _luigiFuocoEsercizio;
           actorName = 'Luigi';
@@ -141,7 +141,7 @@ class AudioResolverService {
           actorName = 'Michela';
         }
         ambientPath = ambientPath.isEmpty ? _ambientFuoco : ambientPath;
-      } else if (t.contains('aria') || resolvedScene == UnityScenes.airBreathing || resolvedScene == UnityScenes.airMeditation) {
+      } else if (t.contains('aria') || resolvedScene == ZenScenes.airBreathing || resolvedScene == ZenScenes.airMeditation) {
         if (voiceSex == 0) {
           voicePath = isProcedimento ? _luigiAriaProcedimento : _luigiAriaEsercizio;
           actorName = 'Luigi';
@@ -150,7 +150,7 @@ class AudioResolverService {
           actorName = 'Michela';
         }
         ambientPath = ambientPath.isEmpty ? _ambientAria : ambientPath;
-      } else if (t.contains('terra') || resolvedScene == UnityScenes.earthBreathing || resolvedScene == UnityScenes.earthMeditation) {
+      } else if (t.contains('terra') || resolvedScene == ZenScenes.earthBreathing || resolvedScene == ZenScenes.earthMeditation) {
         if (voiceSex == 0) {
           voicePath = isProcedimento ? _luigiTerraProcedimento : _luigiTerraEsercizio;
           actorName = 'Luigi';

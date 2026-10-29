@@ -395,7 +395,7 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
                   Column(
                     children: [
                       if (_isTypewriterComplete && !isVr && !_isSessionFinished) ...[
-                        CustomUnityButton(
+                        GuidoButton(
                           text: _isPlaying
                               ? (isIt ? 'PAUSA' : 'PAUSE')
                               : (isIt ? 'RIPRENDI' : 'RESUME'),
@@ -408,7 +408,7 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
                           width: buttonWidth,
                         ).animate().fadeIn(duration: 400.ms),
                         const SizedBox(height: 10),
-                        CustomUnityButton(
+                        GuidoButton(
                           text: isIt ? 'RIPETI (SOLO AMBIENT)' : 'REPEAT (AMBIENT ONLY)',
                           onTap: _repeatSession,
                           accentColor: AppColors.successAccent,
@@ -417,21 +417,21 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
                         const SizedBox(height: 10),
                       ],
                       if (!isVr && !_isSessionFinished)
-                        CustomUnityButton(
+                        GuidoButton(
                           text: isIt ? 'Chiudi sessione' : 'Close session',
                           onTap: _requestExit,
                           accentColor: AppColors.dangerAccent,
                           width: buttonWidth,
                         ),
                       if (!isVr && _isSessionFinished) ...[
-                        CustomUnityButton(
+                        GuidoButton(
                           text: isIt ? 'RIPETI' : 'REPEAT',
                           onTap: _repeatSession,
                           accentColor: AppColors.successAccent,
                           width: buttonWidth,
                         ),
                         const SizedBox(height: 10),
-                        CustomUnityButton(
+                        GuidoButton(
                           text: isIt ? 'ESCI' : 'EXIT',
                           onTap: _confirmExit,
                           accentColor: AppColors.dangerAccent,
@@ -508,7 +508,7 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
                           isActiveEye: isActiveEye,
                           onTriggered: _cancelExit,
                         )
-                      : CustomUnityButton(
+                      : GuidoButton(
                           text: isIt ? 'NO' : 'NO',
                           onTap: _cancelExit,
                           accentColor: AppColors.getActiveAccentColor(isDark),
@@ -526,7 +526,7 @@ class _MeditationViewState extends ConsumerState<MeditationView> {
                           isActiveEye: isActiveEye,
                           onTriggered: _confirmExit,
                         )
-                      : CustomUnityButton(
+                      : GuidoButton(
                           text: isIt ? 'SÌ' : 'YES',
                           onTap: _confirmExit,
                           accentColor: AppColors.dangerAccent,

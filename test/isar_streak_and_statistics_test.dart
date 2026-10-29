@@ -8,7 +8,6 @@ import 'package:guido/core/database/settings_provider.dart';
 import 'package:guido/features/menu/presentation/home_japandi_tab.dart';
 import 'package:guido/features/menu/presentation/me_tab.dart';
 import 'package:guido/features/menu/presentation/me_tab_provider.dart';
-import 'package:guido/core/unity/unity_session_controller.dart';
 import 'dart:io';
 
 void main() {
@@ -245,53 +244,4 @@ void main() {
     });
   });
 
-  group('FASE 3: Session Duplication Prevention', () {
-    test('UnitySessionController recordPartialSession sets isCompleted and prevents duplicate saves', () async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-
-      final container = ProviderContainer(
-        overrides: [
-          sharedPrefsProvider.overrideWithValue(prefs),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      final controller =
-          container.read(unitySessionControllerProvider.notifier);
-
-      // Simulate Unity sending progress
-      controller.onUnityMessage(
-        '{"jsonrpc":"2.0","method":"onSessionProgress","params":{"sessionId":"test_1","sceneName":"Acqua","elapsedSeconds":25.0,"totalDurationSeconds":120.0,"progressNormalized":0.2,"currentPhase":"Inhale","userHeartRateOrState":0}}',
-      );
-
-      expect(container.read(unitySessionControllerProvider).isPlaying, isTrue);
-      expect(
-        container.read(unitySessionControllerProvider).isCompleted,
-        isFalse,
-      );
-
-      // First partial session record
-      await controller.recordPartialSession();
-      expect(
-        container.read(unitySessionControllerProvider).isCompleted,
-        isTrue,
-      );
-
-      // Second invocation should be completely ignored by the isCompleted guard
-      await controller.recordPartialSession();
-      expect(
-        container.read(unitySessionControllerProvider).isCompleted,
-        isTrue,
-      );
-    });
-
-    test('unity_experience_screen.dart guards session recording on exit against duplicate recording', () {
-      final code = File('lib/features/meditation/presentation/unity_experience_screen.dart').readAsStringSync();
-      // Verify _confirmExit is properly guarded by !ref.read(unitySessionControllerProvider).isCompleted
-      final confirmExitIdx = code.indexOf('void _confirmExit()');
-      final confirmExitBody = code.substring(confirmExitIdx, confirmExitIdx + 600);
-      expect(confirmExitBody.contains('!ref.read(unitySessionControllerProvider).isCompleted'), isTrue);
-    });
-  });
-}
+  }

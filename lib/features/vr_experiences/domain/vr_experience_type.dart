@@ -1,4 +1,4 @@
-import '../../../core/unity/unity_bridge_dto.dart';
+import '../../../core/session/zen_session_dto.dart';
 
 /// Rappresenta gli 8 moduli WebXR / Three.js 3D fruibili al 100% offline
 /// tramite localhost server e InAppWebView.
@@ -222,7 +222,7 @@ enum VrExperienceType {
     return null;
   }
 
-  /// Verifica e risolve se una determinata scena Unity o titolo corrisponde
+  /// Verifica e risolve se una determinata scena o titolo corrisponde
   /// a uno degli 8 moduli WebXR Three.js implementati offline.
   static VrExperienceType? fromSceneOrTitle({
     String? sceneName,
@@ -230,28 +230,28 @@ enum VrExperienceType {
   }) {
     final s = sceneName?.trim();
     if (s != null && s.isNotEmpty) {
-      if (s == UnityScenes.airBreathing || s == UnityScenes.airMeditation) {
+      if (s == ZenScenes.airBreathing || s == ZenScenes.airMeditation) {
         return VrExperienceType.respirazioneAria;
       }
-      if (s == UnityScenes.waterBreathing) {
+      if (s == ZenScenes.waterBreathing) {
         return VrExperienceType.respirazioneAcqua;
       }
-      if (s == UnityScenes.fireBreathing || s == UnityScenes.fireMeditation) {
+      if (s == ZenScenes.fireBreathing || s == ZenScenes.fireMeditation) {
         return VrExperienceType.respirazioneFuoco;
       }
-      if (s == UnityScenes.earthBreathing || s == UnityScenes.earthMeditation) {
+      if (s == ZenScenes.earthBreathing || s == ZenScenes.earthMeditation) {
         return VrExperienceType.respirazioneTerra;
       }
-      if (s == UnityScenes.waterMeditationEvening) {
+      if (s == ZenScenes.waterMeditationEvening) {
         return VrExperienceType.meditazioneSeraAcqua;
       }
-      if (s == UnityScenes.waterMeditationAfternoon) {
+      if (s == ZenScenes.waterMeditationAfternoon) {
         return VrExperienceType.meditazionePomeriggioAcqua;
       }
-      if (s == UnityScenes.generalMeditation) {
+      if (s == ZenScenes.generalMeditation) {
         return VrExperienceType.meditazioneGeneraleAcqua;
       }
-      if (s == UnityScenes.waterMeditationMorning || s == UnityScenes.waterMeditation) {
+      if (s == ZenScenes.waterMeditationMorning || s == ZenScenes.waterMeditation) {
         // Se la scena legacy o waterMeditationMorning viene abbinata a un titolo serale o pomeridiano o generale, risolvi correttamente
         final t = (title ?? '').toLowerCase();
         if (t.contains('sera') || t.contains('evening') || t.contains('starlight') || t.contains('sonno')) {

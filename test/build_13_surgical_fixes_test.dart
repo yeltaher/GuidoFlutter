@@ -6,63 +6,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:guido/core/database/settings_provider.dart';
 import 'package:guido/core/database/app_initializer_provider.dart';
 import 'package:guido/core/services/daily_quotes_service.dart';
-import 'package:guido/core/unity/unity_bridge_dto.dart';
-import 'package:guido/core/unity/unity_session_controller.dart';
+import 'package:guido/core/session/zen_session_dto.dart';
 import 'package:guido/features/splash/presentation/boot_splash_view.dart';
-import 'package:guido/features/meditation/presentation/unity_experience_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('Build 13: 1. Unity Experience Timeout & Fallback UI Tests', () {
-    testWidgets('Shows Japandi timeout dialog after 12s if Unity scene not loaded', (tester) async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-
-      final container = ProviderContainer(
-        overrides: [
-          sharedPrefsInstanceProvider.overrideWith((ref) => prefs),
-          sharedPrefsProvider.overrideWithValue(prefs),
-        ],
+  group('Build 13: 1. Session Config & Quality Presets', () {
+    test('SessionConfigDto initializes with default and custom values', () {
+      const config = SessionConfigDto(
+        sceneName: 'Procedimento acqua',
+        durationSeconds: 300,
       );
-      addTearDown(container.dispose);
-
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: const MaterialApp(
-            home: UnityExperienceScreen(
-              title: 'Test Session',
-              sceneName: 'Procedimento acqua',
-              durationSeconds: 300,
-            ),
-          ),
-        ),
-      );
-
-      // Initial frame: Loading overlay is visible
-      await tester.pump();
-      expect(find.textContaining('CARICAMENTO AMBIENTE ZEN'), findsOneWidget);
-      expect(find.textContaining('non è riuscito a caricare'), findsNothing);
-
-      // Advance time by 13 seconds (past 12s timeout) and settle dialog animation
-      await tester.pump(const Duration(seconds: 13));
-      await tester.pump(const Duration(milliseconds: 500));
-
-      // Loading overlay is replaced by elegant Japandi Fallback Dialog
-      expect(find.textContaining('non è riuscito a caricare'), findsOneWidget);
-      expect(find.text('RIPROVA'), findsOneWidget);
-      expect(find.text('HOME'), findsOneWidget);
-
-      final err = tester.takeException();
-      if (err != null) {
-        // ignore: avoid_print
-        print('Captured Test 1 Exception: $err');
-      }
-
-      // Stop controller to cancel heartbeat timer before tear down
-      container.read(unitySessionControllerProvider.notifier).stopSession();
-      await tester.pump(const Duration(milliseconds: 100));
+      expect(config.sceneName, 'Procedimento acqua');
+      expect(config.durationSeconds, 300);
+      expect(config.quality, QualityPreset.highFidelity);
     });
   });
 

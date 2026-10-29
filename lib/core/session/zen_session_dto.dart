@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-/// Supported URP rendering quality presets for Unity as a Library.
+/// Supported rendering quality presets for 3D/VR experiences.
 enum QualityPreset {
-  /// High Fidelity PBR profile: Single Pass Instanced, MSAA 2x, 40m Shadows, Full Lightmaps (60 FPS target).
+  /// High Fidelity profile: MSAA 2x, Full Shadows, 60 FPS target.
   highFidelity(0),
 
-  /// Balanced Eco profile: Single Pass Instanced, MSAA off/light, 20m Shadows, Scaled LOD Bias (Battery Saving).
+  /// Balanced Eco profile: Battery saving profile with scaled rendering.
   balancedEco(1);
 
   final int value;
@@ -41,7 +41,7 @@ enum QualityPreset {
   }
 }
 
-/// Supported languages for Unity guidance.
+/// Supported languages for audio guidance and text.
 enum AppLanguage {
   italian(0),
   english(1);
@@ -124,8 +124,7 @@ enum BreathingElement {
   }
 }
 
-/// Configuration payload sent from Flutter companion app to initialize a VR/3D session.
-/// Matches C# `SessionConfigDto` exactly.
+/// Configuration payload for initializing a VR/3D session.
 class SessionConfigDto {
   final String sceneName;
   final int language; // 0 = Italian, 1 = English
@@ -181,8 +180,7 @@ class SessionConfigDto {
   }
 }
 
-/// Real-time progress metric sent from Unity to Flutter companion app.
-/// Matches C# `SessionProgressDto` exactly.
+/// Real-time progress metric for active sessions.
 class SessionProgressDto {
   final String sessionId;
   final String sceneName;
@@ -231,8 +229,7 @@ class SessionProgressDto {
   String toJsonString() => jsonEncode(toJson());
 }
 
-/// Completed session summary sent from Unity to Flutter for persistence in Isar Database.
-/// Matches C# `SessionSummaryDto` exactly.
+/// Completed session summary for persistence in Isar Database.
 class SessionSummaryDto {
   final String sessionId;
   final String sceneName;
@@ -306,8 +303,7 @@ class BreathPhaseEventDto {
   }
 }
 
-/// Lightweight JSON-RPC 2.0 request envelope for Flutter UaaL messaging.
-/// Matches C# `JsonRpcRequestDto` exactly.
+/// Lightweight JSON-RPC 2.0 request envelope.
 class JsonRpcRequestDto {
   final String jsonrpc;
   final String method;
@@ -340,8 +336,7 @@ class JsonRpcRequestDto {
   String toJsonString() => jsonEncode(toJson());
 }
 
-/// Lightweight JSON-RPC 2.0 response envelope for Flutter UaaL messaging.
-/// Matches C# `JsonRpcResponseDto` exactly.
+/// Lightweight JSON-RPC 2.0 response envelope.
 class JsonRpcResponseDto {
   final String jsonrpc;
   final String result;
@@ -376,9 +371,9 @@ class JsonRpcResponseDto {
   String toJsonString() => jsonEncode(toJson());
 }
 
-/// Canonical scene names for the 14 Unity UaaL meditation and breathing environments.
-class UnityScenes {
-  // Respirazione (continuous meditation scenes)
+/// Canonical scene names for the meditation and breathing environments.
+class ZenScenes {
+  // Respirazione (continuous breathing scenes)
   static const String waterBreathing = 'Respirazione acqua';
   static const String airBreathing = 'Respirazione aria';
   static const String fireBreathing = 'Respirazione fuoco';
@@ -400,7 +395,7 @@ class UnityScenes {
   static const String mainMenu = 'MainMenu Corretto';
   static const String splashScreen = 'SplashScreen';
 
-  // Legacy mappings to maintain backward compatibility
+  // Backward compatibility aliases
   static const String waterMeditation = waterMeditationMorning;
   static const String airMeditation = airBreathing;
   static const String fireMeditation = fireBreathing;
@@ -414,7 +409,7 @@ class UnityScenes {
     mainMenu, splashScreen,
   ];
 
-  /// Resolves the canonical Unity scene name based on explicit parameter, title, and session type.
+  /// Resolves the canonical scene name based on explicit parameter, title, and session type.
   static String resolveSceneName({
     String? explicitSceneName,
     required String title,
@@ -462,7 +457,7 @@ class UnityScenes {
   }
 }
 
-/// Pan/drag delta coordinates sent from Flutter to Unity for 2D look around.
+/// Pan/drag delta coordinates for 2D look around.
 class CameraRotationDto {
   final double dx;
   final double dy;
@@ -480,4 +475,3 @@ class CameraRotationDto {
 
   String toJsonString() => jsonEncode(toJson());
 }
-

@@ -8,8 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../../core/unity/unity_bridge_dto.dart';
-import '../../../core/unity/unity_session_controller.dart';
+import '../../../core/session/zen_session_dto.dart';
 import '../../meditation/meditation_feature.dart';
 
 class SettingsTab extends ConsumerStatefulWidget {
@@ -181,16 +180,10 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                                       selectedPreset: settings.qualityPreset,
                                       isItalian: settings.language == 0,
                                       onPresetChanged: (preset) {
-                                        settingsNotifier.changeQualityPreset(
-                                          preset,
-                                        );
-                                        ref
-                                            .read(
-                                              unitySessionControllerProvider
-                                                  .notifier,
-                                            )
-                                            .setQualityPreset(preset);
-                                      },
+                                         settingsNotifier.changeQualityPreset(
+                                           preset,
+                                         );
+                                       },
                                     ),
 
                                     Divider(

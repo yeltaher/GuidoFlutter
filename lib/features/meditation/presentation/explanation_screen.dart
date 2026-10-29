@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../../core/audio/audio_resolver_service.dart';
 import '../../vr_experiences/vr_experiences_feature.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'session_launch_helper.dart';
@@ -93,40 +92,14 @@ class _ExplanationScreenState extends ConsumerState<ExplanationScreen> {
 
     final settings = ref.read(settingsProvider);
 
-    if (vrMatch != null) {
-      context.pushReplacement(
-        '/vr-experience',
-        extra: {
-          'experienceId': vrMatch.id,
-          'isVrMode': isVr,
-          'autoStart': true,
-          'voiceSex': settings.voiceSex,
-        },
-      );
-      return;
-    }
-
-    final bundle = AudioResolverService.resolveBundle(
-      title: widget.title,
-      sceneName: widget.sceneName,
-      voiceSex: settings.voiceSex,
-      language: settings.language,
-      customVoicePath: widget.voicePath.isNotEmpty
-          ? widget.voicePath
-          : (widget.breathingAudioPath ?? ''),
-      customAmbientPath: widget.ambientPath,
-      durationSeconds: widget.durationSeconds,
-    );
-
+    final targetExperience = vrMatch ?? VrExperienceType.meditazioneGeneraleAcqua;
     context.pushReplacement(
-      '/unity-experience',
+      '/vr-experience',
       extra: {
-        'title': widget.title,
-        'sceneName': bundle.sceneName,
-        'durationSeconds': bundle.durationSeconds,
+        'experienceId': targetExperience.id,
         'isVrMode': isVr,
-        'voicePath': bundle.voicePath,
-        'ambientPath': bundle.ambientPath,
+        'autoStart': true,
+        'voiceSex': settings.voiceSex,
       },
     );
   }

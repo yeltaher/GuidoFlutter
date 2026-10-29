@@ -158,50 +158,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-      GoRoute(
-        path: '/unity-experience',
-        builder: (context, state) {
-          final params = _extractRouteParams(state);
-          final rawVr = params['isVrMode'];
-          final bool isVrMode = rawVr is bool
-              ? rawVr
-              : (rawVr is String &&
-                  (rawVr.toLowerCase() == 'true' || rawVr == '1'));
-          final rawTitle = params['title'];
-          final String title =
-              (rawTitle is String && rawTitle.trim().isNotEmpty)
-                  ? rawTitle.trim()
-                  : 'Esperienza Immersiva';
-          final rawScene = params['sceneName'];
-          final String sceneName =
-              (rawScene is String && rawScene.trim().isNotEmpty)
-                  ? rawScene.trim()
-                  : 'Scena Zen 3D';
-          final rawDuration = params['durationSeconds'];
-          final double durationSeconds = rawDuration is num
-              ? rawDuration.toDouble()
-              : (rawDuration is String
-                  ? (double.tryParse(rawDuration) ?? 300.0)
-                  : 300.0);
-          final rawVoice = params['voicePath'];
-          final String? voicePath =
-              (rawVoice is String && rawVoice.isNotEmpty) ? rawVoice : null;
-          final rawAmbient = params['ambientPath'];
-          final String? ambientPath =
-              (rawAmbient is String && rawAmbient.isNotEmpty)
-                  ? rawAmbient
-                  : null;
 
-          return UnityExperienceScreen(
-            title: title,
-            sceneName: sceneName,
-            durationSeconds: durationSeconds,
-            isVrMode: isVrMode,
-            voicePath: voicePath,
-            ambientPath: ambientPath,
-          );
-        },
-      ),
       GoRoute(
         path: '/native-3d-experience',
         builder: (context, state) {

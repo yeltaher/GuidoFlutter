@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 
-/// Un pulsante custom che replica l'estetica ed il riempimento radiale
-/// del `CustomButton.cs` originale di Unity.
-class CustomUnityButton extends StatefulWidget {
+/// Un pulsante custom interattivo Japandi con riempimento progressivo.
+class GuidoButton extends StatefulWidget {
   final String text;
   final VoidCallback onTap;
   final bool isLocked;
@@ -11,7 +10,7 @@ class CustomUnityButton extends StatefulWidget {
   final Color accentColor;
   final bool requireHold;
 
-  const CustomUnityButton({
+  const GuidoButton({
     super.key,
     required this.text,
     required this.onTap,
@@ -22,10 +21,10 @@ class CustomUnityButton extends StatefulWidget {
   });
 
   @override
-  State<CustomUnityButton> createState() => _CustomUnityButtonState();
+  State<GuidoButton> createState() => _GuidoButtonState();
 }
 
-class _CustomUnityButtonState extends State<CustomUnityButton>
+class _GuidoButtonState extends State<GuidoButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   bool _isPressing = false;
@@ -33,7 +32,7 @@ class _CustomUnityButtonState extends State<CustomUnityButton>
   @override
   void initState() {
     super.initState();
-    // Velocità di riempimento (fillSpeed) simile a quella di Unity
+    // Velocità di riempimento progressivo
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -125,7 +124,7 @@ class _CustomUnityButtonState extends State<CustomUnityButton>
             ),
             child: Stack(
               children: [
-                // Effetto riempimento radiale / lineare progressivo in stile Unity fillSprite
+                // Effetto riempimento lineare progressivo
                 AnimatedBuilder(
                   animation: _animationController,
                   builder: (context, child) {

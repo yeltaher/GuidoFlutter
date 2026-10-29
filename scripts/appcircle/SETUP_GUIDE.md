@@ -1,4 +1,4 @@
-# Appcircle Setup Guide for Guido Flutter + Unity iOS
+# Appcircle Setup Guide for Guido Flutter + WebXR iOS
 
 ## Table of Contents
 1. [Prerequisites](#prerequisites)
@@ -133,7 +133,7 @@ This will automatically increment the build number with each build.
   ```
   ~/.pub-cache
   ios/Pods
-  ios/UnityLibrary/DerivedData
+  ios/WebXRLibrary/DerivedData
   ```
 - Cache duration: `7` days
 
@@ -144,19 +144,19 @@ This will automatically increment the build number with each build.
 - Add **"Xcode Select"** from Workflow Marketplace
 - Set `AC_XCODE_VERSION` to `27.0`
 
-#### Step 4: Custom Script - Build UnityFramework (Optional / Legacy)
+#### Step 4: Custom Script - Build WebXRFramework (Optional / Legacy)
 > [!NOTE]
-> On the Pure Flutter architecture, `UnityFramework` is completely decoupled from `Runner.xcodeproj`. The script automatically detects this and exits with code 0 (no-op). This step can safely be omitted or retained without breaking the pipeline.
+> On the Pure Flutter architecture, `WebXRFramework` is completely decoupled from `Runner.xcodeproj`. The script automatically detects this and exits with code 0 (no-op). This step can safely be omitted or retained without breaking the pipeline.
 - Add **"Custom Script"** from Workflow Marketplace
 - Set **"Execute With"** to `Bash`
-- Paste the contents of `scripts/appcircle/build_unity_framework.sh`
+- Paste the contents of `scripts/appcircle/build_WebXR_framework.sh`
 
-#### Step 5: Custom Script - Copy UnityFramework (Optional / Legacy)
+#### Step 5: Custom Script - Copy WebXRFramework (Optional / Legacy)
 > [!NOTE]
 > Similar to Step 4, this script detects the decoupled configuration and exits with code 0. This step can safely be omitted or retained.
 - Add **"Custom Script"** from Workflow Marketplace
 - Set **"Execute With"** to `Bash`
-- Paste the contents of `scripts/appcircle/copy_unity_framework.sh`
+- Paste the contents of `scripts/appcircle/copy_WebXR_framework.sh`
 
 #### Step 6: Flutter Install
 - Add **"Flutter Install"** from Workflow Marketplace
@@ -208,7 +208,7 @@ This will automatically increment the build number with each build.
   ```
   ~/.pub-cache
   ios/Pods
-  ios/UnityLibrary/DerivedData
+  ios/WebXRLibrary/DerivedData
   ```
 - Cache duration: `7` days
 
@@ -246,8 +246,8 @@ For this project, the default Appcircle variables should be sufficient:
    - Cache Pull
    - Git Clone
    - Xcode Select
-   - Build UnityFramework (custom script)
-   - Copy UnityFramework (custom script)
+   - Build WebXRFramework (custom script)
+   - Copy WebXRFramework (custom script)
    - Flutter Install
    - Flutter Build for iOS
    - Xcodebuild Archive & Export
@@ -264,23 +264,23 @@ For this project, the default Appcircle variables should be sufficient:
 
 ## Troubleshooting
 
-### Issue 1: UnityFramework Build Fails
+### Issue 1: WebXRFramework Build Fails
 
 **Symptoms:**
-- Build UnityFramework step fails
-- Error: `Unity-iPhone.xcodeproj not found`
+- Build WebXRFramework step fails
+- Error: `WebXR-iPhone.xcodeproj not found`
 
 **Solutions:**
 1. Verify the repository structure:
    ```
    ios/
-   ├── UnityLibrary/
-   │   ├── Unity-iPhone.xcodeproj/
-   │   ├── UnityFramework/
+   ├── WebXRLibrary/
+   │   ├── WebXR-iPhone.xcodeproj/
+   │   ├── WebXRFramework/
    │   └── ...
    └── Runner.xcworkspace/
    ```
-2. Check if Unity files are committed to the repository
+2. Check if WebXR files are committed to the repository
 3. Ensure Git LFS is configured (if using large files)
 
 ### Issue 2: CocoaPods Version Mismatch
@@ -323,11 +323,11 @@ For this project, the default Appcircle variables should be sufficient:
 ### Issue 5: Framework Not Found After Build
 
 **Symptoms:**
-- Copy UnityFramework step fails
-- Error: `UnityFramework.framework not found`
+- Copy WebXRFramework step fails
+- Error: `WebXRFramework.framework not found`
 
 **Solutions:**
-1. Check the Build UnityFramework step logs
+1. Check the Build WebXRFramework step logs
 2. Verify the DerivedData path is correct
 3. The framework might be in a different location - check the build output
 
@@ -351,11 +351,11 @@ For this project, the default Appcircle variables should be sufficient:
 If you need to pass additional flags to xcodebuild, modify the custom scripts:
 
 ```bash
-xcodebuild -project ios/UnityLibrary/Unity-iPhone.xcodeproj \
-  -target UnityFramework \
+xcodebuild -project ios/WebXRLibrary/WebXR-iPhone.xcodeproj \
+  -target WebXRFramework \
   -sdk iphoneos \
   -configuration Release \
-  -derivedDataPath ios/UnityLibrary/DerivedData \
+  -derivedDataPath ios/WebXRLibrary/DerivedData \
   CODE_SIGN_IDENTITY="-" \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGNING_ALLOWED=NO \
@@ -393,19 +393,19 @@ For automated releases:
 
 ### Workflow Summary
 ```
-Cache Pull → Git Clone → Xcode Select → Build UnityFramework →
-Copy UnityFramework → Flutter Install → Flutter Build iOS →
+Cache Pull → Git Clone → Xcode Select → Build WebXRFramework →
+Copy WebXRFramework → Flutter Install → Flutter Build iOS →
 Xcodebuild Archive & Export → Export Artifacts → Cache Push
 ```
 
 ### Key Files
-- `scripts/appcircle/build_unity_framework.sh` - Unity build script
-- `scripts/appcircle/copy_unity_framework.sh` - Framework copy script
+- `scripts/appcircle/build_WebXR_framework.sh` - WebXR build script
+- `scripts/appcircle/copy_WebXR_framework.sh` - Framework copy script
 - `ios/Podfile` - CocoaPods configuration
 - `pubspec.yaml` - Flutter project configuration
 
 ### Key Paths
-- Unity Project: `ios/UnityLibrary/Unity-iPhone.xcodeproj`
-- Unity Framework: `ios/UnityLibrary/Frameworks/UnityFramework.framework`
+- WebXR Project: `ios/WebXRLibrary/WebXR-iPhone.xcodeproj`
+- WebXR Framework: `ios/WebXRLibrary/Frameworks/WebXRFramework.framework`
 - Flutter Workspace: `ios/Runner.xcworkspace`
 - Flutter Scheme: `Runner`

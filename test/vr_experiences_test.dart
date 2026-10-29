@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:guido/features/vr_experiences/domain/vr_experience_type.dart';
 import 'package:guido/features/vr_experiences/application/local_vr_server_service.dart';
-import 'package:guido/core/unity/unity_bridge_dto.dart';
+import 'package:guido/core/session/zen_session_dto.dart';
 import 'package:guido/core/database/settings_provider.dart';
 import 'package:guido/core/database/app_initializer_provider.dart';
 import 'package:guido/features/meditation/presentation/session_launch_helper.dart';
@@ -209,26 +209,26 @@ void main() {
     test('fromSceneOrTitle correctly matches WebXR scenes and fallback', () {
       // 4 Respirazioni
       expect(
-        VrExperienceType.fromSceneOrTitle(sceneName: UnityScenes.airBreathing),
+        VrExperienceType.fromSceneOrTitle(sceneName: ZenScenes.airBreathing),
         VrExperienceType.respirazioneAria,
       );
       expect(
-        VrExperienceType.fromSceneOrTitle(sceneName: UnityScenes.waterBreathing),
+        VrExperienceType.fromSceneOrTitle(sceneName: ZenScenes.waterBreathing),
         VrExperienceType.respirazioneAcqua,
       );
       expect(
-        VrExperienceType.fromSceneOrTitle(sceneName: UnityScenes.fireBreathing),
+        VrExperienceType.fromSceneOrTitle(sceneName: ZenScenes.fireBreathing),
         VrExperienceType.respirazioneFuoco,
       );
       expect(
-        VrExperienceType.fromSceneOrTitle(sceneName: UnityScenes.earthBreathing),
+        VrExperienceType.fromSceneOrTitle(sceneName: ZenScenes.earthBreathing),
         VrExperienceType.respirazioneTerra,
       );
 
       // Meditazione Mattino Acqua
       expect(
         VrExperienceType.fromSceneOrTitle(
-          sceneName: UnityScenes.waterMeditationMorning,
+          sceneName: ZenScenes.waterMeditationMorning,
         ),
         VrExperienceType.meditazioneMattinoAcqua,
       );
@@ -242,7 +242,7 @@ void main() {
       // Meditazione Pomeriggio Acqua
       expect(
         VrExperienceType.fromSceneOrTitle(
-          sceneName: UnityScenes.waterMeditationAfternoon,
+          sceneName: ZenScenes.waterMeditationAfternoon,
         ),
         VrExperienceType.meditazionePomeriggioAcqua,
       );
@@ -260,7 +260,7 @@ void main() {
       );
       expect(
         VrExperienceType.fromSceneOrTitle(
-          sceneName: UnityScenes.waterMeditation,
+          sceneName: ZenScenes.waterMeditation,
           title: 'Meditazione Pomeriggio',
         ),
         VrExperienceType.meditazionePomeriggioAcqua,
@@ -269,7 +269,7 @@ void main() {
       // Meditazione Sera Acqua
       expect(
         VrExperienceType.fromSceneOrTitle(
-          sceneName: UnityScenes.waterMeditationEvening,
+          sceneName: ZenScenes.waterMeditationEvening,
         ),
         VrExperienceType.meditazioneSeraAcqua,
       );
@@ -289,13 +289,13 @@ void main() {
       // Meditazione Generale Acqua
       expect(
         VrExperienceType.fromSceneOrTitle(
-          sceneName: UnityScenes.generalMeditation,
+          sceneName: ZenScenes.generalMeditation,
         ),
         VrExperienceType.meditazioneGeneraleAcqua,
       );
       expect(
         VrExperienceType.fromSceneOrTitle(
-          sceneName: UnityScenes.generalMeditation,
+          sceneName: ZenScenes.generalMeditation,
           title: 'Meditazione Generale',
         ),
         VrExperienceType.meditazioneGeneraleAcqua,
@@ -466,7 +466,7 @@ void main() {
                           title: 'Respirazione Aria',
                           voicePath: '',
                           ambientPath: '',
-                          sceneName: UnityScenes.airBreathing,
+                          sceneName: ZenScenes.airBreathing,
                           durationSeconds: 300.0,
                         ),
                       );
@@ -549,7 +549,7 @@ void main() {
                           title: 'Meditazione Mattino • Acqua',
                           voicePath: '',
                           ambientPath: '',
-                          sceneName: UnityScenes.waterMeditationMorning,
+                          sceneName: ZenScenes.waterMeditationMorning,
                           durationSeconds: 300.0,
                         ),
                       );
@@ -629,7 +629,7 @@ void main() {
                           title: 'Respirazione Fuoco',
                           voicePath: '',
                           ambientPath: '',
-                          sceneName: UnityScenes.fireBreathing,
+                          sceneName: ZenScenes.fireBreathing,
                           durationSeconds: 300.0,
                         ),
                       );
@@ -709,7 +709,7 @@ void main() {
                           title: 'Meditazione della Sera • Acqua',
                           voicePath: '',
                           ambientPath: '',
-                          sceneName: UnityScenes.waterMeditationEvening,
+                          sceneName: ZenScenes.waterMeditationEvening,
                           durationSeconds: 332.0,
                         ),
                       );
@@ -789,7 +789,7 @@ void main() {
                           title: 'Percorso Acqua (Pomeriggio)',
                           voicePath: '',
                           ambientPath: '',
-                          sceneName: UnityScenes.waterMeditationAfternoon,
+                          sceneName: ZenScenes.waterMeditationAfternoon,
                           durationSeconds: 900.0,
                         ),
                       );
@@ -869,7 +869,7 @@ void main() {
                           title: 'Meditazione Generale',
                           voicePath: '',
                           ambientPath: '',
-                          sceneName: UnityScenes.generalMeditation,
+                          sceneName: ZenScenes.generalMeditation,
                           durationSeconds: 600.0,
                         ),
                       );
@@ -989,30 +989,30 @@ void main() {
 
     test('isOfflineVrSupported helper returns true only for supported experiences', () {
       expect(
-        VrExperienceType.isOfflineVrSupported(sceneName: UnityScenes.airBreathing),
+        VrExperienceType.isOfflineVrSupported(sceneName: ZenScenes.airBreathing),
         isTrue,
       );
       expect(
-        VrExperienceType.isOfflineVrSupported(sceneName: UnityScenes.waterBreathing),
+        VrExperienceType.isOfflineVrSupported(sceneName: ZenScenes.waterBreathing),
         isTrue,
       );
       expect(
-        VrExperienceType.isOfflineVrSupported(sceneName: UnityScenes.fireBreathing),
+        VrExperienceType.isOfflineVrSupported(sceneName: ZenScenes.fireBreathing),
         isTrue,
       );
       expect(
-        VrExperienceType.isOfflineVrSupported(sceneName: UnityScenes.earthBreathing),
+        VrExperienceType.isOfflineVrSupported(sceneName: ZenScenes.earthBreathing),
         isTrue,
       );
       expect(
         VrExperienceType.isOfflineVrSupported(
-          sceneName: UnityScenes.waterMeditationMorning,
+          sceneName: ZenScenes.waterMeditationMorning,
         ),
         isTrue,
       );
       expect(
         VrExperienceType.isOfflineVrSupported(
-          sceneName: UnityScenes.waterMeditationAfternoon,
+          sceneName: ZenScenes.waterMeditationAfternoon,
         ),
         isTrue,
       );
@@ -1030,7 +1030,7 @@ void main() {
       );
       expect(
         VrExperienceType.isOfflineVrSupported(
-          sceneName: UnityScenes.waterMeditationEvening,
+          sceneName: ZenScenes.waterMeditationEvening,
         ),
         isTrue,
       );
@@ -1042,7 +1042,7 @@ void main() {
       );
       expect(
         VrExperienceType.isOfflineVrSupported(
-          sceneName: UnityScenes.generalMeditation,
+          sceneName: ZenScenes.generalMeditation,
         ),
         isTrue,
       );
@@ -1148,7 +1148,7 @@ void main() {
               title: 'Respirazione Aria',
               voicePath: '',
               ambientPath: '',
-              sceneName: UnityScenes.airBreathing,
+              sceneName: ZenScenes.airBreathing,
               durationSeconds: 300.0,
             ),
           ),
@@ -1230,7 +1230,7 @@ void main() {
               title: 'Meditazione del Mattino (Acqua)',
               voicePath: '',
               ambientPath: '',
-              sceneName: UnityScenes.waterMeditationMorning,
+              sceneName: ZenScenes.waterMeditationMorning,
               durationSeconds: 600.0,
             ),
           ),
@@ -1296,7 +1296,7 @@ void main() {
               title: 'Meditazione Generale (Gratis)',
               voicePath: '',
               ambientPath: '',
-              sceneName: UnityScenes.generalMeditation,
+              sceneName: ZenScenes.generalMeditation,
               durationSeconds: 600.0,
             ),
           ),

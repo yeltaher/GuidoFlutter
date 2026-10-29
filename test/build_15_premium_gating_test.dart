@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:guido/core/database/settings_provider.dart';
 import 'package:guido/core/database/app_initializer_provider.dart';
-import 'package:guido/core/unity/unity_bridge_dto.dart';
+import 'package:guido/core/session/zen_session_dto.dart';
 import 'package:guido/features/meditation/presentation/session_launch_helper.dart';
 import 'package:guido/features/meditation/presentation/explanation_screen.dart';
 import 'package:guido/features/menu/presentation/meditate_tab.dart';
@@ -84,7 +84,7 @@ void main() {
                         context: context,
                         ref: ref,
                         title: 'Percorso Fuoco',
-                        sceneName: UnityScenes.fireMeditation,
+                        sceneName: ZenScenes.fireMeditation,
                         isPremium: true,
                       );
                     },
@@ -143,7 +143,7 @@ void main() {
                         context: context,
                         ref: ref,
                         title: 'Percorso Fuoco',
-                        sceneName: UnityScenes.fireMeditation,
+                        sceneName: ZenScenes.fireMeditation,
                         isPremium: true,
                       );
                     },
@@ -206,7 +206,7 @@ void main() {
                         context: context,
                         ref: ref,
                         title: 'Percorso Acqua (Mattina)',
-                        sceneName: UnityScenes.waterMeditation,
+                        sceneName: ZenScenes.waterMeditation,
                         isPremium: false,
                       );
                     },
@@ -419,7 +419,7 @@ void main() {
 
       expect(container.read(settingsProvider).isUnlocked, isFalse);
 
-      final activateBtn = find.byType(CustomUnityButton);
+      final activateBtn = find.byType(GuidoButton);
       await tester.ensureVisible(activateBtn);
       await tester.pumpAndSettle();
       expect(activateBtn, findsOneWidget);

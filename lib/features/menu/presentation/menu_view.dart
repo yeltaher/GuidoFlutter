@@ -10,7 +10,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/custom_button_widget.dart';
 import '../../../core/theme/animated_magic_portal.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../../core/unity/unity_bridge_dto.dart';
+import '../../../core/session/zen_session_dto.dart';
 import '../../meditation/meditation_feature.dart';
 
 class MenuView extends ConsumerStatefulWidget {
@@ -23,7 +23,7 @@ class MenuView extends ConsumerStatefulWidget {
 class _MenuViewState extends ConsumerState<MenuView> {
   bool _showUnlockPanel = false;
 
-  // Link esterni identici ad allLinks di Unity
+  // Link esterni ufficiali dell'app
   final List<String> _allLinks = [
     "https://codepulse.it",
     "https://codepulse.it/guido-supporto",
@@ -939,7 +939,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
                         ? 'assets/audio/voci/it/meditazione_percorso_acqua_procedimento_it.m4a'
                         : 'assets/audio/voci/en/meditazione_generale.m4a',
                     ambientPath: 'assets/audio/ambient/musica_eterea.m4a',
-                    sceneName: UnityScenes.generalMeditation,
+                    sceneName: ZenScenes.generalMeditation,
                     durationSeconds: 600.0,
                   );
                 },
@@ -981,7 +981,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
                       title: texts[16],
                       voicePath: voiceAsset,
                       ambientPath: 'assets/audio/ambient/acqua.mp3',
-                      sceneName: UnityScenes.waterMeditation,
+                      sceneName: ZenScenes.waterMeditation,
                       durationSeconds: 900.0,
                     );
                   } else {
@@ -1031,7 +1031,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
                     ref: ref,
                     title: texts[17],
                     breathingAudioPath: 'assets/audio/respirazioni/vento.m4a',
-                    sceneName: UnityScenes.airBreathing,
+                    sceneName: ZenScenes.airBreathing,
                     durationSeconds: 300.0,
                   );
                 },
@@ -1052,7 +1052,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
                       ref: ref,
                       title: texts[18],
                       breathingAudioPath: 'assets/audio/respirazioni/cuore.m4a',
-                      sceneName: UnityScenes.fireBreathing,
+                      sceneName: ZenScenes.fireBreathing,
                       durationSeconds: 300.0,
                     );
                   } else {
@@ -1146,14 +1146,14 @@ class _MenuViewState extends ConsumerState<MenuView> {
     final isDark = settings.isDarkTheme;
     return Column(
       children: [
-        CustomUnityButton(
+        GuidoButton(
           text: texts[11],
           onTap: () => _openUrl(0),
           accentColor: AppColors.getSubTextColor(isDark).withValues(alpha: 0.5),
           width: 210,
         ),
         const SizedBox(height: 12),
-        CustomUnityButton(
+        GuidoButton(
           text: texts[12],
           onTap: () {
             SystemNavigator.pop();
@@ -1279,7 +1279,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
                     const SizedBox(height: 26),
 
                     // Pulsanti Azione
-                    CustomUnityButton(
+                    GuidoButton(
                       text: texts[19],
                       onTap: () {
                         notifier.unlockPremium();
@@ -1289,7 +1289,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
                       width: double.infinity,
                     ),
                     const SizedBox(height: 12),
-                    CustomUnityButton(
+                    GuidoButton(
                       text: texts[21],
                       onTap: () => _setUnlockPanelVisible(false),
                       accentColor: AppColors.dangerAccent.withValues(

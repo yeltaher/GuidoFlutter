@@ -56,7 +56,7 @@ class RemoveVrHeadsetView extends ConsumerWidget {
                   ),
                 ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
                 const SizedBox(height: 64),
-                CustomUnityButton(
+                GuidoButton(
                   text: isIt ? 'FATTO' : 'DONE',
                   onTap: () {
                     context.go('/home');

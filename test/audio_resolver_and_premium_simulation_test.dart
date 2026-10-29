@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:guido/core/audio/audio_resolver_service.dart';
 import 'package:guido/core/database/settings_provider.dart';
 import 'package:guido/core/database/app_initializer_provider.dart';
-import 'package:guido/core/unity/unity_bridge_dto.dart';
+import 'package:guido/core/session/zen_session_dto.dart';
 import 'package:guido/features/menu/presentation/settings_tab.dart';
 
 void main() {
@@ -20,7 +20,7 @@ void main() {
       expect(luigiBundle.voiceActorName, 'Luigi');
       expect(luigiBundle.voicePath, contains('Voce_Luigi'));
       expect(luigiBundle.voicePath, contains('percorso aria'));
-      expect(luigiBundle.sceneName, UnityScenes.airBreathing);
+      expect(luigiBundle.sceneName, ZenScenes.airBreathing);
       expect(luigiBundle.ambientPath, contains('RespAria.mp3'));
 
       final michelaBundle = AudioResolverService.resolveBundle(
@@ -29,7 +29,7 @@ void main() {
       );
       expect(michelaBundle.voiceActorName, 'Michela');
       expect(michelaBundle.voicePath, contains('Respirazioni/Aria'));
-      expect(michelaBundle.sceneName, UnityScenes.airBreathing);
+      expect(michelaBundle.sceneName, ZenScenes.airBreathing);
     });
 
     test('Fuoco Breathing resolves Luigi for voiceSex 0 and Michela for voiceSex 1', () {
@@ -40,7 +40,7 @@ void main() {
       expect(luigiBundle.voiceActorName, 'Luigi');
       expect(luigiBundle.voicePath, contains('Voce_Luigi'));
       expect(luigiBundle.voicePath, contains('Fuoco'));
-      expect(luigiBundle.sceneName, UnityScenes.fireBreathing);
+      expect(luigiBundle.sceneName, ZenScenes.fireBreathing);
 
       final michelaBundle = AudioResolverService.resolveBundle(
         title: 'Respirazione Fuoco',
@@ -48,7 +48,7 @@ void main() {
       );
       expect(michelaBundle.voiceActorName, 'Michela');
       expect(michelaBundle.voicePath, contains('Respirazioni/Fuoco'));
-      expect(michelaBundle.sceneName, UnityScenes.fireBreathing);
+      expect(michelaBundle.sceneName, ZenScenes.fireBreathing);
     });
 
     test('Terra Breathing resolves Luigi for voiceSex 0 and Michela for voiceSex 1', () {
@@ -59,7 +59,7 @@ void main() {
       expect(luigiBundle.voiceActorName, 'Luigi');
       expect(luigiBundle.voicePath, contains('Voce_Luigi'));
       expect(luigiBundle.voicePath, contains('terra'));
-      expect(luigiBundle.sceneName, UnityScenes.earthBreathing);
+      expect(luigiBundle.sceneName, ZenScenes.earthBreathing);
 
       final michelaBundle = AudioResolverService.resolveBundle(
         title: 'Respirazione Terra',
@@ -67,7 +67,7 @@ void main() {
       );
       expect(michelaBundle.voiceActorName, 'Michela');
       expect(michelaBundle.voicePath, contains('Respirazioni/Terra'));
-      expect(michelaBundle.sceneName, UnityScenes.earthBreathing);
+      expect(michelaBundle.sceneName, ZenScenes.earthBreathing);
     });
 
     test('Acqua Breathing falls back gracefully on Michela for voiceSex 0', () {
@@ -77,7 +77,7 @@ void main() {
       );
       expect(bundle.voiceActorName, 'Michela');
       expect(bundle.voicePath, contains('Respirazione acqua.mp3'));
-      expect(bundle.sceneName, UnityScenes.waterBreathing);
+      expect(bundle.sceneName, ZenScenes.waterBreathing);
     });
 
     test('Procedimento resolution selects procedural voice tracks', () {
@@ -86,27 +86,27 @@ void main() {
         voiceSex: 0,
       );
       expect(terraProcedimento.voicePath, contains('procedimento'));
-      expect(terraProcedimento.sceneName, UnityScenes.earthMeditation);
+      expect(terraProcedimento.sceneName, ZenScenes.earthMeditation);
 
       final fuocoProcedimento = AudioResolverService.resolveBundle(
         title: 'Procedimento Fuoco',
         voiceSex: 1,
       );
       expect(fuocoProcedimento.voicePath, contains('Procedimento'));
-      expect(fuocoProcedimento.sceneName, UnityScenes.fireMeditation);
+      expect(fuocoProcedimento.sceneName, ZenScenes.fireMeditation);
     });
 
     test('General and Moment Meditations resolve correctly', () {
       final generalBundle = AudioResolverService.resolveBundle(
         title: 'Meditazione Generale',
       );
-      expect(generalBundle.sceneName, UnityScenes.generalMeditation);
+      expect(generalBundle.sceneName, ZenScenes.generalMeditation);
       expect(generalBundle.durationSeconds, 600.0);
 
       final morningBundle = AudioResolverService.resolveBundle(
         title: 'Meditazione del Mattino',
       );
-      expect(morningBundle.sceneName, UnityScenes.waterMeditation);
+      expect(morningBundle.sceneName, ZenScenes.waterMeditation);
       expect(morningBundle.ambientPath, contains('MATTINO.mp3'));
     });
   });

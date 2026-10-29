@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../audio/audio_service.dart';
-import '../unity/unity_bridge_dto.dart';
+import '../session/zen_session_dto.dart';
 import 'app_initializer_provider.dart';
 
 
@@ -22,7 +22,7 @@ class SettingsState extends Equatable {
   final bool vrCalibrated; // Se la calibrazione VR è stata effettuata
   final double vrBiasX; // Drift asse X giroscopio
   final double vrBiasZ; // Drift asse Z giroscopio
-  final QualityPreset qualityPreset; // Profilo di resa grafica UaaL (0 = Alta Fedeltà, 1 = Eco)
+  final QualityPreset qualityPreset; // Profilo di resa grafica WebXR (0 = Alta Fedeltà, 1 = Eco)
 
   const SettingsState({
     required this.musicVolume,
@@ -158,7 +158,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
-  /// Modifica il profilo grafico UaaL (Alta Fedeltà / Eco) e lo salva offline
+  /// Modifica il profilo grafico WebXR (Alta Fedeltà / Eco) e lo salva offline
   Future<void> changeQualityPreset(QualityPreset preset) async {
     state = state.copyWith(qualityPreset: preset);
     await _prefs?.setInt("QualityPreset", preset.value);

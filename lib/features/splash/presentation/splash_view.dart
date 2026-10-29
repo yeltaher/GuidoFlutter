@@ -431,7 +431,7 @@ class _AuthFormCardState extends ConsumerState<AuthFormCard> {
                             const SizedBox(height: 16),
                           ],
 
-                          CustomUnityButton(
+                          GuidoButton(
                             text: _isSignUpMode
                                 ? (loc?.splashTabRegister ?? 'REGISTRATI')
                                 : (loc?.splashTabLogin ?? 'ACCEDI'),

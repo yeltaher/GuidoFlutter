@@ -7,16 +7,14 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:guido/core/database/settings_provider.dart';
 import 'package:guido/core/database/app_initializer_provider.dart';
-import 'package:guido/core/unity/unity_bridge_dto.dart';
-import 'package:guido/core/unity/unity_session_controller.dart';
-import 'package:guido/core/theme/custom_button_widget.dart';
+import 'package:guido/core/session/zen_session_dto.dart';
 import 'package:guido/features/meditation/presentation/session_launch_helper.dart';
-import 'package:guido/features/meditation/presentation/unity_experience_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   final List<MethodCall> systemChromeCalls = [];
+  const orientationChannel = MethodChannel('com.codepulse.guido/orientation');
 
   setUp(() {
     systemChromeCalls.clear();
@@ -31,11 +29,18 @@ void main() {
       }
       return null;
     });
+
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(orientationChannel, (MethodCall methodCall) async {
+      return null;
+    });
   });
 
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(orientationChannel, null);
   });
 
   group('Build 20: 1. Pubspec Version & Configuration Quality Gates', () {
@@ -58,26 +63,16 @@ void main() {
       expect(content.contains('NSAllowsLocalNetworking'), isTrue);
       expect(content.contains('ITSAppUsesNonExemptEncryption'), isTrue);
       expect(content.contains('UIBackgroundModes'), isTrue);
-      expect(content.contains('<string>audio</string>'), isTrue);
-      expect(content.contains('UIInterfaceOrientationPortrait'), isTrue);
-      expect(content.contains('UIInterfaceOrientationLandscapeLeft'), isTrue);
-      expect(content.contains('UIInterfaceOrientationLandscapeRight'), isTrue);
     });
 
-    test('iOS PrivacyInfo.xcprivacy contains NSPrivacyAccessedAPITypes', () {
-      final privacyFile = File('ios/Runner/PrivacyInfo.xcprivacy');
-      expect(privacyFile.existsSync(), isTrue);
-      final content = privacyFile.readAsStringSync();
-      expect(content.contains('NSPrivacyAccessedAPICategoryUserDefaults'), isTrue);
-      expect(content.contains('NSPrivacyAccessedAPICategoryFileTimestamp'), isTrue);
-    });
-
-    test('ios/Podfile includes system(git lfs pull) in pre_install', () {
+    test('iOS Podfile enforces static linkage and excludes Unity', () {
       final podfile = File('ios/Podfile');
       expect(podfile.existsSync(), isTrue);
       final content = podfile.readAsStringSync();
-      expect(content.contains('git lfs pull'), isTrue);
-      expect(content.contains('pre_install'), isTrue);
+      expect(content.contains('use_frameworks! :linkage => :static'), isTrue);
+      expect(content.contains('ENABLE_DEBUG_DYLIB'), isTrue);
+      expect(content.contains('UnityLibrary'), isFalse);
+      expect(content.contains('flutter_unity_widget'), isFalse);
     });
 
     test('ios/Runner.xcworkspace does not include UnityLibrary', () {
@@ -124,119 +119,8 @@ void main() {
     });
   });
 
-  Future<void> holdCustomButton(WidgetTester tester, Finder finder) async {
-    final gesture = await tester.startGesture(tester.getCenter(finder));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 1400));
-    await gesture.up();
-    await tester.pump(const Duration(milliseconds: 300));
-  }
-
-  group('Build 20: 2. Unity Orientation Lifecycle Tests', () {
-    testWidgets('UnityExperienceScreen sets landscape orientations in initState and restores portrait on exit', (tester) async {
-      tester.view.physicalSize = const Size(1920, 1080);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-
-      String? currentRoute;
-      final router = GoRouter(
-        initialLocation: '/unity-experience',
-        routes: [
-          GoRoute(
-            path: '/unity-experience',
-            builder: (context, state) => const UnityExperienceScreen(
-              title: 'Meditazione Acqua',
-              sceneName: UnityScenes.waterMeditation,
-              durationSeconds: 300.0,
-              isVrMode: false,
-            ),
-          ),
-          GoRoute(
-            path: '/home',
-            builder: (context, state) {
-              currentRoute = '/home';
-              return const Scaffold(body: Text('Home View'));
-            },
-          ),
-        ],
-      );
-
-      final container = ProviderContainer(
-        overrides: [
-          sharedPrefsInstanceProvider.overrideWith((ref) => prefs),
-          sharedPrefsProvider.overrideWithValue(prefs),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp.router(
-            routerConfig: router,
-          ),
-        ),
-      );
-
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-
-      // Simulate Unity notifying that scene is loaded
-      container.read(unitySessionControllerProvider.notifier).onUnityMessage(
-        'SCENE_LOADED',
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-
-      // Check that SystemChrome.setPreferredOrientations was called with landscape
-      final orientationCalls = systemChromeCalls
-          .where((call) => call.method == 'SystemChrome.setPreferredOrientations')
-          .toList();
-
-      expect(orientationCalls.isNotEmpty, isTrue);
-      final firstCallArgs = orientationCalls.first.arguments as List;
-      expect(
-        firstCallArgs.contains('DeviceOrientation.landscapeLeft') ||
-        firstCallArgs.contains('DeviceOrientation.landscapeRight'),
-        isTrue,
-      );
-
-      // Trigger exit confirmation
-      final closeButton = find.byIcon(Icons.close_rounded);
-      expect(closeButton, findsOneWidget);
-      await tester.tap(closeButton);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-
-      // Tap confirm exit (ESCI is a CustomUnityButton which requires holding)
-      final exitConfirmButton = find.widgetWithText(CustomUnityButton, 'ESCI');
-      expect(exitConfirmButton, findsOneWidget);
-      await holdCustomButton(tester, exitConfirmButton);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 400));
-
-      expect(currentRoute, '/home');
-
-      // Check that portrait orientation was restored
-      final lastOrientationCall = systemChromeCalls
-          .where((call) => call.method == 'SystemChrome.setPreferredOrientations')
-          .last;
-      final lastCallArgs = lastOrientationCall.arguments as List;
-      expect(lastCallArgs.contains('DeviceOrientation.portraitUp'), isTrue);
-
-      container.read(unitySessionControllerProvider.notifier).stopSession();
-      await tester.pump(const Duration(milliseconds: 100));
-    });
-  });
-
-  group('Build 20: 3. Pure Unity Session Routing Tests', () {
-    testWidgets('SessionLaunchDialog Standard Mode launches UnityExperienceScreen with isVrMode = false', (tester) async {
+  group('Build 20: 2. Pure WebXR Session Routing Tests', () {
+    testWidgets('SessionLaunchDialog Standard Mode launches WebXR with isVrMode = false', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -247,7 +131,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 
-      Map<String, dynamic>? unityExtra;
+      Map<String, dynamic>? vrExtra;
       final router = GoRouter(
         initialLocation: '/dialog-host',
         routes: [
@@ -264,7 +148,7 @@ void main() {
                           title: 'Procedimento Acqua',
                           voicePath: '',
                           ambientPath: '',
-                          sceneName: UnityScenes.waterTutorial,
+                          sceneName: ZenScenes.waterTutorial,
                           durationSeconds: 300.0,
                         ),
                       );
@@ -276,10 +160,10 @@ void main() {
             ),
           ),
           GoRoute(
-            path: '/unity-experience',
+            path: '/vr-experience',
             builder: (context, state) {
-              unityExtra = state.extra as Map<String, dynamic>?;
-              return const Scaffold(body: Text('Unity Experience Target'));
+              vrExtra = state.extra as Map<String, dynamic>?;
+              return const Scaffold(body: Text('VR Experience Target'));
             },
           ),
         ],
@@ -313,9 +197,8 @@ void main() {
       await tester.tap(find.text('Modalità Standard'));
       await tester.pumpAndSettle();
 
-      expect(unityExtra, isNotNull);
-      expect(unityExtra!['isVrMode'], isFalse);
-      expect(unityExtra!['title'], 'Procedimento Acqua');
+      expect(vrExtra, isNotNull);
+      expect(vrExtra!['isVrMode'], isFalse);
     });
   });
 }

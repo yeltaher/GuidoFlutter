@@ -9,8 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/vr_gaze_button.dart';
 import '../../../core/database/settings_provider.dart';
-import '../../../core/unity/unity_bridge_dto.dart';
-import '../../../core/audio/audio_resolver_service.dart';
+import '../../../core/session/zen_session_dto.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../vr_experiences/vr_experiences_feature.dart';
 
@@ -36,7 +35,7 @@ void launchZenSession({
     return;
   }
 
-  final resolvedScene = UnityScenes.resolveSceneName(
+  final resolvedScene = ZenScenes.resolveSceneName(
     explicitSceneName: sceneName,
     title: title,
     isBreathing: breathingAudioPath != null,
@@ -55,8 +54,8 @@ void launchZenSession({
   );
 }
 
-/// Avvia direttamente un'esperienza Unity UaaL 3D / VR fotorealistica con bundle audio sincronizzato.
-void launchUnityExperience({
+/// Avvia direttamente un'esperienza 3D / VR fotorealistica con bundle audio sincronizzato.
+void launchImmersiveExperience({
   required BuildContext context,
   required WidgetRef ref,
   required String title,
@@ -71,39 +70,16 @@ void launchUnityExperience({
         title: title,
       ) ??
       VrExperienceType.fromSessionId(sceneName) ??
-      VrExperienceType.fromSessionId(title);
+      VrExperienceType.fromSessionId(title) ??
+      VrExperienceType.meditazioneGeneraleAcqua;
   final settings = ref.read(settingsProvider);
-  if (vrMatch != null) {
-    context.push(
-      '/vr-experience',
-      extra: {
-        'experienceId': vrMatch.id,
-        'isVrMode': isVrMode,
-        'autoStart': true,
-        'voiceSex': settings.voiceSex,
-      },
-    );
-    return;
-  }
-  final bundle = AudioResolverService.resolveBundle(
-    title: title,
-    sceneName: sceneName,
-    voiceSex: settings.voiceSex,
-    language: settings.language,
-    customVoicePath: voicePath,
-    customAmbientPath: ambientPath,
-    durationSeconds: durationSeconds,
-  );
-
   context.push(
-    '/unity-experience',
+    '/vr-experience',
     extra: {
-      'title': title,
-      'sceneName': bundle.sceneName,
-      'durationSeconds': bundle.durationSeconds,
+      'experienceId': vrMatch.id,
       'isVrMode': isVrMode,
-      'voicePath': bundle.voicePath,
-      'ambientPath': bundle.ambientPath,
+      'autoStart': true,
+      'voiceSex': settings.voiceSex,
     },
   );
 }
@@ -151,38 +127,14 @@ class SessionLaunchDialog extends ConsumerWidget {
     router.pop();
 
     final settings = ref.read(settingsProvider);
-    if (vrMatch != null) {
-      router.pushReplacement(
-        '/vr-experience',
-        extra: {
-          'experienceId': vrMatch.id,
-          'isVrMode': false,
-          'autoStart': true,
-          'voiceSex': settings.voiceSex,
-        },
-      );
-      return;
-    }
-    final bundle = AudioResolverService.resolveBundle(
-      title: title,
-      sceneName: sceneName,
-      voiceSex: settings.voiceSex,
-      language: settings.language,
-      customVoicePath:
-          voicePath.isNotEmpty ? voicePath : (breathingAudioPath ?? ''),
-      customAmbientPath: ambientPath,
-      durationSeconds: durationSeconds,
-    );
-
+    final targetExperience = vrMatch ?? VrExperienceType.meditazioneGeneraleAcqua;
     router.pushReplacement(
-      '/unity-experience',
+      '/vr-experience',
       extra: {
-        'title': title,
-        'sceneName': bundle.sceneName,
-        'durationSeconds': bundle.durationSeconds,
+        'experienceId': targetExperience.id,
         'isVrMode': false,
-        'voicePath': bundle.voicePath,
-        'ambientPath': bundle.ambientPath,
+        'autoStart': true,
+        'voiceSex': settings.voiceSex,
       },
     );
   }
@@ -209,38 +161,14 @@ class SessionLaunchDialog extends ConsumerWidget {
 
     // Avvio rapido diretto nel visore VR: nessun passaggio intermedio bloccante
     final settings = ref.read(settingsProvider);
-    if (vrMatch != null) {
-      router.pushReplacement(
-        '/vr-experience',
-        extra: {
-          'experienceId': vrMatch.id,
-          'isVrMode': true,
-          'autoStart': true,
-          'voiceSex': settings.voiceSex,
-        },
-      );
-      return;
-    }
-    final bundle = AudioResolverService.resolveBundle(
-      title: title,
-      sceneName: sceneName,
-      voiceSex: settings.voiceSex,
-      language: settings.language,
-      customVoicePath:
-          voicePath.isNotEmpty ? voicePath : (breathingAudioPath ?? ''),
-      customAmbientPath: ambientPath,
-      durationSeconds: durationSeconds,
-    );
-
+    final targetExperience = vrMatch ?? VrExperienceType.meditazioneGeneraleAcqua;
     router.pushReplacement(
-      '/unity-experience',
+      '/vr-experience',
       extra: {
-        'title': title,
-        'sceneName': bundle.sceneName,
-        'durationSeconds': bundle.durationSeconds,
+        'experienceId': targetExperience.id,
         'isVrMode': true,
-        'voicePath': bundle.voicePath,
-        'ambientPath': bundle.ambientPath,
+        'autoStart': true,
+        'voiceSex': settings.voiceSex,
       },
     );
   }
@@ -517,45 +445,16 @@ class _VrConfirmationScreenState extends ConsumerState<VrConfirmationScreen> {
         VrExperienceType.fromSessionId(widget.title);
 
     final settings = ref.read(settingsProvider);
-    if (vrMatch != null) {
-      context.pushReplacement(
-        '/vr-experience',
-        extra: {
-          'experienceId': vrMatch.id,
-          'isVrMode': true,
-          'autoStart': true,
-          'voiceSex': settings.voiceSex,
-        },
-      );
-      return;
-    }
-    final bundle = AudioResolverService.resolveBundle(
-      title: widget.title,
-      sceneName: widget.sceneName,
-      voiceSex: settings.voiceSex,
-      language: settings.language,
-      customVoicePath: widget.voicePath.isNotEmpty
-          ? widget.voicePath
-          : (widget.breathingAudioPath ?? ''),
-      customAmbientPath: widget.ambientPath,
-      durationSeconds: widget.durationSeconds,
-    );
-
+    final targetExperience = vrMatch ?? VrExperienceType.meditazioneGeneraleAcqua;
     context.pushReplacement(
-      '/unity-experience',
+      '/vr-experience',
       extra: {
-        'title': widget.title,
-        'sceneName': bundle.sceneName,
-        'durationSeconds': bundle.durationSeconds,
+        'experienceId': targetExperience.id,
         'isVrMode': true,
-        'voicePath': bundle.voicePath,
-        'ambientPath': bundle.ambientPath,
+        'autoStart': true,
+        'voiceSex': settings.voiceSex,
       },
     );
-
-    // NOTE: VR mode toggle (false) and session recording are now handled
-    // by UnityExperienceScreen._confirmExit() to avoid GoRouter stack issues.
-    // The original pushReplacement .then() callback was unreliable with GoRouter.
   }
 
   @override
